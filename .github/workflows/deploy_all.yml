@@ -73,24 +73,28 @@ jobs:
     runs-on: ubuntu-latest
     needs: preflight
     env:
-      APP: ${{ env.APP_DASHBOARD }}
-      URL: ${{ env.URL_DASHBOARD }}
+      APP: sophiaai-dashboard
+      URL: https://sophiaai-dashboard.fly.dev
     steps:
       - uses: actions/checkout@v4
 
       - name: Install flyctl
         uses: superfly/flyctl-actions/setup-flyctl@master
 
-      - name: Build dist (Vite base '/')
+      - name: Setup Node.js
         uses: actions/setup-node@v4
-        with: { node-version: '20' }
-      - working-directory: apps/dashboard
+        with:
+          node-version: '20'
+      
+      - name: Build dist (Vite base '/')
+        working-directory: apps/dashboard
         run: |
           npm ci --no-audit --no-fund || npm ci --no-audit --no-fund --legacy-peer-deps
           npm run build
 
       - name: Ensure Fly app exists
-        env: { FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }} }
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         working-directory: apps/dashboard
         run: |
           flyctl apps show $APP >/dev/null 2>&1 || flyctl apps create $APP --machines --yes
@@ -134,7 +138,8 @@ jobs:
           fi
 
       - name: Machines JSON
-        env: { FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }} }
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
           flyctl machines list -a ${{ env.APP }} --json | tee proofs/fly/${{ env.APP }}_machines.json
 
@@ -176,7 +181,8 @@ jobs:
         uses: superfly/flyctl-actions/setup-flyctl@master
 
       - name: Ensure app exists
-        env: { FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }} }
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
           flyctl apps show ${{ matrix.app }} >/dev/null 2>&1 || flyctl apps create ${{ matrix.app }} --machines --yes
 
@@ -201,7 +207,8 @@ jobs:
           fi
 
       - name: Deploy service (Dockerfile)
-        env: { FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }} }
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         working-directory: ${{ matrix.path }}
         run: |
           flyctl deploy \
@@ -226,7 +233,8 @@ jobs:
           fi
 
       - name: Machines JSON
-        env: { FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }} }
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
           flyctl machines list -a ${{ matrix.app }} --json | tee proofs/fly/${{ matrix.app }}_machines.json
 
