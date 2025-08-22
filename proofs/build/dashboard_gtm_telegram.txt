@@ -1,0 +1,21 @@
+Dashboard GTM Tab Updated for Telegram Integration
+================================================
+
+Changes Applied:
+- Line 41-42: Changed default signal digest channel from ['slack:#gtm'] to ['telegram']
+- GTM Intelligence Dashboard now defaults to Telegram for signal notifications
+- Signal processing integrated with TelegramProvider through Business MCP v1
+
+Impact:
+- Dashboard GTM tab will request Telegram notifications by default
+- Maintains backward compatibility with Slack integration
+- CEO Quick Actions now route to Telegram-enabled workflows
+
+Technical Details:
+- Signal digest endpoint: POST /signals/digest with channels: ['telegram']
+- Dashboard fetches from https://sophiaai-mcp-business-v2.fly.dev/signals/digest
+- Telegram integration requires TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID secrets
+- Sophia Infra workflows support both notify and digest actions with Telegram
+
+Status: ✅ GTM tab configured for Telegram-first notifications
+Next: Deploy Business MCP with Telegram integration and verify functionality

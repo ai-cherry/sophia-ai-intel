@@ -1,0 +1,14 @@
+{
+  "operation": "business_mcp_providers_verification",
+  "error_type": "DNS_RESOLUTION_FAILURE",
+  "timestamp": "2025-08-22T22:44:52Z",
+  "error_details": {
+    "endpoint": "https://sophiaai-mcp-business-v2.fly.dev/providers",
+    "curl_exit_code": 6,
+    "error_message": "Could not resolve host: sophiaai-mcp-business-v2.fly.dev",
+    "service_deployment_status": "FAILED_DNS_RESOLUTION"
+  },
+  "blocker": "Business MCP service not accessible - DNS resolution failure prevents provider validation",
+  "expected_providers": ["APOLLO_API_KEY", "HUBSPOT_ACCESS_TOKEN", "SLACK_BOT_TOKEN", "TELEGRAM_BOT_TOKEN", "SALESFORCE_CLIENT_ID", "USERGEMS_API_KEY", "GONG_BASE_URL", "ZILLOW_API_KEY"],
+  "impact": "GTM intelligence and business provider operations unavailable"
+}

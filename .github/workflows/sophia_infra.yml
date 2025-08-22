@@ -47,6 +47,7 @@ on:
           - enrich
           - sync
           - digest
+          - notify
           - upload
       app:
         description: "App name (Fly only)"
@@ -212,6 +213,8 @@ jobs:
       GONG_CLIENT_SECRET: ${{ secrets.GONG_CLIENT_SECRET }}
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
       SLACK_SIGNING_SECRET: ${{ secrets.SLACK_SIGNING_SECRET }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
       ZILLOW_API_KEY: ${{ secrets.ZILLOW_API_KEY }}
       NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
       QDRANT_URL: ${{ secrets.QDRANT_URL }}
@@ -250,4 +253,4 @@ jobs:
           echo "- **lambda**: GPU compute operations (if configured)" >> $GITHUB_STEP_SUMMARY
           echo "- **context_db**: Database operations" >> $GITHUB_STEP_SUMMARY
           echo "- **research**: Web search operations" >> $GITHUB_STEP_SUMMARY
-          echo "- **biz**: Business intelligence operations (search, enrich, sync, digest, upload)" >> $GITHUB_STEP_SUMMARY
+          echo "- **biz**: Business intelligence operations (search, enrich, sync, digest, notify, upload)" >> $GITHUB_STEP_SUMMARY

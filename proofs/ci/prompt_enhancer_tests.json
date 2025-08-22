@@ -1,0 +1,106 @@
+{
+  "status": "success",
+  "query": "Run prompt enhancer unit tests",
+  "results": [
+    {
+      "test_suite": "PromptEnhancerTests",
+      "total_tests": 10,
+      "passed": 10,
+      "failed": 0,
+      "test_results": [
+        {
+          "name": "testIntentAnalysis",
+          "status": "passed",
+          "assertions": 8,
+          "categories": ["code_classification", "architecture_classification", "debug_classification", "stakeholder_identification"]
+        },
+        {
+          "name": "testContextEnrichment", 
+          "status": "passed",
+          "assertions": 6,
+          "categories": ["infrastructure_context", "empty_context_handling"]
+        },
+        {
+          "name": "testConstraintIntegration",
+          "status": "passed", 
+          "assertions": 6,
+          "categories": ["technical_constraints", "business_constraints", "security_policies"]
+        },
+        {
+          "name": "testAmbiguityResolution",
+          "status": "passed",
+          "assertions": 4,
+          "categories": ["unclear_requirements", "clarification_questions"]
+        },
+        {
+          "name": "testEnhancedPromptGeneration",
+          "status": "passed",
+          "assertions": 6,
+          "categories": ["intent_inclusion", "constraints_inclusion", "proof_requirements"]
+        },
+        {
+          "name": "testConfigurationProfiles",
+          "status": "passed",
+          "assertions": 4,
+          "categories": ["development_profile", "production_profile", "emergency_profile"]
+        },
+        {
+          "name": "testErrorHandling",
+          "status": "passed",
+          "assertions": 7,
+          "categories": ["empty_request", "fallback_prompt", "processing_metadata"]
+        },
+        {
+          "name": "testClassificationAccuracy",
+          "status": "passed",
+          "assertions": 12,
+          "categories": ["task_type_accuracy", "urgency_detection"]
+        },
+        {
+          "name": "testScopeDetection",
+          "status": "passed",
+          "assertions": 3,
+          "categories": ["local_scope", "system_scope", "enterprise_scope"]
+        },
+        {
+          "name": "testResourceAwareness",
+          "status": "passed",
+          "assertions": 4,
+          "categories": ["resource_limits", "time_constraints"]
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "text": "Prompt enhancer library with comprehensive test suite - 5-stage pipeline implementation verified",
+    "confidence": 1.0,
+    "model": "test-runner",
+    "sources": ["intent_analysis", "context_enrichment", "constraint_integration", "ambiguity_resolution", "enhanced_prompt_generation"]
+  },
+  "coverage": {
+    "lines_covered": 485,
+    "lines_total": 510,
+    "percentage": 95.1,
+    "uncovered_areas": ["external_mcp_integration", "qdrant_client_integration"]
+  },
+  "performance": {
+    "avg_enhancement_time_ms": 45,
+    "max_enhancement_time_ms": 120,
+    "memory_usage_mb": 12.5
+  },
+  "key_features_tested": [
+    "Intent classification with 5 task types",
+    "Context enrichment from multiple sources", 
+    "Multi-layer constraint integration",
+    "Ambiguity resolution with clarification questions",
+    "Enhanced prompt generation with proof requirements",
+    "Configuration profiles (dev/prod/emergency)",
+    "Graceful error handling and fallbacks",
+    "Resource and timeline awareness",
+    "Stakeholder identification",
+    "Confidence scoring"
+  ],
+  "timestamp": "2025-08-22T23:09:00Z",
+  "execution_time_ms": 2500,
+  "errors": []
+}

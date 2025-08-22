@@ -1,0 +1,54 @@
+{
+  "validation_status": "NAMING_MISMATCH_FOUND",
+  "timestamp": "2025-08-22T22:27:47Z",
+  "canonical_naming_required": "*-v2 suffix for all apps",
+  "validations": [
+    {
+      "service": "dashboard",
+      "file": "apps/dashboard/fly.toml",
+      "current_app_name": "sophiaai-dashboard",
+      "expected_app_name": "sophiaai-dashboard-v2",
+      "http_service_status": "✅ Valid - port 8080, /healthz check present",
+      "fix_required": true
+    },
+    {
+      "service": "mcp-github",
+      "file": "services/mcp-github/fly.toml", 
+      "current_app_name": "sophiaai-mcp-repo",
+      "expected_app_name": "sophiaai-mcp-repo-v2",
+      "http_service_status": "✅ Valid - port 8080, /healthz check present",
+      "fix_required": true
+    },
+    {
+      "service": "mcp-research",
+      "file": "services/mcp-research/fly.toml",
+      "current_app_name": "sophiaai-mcp-research",
+      "expected_app_name": "sophiaai-mcp-research-v2", 
+      "http_service_status": "✅ Valid - port 8080, /healthz check present, POST /search check",
+      "fix_required": true
+    },
+    {
+      "service": "mcp-business",
+      "file": "services/mcp-business/fly.toml",
+      "current_app_name": "sophiaai-mcp-business-v2",
+      "expected_app_name": "sophiaai-mcp-business-v2",
+      "http_service_status": "✅ Valid - port 8080, /healthz check present",
+      "fix_required": false
+    },
+    {
+      "service": "mcp-context",
+      "file": "services/mcp-context/fly.toml",
+      "current_app_name": "sophiaai-mcp-context",
+      "expected_app_name": "sophiaai-mcp-context-v2",
+      "http_service_status": "✅ Valid - port 8080, /healthz check present, /context/stats check",
+      "fix_required": true
+    }
+  ],
+  "summary": {
+    "total_services": 5,
+    "http_service_valid": 5,
+    "naming_fixes_needed": 4,
+    "ready_services": 1,
+    "action_required": "Fix app names in 4 fly.toml files to match canonical -v2 naming"
+  }
+}

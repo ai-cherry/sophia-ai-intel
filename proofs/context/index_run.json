@@ -1,0 +1,14 @@
+{
+  "operation": "context_mcp_index_verification",
+  "error_type": "DNS_RESOLUTION_FAILURE",
+  "timestamp": "2025-08-22T22:44:52Z",
+  "error_details": {
+    "endpoint": "https://sophiaai-mcp-context-v2.fly.dev/context/stats",
+    "curl_exit_code": 6,
+    "error_message": "Could not resolve host: sophiaai-mcp-context-v2.fly.dev",
+    "service_deployment_status": "FAILED_DNS_RESOLUTION"
+  },
+  "blocker": "Context MCP service not accessible - DNS resolution failure prevents indexing operations",
+  "expected_functionality": "Context indexing, document storage, search operations",
+  "impact": "Context search and indexing capabilities unavailable"
+}

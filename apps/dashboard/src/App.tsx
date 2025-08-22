@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import Footer from './components/Footer'
+import ChatInterface from './components/ChatInterface'
+import { buildGuard } from './lib/buildInfo'
 
 function App() {
   const [activeTab, setActiveTab] = useState('chat')
@@ -39,7 +41,7 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           window: '7d',
-          channels: ['slack:#gtm']
+          channels: ['telegram']
         })
       })
       
@@ -67,6 +69,11 @@ function App() {
       fetchGTMData()
     }
   }, [activeTab])
+
+  // Initialize build monitoring
+  useEffect(() => {
+    buildGuard.init()
+  }, [])
 
   // Generate Sophia Infra workflow link
   const generateInfraLink = (provider, action, payload) => {
@@ -135,18 +142,7 @@ function App() {
             borderRadius: '8px',
             boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
           }}>
-            <h2>AI Chat Interface</h2>
-            <p>ChatGPT-5 powered conversation interface coming soon...</p>
-            <div style={{ 
-              padding: '1rem', 
-              background: '#f8f9fa', 
-              borderRadius: '4px',
-              marginTop: '1rem'
-            }}>
-              <strong>Default Model:</strong> ChatGPT-5 (GPT-5)<br />
-              <strong>Fallback:</strong> Claude 3.5 Sonnet, GPT-4o<br />
-              <strong>Router:</strong> Portkey with best-recent models policy
-            </div>
+            <ChatInterface />
           </div>
         )}
 

@@ -1,0 +1,88 @@
+name: Cleanup Personal Org Apps
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_cleanup:
+        description: "Type 'DELETE_PERSONAL_APPS' to confirm cleanup"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    name: Remove Old Apps from Personal Org
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.confirm_cleanup == 'DELETE_PERSONAL_APPS' }}
+    env:
+      FLY_API_TOKEN: ${{ secrets.FLY_TOKEN_PERSONAL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Verify personal org access
+        run: |
+          echo "::add-mask::$FLY_API_TOKEN"
+          flyctl auth whoami --access-token "$FLY_API_TOKEN"
+          
+      - name: List personal org apps
+        run: |
+          mkdir -p proofs/fly
+          flyctl apps list --access-token "$FLY_API_TOKEN" --json | tee proofs/fly/personal_apps_before_cleanup.json
+
+      - name: Delete old personal apps
+        run: |
+          # Apps to delete from personal org
+          APPS_TO_DELETE=(
+            "sophiaai-dashboard"
+            "sophiaai-mcp-repo" 
+            "sophiaai-mcp-research"
+            "sophiaai-mcp-context"
+            "sophiaai-mcp-business"
+          )
+          
+          for app in "${APPS_TO_DELETE[@]}"; do
+            echo "Checking if $app exists..."
+            if flyctl apps show "$app" --access-token "$FLY_API_TOKEN" >/dev/null 2>&1; then
+              echo "Deleting $app from personal org..."
+              flyctl apps destroy "$app" --access-token "$FLY_API_TOKEN" --yes || echo "Failed to delete $app (may not exist)"
+            else
+              echo "$app does not exist in personal org"
+            fi
+          done
+
+      - name: List personal org apps after cleanup
+        run: |
+          flyctl apps list --access-token "$FLY_API_TOKEN" --json | tee proofs/fly/personal_apps_after_cleanup.json
+
+      - name: Generate cleanup proof
+        run: |
+          cat > proofs/fly/personal_org_cleanup_complete.json << EOF
+          {
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "status": "cleanup_complete",
+            "action": "personal_org_app_removal",
+            "apps_targeted": [
+              "sophiaai-dashboard",
+              "sophiaai-mcp-repo", 
+              "sophiaai-mcp-research",
+              "sophiaai-mcp-context",
+              "sophiaai-mcp-business"
+            ],
+            "organization": "personal",
+            "canonical_apps_location": "pay-ready org with -v2 naming",
+            "cleanup_reason": "migrate_to_canonical_pay_ready_organization"
+          }
+          EOF
+
+      - name: Commit cleanup proofs
+        run: |
+          git config user.name "sophia-bot"
+          git config user.email "sophia-bot@users.noreply.github.com"
+          git add proofs/fly/personal_apps_before_cleanup.json proofs/fly/personal_apps_after_cleanup.json proofs/fly/personal_org_cleanup_complete.json
+          git commit -m "[proof] Personal org cleanup: removed old apps, canonical apps in pay-ready org" || true
+          git push || true

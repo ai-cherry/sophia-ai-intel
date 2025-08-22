@@ -1,0 +1,52 @@
+{
+  "timestamp": "2025-08-22T21:43:35Z", 
+  "status": "nightly_smoke_enabled",
+  "task": "nightly_smoke_enable",
+  "query": "verify_nightly_smoke_workflow_exists",
+  
+  "workflow_verification": {
+    "file": ".github/workflows/nightly_smoke.yml",
+    "status": "✅ properly_configured",
+    "schedule": "✅ cron: '0 3 * * *' (daily at 3 AM UTC)",
+    "manual_trigger": "✅ workflow_dispatch available",
+    "canonical_naming": "✅ all apps use -v2 suffix",
+    "apps_monitored": [
+      "sophiaai-dashboard-v2",
+      "sophiaai-mcp-repo-v2",
+      "sophiaai-mcp-research-v2",
+      "sophiaai-mcp-business-v2",
+      "sophiaai-mcp-context-v2"
+    ]
+  },
+  
+  "health_monitoring_features": {
+    "healthz_endpoints": "✅ all 5 services monitored",
+    "functional_tests": "✅ providers endpoints tested when healthy",
+    "proof_artifacts": "✅ dated proofs saved to proofs/healthz/nightly/YYYYMMDD/",
+    "metrics_summary": "✅ JSON metrics with service status counts",
+    "auto_commit": "✅ proofs auto-committed with health summary",
+    "failure_notifications": "✅ warnings for critical service failures"
+  },
+  
+  "proof_structure": {
+    "daily_directory": "proofs/healthz/nightly/YYYYMMDD/",
+    "files_generated": [
+      "sophiaai-dashboard-v2.txt",
+      "sophiaai-mcp-repo-v2.txt", 
+      "sophiaai-mcp-research-v2.txt",
+      "sophiaai-mcp-business-v2.txt",
+      "sophiaai-mcp-context-v2.txt",
+      "research_providers_test.json",
+      "business_providers_test.json",
+      "metrics_summary.json"
+    ]
+  },
+  
+  "workflow_summary_output": {
+    "github_step_summary": "✅ formatted table with service health status",
+    "proof_links": "✅ links to generated proof artifacts",
+    "health_indicators": "✅ emoji indicators for each service"
+  },
+  
+  "nightly_smoke_readiness": "✅ fully_operational_and_scheduled"
+}

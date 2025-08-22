@@ -6,13 +6,14 @@
 
 ## Overview
 
-The Business MCP v1 is a comprehensive GTM/RevOps intelligence platform that integrates with leading business systems including Apollo, UserGems, HubSpot, Salesforce, Gong, and Slack. It provides prospect search, enrichment, CRM synchronization, revenue signal analysis, and compliant data intake capabilities.
+The Business MCP v1 is a comprehensive GTM/RevOps intelligence platform that integrates with leading business systems including Apollo, UserGems, HubSpot, Salesforce, Gong, Slack, and Telegram. It provides prospect search, enrichment, CRM synchronization, revenue signal analysis, compliant data intake, and real-time notification capabilities.
 
 ### Key Features
 
 - **Multi-CRM Integration**: Apollo, HubSpot, Salesforce with read/write controls
 - **Revenue Intelligence**: UserGems job change alerts, Gong call insights
 - **Communication Analysis**: Slack channel digests and GTM signal extraction
+- **Telegram Notifications**: Real-time business alerts and digest delivery
 - **Data Intake**: CSV uploads with TOS-compliant manual processing
 - **Normalized Error Handling**: Consistent JSON error format across providers
 - **CEO-Gated Operations**: All write operations require manual approval
@@ -38,6 +39,7 @@ GET /healthz
     "salesforce": "ready|missing_secret",
     "gong": "ready|missing_secret",
     "slack": "ready|missing_secret",
+    "telegram": "ready|missing_secret",
     "zillow": "ready|missing_secret",
     "storage": "ready|missing_secret",
     "qdrant": "ready|missing_secret",
@@ -217,6 +219,45 @@ POST /signals/digest
 }
 ```
 
+### Revenue Signals Notification
+```http
+POST /signals/notify
+```
+
+**Request**:
+```json
+{
+  "message": "New high-value prospect identified: PropTech Corp - $500K ARR potential",
+  "channels": ["telegram", "slack:#alerts"],
+  "priority": "high",
+  "metadata": {
+    "prospect_id": "uuid-string",
+    "source": "apollo",
+    "score": 92.5
+  }
+}
+```
+
+**Response**:
+```json
+{
+  "status": "success",
+  "message": "New high-value prospect identified: PropTech Corp - $500K ARR potential",
+  "channels": ["telegram"],
+  "notify_results": {
+    "telegram": {
+      "status": "sent",
+      "message_id": "12345",
+      "timestamp": "1724356800"
+    }
+  },
+  "providers_used": ["telegram"],
+  "providers_failed": [],
+  "execution_time_ms": 850,
+  "timestamp": "2025-08-22T19:45:00Z"
+}
+```
+
 ### Data Intake Upload
 ```http
 POST /intake/upload
@@ -279,6 +320,7 @@ Returns current provider configuration and readiness status (names only).
 | Provider | Secrets Required | Status | Capabilities | Cost Model |
 |----------|-----------------|---------|-------------|------------|
 | **Slack** | `SLACK_BOT_TOKEN`<br>`SLACK_SIGNING_SECRET` | ❌ Missing | Channel digests, GTM signal extraction, notifications | Free (bot usage) |
+| **Telegram** | `TELEGRAM_BOT_TOKEN`<br>`TELEGRAM_CHAT_ID` | ❌ Missing | Real-time notifications, business alerts, digest delivery | Free (bot usage) |
 
 ### Optional Integrations
 
@@ -347,6 +389,115 @@ Q1 Targets,AI Innovations Inc,aiinnovations.com,Mike Wilson,VP Engineering,mike@
 - **CCPA**: California residents have right to data deletion
 - **SOX**: Financial data handling for public companies requires audit trails
 
+## Telegram Bot Configuration
+
+### Bot Setup Requirements
+
+The Business MCP integrates with Telegram for real-time business intelligence notifications. This requires:
+
+1. **Telegram Bot Token**: Obtained from [@BotFather](https://t.me/botfather) on Telegram
+2. **Chat ID**: Target chat/channel for notifications (can be user, group, or channel)
+
+### CEO Setup Instructions
+
+#### 1. Create Telegram Bot (if not already done)
+1. Message [@BotFather](https://t.me/botfather) on Telegram
+2. Send `/newbot` and follow prompts to create bot
+3. Save the bot token (format: `1234567890:ABCDefghijklmnopqrstuvwxyz`)
+
+**Current Bot Token (CEO Provided)**: `8431354714:AAGp0HXFAoCYBnjyiZnqGoVVd8SBgCnujE0`
+
+#### 2. Get Chat ID for User "scoobyjava"
+**Method 1: Using Bot**
+1. Start a conversation with your bot by searching for its username
+2. Send any message to the bot
+3. Visit: `https://api.telegram.org/bot<BOT_TOKEN>/getUpdates`
+4. Look for `"chat":{"id":CHAT_ID}` in the response
+
+**Method 2: Using Username Resolution (Recommended)**
+For user "scoobyjava", you can:
+1. Start conversation with the bot from the @scoobyjava account
+2. Send `/start` message
+3. Use bot API to get the chat ID from updates
+
+**Method 3: Using Phone Number (949-424-4026)**
+1. Have the user start a conversation with the bot
+2. The chat ID will be available in bot updates
+
+#### 3. Configure GitHub Secrets
+Add these secrets to GitHub repository settings:
+- **Secret Name**: `TELEGRAM_BOT_TOKEN`
+- **Secret Value**: `8431354714:AAGp0HXFAoCYBnjyiZnqGoVVd8SBgCnujE0`
+- **Secret Name**: `TELEGRAM_CHAT_ID`
+- **Secret Value**: `[TO_BE_DETERMINED]` (needs chat ID derivation)
+
+### Notification Features
+
+#### Message Formatting
+- **Markdown Support**: Messages support Telegram markdown formatting
+- **Web Preview**: Disabled by default to reduce clutter
+- **Priority Levels**: High/Medium/Low priority styling
+- **Metadata Embedding**: Structured data for prospect/signal context
+
+#### Channel Support
+- **Default Channel**: `["telegram"]` - Primary notification target
+- **Fallback**: `["slack:#alerts"]` if Telegram fails
+- **Multi-channel**: Support for both Telegram and Slack simultaneously
+
+#### Message Examples
+
+**High Priority Prospect Alert**:
+```
+🚀 *High-Value Prospect Identified*
+
+*Company*: PropTech Solutions Inc
+*Score*: 92/100
+*Potential ARR*: $750K
+*Source*: Apollo + UserGems
+
+*Contact*: Sarah Johnson (CTO)
+*Email*: sarah@proptech.com
+
+_Triggered by: Job change signal + AI keyword match_
+```
+
+**Weekly Signals Digest**:
+```
+📊 *Weekly GTM Signals Digest*
+
+*Period*: Aug 15-22, 2025
+*Channels*: #gtm, #revenue
+
+*🎯 Key Opportunities*:
+• 3 enterprise leads with $2M+ ARR potential
+• 5 warm introductions via UserGems
+• 12 competitor mentions requiring follow-up
+
+*📈 Pipeline Health*:
+• 47% increase in qualified leads
+• Average deal size: $450K
+• Win rate trending: 23% → 31%
+
+_View full report in GTM Dashboard_
+```
+
+### Security & Compliance
+
+#### Bot Permissions
+- **Required**: Send messages to specified chat
+- **Optional**: Read message updates (for interactive features)
+- **Restricted**: No group admin rights, no file access
+
+#### Data Handling
+- **PII Protection**: No sensitive data in message content
+- **Audit Trail**: All notifications logged in proofs/biz/ directory
+- **Rate Limiting**: Max 30 messages per minute per chat
+
+#### Privacy Controls
+- **Opt-in Only**: Notifications require explicit chat initialization
+- **User Control**: Users can block bot to stop notifications
+- **Data Retention**: No message storage, immediate delivery only
+
 ## Sophia Infra Integration Examples
 
 ### Search Operations
@@ -399,6 +550,24 @@ inputs:
     {
       "window": "24h",
       "channels": ["slack:#gtm", "slack:#revenue", "slack:#customer-success"]
+    }
+```
+
+### Revenue Signals Notification
+```yaml
+inputs:
+  provider: biz
+  action: notify
+  payload_json: |
+    {
+      "message": "🚀 New Enterprise Lead: AI PropTech Corp\n📊 Score: 95/100\n💰 Potential ARR: $750K\n🎯 Source: Apollo + UserGems",
+      "channels": ["telegram"],
+      "priority": "high",
+      "metadata": {
+        "prospect_id": "uuid-string",
+        "source": "apollo",
+        "score": 95.0
+      }
     }
 ```
 
@@ -573,14 +742,16 @@ CREATE TABLE uploads (
 **Optional for Enhanced Features**:
 - `USERGEMS_API_KEY` - Job change alerts and buyer signals
 - `SLACK_BOT_TOKEN` + `SLACK_SIGNING_SECRET` - GTM channel analysis
+- `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` - Real-time business notifications
 - `SALESFORCE_CLIENT_ID` + related OAuth secrets - Full CRM integration
 - `GONG_BASE_URL` + `GONG_ACCESS_KEY` - Revenue intelligence
 
 ### Next Steps for CEO
 1. **Deploy Services**: Run "Deploy All" workflow from GitHub Actions
 2. **Add Provider Secrets**: Configure business provider API keys as needed
-3. **Test GTM Dashboard**: Access new GTM tab for prospect and signal data
-4. **Approve Write Operations**: Enable Salesforce write mode when ready
+3. **Configure Telegram**: Set up bot token and chat ID for notifications
+4. **Test GTM Dashboard**: Access new GTM tab for prospect and signal data
+5. **Approve Write Operations**: Enable Salesforce write mode when ready
 
 ---
 

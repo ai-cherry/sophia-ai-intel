@@ -1,1 +1,4 @@
-Dashboard not available
+DASHBOARD_NOT_DEPLOYED
+Timestamp: 2025-08-22T22:08:02Z
+Status: Dashboard service not deployed - /__build endpoint inaccessible
+Expected post-deployment: Build manifest with version and assets

@@ -1,0 +1,49 @@
+{
+  "status": "services_not_deployed",
+  "timestamp": "2025-08-22T22:01:20Z",
+  "services": [
+    {
+      "name": "sophiaai-dashboard-v2",
+      "url": "https://sophiaai-dashboard-v2.fly.dev/healthz", 
+      "status": "SERVICE_NOT_DEPLOYED",
+      "expected_post_deploy": "HTTP 200"
+    },
+    {
+      "name": "sophiaai-mcp-repo-v2", 
+      "url": "https://sophiaai-mcp-repo-v2.fly.dev/healthz",
+      "status": "SERVICE_NOT_DEPLOYED",
+      "expected_post_deploy": "HTTP 200"
+    },
+    {
+      "name": "sophiaai-mcp-research-v2",
+      "url": "https://sophiaai-mcp-research-v2.fly.dev/healthz", 
+      "status": "SERVICE_NOT_DEPLOYED",
+      "expected_post_deploy": "HTTP 200"
+    },
+    {
+      "name": "sophiaai-mcp-business-v2",
+      "url": "https://sophiaai-mcp-business-v2.fly.dev/healthz",
+      "status": "SERVICE_NOT_DEPLOYED", 
+      "expected_post_deploy": "HTTP 200"
+    },
+    {
+      "name": "sophiaai-mcp-context-v2",
+      "url": "https://sophiaai-mcp-context-v2.fly.dev/healthz",
+      "status": "SERVICE_NOT_DEPLOYED",
+      "expected_post_deploy": "HTTP 200"
+    }
+  ],
+  "deployment_required": {
+    "method": "CEO Manual Trigger",
+    "workflow": "deploy_all.yml",
+    "url": "https://github.com/ai-cherry/sophia-ai-intel/actions/workflows/deploy_all.yml",
+    "organization": "pay-ready", 
+    "canonical_naming": "*-v2 suffix enforced"
+  },
+  "infrastructure_readiness": {
+    "secrets_mapping": "✅ Complete - .infra/secrets_map.json populated",
+    "qdrant_url_fix": "✅ Applied - QDRANT_ENDPOINT → QDRANT_URL",
+    "canonical_naming": "✅ Enforced - all services use -v2 suffix",
+    "fly_token": "✅ Ready - FLY_TOKEN_PAY_READY configured"
+  }
+}

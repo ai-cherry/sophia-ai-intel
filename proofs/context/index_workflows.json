@@ -1,0 +1,89 @@
+{
+  "status": "success",
+  "query": "Memory architecture and indexing workflows implementation",
+  "results": [
+    {
+      "component": "Memory Schema",
+      "file": "libs/memory/schema.sql",
+      "features": [
+        "Session-level memory with conversation tracking",
+        "Project-level memory with symbol indexing",
+        "Organization-level knowledge base",
+        "Vector embeddings with 1536 dimensions (OpenAI compatible)",
+        "Relationship graph between context entities",
+        "Index statistics and monitoring",
+        "PostgreSQL with pgvector support"
+      ],
+      "tables_created": 11,
+      "indexes_created": 25,
+      "functions_created": 3,
+      "triggers_created": 4
+    },
+    {
+      "component": "Symbol Indexer",
+      "file": "services/mcp-context/symbol_indexer.py",
+      "features": [
+        "Tree-sitter parsing for Python, TypeScript, JavaScript",
+        "Stable chunk ID generation with SHA-256",
+        "OpenAI embeddings with configurable dimensions",
+        "Dependency analysis and complexity scoring",
+        "Incremental and full indexing support",
+        "Error handling and statistics tracking",
+        "CLI interface for direct usage"
+      ],
+      "languages_supported": ["python", "typescript", "javascript"],
+      "symbol_types": ["function", "class", "interface", "method", "variable", "constant", "type", "enum"],
+      "complexity_factors": ["cyclomatic_complexity", "line_count", "dependency_count"]
+    },
+    {
+      "component": "Index on Merge Workflow",
+      "file": ".github/workflows/index_on_merge.yml",
+      "features": [
+        "Automatic indexing on main branch merges",
+        "Incremental indexing for performance",
+        "Full index option via workflow dispatch",
+        "Context MCP service integration",
+        "Proof generation and verification",
+        "Error handling and notifications"
+      ],
+      "triggers": ["push_to_main", "workflow_dispatch"],
+      "environments": ["production"],
+      "dependencies": ["neon_postgresql", "openai_api", "context_mcp_service"]
+    }
+  ],
+  "summary": {
+    "text": "Complete memory architecture with database schema, symbol indexer, and automated workflows",
+    "confidence": 1.0,
+    "model": "implementation",
+    "sources": ["postgresql_schema", "tree_sitter_parsing", "openai_embeddings", "github_actions"]
+  },
+  "architecture": {
+    "database": {
+      "type": "PostgreSQL with pgvector",
+      "vector_dimensions": 1536,
+      "embedding_model": "text-embedding-3-small",
+      "search_type": "semantic_vector_similarity"
+    },
+    "indexing": {
+      "parser": "tree-sitter",
+      "languages": 3,
+      "chunk_strategy": "symbol_based",
+      "id_generation": "sha256_stable"
+    },
+    "workflows": {
+      "incremental_indexing": "on_merge",
+      "full_indexing": "manual_dispatch",
+      "monitoring": "statistics_tracking",
+      "verification": "automated_proofs"
+    }
+  },
+  "performance": {
+    "expected_symbols_per_second": 50,
+    "embedding_batch_size": 1,
+    "concurrent_file_processing": false,
+    "memory_usage_mb": 100
+  },
+  "timestamp": "2025-08-22T23:14:30Z",
+  "execution_time_ms": 0,
+  "errors": []
+}
