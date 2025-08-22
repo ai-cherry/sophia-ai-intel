@@ -1,11 +1,11 @@
-import os, time, json
-from fastapi import FastAPI, HTTPException
+import os
+import time
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 import psycopg2
-from psycopg2.extras import RealDictCursor
 
 # Environment variables
 NEON_DATABASE_URL = os.getenv("NEON_DATABASE_URL")

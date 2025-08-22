@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 import os
-import json
 import base64
 import requests
-from nacl import encoding, public
+from nacl import public
 
 # Get environment variables
 GITHUB_TOKEN = os.environ['GITHUB_TOKEN']

@@ -1,0 +1,61 @@
+Business MCP v1 Database Migration - Ready for Deployment
+
+Migration Status: READY (psql not available in dev environment)
+Database: Neon PostgreSQL (NEON_DATABASE_URL configured)
+Schema File: scripts/create_biz_tables.sql (129 lines)
+Timestamp: 2025-08-22T19:35:05.000Z
+
+Tables to Create:
+================
+1. companies (id, name, domain, source, meta_json, created_at, updated_at)
+   - Indexes: domain, source, created_at, meta_json (GIN)
+   - Sample data: Sophia AI, Example Corp
+
+2. contacts (id, company_id, name, title, email, phone, source, meta_json, created_at, updated_at)
+   - Indexes: company_id, email, source, created_at, meta_json (GIN)
+   - Foreign key: companies(id)
+
+3. prospects (id, company_id, contact_id, list, tags[], score, source, meta_json, created_at, updated_at)
+   - Indexes: company_id, contact_id, list, score, source, tags (GIN), created_at, meta_json (GIN)
+   - Foreign keys: companies(id), contacts(id)
+
+4. signals (id, kind, payload_json, created_at)
+   - Indexes: kind, created_at, payload_json (GIN)
+   - Stores job_change, funding_round, tech_stack, hiring events
+
+5. uploads (id, provider, filename, status, row_count, success_count, error_count, error_details, created_at, completed_at)
+   - Indexes: provider, status, created_at
+   - Tracks CSV and manual data uploads
+
+Features:
+=========
+- UUID primary keys with uuid-ossp extension
+- JSONB for flexible metadata storage
+- GIN indexes for JSON queries
+- Updated_at triggers for audit trails
+- Prospect_summary view for common queries
+- Full-text search capabilities via indexes
+
+Migration Command (for deployment):
+==================================
+psql $NEON_DATABASE_URL -f scripts/create_biz_tables.sql
+
+Expected Result:
+===============
+CREATE EXTENSION
+CREATE TABLE companies
+CREATE INDEX (5 indexes)
+CREATE TABLE contacts  
+CREATE INDEX (5 indexes)
+CREATE TABLE prospects
+CREATE INDEX (7 indexes)
+CREATE TABLE signals
+CREATE INDEX (3 indexes)
+CREATE TABLE uploads
+CREATE INDEX (3 indexes)
+CREATE FUNCTION update_updated_at_column
+CREATE TRIGGER (3 triggers)
+CREATE VIEW prospect_summary
+INSERT 2 sample companies
+
+Migration will be executed during Business MCP deployment phase.
