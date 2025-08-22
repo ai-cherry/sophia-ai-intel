@@ -1,0 +1,115 @@
+{
+  "deployment_errors": [
+    {
+      "service": "sophiaai-mcp-repo",
+      "status": "partial_failure",
+      "query": "github_app_authentication",
+      "results": [],
+      "summary": {
+        "text": "Service deployed and healthy but GitHub App JWT authentication failing due to missing cryptography library",
+        "confidence": 1.0,
+        "model": "n/a",
+        "sources": ["https://sophiaai-mcp-repo.fly.dev/repo/file"]
+      },
+      "timestamp": "2025-08-22T01:11:00Z",
+      "execution_time_ms": 150,
+      "errors": [
+        {
+          "provider": "github_app",
+          "code": "cryptography-missing",
+          "message": "Algorithm 'RS256' could not be found. Do you have cryptography installed?"
+        }
+      ],
+      "required_fix": "Redeploy with updated requirements.txt including cryptography>=3.4.8"
+    },
+    {
+      "service": "sophiaai-mcp-research",
+      "status": "failure",
+      "query": "service_deployment",
+      "results": [],
+      "summary": {
+        "text": "Service created but not deployed to Fly.io",
+        "confidence": 1.0,
+        "model": "n/a",
+        "sources": []
+      },
+      "timestamp": "2025-08-22T01:11:00Z",
+      "execution_time_ms": 0,
+      "errors": [
+        {
+          "provider": "fly_io",
+          "code": "service-not-deployed",
+          "message": "Service exists but no machines running"
+        }
+      ],
+      "required_fix": "Deploy service via GitHub Actions or Fly CLI"
+    },
+    {
+      "service": "sophiaai-mcp-context",
+      "status": "failure",
+      "query": "service_deployment",
+      "results": [],
+      "summary": {
+        "text": "Service created but not deployed, missing NEON_DATABASE_URL",
+        "confidence": 1.0,
+        "model": "n/a",
+        "sources": []
+      },
+      "timestamp": "2025-08-22T01:11:00Z",
+      "execution_time_ms": 0,
+      "errors": [
+        {
+          "provider": "neon",
+          "code": "missing-database-url",
+          "message": "NEON_DATABASE_URL environment variable not configured"
+        },
+        {
+          "provider": "fly_io",
+          "code": "service-not-deployed",
+          "message": "Service exists but no machines running"
+        }
+      ],
+      "required_fix": "Configure NEON_DATABASE_URL and deploy service"
+    },
+    {
+      "service": "sophiaai-dashboard",
+      "status": "failure",
+      "query": "service_deployment",
+      "results": [],
+      "summary": {
+        "text": "Service suspended, needs React build and deployment",
+        "confidence": 1.0,
+        "model": "n/a",
+        "sources": []
+      },
+      "timestamp": "2025-08-22T01:11:00Z",
+      "execution_time_ms": 0,
+      "errors": [
+        {
+          "provider": "fly_io",
+          "code": "service-suspended",
+          "message": "Service is suspended and needs deployment"
+        }
+      ],
+      "required_fix": "Build React app and deploy to Fly.io"
+    }
+  ],
+  "summary": {
+    "total_services": 4,
+    "healthy_services": 1,
+    "partial_failures": 1,
+    "complete_failures": 3,
+    "critical_blockers": [
+      "cryptography library missing in mcp-repo",
+      "NEON_DATABASE_URL not configured",
+      "3 services not deployed"
+    ]
+  },
+  "next_actions": [
+    "Fix cryptography dependency and redeploy mcp-repo",
+    "Deploy mcp-research service",
+    "Configure Neon database for mcp-context",
+    "Build and deploy dashboard"
+  ]
+}
+
