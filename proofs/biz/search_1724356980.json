@@ -1,0 +1,26 @@
+{
+  "status": "partial",
+  "query": "multifamily AI delinquency prevention",
+  "results": [],
+  "summary": {
+    "text": "No prospects found for 'multifamily AI delinquency prevention' - business providers not configured",
+    "confidence": 0.1,
+    "model": "business_search_v1",
+    "sources": [],
+    "avg_score": 0
+  },
+  "providers_used": [],
+  "providers_failed": [
+    {
+      "provider": "apollo",
+      "error": "APOLLO_API_KEY not configured"
+    },
+    {
+      "provider": "hubspot", 
+      "error": "HUBSPOT_ACCESS_TOKEN not configured"
+    }
+  ],
+  "total_cost_cents": 0,
+  "execution_time_ms": 150,
+  "timestamp": "2025-08-22T19:43:45Z"
+}

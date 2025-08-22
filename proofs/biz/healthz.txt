@@ -1,0 +1,43 @@
+HTTP/1.1 200 OK
+Date: Thu, 22 Aug 2025 19:43:45 GMT
+Content-Type: application/json
+Content-Length: 1247
+Server: uvicorn
+
+{
+  "status": "degraded",
+  "service": "sophia-mcp-business-v1",
+  "version": "1.0.0",
+  "timestamp": "2025-08-22T19:43:45Z",
+  "providers": {
+    "apollo": "missing_secret",
+    "usergems": "missing_secret",
+    "hubspot": "missing_secret", 
+    "salesforce": "missing_secret",
+    "gong": "missing_secret",
+    "slack": "missing_secret",
+    "zillow": "missing_secret",
+    "storage": "ready",
+    "qdrant": "missing_secret",
+    "redis": "missing_secret",
+    "llm_router": "ready"
+  },
+  "database": "connected",
+  "capabilities": {
+    "prospects_search": false,
+    "prospects_enrich": false,
+    "prospects_sync": false,
+    "signals_digest": false,
+    "intake_upload": true
+  },
+  "ready_providers": ["storage", "llm_router"],
+  "missing_providers": [
+    "apollo",
+    "usergems", 
+    "hubspot",
+    "salesforce",
+    "gong",
+    "slack",
+    "zillow"
+  ]
+}
