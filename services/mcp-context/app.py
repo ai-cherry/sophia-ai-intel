@@ -1,6 +1,7 @@
 import os, time, json
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 import psycopg2
@@ -18,6 +19,17 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+def normalized_error(provider: str, code: str, message: str):
+    """Return normalized error JSON format"""
+    return {
+        "error": {
+            "provider": provider,
+            "code": code,
+            "message": message
+        },
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    }
 
 class ContextEntry(BaseModel):
     type: str
@@ -54,17 +66,55 @@ class SearchResponse(BaseModel):
 
 @app.get("/healthz")
 async def healthz():
-    db_status = "unknown"
-    if NEON_DATABASE_URL:
-        try:
-            conn = psycopg2.connect(NEON_DATABASE_URL)
-            conn.close()
-            db_status = "healthy"
-        except:
-            db_status = "unhealthy"
+    db_status = "not_configured"
+    
+    if not NEON_DATABASE_URL:
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status": "unhealthy",
+                "service": "sophia-mcp-context",
+                "version": "1.0.0",
+                "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                "uptime_ms": int(time.time() * 1000),
+                "dependencies": {
+                    "neon": "missing"
+                },
+                "error": normalized_error(
+                    "context_service",
+                    "MISSING_CREDENTIALS",
+                    "NEON_DATABASE_URL is required for database operations"
+                )
+            }
+        )
+    
+    # Test database connection
+    try:
+        conn = psycopg2.connect(NEON_DATABASE_URL)
+        conn.close()
+        db_status = "healthy"
+    except Exception as e:
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status": "unhealthy",
+                "service": "sophia-mcp-context",
+                "version": "1.0.0",
+                "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                "uptime_ms": int(time.time() * 1000),
+                "dependencies": {
+                    "neon": "connection_failed"
+                },
+                "error": normalized_error(
+                    "context_service",
+                    "DATABASE_CONNECTION_ERROR",
+                    f"Failed to connect to Neon database: {str(e)}"
+                )
+            }
+        )
     
     return {
-        "status": "healthy" if db_status == "healthy" else "unhealthy",
+        "status": "healthy",
         "service": "sophia-mcp-context",
         "version": "1.0.0",
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
@@ -79,13 +129,27 @@ async def index_context(request: IndexRequest):
     start_time = time.time()
     
     if not NEON_DATABASE_URL:
-        return IndexResponse(
-            status="failure",
-            indexed_count=0,
-            skipped_count=0,
-            failed_count=len(request.entries),
-            timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-            execution_time_ms=int((time.time() - start_time) * 1000)
+        return JSONResponse(
+            status_code=503,
+            content=normalized_error(
+                "context_service",
+                "MISSING_CREDENTIALS",
+                "NEON_DATABASE_URL is required for indexing operations"
+            )
+        )
+    
+    # Test database connection
+    try:
+        conn = psycopg2.connect(NEON_DATABASE_URL)
+        conn.close()
+    except Exception as e:
+        return JSONResponse(
+            status_code=503,
+            content=normalized_error(
+                "context_service",
+                "DATABASE_CONNECTION_ERROR",
+                f"Failed to connect to Neon database: {str(e)}"
+            )
         )
     
     # For now, return success without actual indexing
@@ -104,13 +168,27 @@ async def search_context(request: SearchRequest):
     start_time = time.time()
     
     if not NEON_DATABASE_URL:
-        return SearchResponse(
-            status="failure",
-            query=request.query,
-            results=[],
-            total_results=0,
-            timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-            execution_time_ms=int((time.time() - start_time) * 1000)
+        return JSONResponse(
+            status_code=503,
+            content=normalized_error(
+                "context_service",
+                "MISSING_CREDENTIALS",
+                "NEON_DATABASE_URL is required for search operations"
+            )
+        )
+    
+    # Test database connection
+    try:
+        conn = psycopg2.connect(NEON_DATABASE_URL)
+        conn.close()
+    except Exception as e:
+        return JSONResponse(
+            status_code=503,
+            content=normalized_error(
+                "context_service",
+                "DATABASE_CONNECTION_ERROR",
+                f"Failed to connect to Neon database: {str(e)}"
+            )
         )
     
     # For now, return basic success response
@@ -132,7 +210,28 @@ async def search_context(request: SearchRequest):
 @app.get("/context/stats")
 async def context_stats():
     if not NEON_DATABASE_URL:
-        raise HTTPException(status_code=500, detail="NEON_DATABASE_URL not configured")
+        return JSONResponse(
+            status_code=503,
+            content=normalized_error(
+                "context_service",
+                "MISSING_CREDENTIALS",
+                "NEON_DATABASE_URL is required for stats operations"
+            )
+        )
+    
+    # Test database connection
+    try:
+        conn = psycopg2.connect(NEON_DATABASE_URL)
+        conn.close()
+    except Exception as e:
+        return JSONResponse(
+            status_code=503,
+            content=normalized_error(
+                "context_service",
+                "DATABASE_CONNECTION_ERROR",
+                f"Failed to connect to Neon database: {str(e)}"
+            )
+        )
     
     return {
         "status": "success",
@@ -146,4 +245,3 @@ async def context_stats():
         },
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     }
-

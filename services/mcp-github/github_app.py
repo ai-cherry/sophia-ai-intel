@@ -4,6 +4,23 @@ GITHUB_APP_ID = os.getenv("GITHUB_APP_ID")
 GITHUB_INSTALLATION_ID = os.getenv("GITHUB_INSTALLATION_ID")
 GITHUB_PRIVATE_KEY = os.getenv("GITHUB_PRIVATE_KEY")  # PEM (base64 or literal)
 
+class MissingCredentialsError(Exception):
+    """Raised when required GitHub App credentials are missing"""
+    pass
+
+def check_credentials():
+    """Check if all required credentials are present"""
+    missing = []
+    if not GITHUB_APP_ID:
+        missing.append("GITHUB_APP_ID")
+    if not GITHUB_INSTALLATION_ID:
+        missing.append("GITHUB_INSTALLATION_ID")
+    if not GITHUB_PRIVATE_KEY:
+        missing.append("GITHUB_PRIVATE_KEY")
+    
+    if missing:
+        raise MissingCredentialsError(f"Missing required credentials: {', '.join(missing)}")
+
 def _load_private_key() -> str:
     key = GITHUB_PRIVATE_KEY or ""
     # allow base64-encoded PEM
@@ -16,6 +33,7 @@ def _load_private_key() -> str:
         return key
 
 def _jwt_for_app() -> str:
+    check_credentials()
     now = int(time.time())
     payload = {"iat": now - 60, "exp": now + 540, "iss": GITHUB_APP_ID}
     token = jwt.encode(payload, _load_private_key(), algorithm="RS256")
@@ -31,6 +49,7 @@ async def _installation_token() -> str:
         return r.json()["token"]
 
 async def gh_get(path: str):
+    check_credentials()
     token = await _installation_token()
     url = f"https://api.github.com{path}"
     headers = {
@@ -42,4 +61,3 @@ async def gh_get(path: str):
         r = await client.get(url, headers=headers)
         r.raise_for_status()
         return r.json()
-
