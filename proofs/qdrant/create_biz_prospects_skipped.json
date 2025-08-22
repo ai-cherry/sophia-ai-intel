@@ -1,0 +1,15 @@
+{
+  "status": "skipped",
+  "timestamp": "2025-08-22T19:35:25.000Z",
+  "collection": "biz-prospects",
+  "reason": "QDRANT_URL not configured",
+  "message": "Qdrant vector collection creation skipped - QDRANT_URL missing from secrets",
+  "fallback": "Business MCP will operate without vector search capabilities",
+  "vector_config": {
+    "collection_name": "biz-prospects", 
+    "vector_size": 768,
+    "distance": "Cosine",
+    "description": "Vector embeddings for prospect search and similarity matching"
+  },
+  "enable_when": "Add QDRANT_URL to GitHub secrets to enable vector search features"
+}

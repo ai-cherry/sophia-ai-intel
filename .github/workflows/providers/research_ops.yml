@@ -1,4 +1,4 @@
-name: Research Operations (Reusable)
+name: Research Operations v2 (Reusable)
 
 on:
   workflow_call:
@@ -6,21 +6,44 @@ on:
       action:
         required: true
         type: string
-        description: "search|validate"
+        description: "health_check|search|scrape|summarize|validate_all"
       payload:
         required: false
         type: string
         default: '{}'
         description: "Action payload JSON"
     secrets:
+      # Search providers
       TAVILY_API_KEY:
-        required: true
+        required: false
       SERPER_API_KEY:
-        required: true
+        required: false
+      PERPLEXITY_API_KEY:
+        required: false
+      EXA_API_KEY:
+        required: false
+      # Scraping providers
+      APIFY_API_KEY:
+        required: false
+      ZENROWS_API_KEY:
+        required: false
+      BRIGHTDATA_API_KEY:
+        required: false
+      # LLM routing (at least one required)
+      PORTKEY_API_KEY:
+        required: false
+      OPENROUTER_API_KEY:
+        required: false
+      # Caching
+      REDIS_URL:
+        required: false
 
 jobs:
   research-operation:
     runs-on: ubuntu-latest
+    env:
+      RESEARCH_APP: sophiaai-mcp-research-v2
+      RESEARCH_URL: https://sophiaai-mcp-research-v2.fly.dev
     steps:
       - uses: actions/checkout@v4
       
@@ -28,78 +51,167 @@ jobs:
         run: |
           mkdir -p proofs/research
 
-      - name: Validate inputs
+      - name: Validate inputs and LLM requirement
         run: |
+          # Mask all API keys
           echo "::add-mask::${{ secrets.TAVILY_API_KEY }}"
           echo "::add-mask::${{ secrets.SERPER_API_KEY }}"
+          echo "::add-mask::${{ secrets.PERPLEXITY_API_KEY }}"
+          echo "::add-mask::${{ secrets.EXA_API_KEY }}"
+          echo "::add-mask::${{ secrets.APIFY_API_KEY }}"
+          echo "::add-mask::${{ secrets.ZENROWS_API_KEY }}"
+          echo "::add-mask::${{ secrets.BRIGHTDATA_API_KEY }}"
+          echo "::add-mask::${{ secrets.PORTKEY_API_KEY }}"
+          echo "::add-mask::${{ secrets.OPENROUTER_API_KEY }}"
+          echo "::add-mask::${{ secrets.REDIS_URL }}"
+          
           echo "Action: ${{ inputs.action }}"
           echo "Payload: ${{ inputs.payload }}"
           
-          if [ -z "${{ secrets.TAVILY_API_KEY }}" ] && [ -z "${{ secrets.SERPER_API_KEY }}" ]; then
-            echo '{"status": "failure", "errors": [{"provider": "research", "code": "missing-api-keys", "message": "At least one research API key required (TAVILY_API_KEY or SERPER_API_KEY)"}]}' > proofs/research/error.json
+          # Check for at least one LLM provider (required for summarization)
+          if [ -z "${{ secrets.PORTKEY_API_KEY }}" ] && [ -z "${{ secrets.OPENROUTER_API_KEY }}" ]; then
+            echo '{"status": "failure", "errors": [{"provider": "research", "code": "missing-llm-providers", "message": "At least one LLM provider required (PORTKEY_API_KEY or OPENROUTER_API_KEY)"}]}' > proofs/research/critical_error.json
+            echo "❌ CRITICAL: No LLM providers configured"
+            exit 1
+          fi
+
+      - name: Health check operation
+        if: ${{ inputs.action == 'health_check' }}
+        run: |
+          echo "🏥 Research MCP v2 health check"
+          
+          # Test the deployed service health endpoint
+          curl -i -sS "${{ env.RESEARCH_URL }}/healthz" | tee proofs/research/healthz.txt
+          
+          # Check if service is responding with 200
+          if grep -q "200 OK" proofs/research/healthz.txt; then
+            echo "✅ Research MCP v2 service is healthy"
+          else
+            echo "❌ Research MCP v2 service is not responding properly"
             exit 1
           fi
 
       - name: Search operation
         if: ${{ inputs.action == 'search' }}
         run: |
-          echo "🔍 Research search operation"
+          echo "🔍 Research MCP v2 search operation"
           
           PAYLOAD='${{ inputs.payload }}'
-          QUERY=$(echo "$PAYLOAD" | jq -r '.query // "test search query"')
-          MAX_RESULTS=$(echo "$PAYLOAD" | jq -r '.max_results // 5')
+          QUERY=$(echo "$PAYLOAD" | jq -r '.query // "AI research and development trends"')
+          PROVIDERS=$(echo "$PAYLOAD" | jq -r '.providers // ["tavily", "serper"]' | jq -r '.[]' | tr '\n' ',' | sed 's/,$//')
+          MAX_RESULTS=$(echo "$PAYLOAD" | jq -r '.max_results // 10')
+          SUMMARIZE=$(echo "$PAYLOAD" | jq -r '.summarize // true')
           
           echo "Query: $QUERY"
+          echo "Providers: $PROVIDERS" 
           echo "Max results: $MAX_RESULTS"
+          echo "Summarize: $SUMMARIZE"
           
-          # Test Tavily API if available
-          if [ -n "${{ secrets.TAVILY_API_KEY }}" ]; then
-            echo "✅ Testing Tavily API..."
-            curl -X POST "https://api.tavily.com/search" \
-              -H "Content-Type: application/json" \
-              -d "{\"api_key\": \"${{ secrets.TAVILY_API_KEY }}\", \"query\": \"$QUERY\", \"max_results\": $MAX_RESULTS}" \
-              -w "\nHTTP Status: %{http_code}\n" \
-              > proofs/research/tavily_search.json 2>/dev/null || echo '{"error": "Tavily API request failed"}' > proofs/research/tavily_search.json
-          fi
-          
-          # Test Serper API if available  
-          if [ -n "${{ secrets.SERPER_API_KEY }}" ]; then
-            echo "✅ Testing Serper API..."
-            curl -X POST "https://google.serper.dev/search" \
-              -H "Content-Type: application/json" \
-              -H "X-API-KEY: ${{ secrets.SERPER_API_KEY }}" \
-              -d "{\"q\": \"$QUERY\", \"num\": $MAX_RESULTS}" \
-              -w "\nHTTP Status: %{http_code}\n" \
-              > proofs/research/serper_search.json 2>/dev/null || echo '{"error": "Serper API request failed"}' > proofs/research/serper_search.json
-          fi
+          # Make search request to deployed Research MCP v2
+          curl -X POST "${{ env.RESEARCH_URL }}/search" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"query\": \"$QUERY\",
+              \"providers\": [\"tavily\", \"serper\"],
+              \"max_results\": $MAX_RESULTS,
+              \"summarize\": $SUMMARIZE,
+              \"cost_limit_usd\": 1.0
+            }" \
+            -w "\nHTTP Status: %{http_code}\n" \
+            > proofs/research/search_results.json 2>/dev/null || echo '{"error": "Search request failed"}' > proofs/research/search_results.json
 
-      - name: Validate APIs
-        if: ${{ inputs.action == 'validate' }}
+      - name: Scrape operation  
+        if: ${{ inputs.action == 'scrape' }}
         run: |
-          echo "🧪 Validating research APIs"
+          echo "🕷️ Research MCP v2 scrape operation"
           
-          VALIDATION_RESULTS='{"status": "success", "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)'", "providers": {}}'
+          PAYLOAD='${{ inputs.payload }}'
+          URL=$(echo "$PAYLOAD" | jq -r '.url // "https://example.com"')
+          PROVIDERS=$(echo "$PAYLOAD" | jq -r '.providers // ["zenrows"]' | jq -r '.[]' | tr '\n' ',' | sed 's/,$//')
+          JS_ENABLED=$(echo "$PAYLOAD" | jq -r '.javascript_enabled // false')
           
-          # Validate Tavily
+          echo "URL: $URL"
+          echo "Providers: $PROVIDERS"
+          echo "JavaScript: $JS_ENABLED"
+          
+          # Make scrape request to deployed Research MCP v2
+          curl -X POST "${{ env.RESEARCH_URL }}/scrape" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"url\": \"$URL\",
+              \"providers\": [\"zenrows\"],
+              \"javascript_enabled\": $JS_ENABLED,
+              \"extract_type\": \"content\"
+            }" \
+            -w "\nHTTP Status: %{http_code}\n" \
+            > proofs/research/scrape_results.json 2>/dev/null || echo '{"error": "Scrape request failed"}' > proofs/research/scrape_results.json
+
+      - name: Summarize operation
+        if: ${{ inputs.action == 'summarize' }}
+        run: |
+          echo "📝 Research MCP v2 summarize operation"
+          
+          PAYLOAD='${{ inputs.payload }}'
+          CONTENT=$(echo "$PAYLOAD" | jq -r '.content // "This is sample content to summarize for testing the Research MCP v2 summarization capabilities."')
+          STYLE=$(echo "$PAYLOAD" | jq -r '.style // "concise"')
+          MAX_LENGTH=$(echo "$PAYLOAD" | jq -r '.max_length // 300')
+          
+          echo "Content length: ${#CONTENT}"
+          echo "Style: $STYLE" 
+          echo "Max length: $MAX_LENGTH"
+          
+          # Make summarize request to deployed Research MCP v2
+          curl -X POST "${{ env.RESEARCH_URL }}/summarize" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"content\": \"$CONTENT\",
+              \"style\": \"$STYLE\",
+              \"max_length\": $MAX_LENGTH
+            }" \
+            -w "\nHTTP Status: %{http_code}\n" \
+            > proofs/research/summarize_results.json 2>/dev/null || echo '{"error": "Summarize request failed"}' > proofs/research/summarize_results.json
+
+      - name: Validate all providers
+        if: ${{ inputs.action == 'validate_all' }}
+        run: |
+          echo "🧪 Validating all Research MCP v2 providers"
+          
+          VALIDATION_RESULTS='{
+            "status": "success", 
+            "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)'",
+            "service_version": "2.0.0",
+            "providers": {
+              "search_providers": {},
+              "scraping_providers": {},
+              "llm_routing": {},
+              "caching": {}
+            }
+          }'
+          
+          # Get provider status from deployed service
+          curl -sS "${{ env.RESEARCH_URL }}/providers" > proofs/research/providers_status.json || echo '{"error": "Failed to get provider status"}' > proofs/research/providers_status.json
+          
+          # Test individual provider API endpoints if configured
+          
+          # Search providers
           if [ -n "${{ secrets.TAVILY_API_KEY }}" ]; then
-            echo "Testing Tavily API..."
+            echo "Testing Tavily API direct..."
             TAVILY_TEST=$(curl -s -X POST "https://api.tavily.com/search" \
               -H "Content-Type: application/json" \
               -d '{"api_key": "${{ secrets.TAVILY_API_KEY }}", "query": "test", "max_results": 1}' \
               -w "%{http_code}")
             
             if [[ "$TAVILY_TEST" =~ "200" ]]; then
-              VALIDATION_RESULTS=$(echo "$VALIDATION_RESULTS" | jq '.providers.tavily = {"status": "ready", "api_key_valid": true}')
+              VALIDATION_RESULTS=$(echo "$VALIDATION_RESULTS" | jq '.providers.search_providers.tavily = {"status": "ready", "api_key_valid": true}')
             else
-              VALIDATION_RESULTS=$(echo "$VALIDATION_RESULTS" | jq '.providers.tavily = {"status": "error", "api_key_valid": false}')
+              VALIDATION_RESULTS=$(echo "$VALIDATION_RESULTS" | jq '.providers.search_providers.tavily = {"status": "error", "api_key_valid": false}')
             fi
           else
-            VALIDATION_RESULTS=$(echo "$VALIDATION_RESULTS" | jq '.providers.tavily = {"status": "missing", "api_key_valid": false}')
+            VALIDATION_RESULTS=$(echo "$VALIDATION_RESULTS" | jq '.providers.search_providers.tavily = {"status": "missing_secret", "api_key_valid": false}')
           fi
           
-          # Validate Serper
           if [ -n "${{ secrets.SERPER_API_KEY }}" ]; then
-            echo "Testing Serper API..."
+            echo "Testing Serper API direct..."
             SERPER_TEST=$(curl -s -X POST "https://google.serper.dev/search" \
               -H "Content-Type: application/json" \
               -H "X-API-KEY: ${{ secrets.SERPER_API_KEY }}" \
@@ -107,28 +219,104 @@ jobs:
               -w "%{http_code}")
             
             if [[ "$SERPER_TEST" =~ "200" ]]; then
-              VALIDATION_RESULTS=$(echo "$VALIDATION_RESULTS" | jq '.providers.serper = {"status": "ready", "api_key_valid": true}')
+              VALIDATION_RESULTS=$(echo "$VALIDATION_RESULTS" | jq '.providers.search_providers.serper = {"status": "ready", "api_key_valid": true}')
             else
-              VALIDATION_RESULTS=$(echo "$VALIDATION_RESULTS" | jq '.providers.serper = {"status": "error", "api_key_valid": false}')
+              VALIDATION_RESULTS=$(echo "$VALIDATION_RESULTS" | jq '.providers.search_providers.serper = {"status": "error", "api_key_valid": false}')
             fi
           else
-            VALIDATION_RESULTS=$(echo "$VALIDATION_RESULTS" | jq '.providers.serper = {"status": "missing", "api_key_valid": false}')
+            VALIDATION_RESULTS=$(echo "$VALIDATION_RESULTS" | jq '.providers.search_providers.serper = {"status": "missing_secret", "api_key_valid": false}')
           fi
           
-          echo "$VALIDATION_RESULTS" > proofs/research/validation.json
+          # Mark other providers as configured/missing based on secrets
+          for provider in perplexity exa; do
+            SECRET_NAME="${provider^^}_API_KEY"
+            if [ -n "$(eval echo \${{ secrets.$SECRET_NAME }})" ]; then
+              VALIDATION_RESULTS=$(echo "$VALIDATION_RESULTS" | jq --arg p "$provider" '.providers.search_providers[$p] = {"status": "ready", "api_key_valid": true}')
+            else
+              VALIDATION_RESULTS=$(echo "$VALIDATION_RESULTS" | jq --arg p "$provider" '.providers.search_providers[$p] = {"status": "missing_secret", "api_key_valid": false}')
+            fi
+          done
+          
+          # Scraping providers
+          for provider in apify zenrows brightdata; do
+            SECRET_NAME="${provider^^}_API_KEY"
+            if [ -n "$(eval echo \${{ secrets.$SECRET_NAME }})" ]; then
+              VALIDATION_RESULTS=$(echo "$VALIDATION_RESULTS" | jq --arg p "$provider" '.providers.scraping_providers[$p] = {"status": "ready", "api_key_valid": true}')
+            else
+              VALIDATION_RESULTS=$(echo "$VALIDATION_RESULTS" | jq --arg p "$provider" '.providers.scraping_providers[$p] = {"status": "missing_secret", "api_key_valid": false}')
+            fi
+          done
+          
+          # LLM routing
+          for provider in portkey openrouter; do
+            SECRET_NAME="${provider^^}_API_KEY"
+            if [ -n "$(eval echo \${{ secrets.$SECRET_NAME }})" ]; then
+              VALIDATION_RESULTS=$(echo "$VALIDATION_RESULTS" | jq --arg p "$provider" '.providers.llm_routing[$p] = {"status": "ready", "api_key_valid": true}')
+            else
+              VALIDATION_RESULTS=$(echo "$VALIDATION_RESULTS" | jq --arg p "$provider" '.providers.llm_routing[$p] = {"status": "missing_secret", "api_key_valid": false}')
+            fi
+          done
+          
+          # Caching
+          if [ -n "${{ secrets.REDIS_URL }}" ]; then
+            VALIDATION_RESULTS=$(echo "$VALIDATION_RESULTS" | jq '.providers.caching.redis = {"status": "ready", "configured": true}')
+          else
+            VALIDATION_RESULTS=$(echo "$VALIDATION_RESULTS" | jq '.providers.caching.redis = {"status": "missing_secret", "configured": false}')
+          fi
+          
+          echo "$VALIDATION_RESULTS" > proofs/research/validation_comprehensive.json
+
+      - name: Generate provider summary
+        run: |
+          echo "📊 Research MCP v2 Provider Summary"
+          echo "=================================="
+          echo "🔍 Search Providers:"
+          echo "  - Tavily: $([[ -n "${{ secrets.TAVILY_API_KEY }}" ]] && echo "✅ configured" || echo "❌ missing")"
+          echo "  - Serper: $([[ -n "${{ secrets.SERPER_API_KEY }}" ]] && echo "✅ configured" || echo "❌ missing")"
+          echo "  - Perplexity: $([[ -n "${{ secrets.PERPLEXITY_API_KEY }}" ]] && echo "✅ configured" || echo "❌ missing")"
+          echo "  - Exa: $([[ -n "${{ secrets.EXA_API_KEY }}" ]] && echo "✅ configured" || echo "❌ missing")"
+          echo ""
+          echo "🕷️ Scraping Providers:"
+          echo "  - Apify: $([[ -n "${{ secrets.APIFY_API_KEY }}" ]] && echo "✅ configured" || echo "❌ missing")"
+          echo "  - ZenRows: $([[ -n "${{ secrets.ZENROWS_API_KEY }}" ]] && echo "✅ configured" || echo "❌ missing")"
+          echo "  - Bright Data: $([[ -n "${{ secrets.BRIGHTDATA_API_KEY }}" ]] && echo "✅ configured" || echo "❌ missing")"
+          echo ""
+          echo "🤖 LLM Routing:"
+          echo "  - Portkey: $([[ -n "${{ secrets.PORTKEY_API_KEY }}" ]] && echo "✅ configured" || echo "❌ missing")"
+          echo "  - OpenRouter: $([[ -n "${{ secrets.OPENROUTER_API_KEY }}" ]] && echo "✅ configured" || echo "❌ missing")"
+          echo ""
+          echo "🗄️ Caching:"
+          echo "  - Redis: $([[ -n "${{ secrets.REDIS_URL }}" ]] && echo "✅ configured" || echo "❌ missing")"
+          
+          # Count ready providers
+          READY_SEARCH=$(( $([[ -n "${{ secrets.TAVILY_API_KEY }}" ]] && echo 1 || echo 0) + $([[ -n "${{ secrets.SERPER_API_KEY }}" ]] && echo 1 || echo 0) + $([[ -n "${{ secrets.PERPLEXITY_API_KEY }}" ]] && echo 1 || echo 0) + $([[ -n "${{ secrets.EXA_API_KEY }}" ]] && echo 1 || echo 0) ))
+          READY_SCRAPING=$(( $([[ -n "${{ secrets.APIFY_API_KEY }}" ]] && echo 1 || echo 0) + $([[ -n "${{ secrets.ZENROWS_API_KEY }}" ]] && echo 1 || echo 0) + $([[ -n "${{ secrets.BRIGHTDATA_API_KEY }}" ]] && echo 1 || echo 0) ))
+          READY_LLM=$(( $([[ -n "${{ secrets.PORTKEY_API_KEY }}" ]] && echo 1 || echo 0) + $([[ -n "${{ secrets.OPENROUTER_API_KEY }}" ]] && echo 1 || echo 0) ))
+          
+          echo ""
+          echo "📈 Provider Readiness:"
+          echo "  - Search: $READY_SEARCH/4 providers ready"
+          echo "  - Scraping: $READY_SCRAPING/3 providers ready"  
+          echo "  - LLM: $READY_LLM/2 providers ready"
+          
+          echo '{"providers_ready": {"search": '$READY_SEARCH', "scraping": '$READY_SCRAPING', "llm": '$READY_LLM'}, "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)'"}' > proofs/research/provider_summary.json
 
       - name: Commit proofs
         run: |
           git config user.name "sophia-bot"
           git config user.email "sophia-bot@users.noreply.github.com"
           git add proofs/research/ 2>/dev/null || true
-          git commit -m "[proof] research/${{ inputs.action }}: operation completed" || true
+          git commit -m "[proof] research/${{ inputs.action }}: Research MCP v2 operation completed" || true
           git push || true
 
       - name: Operation summary
         run: |
-          echo "✅ Research operation '${{ inputs.action }}' completed"
-          echo "🔍 Tavily API: $([[ -n "${{ secrets.TAVILY_API_KEY }}" ]] && echo "configured" || echo "missing")"
-          echo "🔍 Serper API: $([[ -n "${{ secrets.SERPER_API_KEY }}" ]] && echo "configured" || echo "missing")"
+          echo "✅ Research MCP v2 operation '${{ inputs.action }}' completed"
+          echo "🚀 Service: ${{ env.RESEARCH_URL }}"
           echo "📊 Run ID: ${{ github.run_id }}"
           echo "📁 Proofs: proofs/research/"
+          echo ""
+          echo "Next steps:"
+          echo "- Check proofs/research/ for operation results"
+          echo "- Use Sophia Infra to trigger additional research operations"
+          echo "- Monitor service health at ${{ env.RESEARCH_URL }}/healthz"

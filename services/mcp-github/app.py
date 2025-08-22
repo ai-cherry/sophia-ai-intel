@@ -1,4 +1,5 @@
-import os, base64, time
+import os
+import time
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse

@@ -4,7 +4,6 @@ Integration tests for Sophia AI Intel MCP services
 import os
 import requests
 import pytest
-from typing import Dict, Any
 
 # Service URLs from environment
 GITHUB_MCP_URL = os.getenv('GITHUB_MCP_URL', 'https://sophiaai-mcp-repo.fly.dev')

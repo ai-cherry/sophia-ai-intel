@@ -1,4 +1,7 @@
-import os, time, json, httpx, jwt  # PyJWT
+import os
+import time
+import httpx
+import jwt  # PyJWT
 
 GITHUB_APP_ID = os.getenv("GITHUB_APP_ID")
 GITHUB_INSTALLATION_ID = os.getenv("GITHUB_INSTALLATION_ID")

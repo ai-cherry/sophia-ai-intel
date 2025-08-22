@@ -222,20 +222,43 @@ jobs:
       - name: Set Fly secrets (names only)
         if: ${{ matrix.set_secrets == 'true' }}
         env:
+          # Search providers
           TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
           SERPER_API_KEY: ${{ secrets.SERPER_API_KEY }}
+          PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
+          EXA_API_KEY: ${{ secrets.EXA_API_KEY }}
+          # Scraping providers
+          APIFY_API_KEY: ${{ secrets.APIFY_API_KEY }}
+          ZENROWS_API_KEY: ${{ secrets.ZENROWS_API_KEY }}
+          BRIGHTDATA_API_KEY: ${{ secrets.BRIGHTDATA_API_KEY }}
+          # LLM routing
+          PORTKEY_API_KEY: ${{ secrets.PORTKEY_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          # Caching
+          REDIS_URL: ${{ secrets.REDIS_URL }}
+          # Context DB
           NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
         run: |
-          # Research providers (optional)
-          if [ "${TAVILY_API_KEY}" != "" ]; then
-            flyctl secrets set TAVILY_API_KEY=${TAVILY_API_KEY} -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN"
+          # Search providers (for research service)
+          if [ "${{ matrix.name }}" = "mcp-research" ]; then
+            [ "${TAVILY_API_KEY}" != "" ] && flyctl secrets set TAVILY_API_KEY="${TAVILY_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            [ "${SERPER_API_KEY}" != "" ] && flyctl secrets set SERPER_API_KEY="${SERPER_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            [ "${PERPLEXITY_API_KEY}" != "" ] && flyctl secrets set PERPLEXITY_API_KEY="${PERPLEXITY_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            [ "${EXA_API_KEY}" != "" ] && flyctl secrets set EXA_API_KEY="${EXA_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            # Scraping providers
+            [ "${APIFY_API_KEY}" != "" ] && flyctl secrets set APIFY_API_KEY="${APIFY_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            [ "${ZENROWS_API_KEY}" != "" ] && flyctl secrets set ZENROWS_API_KEY="${ZENROWS_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            [ "${BRIGHTDATA_API_KEY}" != "" ] && flyctl secrets set BRIGHTDATA_API_KEY="${BRIGHTDATA_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            # LLM routing (critical)
+            [ "${PORTKEY_API_KEY}" != "" ] && flyctl secrets set PORTKEY_API_KEY="${PORTKEY_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            [ "${OPENROUTER_API_KEY}" != "" ] && flyctl secrets set OPENROUTER_API_KEY="${OPENROUTER_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            # Caching
+            [ "${REDIS_URL}" != "" ] && flyctl secrets set REDIS_URL="${REDIS_URL}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
           fi
-          if [ "${SERPER_API_KEY}" != "" ]; then
-            flyctl secrets set SERPER_API_KEY=${SERPER_API_KEY} -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN"
-          fi
-          # Context DB (optional)
-          if [ "${NEON_DATABASE_URL}" != "" ] && [ "${{ matrix.name }}" = "mcp-context" ]; then
-            flyctl secrets set NEON_DATABASE_URL=${NEON_DATABASE_URL} -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN"
+          
+          # Context DB (for context service only)
+          if [ "${{ matrix.name }}" = "mcp-context" ] && [ "${NEON_DATABASE_URL}" != "" ]; then
+            flyctl secrets set NEON_DATABASE_URL="${NEON_DATABASE_URL}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN"
           fi
 
       - name: Deploy service (Dockerfile)
