@@ -1,0 +1,35 @@
+{
+  "status": "blocked",
+  "task": "personal_org_cleanup",
+  "query": "fly_graphql_personal_apps",
+  "results": [],
+  "summary": {
+    "text": "Personal org app listing blocked by Fly.io GraphQL authentication failure",
+    "confidence": 1.0,
+    "model": "n/a",
+    "sources": ["fly_graphql_api"]
+  },
+  "timestamp": "2025-08-22T20:03:30.590Z",
+  "execution_time_ms": 0,
+  "errors": [
+    {
+      "provider": "fly",
+      "code": "UNAUTHORIZED",
+      "message": "You must be authenticated to view this.",
+      "graphql_path": ["organizations"],
+      "location": {"line": 1, "column": 9}
+    }
+  ],
+  "fly_token_status": "invalid_or_expired",
+  "required_manual_action": {
+    "step": "CEO must update FLY_API_TOKEN secret in GitHub repository settings",
+    "reference": "See docs/FLY_TOKEN_ACTION_REQUIRED.md for token regeneration steps",
+    "conditional_purge": "Cannot proceed with personal org purge until Fly authentication is resolved"
+  },
+  "purge_plan": {
+    "confirm_purge_personal": "not_provided",
+    "status": "blocked_by_auth",
+    "note": "Even if confirmation was provided, cannot execute purge without valid Fly token"
+  },
+  "next_action": "Resolve Fly authentication before attempting personal org operations"
+}

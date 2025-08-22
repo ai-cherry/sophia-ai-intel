@@ -1,0 +1,69 @@
+{
+  "status": "needs_update",
+  "task": "builder_pr_workflow_test",
+  "query": "builder_workflow_analysis",
+  "timestamp": "2025-08-22T20:05:57.930Z",
+  "workflow_file": ".github/workflows/builder.yml",
+  "analysis": {
+    "workflow_exists": true,
+    "trigger_methods": ["push", "pull_request", "workflow_dispatch"],
+    "services_supported": ["mcp-github", "mcp-research", "mcp-context", "dashboard"],
+    "canonical_compliance": "non_compliant",
+    "issues_found": [
+      {
+        "issue": "app_naming_mismatch",
+        "description": "Uses old app names without -v2 suffix",
+        "examples": [
+          "sophiaai-mcp-repo (should be sophiaai-mcp-repo-v2)",
+          "sophiaai-mcp-research (should be sophiaai-mcp-research-v2)",
+          "sophiaai-mcp-context (should be sophiaai-mcp-context-v2)",
+          "sophiaai-dashboard (should be sophiaai-dashboard-v2)"
+        ],
+        "impact": "Deploys to wrong apps, not aligned with canonical pay-ready org"
+      },
+      {
+        "issue": "missing_business_mcp",
+        "description": "No deployment pipeline for Business MCP v1",
+        "impact": "Cannot deploy business intelligence service via Builder workflow"
+      },
+      {
+        "issue": "missing_pay_ready_org_enforcement", 
+        "description": "No --access-token and --org flags in Fly commands",
+        "impact": "May deploy to wrong organization"
+      },
+      {
+        "issue": "old_url_references",
+        "description": "Health checks use non-canonical URLs",
+        "examples": [
+          "https://sophiaai-mcp-repo.fly.dev/healthz",
+          "https://sophiaai-mcp-research.fly.dev/healthz"
+        ],
+        "impact": "Health checks will fail against canonical v2 deployments"
+      }
+    ]
+  },
+  "required_updates": [
+    "Update all app names to include -v2 suffix",
+    "Add Business MCP deployment job",
+    "Add canonical org enforcement (--org pay-ready --access-token)",
+    "Update health check URLs to match v2 apps",
+    "Add proof generation for deployment artifacts",
+    "Align with Deploy All workflow patterns"
+  ],
+  "test_capability": {
+    "can_trigger_manually": false,
+    "reason": "workflow_dispatch requires same permissions as Deploy All (blocked)",
+    "alternative": "Builder triggers automatically on PR creation to main branch"
+  },
+  "readiness_assessment": {
+    "current_state": "functional_but_non_canonical",
+    "deployment_risk": "high - would deploy to wrong apps/org",
+    "recommendation": "Update workflow before production use",
+    "priority": "high - canonical compliance required"
+  },
+  "integration_with_sophia_infra": {
+    "status": "not_integrated",
+    "note": "Builder workflow operates independently, not part of CEO-gated Sophia Infra system",
+    "recommendation": "Consider whether Builder should require CEO approval for production deployments"
+  }
+}

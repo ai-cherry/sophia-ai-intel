@@ -1,0 +1,36 @@
+{
+  "status": "blocked",
+  "task": "deploy_all_and_validate", 
+  "query": "workflow_dispatch_deploy_all",
+  "results": [],
+  "summary": {
+    "text": "Deploy All workflow requires CEO manual trigger from GitHub Actions UI due to workflow_dispatch permissions",
+    "confidence": 1.0,
+    "model": "n/a",
+    "sources": ["proofs/deployment/workflow_dispatch_blocked.json"]
+  },
+  "timestamp": "2025-08-22T20:02:26.366Z",
+  "execution_time_ms": 0,
+  "errors": [
+    {
+      "provider": "github",
+      "code": "HTTP_403", 
+      "message": "Resource not accessible by integration - workflow must be triggered manually from GitHub UI"
+    }
+  ],
+  "required_manual_action": {
+    "step": "Navigate to https://github.com/ai-cherry/sophia-ai-intel/actions/workflows/deploy_all.yml",
+    "action": "Click 'Run workflow' button to dispatch Deploy All",
+    "expected_artifacts": [
+      "proofs/healthz/sophiaai-dashboard-v2.txt",
+      "proofs/healthz/sophiaai-mcp-repo-v2.txt", 
+      "proofs/healthz/sophiaai-mcp-research-v2.txt",
+      "proofs/healthz/sophiaai-mcp-business-v2.txt",
+      "proofs/healthz/sophiaai-mcp-context-v2.txt",
+      "proofs/build/dashboard_build.txt",
+      "proofs/build/dashboard_asset_head.txt",
+      "proofs/fly/*_machines.json"
+    ]
+  },
+  "next_action": "CEO must manually trigger Deploy All workflow, then continue with provider configuration validation"
+}

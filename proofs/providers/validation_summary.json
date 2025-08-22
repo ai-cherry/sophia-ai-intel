@@ -1,0 +1,177 @@
+{
+  "status": "partial",
+  "task": "configure_and_test_providers",
+  "query": "provider_secrets_validation",
+  "timestamp": "2025-08-22T20:02:53.982Z",
+  "research_mcp": {
+    "status": "ready_minimal",
+    "ready_providers": {
+      "tavily": {
+        "secret": "TAVILY_API_KEY",
+        "present": true,
+        "capabilities": "real-time web search",
+        "priority": 1
+      },
+      "serper": {
+        "secret": "SERPER_API_KEY", 
+        "present": true,
+        "capabilities": "Google Search API",
+        "priority": 2
+      },
+      "portkey": {
+        "secret": "PORTKEY_API_KEY",
+        "present": true,
+        "capabilities": "LLM routing for summarization",
+        "priority": 1
+      }
+    },
+    "missing_providers": [
+      {
+        "name": "perplexity",
+        "secret": "PERPLEXITY_API_KEY",
+        "capabilities": "AI search enhancement",
+        "priority": 3
+      },
+      {
+        "name": "exa", 
+        "secret": "EXA_API_KEY",
+        "capabilities": "semantic search",
+        "priority": 4
+      },
+      {
+        "name": "apify",
+        "secret": "APIFY_API_TOKEN",
+        "capabilities": "web scraping (opt-in required)",
+        "priority": 1
+      },
+      {
+        "name": "zenrows",
+        "secret": "ZENROWS_API_KEY",
+        "capabilities": "proxy scraping (opt-in required)",
+        "priority": 2
+      },
+      {
+        "name": "brightdata",
+        "secret": "BRIGHTDATA_API_KEY", 
+        "capabilities": "enterprise scraping (disabled by default)",
+        "priority": 3
+      },
+      {
+        "name": "openrouter",
+        "secret": "OPENROUTER_API_KEY",
+        "capabilities": "unified LLM API",
+        "priority": 2
+      },
+      {
+        "name": "redis",
+        "secret": "REDIS_URL",
+        "capabilities": "TTL cache for cost optimization",
+        "priority": 1
+      }
+    ],
+    "deployment_readiness": "production_ready_with_tavily_serper"
+  },
+  "business_mcp": {
+    "status": "degraded",
+    "ready_providers": {},
+    "partial_providers": {
+      "storage": {
+        "secrets": ["NEON_DATABASE_URL"],
+        "present": ["NEON_DATABASE_URL"],
+        "missing": ["QDRANT_URL", "REDIS_URL"],
+        "capabilities": "PostgreSQL ready, vector search and caching missing"
+      },
+      "router": {
+        "secrets": ["PORTKEY_API_KEY"],
+        "present": ["PORTKEY_API_KEY"],
+        "missing": ["OPENROUTER_API_KEY"],
+        "capabilities": "LLM routing ready via Portkey"
+      }
+    },
+    "missing_providers": [
+      {
+        "name": "apollo",
+        "secret": "APOLLO_API_KEY",
+        "capabilities": "prospecting, contact enrichment, company data",
+        "priority": 1
+      },
+      {
+        "name": "usergems",
+        "secret": "USERGEMS_API_KEY", 
+        "capabilities": "job change alerts, buyer intent signals",
+        "priority": 2
+      },
+      {
+        "name": "hubspot",
+        "secret": "HUBSPOT_ACCESS_TOKEN",
+        "capabilities": "CRM contacts, companies, deals, pipeline sync",
+        "priority": 1
+      },
+      {
+        "name": "salesforce",
+        "secrets": [
+          "SALESFORCE_CLIENT_ID",
+          "SALESFORCE_CLIENT_SECRET",
+          "SALESFORCE_USERNAME",
+          "SALESFORCE_PASSWORD",
+          "SALESFORCE_SECURITY_TOKEN",
+          "SALESFORCE_DOMAIN"
+        ],
+        "capabilities": "CRM read/write (read-only until CEO approval), lead management",
+        "priority": 3
+      },
+      {
+        "name": "gong",
+        "secrets": [
+          "GONG_BASE_URL",
+          "GONG_ACCESS_KEY", 
+          "GONG_ACCESS_KEY_SECRET",
+          "GONG_CLIENT_ACCESS_KEY",
+          "GONG_CLIENT_SECRET"
+        ],
+        "capabilities": "call recordings, meeting insights, revenue intelligence",
+        "priority": 3
+      },
+      {
+        "name": "slack",
+        "secrets": [
+          "SLACK_BOT_TOKEN",
+          "SLACK_SIGNING_SECRET"
+        ],
+        "capabilities": "channel digests, GTM notifications, signal alerts",
+        "priority": 2
+      },
+      {
+        "name": "zillow",
+        "secret": "ZILLOW_API_KEY",
+        "capabilities": "property data, market insights (multifamily focus)",
+        "priority": 4
+      }
+    ],
+    "deployment_readiness": "service_ready_no_providers"
+  },
+  "summary": {
+    "research_status": "production_ready",
+    "business_status": "awaiting_provider_secrets",
+    "critical_missing_for_business": [
+      "APOLLO_API_KEY OR HUBSPOT_ACCESS_TOKEN (at least one CRM provider required)"
+    ],
+    "recommended_next_adds": [
+      "APOLLO_API_KEY - prospecting and enrichment",
+      "SLACK_BOT_TOKEN + SLACK_SIGNING_SECRET - revenue signals",
+      "REDIS_URL - performance caching for both MCPs"
+    ]
+  },
+  "validation_errors": [
+    {
+      "provider": "business",
+      "code": "no_providers_configured",
+      "message": "No business providers (apollo/usergems/hubspot/salesforce/gong/slack) configured. Add at least one provider secret to activate Business MCP functionality."
+    }
+  ],
+  "next_actions": [
+    "CEO: Add provider secrets via GitHub repository settings > Secrets and variables > Actions",
+    "After secrets added: Re-run provider validation via Sophia Infra workflows",
+    "Test provider connections via /providers endpoint after deployment"
+  ]
+}
