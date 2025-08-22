@@ -2,8 +2,8 @@
   "status": "failure",
   "query": "health_check",
   "results": [],
-  "summary": {"text": "Service not deployed or not responding", "confidence": 0.0, "model": "n/a", "sources": []},
-  "timestamp": "2025-08-22T02:24:13Z",
-  "execution_time_ms": 0,
-  "errors": [{"provider": "sophiaai-mcp-research", "code": "CONNECTION_FAILED", "message": "HTTP 000 - Service not reachable"}]
+  "summary": {"text": "DNS resolution failed - service not deployed or domain not configured", "confidence": 1.0, "model": "network_test", "sources": []},
+  "timestamp": "2025-08-22T02:31:00Z",
+  "execution_time_ms": 100,
+  "errors": [{"provider": "sophiaai-mcp-research", "code": "DNS_RESOLUTION_FAILED", "message": "Could not resolve host: sophiaai-mcp-research.fly.dev"}]
 }
