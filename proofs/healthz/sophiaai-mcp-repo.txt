@@ -1,12 +1,9 @@
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   164  100   164    0     0   1544      0 --:--:-- --:--:-- --:--:--  1532
 HTTP/2 200 
-date: Fri, 22 Aug 2025 01:10:46 GMT
+date: Fri, 22 Aug 2025 02:24:30 GMT
 server: Fly/2e8436b521 (2025-08-21)
 content-length: 164
 content-type: application/json
 via: 2 fly.io, 2 fly.io
-fly-request-id: 01K37N81QFJP2J1BAD8XNXK00S-iad
+fly-request-id: 01K37SF26XH6K1161TV9D4P9AY-iad
 
-{"status":"healthy","service":"sophia-mcp-github","version":"1.0.0","timestamp":"2025-08-22T01:10:47Z","uptime_ms":1755825047316,"repo":"ai-cherry/sophia-ai-intel"}
+{"status":"healthy","service":"sophia-mcp-github","version":"1.0.0","timestamp":"2025-08-22T02:24:31Z","uptime_ms":1755829471477,"repo":"ai-cherry/sophia-ai-intel"}

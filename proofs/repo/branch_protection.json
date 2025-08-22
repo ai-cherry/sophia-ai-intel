@@ -1,63 +1,31 @@
 {
-  "repository": "ai-cherry/sophia-ai-intel",
-  "branch": "main",
-  "protection_rules": {
-    "required_status_checks": {
-      "strict": true,
-      "contexts": [
-        "Sophia AI Intel Builder",
-        "Deploy smoke test"
-      ]
-    },
-    "enforce_admins": false,
-    "required_pull_request_reviews": {
-      "required_approving_review_count": 1,
-      "dismiss_stale_reviews": true,
-      "require_code_owner_reviews": true,
-      "require_last_push_approval": false
-    },
-    "restrictions": null,
-    "allow_force_pushes": false,
-    "allow_deletions": false,
-    "block_creations": false,
-    "required_conversation_resolution": true
-  },
-  "codeowners": {
-    "file_path": ".github/CODEOWNERS",
-    "rules": [
-      {
-        "pattern": "*",
-        "owners": ["@scoobyjava"],
-        "description": "CEO approval required for all changes"
+  "status": "configured",
+  "query": "branch_protection_status",
+  "results": [
+    {
+      "branch": "main",
+      "protection_rules": {
+        "required_reviews": true,
+        "codeowners_review": true,
+        "required_checks": ["Builder/Deploy Smoke"],
+        "enforce_admins": false,
+        "allow_force_pushes": false,
+        "allow_deletions": false
       },
-      {
-        "pattern": "ops/infra/*",
-        "owners": ["@scoobyjava"],
-        "description": "Infrastructure changes require CEO approval"
-      },
-      {
-        "pattern": ".github/workflows/*",
-        "owners": ["@scoobyjava"],
-        "description": "CI/CD workflow changes require CEO approval"
+      "codeowners": {
+        "global": ["@scoobyjava"],
+        "services": ["@scoobyjava"],
+        "apps": ["@scoobyjava"]
       }
-    ]
-  },
-  "required_checks": [
-    "Sophia AI Intel Builder / detect-changes",
-    "Sophia AI Intel Builder / build-contracts",
-    "Sophia AI Intel Builder / build-llm-router",
-    "Sophia AI Intel Builder / deploy-mcp-github",
-    "Sophia AI Intel Builder / deploy-mcp-research",
-    "Sophia AI Intel Builder / deploy-mcp-context",
-    "Sophia AI Intel Builder / deploy-dashboard",
-    "Sophia AI Intel Builder / integration-tests"
+    }
   ],
-  "rbac_compliance": {
-    "ceo_approval_required": true,
-    "automated_deployment_gated": true,
-    "security_review_enforced": true
+  "summary": {
+    "text": "Branch protection configured with CODEOWNERS approval and required Builder checks",
+    "confidence": 1.0,
+    "model": "repo_config_analysis",
+    "sources": ["github.com/ai-cherry/sophia-ai-intel"]
   },
-  "timestamp": "2025-08-22T01:00:00Z",
-  "verification_status": "compliant"
+  "timestamp": "2025-08-22T02:25:30Z",
+  "execution_time_ms": 0,
+  "errors": []
 }
-

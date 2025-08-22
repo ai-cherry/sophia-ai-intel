@@ -1,3 +1,9 @@
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0curl: (6) Could not resolve host: sophiaai-dashboard.fly.dev
+{
+  "status": "failure",
+  "query": "health_check", 
+  "results": [],
+  "summary": {"text": "Service not deployed or not responding", "confidence": 0.0, "model": "n/a", "sources": []},
+  "timestamp": "2025-08-22T02:24:13Z",
+  "execution_time_ms": 0,
+  "errors": [{"provider": "sophiaai-dashboard", "code": "CONNECTION_FAILED", "message": "HTTP 000 - Service not reachable"}]
+}

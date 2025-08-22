@@ -1,0 +1,38 @@
+{
+  "status": "partial_failure",
+  "query": "phase1_finalization_deployment_status",
+  "results": [
+    {
+      "service": "sophiaai-mcp-repo",
+      "status": "healthy",
+      "url": "https://sophiaai-mcp-repo.fly.dev",
+      "health_check": "200 OK"
+    }
+  ],
+  "summary": {
+    "text": "Only 1 of 4 required services deployed and healthy. Missing deployments for research, context, and dashboard services.",
+    "confidence": 0.25,
+    "model": "deployment_status_check",
+    "sources": ["fly.io", "health_endpoints"]
+  },
+  "timestamp": "2025-08-22T02:24:13Z",
+  "execution_time_ms": 1500,
+  "errors": [
+    {
+      "provider": "sophiaai-mcp-research",
+      "code": "SERVICE_NOT_DEPLOYED",
+      "message": "Service not reachable - likely not deployed to Fly.io"
+    },
+    {
+      "provider": "sophiaai-mcp-context", 
+      "code": "SERVICE_NOT_DEPLOYED",
+      "message": "Service not reachable - likely not deployed to Fly.io"
+    },
+    {
+      "provider": "sophiaai-dashboard",
+      "code": "SERVICE_NOT_DEPLOYED", 
+      "message": "Service not reachable - likely not deployed to Fly.io"
+    }
+  ]
+}
+
