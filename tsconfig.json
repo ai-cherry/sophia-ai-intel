@@ -1,0 +1,67 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "./",
+    "baseUrl": ".",
+    "paths": {
+      "@sophia/contracts": ["./libs/contracts/src"],
+      "@sophia/clients": ["./libs/clients/src"],
+      "@sophia/ui": ["./libs/ui/src"]
+    }
+  },
+  "include": [
+    "apps/**/*",
+    "services/**/*",
+    "libs/**/*",
+    "ops/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    ".next",
+    "coverage"
+  ],
+  "references": [
+    {
+      "path": "./libs/contracts"
+    },
+    {
+      "path": "./libs/clients"
+    },
+    {
+      "path": "./libs/ui"
+    },
+    {
+      "path": "./apps/dashboard"
+    },
+    {
+      "path": "./services/mcp-research"
+    },
+    {
+      "path": "./services/mcp-context"
+    },
+    {
+      "path": "./services/mcp-github"
+    }
+  ]
+}
+

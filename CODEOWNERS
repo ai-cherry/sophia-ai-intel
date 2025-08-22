@@ -1,0 +1,31 @@
+# Global ownership - CEO approval required for all changes
+* @scoobyjava
+
+# Critical infrastructure and security
+/ops/ @scoobyjava
+/.github/ @scoobyjava
+/libs/contracts/ @scoobyjava
+
+# Service-specific ownership
+/services/mcp-research/ @scoobyjava
+/services/mcp-context/ @scoobyjava
+/services/mcp-github/ @scoobyjava
+/services/mcp-slack/ @scoobyjava
+/services/mcp-salesforce/ @scoobyjava
+/services/mcp-hub/ @scoobyjava
+
+# Dashboard and UI
+/apps/dashboard/ @scoobyjava
+/libs/ui/ @scoobyjava
+
+# Documentation
+/docs/ @scoobyjava
+README.md @scoobyjava
+
+# Configuration files
+package.json @scoobyjava
+tsconfig.json @scoobyjava
+.env.example @scoobyjava
+docker-compose.yml @scoobyjava
+fly.toml @scoobyjava
+

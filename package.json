@@ -1,0 +1,71 @@
+{
+  "name": "sophia-ai-intel",
+  "version": "1.0.0",
+  "description": "Autonomous AI intelligence platform with ChatGPT-5 integration",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "services/*",
+    "libs/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:dashboard\" \"npm run dev:mcp-research\" \"npm run dev:mcp-context\" \"npm run dev:mcp-github\"",
+    "dev:dashboard": "npm run dev --workspace=apps/dashboard",
+    "dev:mcp-research": "npm run dev --workspace=services/mcp-research",
+    "dev:mcp-context": "npm run dev --workspace=services/mcp-context",
+    "dev:mcp-github": "npm run dev --workspace=services/mcp-github",
+    "dev:mcp-slack": "npm run dev --workspace=services/mcp-slack",
+    "dev:mcp-salesforce": "npm run dev --workspace=services/mcp-salesforce",
+    "dev:mcp-hub": "npm run dev --workspace=services/mcp-hub",
+    "build": "npm run build --workspaces",
+    "build:dashboard": "npm run build --workspace=apps/dashboard",
+    "test": "npm run test --workspaces",
+    "test:dashboard": "npm run test --workspace=apps/dashboard",
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
+    "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
+    "type-check": "tsc --noEmit",
+    "deploy": "npm run deploy:dashboard && npm run deploy:mcp-research && npm run deploy:mcp-context && npm run deploy:mcp-github",
+    "deploy:dashboard": "cd apps/dashboard && fly deploy",
+    "deploy:mcp-research": "cd services/mcp-research && fly deploy",
+    "deploy:mcp-context": "cd services/mcp-context && fly deploy",
+    "deploy:mcp-github": "cd services/mcp-github && fly deploy",
+    "clean": "rm -rf node_modules apps/*/node_modules services/*/node_modules libs/*/node_modules",
+    "postinstall": "npm run build --workspace=libs/contracts && npm run build --workspace=libs/clients"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "concurrently": "^8.2.2",
+    "eslint": "^8.54.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.1",
+    "prettier": "^3.1.0",
+    "typescript": "^5.3.0"
+  },
+  "dependencies": {
+    "openai": "^4.20.0",
+    "portkey-ai": "^0.1.11",
+    "@anthropic-ai/sdk": "^0.9.0",
+    "zod": "^3.22.4"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ai-cherry/sophia-ai-intel.git"
+  },
+  "author": "AI Cherry Team",
+  "license": "MIT",
+  "keywords": [
+    "ai",
+    "intelligence",
+    "chatgpt-5",
+    "mcp",
+    "microservices",
+    "business-intelligence"
+  ]
+}
+
