@@ -1,0 +1,21 @@
+{
+  "status": "failure",
+  "query": "github_workflow_dispatch",
+  "results": [],
+  "summary": {
+    "text": "GitHub workflow dispatch blocked by insufficient permissions - manual trigger required",
+    "confidence": 1.0,
+    "model": "n/a",
+    "sources": ["gh workflow run command"]
+  },
+  "timestamp": "2025-08-22T18:39:18.120Z",
+  "execution_time_ms": 0,
+  "errors": [
+    {
+      "provider": "github",
+      "code": "HTTP_403",
+      "message": "Resource not accessible by integration - workflow must be triggered manually from GitHub UI"
+    }
+  ],
+  "next_action": "Trigger Deploy All workflow manually from GitHub Actions UI to test Pay Ready org settings"
+}

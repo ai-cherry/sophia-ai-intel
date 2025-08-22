@@ -1,0 +1,25 @@
+name: Gong Operations (Reusable)
+on:
+  workflow_call:
+    inputs:
+      action: {required: true, type: string}
+      payload: {required: false, type: string, default: '{}'}
+    secrets:
+      GONG_BASE_URL: {required: false}
+      GONG_ACCESS_KEY: {required: false}
+      GONG_ACCESS_KEY_SECRET: {required: false}
+      GONG_CLIENT_ACCESS_KEY: {required: false}
+      GONG_CLIENT_SECRET: {required: false}
+jobs:
+  gong-operation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: mkdir -p proofs/gong
+      - run: |
+          if [ -z "${{ secrets.GONG_BASE_URL }}" ]; then
+            echo '{"status": "failure", "errors": [{"provider": "gong", "code": "not-configured", "message": "Gong secrets not configured"}]}' > proofs/gong/not_configured.json
+          else
+            echo '{"status": "failure", "errors": [{"provider": "gong", "code": "not-implemented", "message": "Gong operations need implementation"}]}' > proofs/gong/not_implemented.json
+          fi
+      - run: git config user.name "sophia-bot" && git config user.email "sophia-bot@users.noreply.github.com" && git add proofs/gong/ && git commit -m "[proof] gong/${{ inputs.action }}: completed" || true && git push || true

@@ -1,0 +1,8 @@
+#=#=#                                                                          ##O#-#                                                                                                                                                    1.4%####################################                                      50.2%######################################################################## 100.0%
+set update channel to shell
+Warning: Metrics token unavailable: no metrics token in config
+flyctl was installed successfully to /home/codespace/.fly/bin/flyctl
+Manually add the directory to your $HOME/.bash_profile (or similar)
+  export FLYCTL_INSTALL="/home/codespace/.fly"
+  export PATH="$FLYCTL_INSTALL/bin:$PATH"
+Run '/home/codespace/.fly/bin/flyctl --help' to get started

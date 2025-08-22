@@ -1,0 +1,180 @@
+name: Context Database Operations (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      action:
+        required: true
+        type: string
+        description: "ping|query|health"
+      payload:
+        required: false
+        type: string
+        default: '{}'
+        description: "Action payload JSON"
+    secrets:
+      NEON_DATABASE_URL:
+        required: true
+
+jobs:
+  context-db-operation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Create proof directories
+        run: |
+          mkdir -p proofs/context_db
+
+      - name: Setup PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Validate inputs
+        run: |
+          echo "::add-mask::${{ secrets.NEON_DATABASE_URL }}"
+          echo "Action: ${{ inputs.action }}"
+          echo "Payload: ${{ inputs.payload }}"
+          test -n "${{ secrets.NEON_DATABASE_URL }}" || { 
+            echo '{"status": "failure", "errors": [{"provider": "context_db", "code": "missing-url", "message": "NEON_DATABASE_URL required"}]}' > proofs/context_db/error.json
+            exit 1
+          }
+
+      - name: Ping database
+        if: ${{ inputs.action == 'ping' }}
+        run: |
+          echo "🔍 Pinging context database"
+          
+          # Test basic connectivity
+          psql "${{ secrets.NEON_DATABASE_URL }}" -c "SELECT 1;" > proofs/context_db/ping_result.txt 2>&1 && {
+            echo "✅ Database ping successful"
+            cat > proofs/context_db/ping_success.json << EOF
+            {
+              "status": "success",
+              "query": "context_db_ping",
+              "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)",
+              "result": "Database connection successful",
+              "provider": "neon"
+            }
+            EOF
+          } || {
+            echo "❌ Database ping failed"
+            cat > proofs/context_db/ping_failure.json << EOF
+            {
+              "status": "failure",
+              "query": "context_db_ping", 
+              "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)",
+              "errors": [
+                {
+                  "provider": "context_db",
+                  "code": "connection-failed",
+                  "message": "Unable to connect to database"
+                }
+              ]
+            }
+            EOF
+          }
+
+      - name: Health check
+        if: ${{ inputs.action == 'health' }}
+        run: |
+          echo "🏥 Database health check"
+          
+          # Extended health check with table info
+          psql "${{ secrets.NEON_DATABASE_URL }}" << EOF > proofs/context_db/health_check.txt 2>&1
+          SELECT 
+            version() as db_version,
+            current_database() as database_name,
+            pg_database_size(current_database()) as db_size_bytes;
+          
+          SELECT schemaname, tablename, tableowner 
+          FROM pg_tables 
+          WHERE schemaname = 'public'
+          LIMIT 10;
+          EOF
+          
+          if [ $? -eq 0 ]; then
+            echo "✅ Database health check passed"
+            cat > proofs/context_db/health_success.json << EOF
+            {
+              "status": "success",
+              "query": "context_db_health",
+              "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)",
+              "result": "Database is healthy and accessible",
+              "details_file": "proofs/context_db/health_check.txt"
+            }
+            EOF
+          else
+            echo "❌ Database health check failed"
+            cat > proofs/context_db/health_failure.json << EOF
+            {
+              "status": "failure",
+              "query": "context_db_health",
+              "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)",
+              "errors": [
+                {
+                  "provider": "context_db",
+                  "code": "health-check-failed",
+                  "message": "Database health check queries failed"
+                }
+              ]
+            }
+            EOF
+          fi
+
+      - name: Custom query
+        if: ${{ inputs.action == 'query' }}
+        run: |
+          echo "🔍 Custom database query"
+          
+          PAYLOAD='${{ inputs.payload }}'
+          QUERY=$(echo "$PAYLOAD" | jq -r '.sql // "SELECT current_timestamp;"')
+          
+          echo "Query: $QUERY"
+          
+          # Execute custom query safely (read-only operations recommended)
+          psql "${{ secrets.NEON_DATABASE_URL }}" -c "$QUERY" > proofs/context_db/custom_query.txt 2>&1 && {
+            echo "✅ Custom query executed successfully"
+            cat > proofs/context_db/query_success.json << EOF
+            {
+              "status": "success", 
+              "query": "context_db_custom_query",
+              "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)",
+              "sql": "$QUERY",
+              "result_file": "proofs/context_db/custom_query.txt"
+            }
+            EOF
+          } || {
+            echo "❌ Custom query failed"
+            cat > proofs/context_db/query_failure.json << EOF
+            {
+              "status": "failure",
+              "query": "context_db_custom_query",
+              "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)",
+              "sql": "$QUERY",
+              "errors": [
+                {
+                  "provider": "context_db",
+                  "code": "query-failed", 
+                  "message": "Custom SQL query execution failed"
+                }
+              ]
+            }
+            EOF
+          }
+
+      - name: Commit proofs
+        run: |
+          git config user.name "sophia-bot"
+          git config user.email "sophia-bot@users.noreply.github.com"
+          git add proofs/context_db/ 2>/dev/null || true
+          git commit -m "[proof] context_db/${{ inputs.action }}: operation completed" || true
+          git push || true
+
+      - name: Operation summary
+        run: |
+          echo "✅ Context DB operation '${{ inputs.action }}' completed"
+          echo "🗄️ Database: Neon PostgreSQL"
+          echo "📊 Run ID: ${{ github.run_id }}"
+          echo "📁 Proofs: proofs/context_db/"

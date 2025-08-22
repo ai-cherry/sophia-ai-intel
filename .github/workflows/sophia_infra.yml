@@ -1,0 +1,217 @@
+name: Sophia Infra — CEO-Gated Control Plane
+
+on:
+  workflow_dispatch:
+    inputs:
+      provider:
+        description: "Select provider"
+        required: true
+        type: choice
+        options:
+          - fly
+          - github
+          - router
+          - qdrant
+          - mem0
+          - redis
+          - slack
+          - gong
+          - lambda
+          - context_db
+          - research
+      action:
+        description: "Select operation"
+        required: true
+        type: choice
+        options:
+          - health
+          - deploy
+          - machines
+          - logs
+          - set-secrets
+          - list
+          - create
+          - drop
+          - ping
+          - get
+          - set
+          - del
+          - channels
+          - post
+          - protect
+          - audit
+          - allowlist
+          - route-test
+      app:
+        description: "App name (Fly only)"
+        required: false
+        type: choice
+        options:
+          - sophiaai-dashboard-v2
+          - sophiaai-mcp-repo-v2
+          - sophiaai-mcp-research-v2
+          - sophiaai-mcp-context-v2
+      payload_json:
+        description: "Operation payload (JSON)"
+        required: false
+        default: '{}'
+
+permissions:
+  contents: write
+
+# CEO-gated production environment - requires manual approval
+environment: production
+
+env:
+  # Pay Ready org (canonical)
+  FLY_ORG: pay-ready
+
+jobs:
+  # Route to provider-specific workflows
+  fly-operations:
+    if: ${{ inputs.provider == 'fly' }}
+    uses: ./.github/workflows/providers/fly_ops.yml
+    with:
+      action: ${{ inputs.action }}
+      app: ${{ inputs.app }}
+      payload: ${{ inputs.payload_json }}
+    secrets:
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+  github-operations:
+    if: ${{ inputs.provider == 'github' }}
+    uses: ./.github/workflows/providers/github_ops.yml
+    with:
+      action: ${{ inputs.action }}
+      payload: ${{ inputs.payload_json }}
+    secrets:
+      GITHUB_APP_ID: ${{ secrets.GITHUB_APP_ID }}
+      GITHUB_INSTALLATION_ID: ${{ secrets.GITHUB_INSTALLATION_ID }}
+      GITHUB_PRIVATE_KEY: ${{ secrets.GITHUB_APP_PRIVATE_KEY }}
+
+  router-operations:
+    if: ${{ inputs.provider == 'router' }}
+    uses: ./.github/workflows/providers/router_ops.yml
+    with:
+      action: ${{ inputs.action }}
+      payload: ${{ inputs.payload_json }}
+    secrets:
+      PORTKEY_API_KEY: ${{ secrets.PORTKEY_API_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+  qdrant-operations:
+    if: ${{ inputs.provider == 'qdrant' }}
+    uses: ./.github/workflows/providers/qdrant_ops.yml
+    with:
+      action: ${{ inputs.action }}
+      payload: ${{ inputs.payload_json }}
+    secrets:
+      QDRANT_URL: ${{ secrets.QDRANT_URL }}
+      QDRANT_API_KEY: ${{ secrets.QDRANT_API_KEY }}
+
+  mem0-operations:
+    if: ${{ inputs.provider == 'mem0' }}
+    uses: ./.github/workflows/providers/mem0_ops.yml
+    with:
+      action: ${{ inputs.action }}
+      payload: ${{ inputs.payload_json }}
+    secrets:
+      MEM0_API_KEY: ${{ secrets.MEM0_API_KEY }}
+
+  redis-operations:
+    if: ${{ inputs.provider == 'redis' }}
+    uses: ./.github/workflows/providers/redis_ops.yml
+    with:
+      action: ${{ inputs.action }}
+      payload: ${{ inputs.payload_json }}
+    secrets:
+      REDIS_URL: ${{ secrets.REDIS_URL }}
+
+  slack-operations:
+    if: ${{ inputs.provider == 'slack' }}
+    uses: ./.github/workflows/providers/slack_ops.yml
+    with:
+      action: ${{ inputs.action }}
+      payload: ${{ inputs.payload_json }}
+    secrets:
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      SLACK_SIGNING_SECRET: ${{ secrets.SLACK_SIGNING_SECRET }}
+      SLACK_APP_TOKEN: ${{ secrets.SLACK_APP_TOKEN }}
+
+  gong-operations:
+    if: ${{ inputs.provider == 'gong' }}
+    uses: ./.github/workflows/providers/gong_ops.yml
+    with:
+      action: ${{ inputs.action }}
+      payload: ${{ inputs.payload_json }}
+    secrets:
+      GONG_BASE_URL: ${{ secrets.GONG_BASE_URL }}
+      GONG_ACCESS_KEY: ${{ secrets.GONG_ACCESS_KEY }}
+      GONG_ACCESS_KEY_SECRET: ${{ secrets.GONG_ACCESS_KEY_SECRET }}
+      GONG_CLIENT_ACCESS_KEY: ${{ secrets.GONG_CLIENT_ACCESS_KEY }}
+      GONG_CLIENT_SECRET: ${{ secrets.GONG_CLIENT_SECRET }}
+
+  lambda-operations:
+    if: ${{ inputs.provider == 'lambda' }}
+    uses: ./.github/workflows/providers/lambda_ops.yml
+    with:
+      action: ${{ inputs.action }}
+      payload: ${{ inputs.payload_json }}
+    secrets:
+      LAMBDA_LABS_API_KEY: ${{ secrets.LAMBDA_LABS_API_KEY }}
+      LAMBDA_API_CLOUD_ENDPOINT: ${{ secrets.LAMBDA_API_CLOUD_ENDPOINT }}
+      LAMBDA_SSH_PRIVATE_KEY: ${{ secrets.LAMBDA_SSH_PRIVATE_KEY }}
+
+  context-db-operations:
+    if: ${{ inputs.provider == 'context_db' }}
+    uses: ./.github/workflows/providers/context_db_ops.yml
+    with:
+      action: ${{ inputs.action }}
+      payload: ${{ inputs.payload_json }}
+    secrets:
+      NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+
+  research-operations:
+    if: ${{ inputs.provider == 'research' }}
+    uses: ./.github/workflows/providers/research_ops.yml
+    with:
+      action: ${{ inputs.action }}
+      payload: ${{ inputs.payload_json }}
+    secrets:
+      TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+      SERPER_API_KEY: ${{ secrets.SERPER_API_KEY }}
+
+  summary:
+    name: Operation Summary
+    runs-on: ubuntu-latest
+    needs: [fly-operations, github-operations, router-operations, qdrant-operations, mem0-operations, redis-operations, slack-operations, gong-operations, lambda-operations, context-db-operations, research-operations]
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create operation summary
+        run: |
+          echo "# Sophia Infra Operation Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Provider:** ${{ inputs.provider }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Action:** ${{ inputs.action }}" >> $GITHUB_STEP_SUMMARY
+          echo "**App:** ${{ inputs.app || 'N/A' }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Payload:** \`${{ inputs.payload_json }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Run ID:** ${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Triggered by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Proof Files" >> $GITHUB_STEP_SUMMARY
+          echo "Check \`proofs/${{ inputs.provider }}/\` directory for operation artifacts." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Available Providers" >> $GITHUB_STEP_SUMMARY
+          echo "- **fly**: Deploy, health, machines, logs, set-secrets" >> $GITHUB_STEP_SUMMARY
+          echo "- **github**: Protect branches, audit secrets" >> $GITHUB_STEP_SUMMARY
+          echo "- **router**: Allowlist management, route testing" >> $GITHUB_STEP_SUMMARY
+          echo "- **qdrant**: Vector DB operations (if configured)" >> $GITHUB_STEP_SUMMARY
+          echo "- **mem0**: Memory operations (if configured)" >> $GITHUB_STEP_SUMMARY
+          echo "- **redis**: Cache operations (if configured)" >> $GITHUB_STEP_SUMMARY
+          echo "- **slack**: Channel and messaging operations (if configured)" >> $GITHUB_STEP_SUMMARY
+          echo "- **gong**: Call recording operations (if configured)" >> $GITHUB_STEP_SUMMARY
+          echo "- **lambda**: GPU compute operations (if configured)" >> $GITHUB_STEP_SUMMARY
+          echo "- **context_db**: Database operations" >> $GITHUB_STEP_SUMMARY
+          echo "- **research**: Web search operations" >> $GITHUB_STEP_SUMMARY

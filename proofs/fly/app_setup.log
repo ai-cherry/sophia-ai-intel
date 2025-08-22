@@ -1,0 +1,30 @@
+Setting up Fly.io apps for Sophia AI Intel...
+================================================
+✅ Fly.io token detected (not displayed)
+
+Checking app: sophiaai-dashboard
+  ✓ App sophiaai-dashboard already exists
+
+Checking app: sophiaai-mcp-repo
+  ✓ App sophiaai-mcp-repo already exists
+
+Checking app: sophiaai-mcp-research
+  ✓ App sophiaai-mcp-research already exists
+
+Checking app: sophiaai-mcp-context
+  ✓ App sophiaai-mcp-context already exists
+
+================================================
+✅ Fly.io app setup complete!
+
+Apps configured:
+  • https://sophiaai-dashboard.fly.dev
+  • https://sophiaai-mcp-repo.fly.dev
+  • https://sophiaai-mcp-research.fly.dev
+  • https://sophiaai-mcp-context.fly.dev
+
+Next steps:
+1. Run the GitHub workflow: .github/workflows/deploy_all.yml
+2. The workflow will handle all deployments and proof collection
+
+Note: Secrets will be set by the workflow from GitHub secrets

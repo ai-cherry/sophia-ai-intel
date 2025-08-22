@@ -1,0 +1,6 @@
+/bin/sh: 10: flyctl: not found
+/bin/sh: 14: flyctl: not found
+/bin/sh: 19: flyctl: not found
+/bin/sh: 22: flyctl: not found
+/bin/sh: 25: flyctl: not found
+/bin/sh: 28: flyctl: not found

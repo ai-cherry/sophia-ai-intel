@@ -1,0 +1,163 @@
+name: Router Operations (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      action:
+        required: true
+        type: string
+        description: "allowlist|route-test"
+      payload:
+        required: false
+        type: string
+        default: '{}'
+        description: "Action payload JSON"
+    secrets:
+      PORTKEY_API_KEY:
+        required: true
+      OPENAI_API_KEY:
+        required: false
+      ANTHROPIC_API_KEY:
+        required: false
+
+jobs:
+  router-operation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Create proof directories
+        run: |
+          mkdir -p proofs/llm proofs/router
+
+      - name: Validate inputs
+        run: |
+          echo "::add-mask::${{ secrets.PORTKEY_API_KEY }}"
+          echo "Action: ${{ inputs.action }}"
+          echo "Payload: ${{ inputs.payload }}"
+          test -n "${{ secrets.PORTKEY_API_KEY }}" || { 
+            echo '{"status": "failure", "errors": [{"provider": "router", "code": "missing-token", "message": "PORTKEY_API_KEY required"}]}' > proofs/router/error.json
+            exit 1
+          }
+
+      - name: Generate router allowlist
+        if: ${{ inputs.action == 'allowlist' }}
+        run: |
+          echo "🔍 Generating LLM router allowlist"
+          
+          # Build allowlist based on available secrets
+          cat > proofs/llm/router_allowlist.json << EOF
+          {
+            "status": "success",
+            "query": "router_allowlist",
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)",
+            "providers": {
+              "portkey": {
+                "status": "ready",
+                "api_key_present": true,
+                "priority": 1,
+                "description": "Primary LLM router with fallback support"
+              },
+              "openai": {
+                "status": "$([[ -n "${{ secrets.OPENAI_API_KEY }}" ]] && echo "ready" || echo "paused")",
+                "api_key_present": $([[ -n "${{ secrets.OPENAI_API_KEY }}" ]] && echo "true" || echo "false"),
+                "priority": 2,
+                "description": "Direct OpenAI API access"
+              },
+              "anthropic": {
+                "status": "$([[ -n "${{ secrets.ANTHROPIC_API_KEY }}" ]] && echo "ready" || echo "paused")",
+                "api_key_present": $([[ -n "${{ secrets.ANTHROPIC_API_KEY }}" ]] && echo "true" || echo "false"),
+                "priority": 3,
+                "description": "Direct Anthropic API access"
+              },
+              "openrouter": {
+                "status": "paused",
+                "api_key_present": false,
+                "priority": 4,
+                "description": "OpenRouter unified API (not configured)"
+              },
+              "groq": {
+                "status": "paused",
+                "api_key_present": false,
+                "priority": 5,
+                "description": "Groq fast inference (not configured)"
+              },
+              "deepseek": {
+                "status": "paused",
+                "api_key_present": false,
+                "priority": 6,
+                "description": "DeepSeek API (not configured)"
+              }
+            },
+            "routing_strategy": {
+              "primary": "portkey",
+              "fallbacks": [
+                $([[ -n "${{ secrets.OPENAI_API_KEY }}" ]] && echo '"openai",' || true)
+                $([[ -n "${{ secrets.ANTHROPIC_API_KEY }}" ]] && echo '"anthropic",' || true)
+              ],
+              "load_balancing": "weighted",
+              "retry_logic": "exponential_backoff"
+            },
+            "ready_providers": $(([[ -n "${{ secrets.OPENAI_API_KEY }}" ]] && [[ -n "${{ secrets.ANTHROPIC_API_KEY }}" ]]) && echo 3 || ([[ -n "${{ secrets.OPENAI_API_KEY }}" ]] || [[ -n "${{ secrets.ANTHROPIC_API_KEY }}" ]]) && echo 2 || echo 1),
+            "total_providers": 6
+          }
+          EOF
+
+      - name: Route test (stub)
+        if: ${{ inputs.action == 'route-test' }}
+        run: |
+          echo "🧪 Router route test (stub implementation)"
+          
+          # Parse test payload
+          PAYLOAD='${{ inputs.payload }}'
+          MODEL=$(echo "$PAYLOAD" | jq -r '.model // "gpt-3.5-turbo"')
+          PROMPT=$(echo "$PAYLOAD" | jq -r '.prompt // "Hello, test message"')
+          
+          echo "Model: $MODEL"
+          echo "Prompt: $PROMPT"
+          
+          # For now, create normalized error indicating this needs implementation
+          cat > proofs/router/route_test_stub.json << EOF
+          {
+            "status": "failure",
+            "query": "router_route_test",
+            "results": [],
+            "summary": {
+              "text": "Route test not implemented - requires upstream probe integration",
+              "confidence": 1.0,
+              "model": "$MODEL",
+              "sources": []
+            },
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)",
+            "execution_time_ms": 0,
+            "errors": [
+              {
+                "provider": "router",
+                "code": "not-implemented",
+                "message": "Route testing requires implementation of upstream API probes"
+              }
+            ],
+            "test_config": {
+              "model": "$MODEL",
+              "prompt": "$PROMPT",
+              "portkey_ready": true,
+              "openai_ready": $([[ -n "${{ secrets.OPENAI_API_KEY }}" ]] && echo "true" || echo "false"),
+              "anthropic_ready": $([[ -n "${{ secrets.ANTHROPIC_API_KEY }}" ]] && echo "true" || echo "false")
+            }
+          }
+          EOF
+
+      - name: Commit proofs
+        run: |
+          git config user.name "sophia-bot"
+          git config user.email "sophia-bot@users.noreply.github.com"
+          git add proofs/llm/ proofs/router/ 2>/dev/null || true
+          git commit -m "[proof] router/${{ inputs.action }}: operation completed" || true
+          git push || true
+
+      - name: Operation summary
+        run: |
+          echo "✅ Router operation '${{ inputs.action }}' completed"
+          echo "🔗 Primary: Portkey API"
+          echo "📊 Run ID: ${{ github.run_id }}"
+          echo "📁 Proofs: proofs/llm/, proofs/router/"

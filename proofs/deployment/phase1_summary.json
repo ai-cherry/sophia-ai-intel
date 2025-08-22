@@ -1,0 +1,76 @@
+{
+  "timestamp": "2025-08-22T17:15:00Z",
+  "phase": "1.6",
+  "status": "partial_success",
+  "completed": {
+    "secrets_matrix": {
+      "status": "completed",
+      "proof": "proofs/secrets/matrix.json",
+      "canonical_vars": 16
+    },
+    "mcp_services_wiring": {
+      "status": "completed",
+      "services": ["mcp-github", "mcp-research", "mcp-context"],
+      "normalized_errors": true
+    },
+    "workflow_fixes": {
+      "status": "partial",
+      "auth_fixed": true,
+      "build_issues": "remaining"
+    },
+    "llm_router_allowlist": {
+      "status": "completed",
+      "proof": "proofs/llm/router_allowlist.json"
+    },
+    "branch_protection": {
+      "status": "completed",
+      "proof": "proofs/repo/branch_protection.json"
+    },
+    "documentation": {
+      "status": "completed",
+      "files": ["docs/SECRETS.md", "docs/PHASE2_ROADMAP.md"]
+    },
+    "github_actions_secrets": {
+      "status": "partial",
+      "added": ["FLY_API_TOKEN", "PORTKEY_API_KEY", "NEON_API_TOKEN"],
+      "missing": ["NEON_DATABASE_URL", "GITHUB_APP_ID", "GITHUB_INSTALLATION_ID", "GITHUB_PRIVATE_KEY"]
+    }
+  },
+  "failures": {
+    "deployment_workflow": {
+      "run_id": 17161508459,
+      "dashboard": "build_failure",
+      "mcp_research": "deployment_failure"
+    },
+    "neon_project": {
+      "error": "authentication_failed",
+      "message": "NEON_API_TOKEN is invalid or expired"
+    }
+  },
+  "manual_actions_required": [
+    {
+      "priority": 1,
+      "action": "Obtain valid NEON_API_TOKEN",
+      "url": "https://console.neon.tech/app/settings/api-keys"
+    },
+    {
+      "priority": 2,
+      "action": "Create GitHub App",
+      "url": "https://github.com/settings/apps/new",
+      "manifest": "github_app_manifest.json"
+    },
+    {
+      "priority": 3,
+      "action": "Fix dashboard build issues",
+      "issues": ["npm workspace configuration", "TypeScript compilation"]
+    }
+  ],
+  "next_steps": [
+    "Get valid Neon API token and create project",
+    "Add NEON_DATABASE_URL to GitHub secrets",
+    "Create GitHub App manually",
+    "Add GitHub App credentials to secrets",
+    "Fix dashboard build configuration",
+    "Re-run deployment workflow"
+  ]
+}
