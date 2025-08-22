@@ -1,18 +1,24 @@
 {
-  "status": "not_configured",
-  "query": "branch_protection",
-  "timestamp": "2025-08-22T13:55:00Z",
-  "branch": "main",
-  "protection": {
-    "enabled": false,
-    "required_checks": [],
-    "dismiss_stale_reviews": false,
-    "require_code_owner_reviews": false
+  "timestamp": "2025-08-22T16:37:16Z",
+  "success": true,
+  "protection_enabled": true,
+  "url": "https://api.github.com/repos/ai-cherry/sophia-ai-intel/branches/main/protection",
+  "required_status_checks": {
+    "strict": true,
+    "contexts": ["Deploy All (Dashboard + MCPs) — Fly (Docker-only, Proof-first)"]
   },
-  "recommendation": "Configure required checks for Builder or Deploy smoke on main branch",
-  "errors": [{
-    "provider": "github",
-    "code": "protection-missing",
-    "message": "Branch protection not configured. Need to set up required checks."
-  }]
+  "required_pull_request_reviews": {
+    "dismiss_stale_reviews": true,
+    "require_code_owner_reviews": true,
+    "required_approving_review_count": 1
+  },
+  "restrictions": null,
+  "enforce_admins": false,
+  "allow_force_pushes": false,
+  "allow_deletions": false,
+  "implementation_notes": {
+    "codeowners_file": "CODEOWNERS file should specify CEO as reviewer",
+    "status_check": "Deploy All workflow must pass before merge",
+    "pr_required": "Direct pushes to main are now blocked"
+  }
 }

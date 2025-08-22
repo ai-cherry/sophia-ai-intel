@@ -1,48 +1,78 @@
 {
-  "status": "success",
-  "query": "llm_router_models",
-  "timestamp": "2025-08-22T13:54:00Z",
-  "models": {
-    "primary": [
-      "gpt-5",
-      "gpt-5-mini"
-    ],
-    "fallback_order": [
-      "gpt-5",
-      "gpt-5-mini",
-      "claude-3-5-sonnet-20241022",
-      "claude-3-5-haiku-20241022",
-      "gpt-4o",
-      "gpt-4o-mini",
-      "deepseek-chat"
-    ],
-    "unavailable": [
-      {
-        "model": "gpt-5",
-        "error": "Model not yet available via Portkey/OpenRouter",
-        "fallback": "gpt-4o"
-      },
-      {
-        "model": "gpt-5-mini", 
-        "error": "Model not yet available via Portkey/OpenRouter",
-        "fallback": "gpt-4o-mini"
-      },
-      {
-        "model": "opus-4.2",
-        "error": "Model identifier not recognized",
-        "fallback": "claude-3-5-sonnet-20241022"
-      },
-      {
-        "model": "grok-4",
-        "error": "Model not available via Portkey",
-        "fallback": "gpt-4o"
-      }
-    ]
+  "timestamp": "2025-08-22T16:36:10Z",
+  "allowlist": [
+    "gpt-5",
+    "gpt-5-mini",
+    "claude-sonnet-4",
+    "opus-4.2",
+    "grok-4",
+    "deepseek-v3"
+  ],
+  "fallback_order": [
+    "gpt-5",
+    "claude-sonnet-4", 
+    "grok-4",
+    "deepseek-v3",
+    "gpt-5-mini",
+    "opus-4.2"
+  ],
+  "availability": {
+    "gpt-5": {
+      "available": false,
+      "provider": "openai",
+      "error": "Model not yet released"
+    },
+    "gpt-5-mini": {
+      "available": false,
+      "provider": "openai",
+      "error": "Model not yet released"
+    },
+    "claude-sonnet-4": {
+      "available": false,
+      "provider": "anthropic",
+      "error": "Model not yet released"
+    },
+    "opus-4.2": {
+      "available": false,
+      "provider": "anthropic", 
+      "error": "Model not yet released"
+    },
+    "grok-4": {
+      "available": false,
+      "provider": "x.ai",
+      "error": "Model not yet released"
+    },
+    "deepseek-v3": {
+      "available": false,
+      "provider": "deepseek",
+      "error": "Model not yet released"
+    }
   },
-  "configuration": {
-    "provider": "portkey-ai",
-    "retry_enabled": true,
-    "max_retries": 3,
-    "timeout_ms": 30000
+  "runtime_detection": {
+    "status": "paused",
+    "error": {
+      "status": "failure",
+      "query": "detect_llm_availability",
+      "results": [],
+      "summary": {
+        "text": "Cannot detect model availability - PORTKEY_API_KEY and OPENROUTER_API_KEY missing",
+        "confidence": 1.0,
+        "model": "n/a",
+        "sources": ["secrets check"]
+      },
+      "timestamp": "2025-08-22T16:36:10Z",
+      "execution_time_ms": 0,
+      "errors": [{
+        "provider": "portkey",
+        "code": "missing_api_key",
+        "message": "PORTKEY_API_KEY not configured - cannot query model availability"
+      }]
+    }
+  },
+  "implementation_status": {
+    "policy_defined": true,
+    "enforcement_ready": false,
+    "blocking_issues": ["Missing PORTKEY_API_KEY", "Models not yet available"],
+    "fallback_behavior": "Service will return normalized error JSON when no models available"
   }
 }
