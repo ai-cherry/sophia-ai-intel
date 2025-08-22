@@ -1,0 +1,336 @@
+name: Sophia AI Intel Builder
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      deploy_target:
+        description: 'Deployment target'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+      force_rebuild:
+        description: 'Force rebuild all services'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  NODE_VERSION: '20'
+  PYTHON_VERSION: '3.11'
+  FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+  PORTKEY_API_KEY: ${{ secrets.PORTKEY_API_KEY }}
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+  GITHUB_APP_ID: ${{ secrets.GITHUB_APP_ID }}
+  GITHUB_APP_PRIVATE_KEY: ${{ secrets.GITHUB_APP_PRIVATE_KEY }}
+  GITHUB_INSTALLATION_ID: ${{ secrets.GITHUB_INSTALLATION_ID }}
+
+jobs:
+  detect-changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      contracts: ${{ steps.changes.outputs.contracts }}
+      llm-router: ${{ steps.changes.outputs.llm-router }}
+      mcp-github: ${{ steps.changes.outputs.mcp-github }}
+      mcp-research: ${{ steps.changes.outputs.mcp-research }}
+      mcp-context: ${{ steps.changes.outputs.mcp-context }}
+      dashboard: ${{ steps.changes.outputs.dashboard }}
+      infra: ${{ steps.changes.outputs.infra }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            contracts:
+              - 'libs/contracts/**'
+            llm-router:
+              - 'libs/llm-router/**'
+            mcp-github:
+              - 'services/mcp-github/**'
+            mcp-research:
+              - 'services/mcp-research/**'
+            mcp-context:
+              - 'services/mcp-context/**'
+            dashboard:
+              - 'apps/dashboard/**'
+            infra:
+              - 'ops/infra/**'
+              - '.github/workflows/**'
+
+  build-contracts:
+    name: Build Contracts Library
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.contracts == 'true' || github.event.inputs.force_rebuild == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'libs/contracts/package-lock.json'
+      
+      - name: Install dependencies
+        run: |
+          cd libs/contracts
+          npm ci
+      
+      - name: Build contracts
+        run: |
+          cd libs/contracts
+          npm run build
+      
+      - name: Run tests
+        run: |
+          cd libs/contracts
+          npm test
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: contracts-dist
+          path: libs/contracts/dist/
+
+  build-llm-router:
+    name: Build LLM Router Library
+    runs-on: ubuntu-latest
+    needs: [detect-changes, build-contracts]
+    if: needs.detect-changes.outputs.llm-router == 'true' || github.event.inputs.force_rebuild == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'libs/llm-router/package-lock.json'
+      
+      - name: Download contracts artifacts
+        if: needs.build-contracts.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: contracts-dist
+          path: libs/contracts/dist/
+      
+      - name: Install dependencies
+        run: |
+          cd libs/llm-router
+          npm ci
+      
+      - name: Build LLM router
+        run: |
+          cd libs/llm-router
+          npm run build
+      
+      - name: Run tests
+        run: |
+          cd libs/llm-router
+          npm test
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: llm-router-dist
+          path: libs/llm-router/dist/
+
+  deploy-mcp-github:
+    name: Deploy MCP GitHub Service
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.mcp-github == 'true' || github.event.inputs.force_rebuild == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Fly CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+      
+      - name: Deploy to Fly.io
+        run: |
+          cd services/mcp-github
+          flyctl deploy --config fly.toml --dockerfile Dockerfile --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      
+      - name: Health check
+        run: |
+          sleep 30
+          curl -f https://sophiaai-mcp-repo.fly.dev/healthz
+
+  deploy-mcp-research:
+    name: Deploy MCP Research Service
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.mcp-research == 'true' || github.event.inputs.force_rebuild == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Fly CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+      
+      - name: Deploy to Fly.io
+        run: |
+          cd services/mcp-research
+          flyctl deploy --config fly.toml --dockerfile Dockerfile --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      
+      - name: Health check
+        run: |
+          sleep 30
+          curl -f https://sophiaai-mcp-research.fly.dev/healthz
+
+  deploy-mcp-context:
+    name: Deploy MCP Context Service
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.mcp-context == 'true' || github.event.inputs.force_rebuild == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Fly CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+      
+      - name: Deploy to Fly.io
+        run: |
+          cd services/mcp-context
+          flyctl deploy --config fly.toml --dockerfile Dockerfile --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      
+      - name: Health check
+        run: |
+          sleep 30
+          curl -f https://sophiaai-mcp-context.fly.dev/healthz
+
+  build-dashboard:
+    name: Build Dashboard
+    runs-on: ubuntu-latest
+    needs: [detect-changes, build-contracts, build-llm-router]
+    if: needs.detect-changes.outputs.dashboard == 'true' || github.event.inputs.force_rebuild == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'apps/dashboard/package-lock.json'
+      
+      - name: Download library artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: '*-dist'
+          path: libs/
+      
+      - name: Install dependencies
+        run: |
+          cd apps/dashboard
+          npm ci
+      
+      - name: Build dashboard
+        run: |
+          cd apps/dashboard
+          npm run build
+        env:
+          VITE_API_BASE_URL: https://sophiaai-mcp-repo.fly.dev
+          VITE_RESEARCH_API_URL: https://sophiaai-mcp-research.fly.dev
+          VITE_CONTEXT_API_URL: https://sophiaai-mcp-context.fly.dev
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-dist
+          path: apps/dashboard/dist/
+
+  deploy-dashboard:
+    name: Deploy Dashboard
+    runs-on: ubuntu-latest
+    needs: [build-dashboard]
+    if: needs.build-dashboard.result == 'success'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download dashboard artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dashboard-dist
+          path: apps/dashboard/dist/
+      
+      - name: Setup Fly CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+      
+      - name: Deploy to Fly.io
+        run: |
+          cd apps/dashboard
+          flyctl deploy --config fly.toml --dockerfile Dockerfile.static --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      
+      - name: Health check
+        run: |
+          sleep 30
+          curl -f https://sophiaai-dashboard.fly.dev
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [deploy-mcp-github, deploy-mcp-research, deploy-mcp-context, deploy-dashboard]
+    if: always() && (needs.deploy-mcp-github.result == 'success' || needs.deploy-mcp-research.result == 'success' || needs.deploy-mcp-context.result == 'success')
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install test dependencies
+        run: |
+          pip install requests pytest
+      
+      - name: Run integration tests
+        run: |
+          python -m pytest tests/integration/ -v
+        env:
+          GITHUB_MCP_URL: https://sophiaai-mcp-repo.fly.dev
+          RESEARCH_MCP_URL: https://sophiaai-mcp-research.fly.dev
+          CONTEXT_MCP_URL: https://sophiaai-mcp-context.fly.dev
+          DASHBOARD_URL: https://sophiaai-dashboard.fly.dev
+
+  notify-completion:
+    name: Notify Completion
+    runs-on: ubuntu-latest
+    needs: [integration-tests]
+    if: always()
+    steps:
+      - name: Deployment Summary
+        run: |
+          echo "## Sophia AI Intel Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **GitHub MCP**: ${{ needs.deploy-mcp-github.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Research MCP**: ${{ needs.deploy-mcp-research.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Context MCP**: ${{ needs.deploy-mcp-context.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Dashboard**: ${{ needs.deploy-dashboard.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Integration Tests**: ${{ needs.integration-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Service URLs" >> $GITHUB_STEP_SUMMARY
+          echo "- GitHub MCP: https://sophiaai-mcp-repo.fly.dev" >> $GITHUB_STEP_SUMMARY
+          echo "- Research MCP: https://sophiaai-mcp-research.fly.dev" >> $GITHUB_STEP_SUMMARY
+          echo "- Context MCP: https://sophiaai-mcp-context.fly.dev" >> $GITHUB_STEP_SUMMARY
+          echo "- Dashboard: https://sophiaai-dashboard.fly.dev" >> $GITHUB_STEP_SUMMARY
+

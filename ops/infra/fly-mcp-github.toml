@@ -1,5 +1,5 @@
 # Sophia AI Intel - MCP GitHub Service
-app = "sophiaai-mcp-git"
+app = "sophiaai-mcp-repo"
 primary_region = "ord"
 
 [build]
