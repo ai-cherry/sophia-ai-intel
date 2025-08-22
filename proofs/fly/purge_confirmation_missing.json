@@ -1,0 +1,20 @@
+{
+  "status": "failure",
+  "query": "fly_personal_purge",
+  "results": [],
+  "summary": {
+    "text": "CEO confirmation required for Personal org purge operations",
+    "confidence": 1.0,
+    "model": "n/a",
+    "sources": []
+  },
+  "timestamp": "2025-08-22T19:14:34.693Z",
+  "execution_time_ms": 0,
+  "errors": [
+    {
+      "provider": "safety",
+      "code": "confirmation-required",
+      "message": "Set confirm_purge_personal to 'DELETE PERSONAL APPS' to proceed with destructive operations"
+    }
+  ]
+}

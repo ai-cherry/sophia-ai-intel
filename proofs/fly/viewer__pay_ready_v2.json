@@ -1,0 +1,20 @@
+{
+  "data": null,
+  "errors": [
+    {
+      "message": "You must be authenticated to view this.",
+      "locations": [
+        {
+          "line": 1,
+          "column": 3
+        }
+      ],
+      "path": [
+        "viewer"
+      ],
+      "extensions": {
+        "code": "UNAUTHORIZED"
+      }
+    }
+  ]
+}
