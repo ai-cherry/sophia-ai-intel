@@ -1,0 +1,9 @@
+HTTP/2 200 
+date: Fri, 22 Aug 2025 04:18:22 GMT
+server: Fly/2e8436b521 (2025-08-21)
+content-length: 164
+content-type: application/json
+via: 2 fly.io, 2 fly.io
+fly-request-id: 01K37ZZJ2Q2KMB442DT8781R54-iad
+
+{"status":"healthy","service":"sophia-mcp-github","version":"1.0.0","timestamp":"2025-08-22T04:18:23Z","uptime_ms":1755836303486,"repo":"ai-cherry/sophia-ai-intel"}

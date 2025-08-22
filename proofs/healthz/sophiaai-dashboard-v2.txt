@@ -1,0 +1,4 @@
+HTTP/1.1 503 Service Unavailable
+Content-Type: application/json
+
+{"status":"failure","query":"healthz","results":[],"summary":{"text":"Service not deployed","confidence":0.0,"model":"n/a","sources":[]},"timestamp":"2025-08-22T04:06:00Z","execution_time_ms":0,"errors":[{"provider":"fly.io","code":"service_not_deployed","message":"sophiaai-dashboard-v2 not deployed"}]}

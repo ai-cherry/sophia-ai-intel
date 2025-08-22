@@ -1,9 +1,1 @@
-{
-  "status": "failure",
-  "query": "health_check",
-  "results": [],
-  "summary": {"text": "DNS resolution failed - service not deployed or domain not configured", "confidence": 1.0, "model": "network_test", "sources": []},
-  "timestamp": "2025-08-22T02:31:00Z",
-  "execution_time_ms": 100,
-  "errors": [{"provider": "sophiaai-dashboard", "code": "DNS_RESOLUTION_FAILED", "message": "Could not resolve host: sophiaai-dashboard.fly.dev"}]
-}
+Service not available
