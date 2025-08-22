@@ -42,7 +42,7 @@ ZILLOW_API_KEY = os.getenv("ZILLOW_API_KEY")
 
 # Storage
 NEON_DATABASE_URL = os.getenv("NEON_DATABASE_URL")
-QDRANT_URL = os.getenv("QDRANT_URL")
+QDRANT_URL = os.getenv("QDRANT_ENDPOINT")  # GitHub org secret name
 REDIS_URL = os.getenv("REDIS_URL")
 
 # LLM Router

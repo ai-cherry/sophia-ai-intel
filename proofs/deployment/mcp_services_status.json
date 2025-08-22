@@ -1,0 +1,88 @@
+{
+  "status": "not_deployed",
+  "task": "mcp_service_health_verification",
+  "timestamp": "2025-08-22T20:25:37.128Z",
+  "query": "sophia_mcp_services_health_check",
+  "service_endpoints": {
+    "research_mcp_v2": {
+      "url": "https://sophiaai-mcp-research-v2.fly.dev/healthz",
+      "status": "connection_failed",
+      "error_code": 6,
+      "error_type": "DNS_RESOLUTION_OR_CONNECTION_ERROR",
+      "diagnosis": "Service not deployed or not accessible"
+    },
+    "business_mcp_v1": {
+      "url": "https://sophiaai-mcp-business-v2.fly.dev/healthz", 
+      "status": "connection_failed",
+      "error_code": 6,
+      "error_type": "DNS_RESOLUTION_OR_CONNECTION_ERROR",
+      "diagnosis": "Service not deployed or not accessible"
+    }
+  },
+  "environment_variable_corrections": {
+    "qdrant_secret_name": {
+      "old": "QDRANT_URL",
+      "new": "QDRANT_ENDPOINT",
+      "status": "corrected_in_code",
+      "files_updated": [
+        "services/mcp-research/app.py",
+        "services/mcp-business/app.py"
+      ]
+    },
+    "redis_secret_name": {
+      "name": "REDIS_URL",
+      "status": "already_correct",
+      "github_secret_status": "available_in_org"
+    }
+  },
+  "required_actions": [
+    {
+      "step": 1,
+      "action": "Deploy All workflow execution",
+      "location": "GitHub Actions → Deploy All → Run workflow",
+      "purpose": "Deploy updated MCP services with correct environment variable names"
+    },
+    {
+      "step": 2,
+      "action": "Verify QDRANT_ENDPOINT secret exists in GitHub",
+      "location": "GitHub Settings → Secrets and variables → Actions",
+      "purpose": "Ensure Qdrant vector database integration works"
+    },
+    {
+      "step": 3,
+      "action": "Post-deployment health verification",
+      "commands": [
+        "curl https://sophiaai-mcp-research-v2.fly.dev/healthz",
+        "curl https://sophiaai-mcp-business-v2.fly.dev/healthz",
+        "curl https://sophiaai-mcp-research-v2.fly.dev/providers",
+        "curl https://sophiaai-mcp-business-v2.fly.dev/providers"
+      ],
+      "expected": "200 OK responses with provider status information"
+    }
+  ],
+  "provider_readiness_summary": {
+    "infrastructure_secrets": {
+      "redis": "REDIS_URL available in GitHub org",
+      "qdrant": "QDRANT_ENDPOINT should be available in GitHub org", 
+      "neon": "NEON_DATABASE_URL confirmed available"
+    },
+    "business_provider_secrets": {
+      "apollo": "Needs APOLLO_API_KEY in GitHub secrets",
+      "hubspot": "Needs HUBSPOT_ACCESS_TOKEN + HUBSPOT_CLIENT_SECRET",
+      "slack": "Needs SLACK_BOT_TOKEN + SLACK_SIGNING_SECRET + SLACK_CLIENT_*",
+      "status": "All business provider secrets pending CEO configuration"
+    },
+    "research_provider_secrets": {
+      "tavily": "TAVILY_API_KEY confirmed available",
+      "serper": "SERPER_API_KEY confirmed available", 
+      "portkey": "PORTKEY_API_KEY confirmed available",
+      "status": "Core research providers ready"
+    }
+  },
+  "deployment_pipeline_status": {
+    "code_changes": "Environment variable corrections committed",
+    "deploy_all_workflow": "Ready to execute (requires CEO manual trigger)",
+    "expected_outcome": "Full MCP service deployment with infrastructure integration",
+    "validation_ready": "Health check commands prepared for post-deployment verification"
+  }
+}
