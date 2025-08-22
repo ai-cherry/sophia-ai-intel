@@ -1,0 +1,12 @@
+{
+  "run_id": "17159386511",
+  "timestamp": "2025-08-22T15:28:56Z",
+  "ref": "refs/heads/main",
+  "sha": "d52c93cdc924e16af9913e494a94f9439008242e",
+  "services": {
+    "dashboard": "https://sophiaai-dashboard.fly.dev",
+    "mcp_github": "https://sophiaai-mcp-repo.fly.dev",
+    "mcp_research": "https://sophiaai-mcp-research.fly.dev",
+    "mcp_context": "https://sophiaai-mcp-context.fly.dev"
+  }
+}
