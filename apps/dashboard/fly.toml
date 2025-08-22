@@ -1,4 +1,4 @@
-app = "sophiaai-dashboard-v2"
+app = "sophiaai-dashboard"
 primary_region = "ord"
 
 [build]
