@@ -1,4 +1,4 @@
-app = "sophiaai-mcp-context"
+app = "sophiaai-mcp-context-v2"
 primary_region = "ord"
 
 [env]

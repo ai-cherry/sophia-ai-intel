@@ -1,0 +1,45 @@
+{
+  "status": "failure",
+  "operation": "deploy_all_workflow_dispatch",
+  "timestamp": "2025-08-22T22:00:42Z",
+  "errors": [
+    {
+      "provider": "github_api",
+      "code": "RESOURCE_NOT_ACCESSIBLE", 
+      "message": "Resource not accessible by integration - workflow dispatch requires elevated permissions"
+    }
+  ],
+  "attempted_method": {
+    "approach": "GitHub API workflow_dispatch",
+    "endpoint": "POST /repos/ai-cherry/sophia-ai-intel/actions/workflows/deploy_all.yml/dispatches",
+    "authentication": "GITHUB_TOKEN",
+    "response_code": 403,
+    "response_body": "Resource not accessible by integration"
+  },
+  "required_action": {
+    "method": "CEO Manual Deployment Trigger",
+    "url": "https://github.com/ai-cherry/sophia-ai-intel/actions/workflows/deploy_all.yml",
+    "steps": [
+      "Navigate to GitHub Actions workflows page",
+      "Select 'Deploy All Services' workflow",
+      "Click 'Run workflow' button", 
+      "Select 'main' branch",
+      "Click 'Run workflow' to execute"
+    ],
+    "expected_duration": "15-20 minutes",
+    "services_to_deploy": [
+      "sophiaai-dashboard-v2",
+      "sophiaai-mcp-repo-v2", 
+      "sophiaai-mcp-research-v2",
+      "sophiaai-mcp-business-v2",
+      "sophiaai-mcp-context-v2"
+    ]
+  },
+  "post_deployment_proofs_ready": {
+    "healthz_endpoints": "proofs/healthz/*.txt",
+    "build_artifacts": "proofs/build/dashboard_*.txt",
+    "infrastructure_connectivity": "proofs/qdrant/, proofs/redis/, proofs/neon/",
+    "provider_verification": "proofs/research/, proofs/biz/",
+    "context_operations": "proofs/context/"
+  }
+}

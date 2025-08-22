@@ -1,0 +1,14 @@
+{
+  "operation": "research_mcp_providers_verification",
+  "error_type": "DNS_RESOLUTION_FAILURE",
+  "timestamp": "2025-08-22T22:44:37Z",
+  "error_details": {
+    "endpoint": "https://sophiaai-mcp-research-v2.fly.dev/providers",
+    "curl_exit_code": 6,
+    "error_message": "Could not resolve host: sophiaai-mcp-research-v2.fly.dev",
+    "service_deployment_status": "FAILED_DNS_RESOLUTION"
+  },
+  "blocker": "Research MCP service not accessible - DNS resolution failure prevents provider validation",
+  "expected_providers": ["TAVILY_API_KEY", "SERPER_API_KEY", "PERPLEXITY_API_KEY", "EXA_API_KEY"],
+  "impact": "Web search and research capabilities unavailable"
+}

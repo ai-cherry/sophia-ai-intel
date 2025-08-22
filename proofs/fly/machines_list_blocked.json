@@ -1,0 +1,16 @@
+{
+  "operation": "fly_machines_list",
+  "error_type": "CLI_NOT_AVAILABLE",
+  "timestamp": "2025-08-22T22:41:12Z",
+  "error_details": {
+    "attempted_apps": [
+      "sophiaai-mcp-repo-v2"
+    ],
+    "healthy_apps": 1,
+    "failed_apps": 4,
+    "cli_availability": false,
+    "environment": "codespace_without_fly_cli"
+  },
+  "blocker": "Fly CLI not installed in current environment - cannot retrieve machines list for health verification",
+  "workaround": "Health status confirmed via HTTP /healthz endpoints for accessible services"
+}

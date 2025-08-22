@@ -1,0 +1,15 @@
+{
+  "operation": "context_search_smoke_test",
+  "error_type": "DNS_RESOLUTION_FAILURE",
+  "timestamp": "2025-08-22T22:45:08Z",
+  "error_details": {
+    "endpoint": "https://sophiaai-mcp-context-v2.fly.dev/search?q=AgentManager",
+    "curl_exit_code": 6,
+    "error_message": "Could not resolve host: sophiaai-mcp-context-v2.fly.dev",
+    "service_deployment_status": "FAILED_DNS_RESOLUTION",
+    "search_query": "AgentManager"
+  },
+  "blocker": "Context MCP service not accessible - DNS resolution failure prevents search operations",
+  "expected_functionality": "Full-text search across indexed documents and code",
+  "impact": "Context search and document retrieval capabilities unavailable"
+}

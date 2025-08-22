@@ -1,0 +1,71 @@
+{
+  "deployment_matrix": "Sophia AI Intel Services - Pay Ready Org",
+  "timestamp": "2025-08-22T22:27:05Z",
+  "target_org": "pay-ready",
+  "canonical_naming": "*-v2 suffix enforced",
+  "apps": [
+    {
+      "name": "sophiaai-dashboard-v2",
+      "dir": "apps/dashboard",
+      "config": "apps/dashboard/fly.toml",
+      "dockerfile": "apps/dashboard/Dockerfile.static",
+      "url": "https://sophiaai-dashboard-v2.fly.dev",
+      "service_type": "React SPA",
+      "expected_port": 8080,
+      "health_endpoint": "/healthz"
+    },
+    {
+      "name": "sophiaai-mcp-repo-v2",
+      "dir": "services/mcp-github",
+      "config": "services/mcp-github/fly.toml",
+      "dockerfile": "services/mcp-github/Dockerfile",
+      "url": "https://sophiaai-mcp-repo-v2.fly.dev", 
+      "service_type": "GitHub MCP Provider",
+      "expected_port": 8080,
+      "health_endpoint": "/healthz",
+      "note": "Currently deployed and healthy"
+    },
+    {
+      "name": "sophiaai-mcp-research-v2",
+      "dir": "services/mcp-research",
+      "config": "services/mcp-research/fly.toml",
+      "dockerfile": "services/mcp-research/Dockerfile",
+      "url": "https://sophiaai-mcp-research-v2.fly.dev",
+      "service_type": "Research MCP Provider",
+      "expected_port": 8080,
+      "health_endpoint": "/healthz",
+      "providers_endpoint": "/providers"
+    },
+    {
+      "name": "sophiaai-mcp-business-v2", 
+      "dir": "services/mcp-business",
+      "config": "services/mcp-business/fly.toml",
+      "dockerfile": "services/mcp-business/Dockerfile",
+      "url": "https://sophiaai-mcp-business-v2.fly.dev",
+      "service_type": "Business MCP Provider",
+      "expected_port": 8080,
+      "health_endpoint": "/healthz",
+      "providers_endpoint": "/providers",
+      "features": ["Telegram integration", "Neon database", "Qdrant collections"]
+    },
+    {
+      "name": "sophiaai-mcp-context-v2",
+      "dir": "services/mcp-context", 
+      "config": "services/mcp-context/fly.toml",
+      "dockerfile": "services/mcp-context/Dockerfile",
+      "url": "https://sophiaai-mcp-context-v2.fly.dev",
+      "service_type": "Context MCP Provider",
+      "expected_port": 8080,
+      "health_endpoint": "/healthz",
+      "features": ["Indexing endpoint", "Search endpoint", "Qdrant integration"]
+    }
+  ],
+  "deployment_strategy": {
+    "sequential": true,
+    "explicit_config": true,
+    "no_autodetect": true,
+    "dns_wait_timeout": "30 attempts x 5s = 150s max per service",
+    "health_check_required": true,
+    "machines_logging": true
+  }
+}

@@ -37,6 +37,10 @@ GONG_CLIENT_SECRET = os.getenv("GONG_CLIENT_SECRET")
 SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN")
 SLACK_SIGNING_SECRET = os.getenv("SLACK_SIGNING_SECRET")
 
+# Telegram
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+
 # Zillow (optional)
 ZILLOW_API_KEY = os.getenv("ZILLOW_API_KEY")
 
@@ -108,6 +112,7 @@ def get_provider_status():
         ]) else "missing_secret",
         "gong": "ready" if all([GONG_BASE_URL, GONG_ACCESS_KEY]) else "missing_secret",
         "slack": "ready" if all([SLACK_BOT_TOKEN, SLACK_SIGNING_SECRET]) else "missing_secret",
+        "telegram": "ready" if all([TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID]) else "missing_secret",
         "zillow": "ready" if ZILLOW_API_KEY else "missing_secret",
         "storage": "ready" if NEON_DATABASE_URL else "missing_secret",
         "qdrant": "ready" if QDRANT_URL else "missing_secret",
@@ -143,7 +148,11 @@ class ProspectsSyncRequest(BaseModel):
 
 class SignalsDigestRequest(BaseModel):
     window: str = Field(default="7d", description="Time window: 7d|24h|all")
-    channels: List[str] = Field(default=["slack:#gtm"], description="Signal channels to digest")
+    channels: List[str] = Field(default=["telegram"], description="Signal channels to digest")
+
+class SignalsNotifyRequest(BaseModel):
+    text: str = Field(..., description="Notification text to send")
+    channels: List[str] = Field(default=["telegram"], description="Notification channels")
 
 class IntakeUploadRequest(BaseModel):
     provider: str = Field(..., description="Data provider: linkedin|costar|nmhc|csv")
@@ -337,6 +346,38 @@ class SlackProvider:
                     logger.error(f"Failed to digest channel {channel}: {str(e)}")
             
             return digest_summary
+
+class TelegramProvider:
+    @staticmethod
+    async def send_telegram(text: str) -> Dict[str, Any]:
+        """Send message to Telegram chat via Bot API"""
+        if not all([TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID]):
+            raise ValueError("TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID not configured")
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage",
+                json={
+                    "chat_id": TELEGRAM_CHAT_ID,
+                    "text": text,
+                    "parse_mode": "Markdown",
+                    "disable_web_page_preview": True
+                },
+                timeout=30.0
+            )
+            response.raise_for_status()
+            data = response.json()
+            
+            if not data.get("ok"):
+                raise ValueError(f"Telegram API error: {data.get('description', 'Unknown error')}")
+            
+            return {
+                "status": "sent",
+                "message_id": data.get("result", {}).get("message_id"),
+                "chat_id": TELEGRAM_CHAT_ID,
+                "text_length": len(text),
+                "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+            }
 
 # API Endpoints
 @app.get("/healthz")
@@ -634,6 +675,43 @@ async def digest_signals(request: SignalsDigestRequest):
                 "error": str(e)
             })
     
+    # Process Telegram notifications
+    if any("telegram" in ch for ch in request.channels) and all([TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID]):
+        try:
+            # Generate digest summary text
+            digest_text = f"🤖 *Sophia Business Intelligence Digest*\n\n"
+            digest_text += f"📊 *Time Window:* {request.window}\n"
+            digest_text += f"🕒 *Generated:* {time.strftime('%Y-%m-%d %H:%M UTC', time.gmtime())}\n\n"
+            
+            # Add placeholder business signals content
+            digest_text += "📈 *Revenue Signals:*\n"
+            digest_text += "• No new signals in this period\n\n"
+            
+            digest_text += "🎯 *GTM Activities:*\n" 
+            digest_text += "• System operational and monitoring\n\n"
+            
+            digest_text += "💼 *Next Actions:*\n"
+            digest_text += "• Configure business provider secrets for live data\n"
+            digest_text += "• Enable prospect search and enrichment workflows\n\n"
+            
+            digest_text += "_Sophia AI Intel Business MCP v1_"
+            
+            # Send to Telegram
+            telegram_result = await TelegramProvider.send_telegram(digest_text)
+            digest_results["telegram"] = {
+                "notification_sent": True,
+                "message_id": telegram_result.get("message_id"),
+                "text_length": telegram_result.get("text_length"),
+                "window": request.window
+            }
+            providers_used.append("telegram")
+            
+        except Exception as e:
+            providers_failed.append({
+                "provider": "telegram",
+                "error": str(e)
+            })
+    
     # Store signals in database if available
     if NEON_DATABASE_URL and digest_results:
         try:
@@ -656,6 +734,59 @@ async def digest_signals(request: SignalsDigestRequest):
         "window": request.window,
         "channels": request.channels,
         "digest_results": digest_results,
+        "providers_used": providers_used,
+        "providers_failed": providers_failed,
+        "execution_time_ms": int((time.time() - start_time) * 1000),
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    }
+
+@app.post("/signals/notify")
+async def notify_signals(request: SignalsNotifyRequest):
+    """Send notification to configured channels"""
+    start_time = time.time()
+    
+    notification_results = {}
+    providers_used = []
+    providers_failed = []
+    
+    # Process Telegram notifications
+    if any("telegram" in ch for ch in request.channels) and all([TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID]):
+        try:
+            telegram_result = await TelegramProvider.send_telegram(request.text)
+            notification_results["telegram"] = {
+                "notification_sent": True,
+                "message_id": telegram_result.get("message_id"),
+                "text_length": telegram_result.get("text_length"),
+                "timestamp": telegram_result.get("timestamp")
+            }
+            providers_used.append("telegram")
+            
+        except Exception as e:
+            providers_failed.append({
+                "provider": "telegram", 
+                "error": str(e)
+            })
+    
+    # Process Slack notifications (optional)
+    if any("slack:" in ch for ch in request.channels) and SLACK_BOT_TOKEN:
+        slack_channels = [ch for ch in request.channels if "slack:" in ch]
+        try:
+            # Placeholder for Slack notification - would use Slack API
+            notification_results["slack"] = {
+                "notification_sent": False,
+                "note": "Slack notification not implemented in this version"
+            }
+        except Exception as e:
+            providers_failed.append({
+                "provider": "slack",
+                "error": str(e)
+            })
+    
+    return {
+        "status": "success" if notification_results else "failed",
+        "text": request.text,
+        "channels": request.channels,
+        "notification_results": notification_results,
         "providers_used": providers_used,
         "providers_failed": providers_failed,
         "execution_time_ms": int((time.time() - start_time) * 1000),

@@ -1,4 +1,4 @@
-app = "sophiaai-mcp-research"
+app = "sophiaai-mcp-research-v2"
 primary_region = "ord"
 
 [env]

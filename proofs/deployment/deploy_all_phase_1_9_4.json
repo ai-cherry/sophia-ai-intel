@@ -1,0 +1,56 @@
+{
+  "status": "failure",
+  "query": "deploy_all_workflow_dispatch",
+  "results": [],
+  "summary": {
+    "text": "Deploy All workflow requires manual CEO trigger via GitHub Actions UI. Automated workflow dispatch not available from current context.",
+    "confidence": 1.0,
+    "model": "n/a",
+    "sources": []
+  },
+  "timestamp": "2025-08-22T21:43:00Z",
+  "execution_time_ms": 0,
+  "errors": [
+    {
+      "provider": "github_actions",
+      "code": "MANUAL_TRIGGER_REQUIRED",
+      "message": "workflow_dispatch requires CEO manual trigger from GitHub Actions UI"
+    }
+  ],
+  "manual_action_required": {
+    "action": "CEO_DEPLOY_ALL_TRIGGER",
+    "url": "https://github.com/ai-cherry/sophia-ai-intel/actions/workflows/deploy_all.yml",
+    "steps": [
+      "1. Navigate to GitHub Actions → Deploy All workflow",
+      "2. Click 'Run workflow' button",
+      "3. Leave deploy_dashboard and deploy_services as 'true'", 
+      "4. Click 'Run workflow' to start deployment",
+      "5. Monitor workflow progress for ~10-15 minutes"
+    ],
+    "expected_artifacts_after_completion": [
+      "proofs/healthz/sophiaai-dashboard-v2.txt",
+      "proofs/healthz/sophiaai-mcp-repo-v2.txt",
+      "proofs/healthz/sophiaai-mcp-research-v2.txt",
+      "proofs/healthz/sophiaai-mcp-business-v2.txt", 
+      "proofs/healthz/sophiaai-mcp-context-v2.txt",
+      "proofs/build/dashboard_build.txt",
+      "proofs/build/dashboard_asset_head.txt",
+      "proofs/fly/*_machines.json for each app"
+    ]
+  },
+  "post_deployment_verification": {
+    "healthz_endpoints_to_check": [
+      "https://sophiaai-dashboard-v2.fly.dev/healthz",
+      "https://sophiaai-mcp-repo-v2.fly.dev/healthz", 
+      "https://sophiaai-mcp-research-v2.fly.dev/healthz",
+      "https://sophiaai-mcp-business-v2.fly.dev/healthz",
+      "https://sophiaai-mcp-context-v2.fly.dev/healthz"
+    ],
+    "expected_result": "All endpoints return HTTP 200 status",
+    "secrets_deployed": [
+      "QDRANT_URL → research + business services",
+      "REDIS_URL → research + business services",
+      "NEON_DATABASE_URL → business + context services"
+    ]
+  }
+}

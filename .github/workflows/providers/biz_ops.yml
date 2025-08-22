@@ -6,7 +6,7 @@ on:
       action:
         required: true
         type: string
-        description: "search|enrich|sync|digest|upload"
+        description: "search|enrich|sync|digest|notify|upload"
       payload:
         required: false
         type: string
@@ -49,6 +49,11 @@ on:
         required: false
       SLACK_SIGNING_SECRET:
         required: false
+      # Telegram
+      TELEGRAM_BOT_TOKEN:
+        required: false
+      TELEGRAM_CHAT_ID:
+        required: false
       # Optional
       ZILLOW_API_KEY:
         required: false
@@ -90,6 +95,8 @@ jobs:
           echo "::add-mask::${{ secrets.GONG_CLIENT_SECRET }}"
           echo "::add-mask::${{ secrets.SLACK_BOT_TOKEN }}"
           echo "::add-mask::${{ secrets.SLACK_SIGNING_SECRET }}"
+          echo "::add-mask::${{ secrets.TELEGRAM_BOT_TOKEN }}"
+          echo "::add-mask::${{ secrets.TELEGRAM_CHAT_ID }}"
           echo "::add-mask::${{ secrets.ZILLOW_API_KEY }}"
           echo "::add-mask::${{ secrets.NEON_DATABASE_URL }}"
           echo "::add-mask::${{ secrets.QDRANT_URL }}"
@@ -108,6 +115,7 @@ jobs:
           [[ -n "${{ secrets.SALESFORCE_CLIENT_ID }}" ]] && PROVIDER_COUNT=$((PROVIDER_COUNT + 1))
           [[ -n "${{ secrets.GONG_BASE_URL }}" ]] && PROVIDER_COUNT=$((PROVIDER_COUNT + 1))
           [[ -n "${{ secrets.SLACK_BOT_TOKEN }}" ]] && PROVIDER_COUNT=$((PROVIDER_COUNT + 1))
+          [[ -n "${{ secrets.TELEGRAM_BOT_TOKEN }}" ]] && PROVIDER_COUNT=$((PROVIDER_COUNT + 1))
           
           echo "Available providers: $PROVIDER_COUNT"
           
@@ -225,6 +233,29 @@ jobs:
             -w "\nHTTP Status: %{http_code}\n" \
             > proofs/biz/digest_${TIMESTAMP}.json 2>/dev/null || echo '{"error": "Digest request failed", "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"}' > proofs/biz/digest_${TIMESTAMP}.json
 
+      - name: Signals notify operation
+        if: ${{ inputs.action == 'notify' }}
+        run: |
+          echo "📨 Business signals notify operation"
+          
+          PAYLOAD='${{ inputs.payload }}'
+          TEXT=$(echo "$PAYLOAD" | jq -r '.text // "Sophia: Test notification from Business MCP"')
+          CHANNELS=$(echo "$PAYLOAD" | jq -r '.channels // ["telegram"]' | jq -c .)
+          
+          echo "Text: $TEXT"
+          echo "Channels: $CHANNELS"
+          
+          # Call Business MCP notify endpoint
+          TIMESTAMP=$(date +%s)
+          curl -X POST "${{ env.BUSINESS_URL }}/signals/notify" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"text\": \"$TEXT\",
+              \"channels\": $CHANNELS
+            }" \
+            -w "\nHTTP Status: %{http_code}\n" \
+            > proofs/biz/telegram_notify_${TIMESTAMP}.json 2>/dev/null || echo '{"error": "Notify request failed", "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"}' > proofs/biz/telegram_notify_${TIMESTAMP}.json
+
       - name: Intake upload operation
         if: ${{ inputs.action == 'upload' }}
         run: |
@@ -262,6 +293,7 @@ jobs:
           echo ""
           echo "💬 Communication:"
           echo "  - Slack: $([[ -n "${{ secrets.SLACK_BOT_TOKEN }}" ]] && echo "✅ configured" || echo "❌ missing")"
+          echo "  - Telegram: $([[ -n "${{ secrets.TELEGRAM_BOT_TOKEN }}" ]] && echo "✅ configured" || echo "❌ missing")"
           echo ""
           echo "🏠 PropTech (Optional):"
           echo "  - Zillow: $([[ -n "${{ secrets.ZILLOW_API_KEY }}" ]] && echo "✅ configured" || echo "❌ missing")"
@@ -274,13 +306,13 @@ jobs:
           # Count ready providers for summary
           READY_CRM=$(( $([[ -n "${{ secrets.APOLLO_API_KEY }}" ]] && echo 1 || echo 0) + $([[ -n "${{ secrets.HUBSPOT_ACCESS_TOKEN }}" ]] && echo 1 || echo 0) + $([[ -n "${{ secrets.SALESFORCE_CLIENT_ID }}" ]] && echo 1 || echo 0) ))
           READY_INTEL=$(( $([[ -n "${{ secrets.USERGEMS_API_KEY }}" ]] && echo 1 || echo 0) + $([[ -n "${{ secrets.GONG_BASE_URL }}" ]] && echo 1 || echo 0) ))
-          READY_COMM=$(( $([[ -n "${{ secrets.SLACK_BOT_TOKEN }}" ]] && echo 1 || echo 0) ))
+          READY_COMM=$(( $([[ -n "${{ secrets.SLACK_BOT_TOKEN }}" ]] && echo 1 || echo 0) + $([[ -n "${{ secrets.TELEGRAM_BOT_TOKEN }}" ]] && echo 1 || echo 0) ))
           
           echo ""
           echo "📊 Provider Readiness:"
           echo "  - CRM: $READY_CRM/3 providers ready"
           echo "  - Revenue Intelligence: $READY_INTEL/2 providers ready"
-          echo "  - Communication: $READY_COMM/1 providers ready"
+          echo "  - Communication: $READY_COMM/2 providers ready"
           
           echo '{"providers_ready": {"crm": '$READY_CRM', "revenue_intel": '$READY_INTEL', "communication": '$READY_COMM'}, "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"}' > proofs/biz/provider_summary.json
 

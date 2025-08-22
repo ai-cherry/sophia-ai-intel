@@ -1,0 +1,99 @@
+{
+  "status": "partial_deployment",
+  "deployment_date": "2025-08-22T22:15:30Z",
+  "services_deployed": "1 of 5",
+  "services_status": {
+    "sophiaai-dashboard-v2": {
+      "status": "NOT_DEPLOYED",
+      "health_proof": "proofs/healthz/sophiaai-dashboard-v2.txt",
+      "error": "DNS resolution failed - domain does not exist"
+    },
+    "sophiaai-mcp-repo-v2": {
+      "status": "HEALTHY",
+      "health_proof": "proofs/healthz/sophiaai-mcp-repo-v2.txt",
+      "uptime_ms": 1755900366230,
+      "service": "sophia-mcp-github",
+      "version": "1.0.0"
+    },
+    "sophiaai-mcp-research-v2": {
+      "status": "NOT_DEPLOYED",
+      "health_proof": "proofs/healthz/sophiaai-mcp-research-v2.txt",
+      "error": "DNS resolution failed - domain does not exist"
+    },
+    "sophiaai-mcp-business-v2": {
+      "status": "NOT_DEPLOYED", 
+      "health_proof": "proofs/healthz/sophiaai-mcp-business-v2.txt",
+      "error": "DNS resolution failed - domain does not exist"
+    },
+    "sophiaai-mcp-context-v2": {
+      "status": "NOT_DEPLOYED",
+      "health_proof": "proofs/healthz/sophiaai-mcp-context-v2.txt", 
+      "error": "DNS resolution failed - domain does not exist"
+    }
+  },
+  "build_artifacts": {
+    "dashboard_build": {
+      "status": "NOT_AVAILABLE",
+      "proof": "proofs/build/dashboard_build.txt",
+      "reason": "Dashboard service not deployed"
+    }
+  },
+  "infrastructure_probes": {
+    "qdrant_collections": {
+      "status": "BLOCKED",
+      "proof": "proofs/qdrant/collections_after_deploy.json",
+      "reason": "Services not deployed - cannot verify collections"
+    },
+    "redis_ttl": {
+      "status": "BLOCKED",
+      "proof": "proofs/redis/ttl_probe.json", 
+      "reason": "Services not deployed - cannot probe Redis"
+    },
+    "neon_smoke": {
+      "status": "BLOCKED",
+      "proof": "proofs/neon/smoke.txt",
+      "reason": "Services not deployed - cannot test database"
+    }
+  },
+  "provider_verification": {
+    "research_providers": {
+      "status": "SERVICE_NOT_DEPLOYED",
+      "proof": "proofs/research/providers.json",
+      "endpoint": "https://sophiaai-mcp-research-v2.fly.dev/providers"
+    },
+    "business_providers": {
+      "status": "SERVICE_NOT_DEPLOYED", 
+      "proof": "proofs/biz/providers.json",
+      "endpoint": "https://sophiaai-mcp-business-v2.fly.dev/providers"
+    },
+    "repo_providers": {
+      "status": "ENDPOINT_NOT_FOUND",
+      "endpoint": "https://sophiaai-mcp-repo-v2.fly.dev/providers",
+      "response": "Not Found",
+      "note": "Expected for GitHub-focused service"
+    }
+  },
+  "context_operations": {
+    "indexing": {
+      "status": "SERVICE_NOT_DEPLOYED",
+      "proof": "proofs/context/index_run.json",
+      "reason": "Context MCP service not deployed"
+    },
+    "search": {
+      "status": "SERVICE_NOT_DEPLOYED", 
+      "proof": "proofs/context/search_smoke.json",
+      "reason": "Context MCP service not deployed"
+    }
+  },
+  "deployment_analysis": {
+    "successful_deployment": "Repository MCP only",
+    "missing_deployments": [
+      "Dashboard (React frontend)",
+      "Research MCP (external APIs)", 
+      "Business MCP (Telegram + database)",
+      "Context MCP (indexing + search)"
+    ],
+    "infrastructure_impact": "Limited functionality - only GitHub operations available",
+    "recommended_action": "Complete Deploy All workflow to activate full stack"
+  }
+}

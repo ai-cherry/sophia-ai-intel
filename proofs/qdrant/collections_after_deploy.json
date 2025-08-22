@@ -1,0 +1,16 @@
+{
+  "operation": "qdrant_collections_probe",
+  "error_type": "CONNECTION_FAILED", 
+  "timestamp": "2025-08-22T22:42:18Z",
+  "error_details": {
+    "endpoint": "https://a2a5dc3b-bf37-4907-9398-d49f5c6813ed.us-west-2-0.aws.cloud.qdrant.io/collections",
+    "curl_result": "empty_response",
+    "likely_causes": [
+      "API key authentication required",
+      "Network connectivity issues",
+      "Service not responding"
+    ]
+  },
+  "blocker": "Cannot verify Qdrant vector database collections - may need authentication configuration",
+  "impact": "Vector search operations will be unavailable"
+}
