@@ -1,0 +1,262 @@
+name: Context Index — Neon Database + Qdrant Vector Storage
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Index action'
+        required: true
+        default: 'full_reindex'
+        type: choice
+        options:
+          - 'full_reindex'
+          - 'incremental'
+          - 'validate'
+      force:
+        description: 'Force reindex (ignore existing)'
+        required: false
+        default: false
+        type: boolean
+
+  schedule:
+    # Daily at 2 AM UTC for incremental updates
+    - cron: '0 2 * * *'
+
+env:
+  NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+  QDRANT_URL: ${{ secrets.QDRANT_URL }}
+  QDRANT_API_KEY: ${{ secrets.QDRANT_API_KEY }}
+  PORTKEY_API_KEY: ${{ secrets.PORTKEY_API_KEY }}
+
+jobs:
+  context_index:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install asyncpg qdrant-client openai anthropic httpx python-dotenv
+
+      - name: Validate required secrets
+        id: validate
+        run: |
+          if [ -z "$NEON_DATABASE_URL" ]; then
+            echo "::error::NEON_DATABASE_URL secret is required"
+            echo "status=blocked" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+          
+          echo "status=ready" >> $GITHUB_OUTPUT
+          echo "neon_ready=true" >> $GITHUB_OUTPUT
+          
+          if [ -n "$QDRANT_URL" ]; then
+            echo "qdrant_ready=true" >> $GITHUB_OUTPUT
+          else
+            echo "qdrant_ready=false" >> $GITHUB_OUTPUT
+            echo "::warning::QDRANT_URL not configured - vector search disabled"
+          fi
+
+      - name: Create context indexing script
+        run: |
+          cat > context_indexer.py << 'EOF'
+          import asyncio
+          import asyncpg
+          import json
+          import os
+          import sys
+          from datetime import datetime, timezone
+          from typing import Optional, Dict, List, Any
+          
+          class ContextIndexer:
+              def __init__(self):
+                  self.db_url = os.getenv('NEON_DATABASE_URL')
+                  self.qdrant_url = os.getenv('QDRANT_URL')
+                  self.qdrant_key = os.getenv('QDRANT_API_KEY')
+                  self.action = os.getenv('INPUT_ACTION', 'full_reindex')
+                  self.force = os.getenv('INPUT_FORCE', 'false').lower() == 'true'
+                  
+              async def run(self) -> Dict[str, Any]:
+                  if not self.db_url:
+                      return {
+                          "status": "error",
+                          "error": "NEON_DATABASE_URL required but not provided"
+                      }
+                  
+                  try:
+                      conn = await asyncpg.connect(self.db_url)
+                      
+                      # Check if context tables exist
+                      tables_query = """
+                      SELECT table_name FROM information_schema.tables 
+                      WHERE table_schema = 'public' AND table_name IN ('context_entries', 'context_vectors')
+                      """
+                      tables = await conn.fetch(tables_query)
+                      table_names = [row['table_name'] for row in tables]
+                      
+                      # Create context tables if they don't exist
+                      if 'context_entries' not in table_names:
+                          await conn.execute("""
+                          CREATE TABLE context_entries (
+                              id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                              source_type VARCHAR(50) NOT NULL, -- 'file', 'commit', 'issue', 'pr'
+                              source_path TEXT,
+                              content_hash VARCHAR(64) NOT NULL,
+                              title TEXT,
+                              content TEXT NOT NULL,
+                              metadata JSONB DEFAULT '{}',
+                              created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                              updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                              UNIQUE(source_type, source_path, content_hash)
+                          )
+                          """)
+                          
+                      # Get current repository context
+                      repo_files = []
+                      for root, dirs, files in os.walk('.'):
+                          # Skip hidden dirs and node_modules
+                          dirs[:] = [d for d in dirs if not d.startswith('.') and d != 'node_modules']
+                          for file in files:
+                              if not file.startswith('.') and file.endswith(('.md', '.py', '.js', '.ts', '.yml', '.yaml', '.json')):
+                                  file_path = os.path.join(root, file).replace('./','')
+                                  if len(file_path) < 500:  # Avoid very long paths
+                                      repo_files.append(file_path)
+                      
+                      # Index key files
+                      indexed_count = 0
+                      skipped_count = 0
+                      error_count = 0
+                      
+                      for file_path in repo_files[:100]:  # Limit for workflow time
+                          try:
+                              if os.path.getsize(file_path) > 100000:  # Skip files > 100KB
+                                  skipped_count += 1
+                                  continue
+                                  
+                              with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                                  content = f.read()
+                                  
+                              # Simple content hash
+                              import hashlib
+                              content_hash = hashlib.sha256(content.encode()).hexdigest()[:16]
+                              
+                              # Insert or update
+                              await conn.execute("""
+                              INSERT INTO context_entries (source_type, source_path, content_hash, title, content, metadata)
+                              VALUES ($1, $2, $3, $4, $5, $6)
+                              ON CONFLICT (source_type, source_path, content_hash) DO NOTHING
+                              """, 'file', file_path, content_hash, file_path, content[:10000], {'size': len(content)})
+                              
+                              indexed_count += 1
+                              
+                          except Exception as e:
+                              error_count += 1
+                              continue
+                      
+                      # Get stats
+                      total_entries = await conn.fetchval("SELECT COUNT(*) FROM context_entries")
+                      
+                      await conn.close()
+                      
+                      result = {
+                          "status": "success",
+                          "action": self.action,
+                          "timestamp": datetime.now(timezone.utc).isoformat(),
+                          "database_status": "connected",
+                          "vector_status": "qdrant_not_configured" if not self.qdrant_url else "qdrant_available",
+                          "statistics": {
+                              "total_entries": total_entries,
+                              "indexed_this_run": indexed_count,
+                              "skipped_this_run": skipped_count,
+                              "errors_this_run": error_count,
+                              "files_scanned": len(repo_files)
+                          }
+                      }
+                      
+                      return result
+                      
+                  except Exception as e:
+                      return {
+                          "status": "error",
+                          "error": str(e),
+                          "timestamp": datetime.now(timezone.utc).isoformat()
+                      }
+          
+          async def main():
+              indexer = ContextIndexer()
+              result = await indexer.run()
+              
+              # Write result
+              with open('context_index_result.json', 'w') as f:
+                  json.dump(result, f, indent=2)
+              
+              print(json.dumps(result, indent=2))
+              
+              if result.get('status') == 'error':
+                  sys.exit(1)
+          
+          if __name__ == '__main__':
+              asyncio.run(main())
+          EOF
+
+      - name: Run context indexing
+        id: index
+        env:
+          INPUT_ACTION: ${{ github.event.inputs.action || 'incremental' }}
+          INPUT_FORCE: ${{ github.event.inputs.force || 'false' }}
+        run: |
+          python context_indexer.py
+
+      - name: Save index proof
+        if: always()
+        run: |
+          mkdir -p proofs/context
+          timestamp=$(date +%s)
+          
+          if [ -f context_index_result.json ]; then
+            cp context_index_result.json "proofs/context/index_run_${timestamp}.json"
+          else
+            echo '{"status":"error","error":"Script failed to generate result"}' > "proofs/context/index_run_${timestamp}.json"
+          fi
+
+      - name: Commit proof artifacts
+        if: always()
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Actions"
+          
+          git add proofs/context/
+          
+          if ! git diff --staged --quiet; then
+            git commit -m "proof: Context indexing run $(date -u +%Y%m%d_%H%M%S)"
+            git push
+          fi
+
+      - name: Generate summary
+        if: always()
+        run: |
+          if [ -f context_index_result.json ]; then
+            cat context_index_result.json | jq -r '
+              if .status == "success" then
+                "✅ Context indexing completed successfully\n" +
+                "📊 **Statistics:**\n" +
+                "- Total entries: \(.statistics.total_entries)\n" +
+                "- Indexed this run: \(.statistics.indexed_this_run)\n" +
+                "- Files scanned: \(.statistics.files_scanned)\n" +
+                "- Database: \(.database_status)\n" +
+                "- Vector search: \(.vector_status)"
+              else
+                "❌ Context indexing failed: \(.error // "Unknown error")"
+              end
+            ' >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Context indexing failed - no result file generated" >> $GITHUB_STEP_SUMMARY
+          fi

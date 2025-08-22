@@ -1,0 +1,219 @@
+name: Nightly Smoke Tests — Health + Metrics Collection
+
+on:
+  schedule:
+    # Daily at 3 AM UTC
+    - cron: '0 3 * * *'
+  
+  workflow_dispatch:
+    inputs:
+      force_all:
+        description: 'Test all endpoints (including unhealthy)'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  CANONICAL_ORG: "pay-ready"
+  APP_SUFFIX: "-v2"
+
+jobs:
+  smoke_test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup test environment
+        run: |
+          date_stamp=$(date -u +%Y%m%d)
+          mkdir -p "proofs/healthz/nightly/${date_stamp}"
+          echo "DATE_STAMP=${date_stamp}" >> $GITHUB_ENV
+          echo "PROOF_DIR=proofs/healthz/nightly/${date_stamp}" >> $GITHUB_ENV
+
+      - name: Test Dashboard Health
+        id: dashboard
+        run: |
+          app_url="https://sophiaai-dashboard-v2.fly.dev"
+          echo "Testing dashboard at: $app_url"
+          
+          response=$(curl -s -w "%{http_code}" -o response_body.txt "$app_url/")
+          http_code="${response: -3}"
+          
+          if [ "$http_code" = "200" ]; then
+            echo "status=healthy" >> $GITHUB_OUTPUT
+            echo "✅ Dashboard responding (200)" | tee "$PROOF_DIR/sophiaai-dashboard-v2.txt"
+            head -c 500 response_body.txt >> "$PROOF_DIR/sophiaai-dashboard-v2.txt"
+          else
+            echo "status=unhealthy" >> $GITHUB_OUTPUT  
+            echo "❌ Dashboard unhealthy ($http_code)" | tee "$PROOF_DIR/sophiaai-dashboard-v2.txt"
+            cat response_body.txt >> "$PROOF_DIR/sophiaai-dashboard-v2.txt" 2>/dev/null || true
+          fi
+
+      - name: Test Repository MCP Health
+        id: mcp_repo
+        run: |
+          app_url="https://sophiaai-mcp-repo-v2.fly.dev"
+          echo "Testing repo MCP at: $app_url"
+          
+          response=$(curl -s -w "%{http_code}" -o response_body.txt "$app_url/healthz")
+          http_code="${response: -3}"
+          
+          if [ "$http_code" = "200" ]; then
+            echo "status=healthy" >> $GITHUB_OUTPUT
+            echo "✅ Repo MCP healthy (200)" | tee "$PROOF_DIR/sophiaai-mcp-repo-v2.txt"
+            cat response_body.txt >> "$PROOF_DIR/sophiaai-mcp-repo-v2.txt"
+          else
+            echo "status=unhealthy" >> $GITHUB_OUTPUT
+            echo "❌ Repo MCP unhealthy ($http_code)" | tee "$PROOF_DIR/sophiaai-mcp-repo-v2.txt"
+            cat response_body.txt >> "$PROOF_DIR/sophiaai-mcp-repo-v2.txt" 2>/dev/null || true
+          fi
+
+      - name: Test Research MCP Health
+        id: mcp_research
+        run: |
+          app_url="https://sophiaai-mcp-research-v2.fly.dev"
+          echo "Testing research MCP at: $app_url"
+          
+          response=$(curl -s -w "%{http_code}" -o response_body.txt "$app_url/healthz")
+          http_code="${response: -3}"
+          
+          if [ "$http_code" = "200" ]; then
+            echo "status=healthy" >> $GITHUB_OUTPUT
+            echo "✅ Research MCP healthy (200)" | tee "$PROOF_DIR/sophiaai-mcp-research-v2.txt"
+            cat response_body.txt >> "$PROOF_DIR/sophiaai-mcp-research-v2.txt"
+          else
+            echo "status=unhealthy" >> $GITHUB_OUTPUT
+            echo "❌ Research MCP unhealthy ($http_code)" | tee "$PROOF_DIR/sophiaai-mcp-research-v2.txt"
+            cat response_body.txt >> "$PROOF_DIR/sophiaai-mcp-research-v2.txt" 2>/dev/null || true
+          fi
+
+      - name: Test Business MCP Health
+        id: mcp_business
+        run: |
+          app_url="https://sophiaai-mcp-business-v2.fly.dev"
+          echo "Testing business MCP at: $app_url"
+          
+          response=$(curl -s -w "%{http_code}" -o response_body.txt "$app_url/healthz")
+          http_code="${response: -3}"
+          
+          if [ "$http_code" = "200" ]; then
+            echo "status=healthy" >> $GITHUB_OUTPUT
+            echo "✅ Business MCP healthy (200)" | tee "$PROOF_DIR/sophiaai-mcp-business-v2.txt"
+            cat response_body.txt >> "$PROOF_DIR/sophiaai-mcp-business-v2.txt"
+          else
+            echo "status=unhealthy" >> $GITHUB_OUTPUT
+            echo "❌ Business MCP unhealthy ($http_code)" | tee "$PROOF_DIR/sophiaai-mcp-business-v2.txt"
+            cat response_body.txt >> "$PROOF_DIR/sophiaai-mcp-business-v2.txt" 2>/dev/null || true
+          fi
+
+      - name: Test Context MCP Health
+        id: mcp_context
+        run: |
+          app_url="https://sophiaai-mcp-context-v2.fly.dev"
+          echo "Testing context MCP at: $app_url"
+          
+          response=$(curl -s -w "%{http_code}" -o response_body.txt "$app_url/healthz")
+          http_code="${response: -3}"
+          
+          if [ "$http_code" = "200" ]; then
+            echo "status=healthy" >> $GITHUB_OUTPUT
+            echo "✅ Context MCP healthy (200)" | tee "$PROOF_DIR/sophiaai-mcp-context-v2.txt"
+            cat response_body.txt >> "$PROOF_DIR/sophiaai-mcp-context-v2.txt"
+          else
+            echo "status=unhealthy" >> $GITHUB_OUTPUT
+            echo "❌ Context MCP unhealthy ($http_code)" | tee "$PROOF_DIR/sophiaai-mcp-context-v2.txt"
+            cat response_body.txt >> "$PROOF_DIR/sophiaai-mcp-context-v2.txt" 2>/dev/null || true
+          fi
+
+      - name: Test functional endpoints (if healthy)
+        if: steps.mcp_research.outputs.status == 'healthy' || github.event.inputs.force_all == 'true'
+        run: |
+          # Test research provider endpoint
+          echo "Testing research providers endpoint..."
+          curl -s "https://sophiaai-mcp-research-v2.fly.dev/providers" | tee "$PROOF_DIR/research_providers_test.json" || true
+          
+          # Test business providers endpoint if available
+          if [ "${{ steps.mcp_business.outputs.status }}" = "healthy" ]; then
+            echo "Testing business providers endpoint..."
+            curl -s "https://sophiaai-mcp-business-v2.fly.dev/providers" | tee "$PROOF_DIR/business_providers_test.json" || true
+          fi
+
+      - name: Generate metrics summary
+        run: |
+          cat > "$PROOF_DIR/metrics_summary.json" << EOF
+          {
+            "timestamp": "$(date -u --iso-8601=seconds)",
+            "test_type": "nightly_smoke",
+            "services": {
+              "dashboard": {
+                "status": "${{ steps.dashboard.outputs.status }}",
+                "url": "https://sophiaai-dashboard-v2.fly.dev"
+              },
+              "mcp_repo": {
+                "status": "${{ steps.mcp_repo.outputs.status }}",
+                "url": "https://sophiaai-mcp-repo-v2.fly.dev"
+              },
+              "mcp_research": {
+                "status": "${{ steps.mcp_research.outputs.status }}",
+                "url": "https://sophiaai-mcp-research-v2.fly.dev"
+              },
+              "mcp_business": {
+                "status": "${{ steps.mcp_business.outputs.status }}",
+                "url": "https://sophiaai-mcp-business-v2.fly.dev"
+              },
+              "mcp_context": {
+                "status": "${{ steps.mcp_context.outputs.status }}",
+                "url": "https://sophiaai-mcp-context-v2.fly.dev"
+              }
+            },
+            "summary": {
+              "total_services": 5,
+              "healthy_services": $([[ "${{ steps.dashboard.outputs.status }}" = "healthy" ]] && echo 1 || echo 0)$([[ "${{ steps.mcp_repo.outputs.status }}" = "healthy" ]] && echo "+1" || echo "+0")$([[ "${{ steps.mcp_research.outputs.status }}" = "healthy" ]] && echo "+1" || echo "+0")$([[ "${{ steps.mcp_business.outputs.status }}" = "healthy" ]] && echo "+1" || echo "+0")$([[ "${{ steps.mcp_context.outputs.status }}" = "healthy" ]] && echo "+1" || echo "+0") | bc,
+              "overall_health": "$([[ "${{ steps.dashboard.outputs.status }}" = "healthy" ]] && [[ "${{ steps.mcp_repo.outputs.status }}" = "healthy" ]] && echo "healthy" || echo "degraded")"
+            }
+          }
+          EOF
+
+      - name: Commit nightly proofs
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Actions Nightly"
+          
+          git add proofs/healthz/nightly/
+          
+          if ! git diff --staged --quiet; then
+            healthy_count=$([[ "${{ steps.dashboard.outputs.status }}" = "healthy" ]] && echo 1 || echo 0)
+            healthy_count=$((healthy_count + $([[ "${{ steps.mcp_repo.outputs.status }}" = "healthy" ]] && echo 1 || echo 0)))
+            healthy_count=$((healthy_count + $([[ "${{ steps.mcp_research.outputs.status }}" = "healthy" ]] && echo 1 || echo 0)))
+            healthy_count=$((healthy_count + $([[ "${{ steps.mcp_business.outputs.status }}" = "healthy" ]] && echo 1 || echo 0)))
+            healthy_count=$((healthy_count + $([[ "${{ steps.mcp_context.outputs.status }}" = "healthy" ]] && echo 1 || echo 0)))
+            
+            git commit -m "proof: Nightly smoke test $DATE_STAMP — ${healthy_count}/5 services healthy"
+            git push
+          fi
+
+      - name: Generate workflow summary
+        run: |
+          echo "# 🌙 Nightly Smoke Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Test Date:** $(date -u --iso-8601=date)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Service Health Status" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Service | Status | URL |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|--------|-----|" >> $GITHUB_STEP_SUMMARY
+          echo "| Dashboard | ${{ steps.dashboard.outputs.status == 'healthy' && '✅' || '❌' }} ${{ steps.dashboard.outputs.status }} | https://sophiaai-dashboard-v2.fly.dev |" >> $GITHUB_STEP_SUMMARY
+          echo "| Repo MCP | ${{ steps.mcp_repo.outputs.status == 'healthy' && '✅' || '❌' }} ${{ steps.mcp_repo.outputs.status }} | https://sophiaai-mcp-repo-v2.fly.dev |" >> $GITHUB_STEP_SUMMARY
+          echo "| Research MCP | ${{ steps.mcp_research.outputs.status == 'healthy' && '✅' || '❌' }} ${{ steps.mcp_research.outputs.status }} | https://sophiaai-mcp-research-v2.fly.dev |" >> $GITHUB_STEP_SUMMARY
+          echo "| Business MCP | ${{ steps.mcp_business.outputs.status == 'healthy' && '✅' || '❌' }} ${{ steps.mcp_business.outputs.status }} | https://sophiaai-mcp-business-v2.fly.dev |" >> $GITHUB_STEP_SUMMARY
+          echo "| Context MCP | ${{ steps.mcp_context.outputs.status == 'healthy' && '✅' || '❌' }} ${{ steps.mcp_context.outputs.status }} | https://sophiaai-mcp-context-v2.fly.dev |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📊 **Proofs saved to:** \`proofs/healthz/nightly/$DATE_STAMP/\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: Notify on failures
+        if: steps.dashboard.outputs.status != 'healthy' || steps.mcp_repo.outputs.status != 'healthy'
+        run: |
+          echo "::warning::Critical services unhealthy - Dashboard: ${{ steps.dashboard.outputs.status }}, Repo MCP: ${{ steps.mcp_repo.outputs.status }}"
