@@ -1,0 +1,84 @@
+{
+  "cider.autoApproveCommands": true,
+  "cider.autoApproveFileChanges": true,
+  "cider.autoApproveBrowserActions": false,
+  "cider.requireApprovalForDangerousCommands": true,
+  "cider.dangerousCommands": [
+    "rm -rf /",
+    "sudo rm",
+    "flyctl secrets",
+    "git push --force",
+    "git reset --hard",
+    "DROP TABLE",
+    "DELETE FROM"
+  ],
+  "cider.maxAutoApprovedFileSize": 100000,
+  "cider.autoApproveTimeout": 30000,
+  "cider.showExecutionNotifications": true,
+  "cider.logAutoApprovedCommands": true,
+  "cider.externalServices": {
+    "enabled": true,
+    "services": [
+      "lambda-labs",
+      "pulumi",
+      "github",
+      "qdrant",
+      "redis",
+      "neon",
+      "mem0",
+      "portkey",
+      "openrouter",
+      "slack",
+      "gong",
+      "salesforce",
+      "hubspot",
+      "looker",
+      "usergems",
+      "fly"
+    ],
+    "autoApproveServiceActions": true,
+    "requireApprovalForDestructive": true,
+    "requireApprovalForProduction": true
+  },
+  "cider.mcpServers": {
+    "autoDiscovery": true,
+    "serverDirectory": "./services/mcp-*",
+    "autoStart": false,
+    "healthCheckInterval": 60000,
+    "maxRetries": 3
+  },
+  "cider.apiIntegrations": {
+    "lambdaLabs": {
+      "enabled": true,
+      "autoApprove": true
+    },
+    "pulumi": {
+      "enabled": true,
+      "autoApprove": true,
+      "requireApprovalForDestroy": true
+    },
+    "github": {
+      "enabled": true,
+      "autoApprove": true,
+      "requireApprovalForForce": true
+    },
+    "databases": {
+      "qdrant": { "enabled": true, "autoApprove": true },
+      "redis": { "enabled": true, "autoApprove": true },
+      "neon": { "enabled": true, "autoApprove": true }
+    },
+    "aiServices": {
+      "mem0": { "enabled": true, "autoApprove": true },
+      "portkey": { "enabled": true, "autoApprove": true },
+      "openrouter": { "enabled": true, "autoApprove": true }
+    },
+    "businessTools": {
+      "slack": { "enabled": true, "autoApprove": true },
+      "gong": { "enabled": true, "autoApprove": true },
+      "salesforce": { "enabled": true, "autoApprove": true },
+      "hubspot": { "enabled": true, "autoApprove": true },
+      "looker": { "enabled": true, "autoApprove": true },
+      "usergems": { "enabled": true, "autoApprove": true }
+    }
+  }
+}

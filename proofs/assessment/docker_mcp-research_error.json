@@ -1,0 +1,9 @@
+{
+  "status": "failure",
+  "query": "docker_build_mcp-research",
+  "results": [],
+  "summary": {"text": "Docker build failed for mcp-research", "confidence": 1.0, "model": "n/a", "sources": []},
+  "timestamp": "2025-08-22T07:05:23Z",
+  "execution_time_ms": 0,
+  "errors": [{"provider": "docker", "code": "build-failed", "message": "Docker build failed for mcp-research"}]
+}

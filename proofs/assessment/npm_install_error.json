@@ -1,0 +1,9 @@
+{
+  "status": "failure",
+  "query": "npm_install",
+  "results": [],
+  "summary": {"text": "Failed to install dashboard dependencies", "confidence": 1.0, "model": "n/a", "sources": []},
+  "timestamp": "2025-08-22T07:04:06Z",
+  "execution_time_ms": 0,
+  "errors": [{"provider": "npm", "code": "install-failed", "message": "Failed to install dashboard dependencies"}]
+}

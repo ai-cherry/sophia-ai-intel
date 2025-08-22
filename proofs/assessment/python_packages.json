@@ -1,0 +1,7 @@
+{
+  "requirements_files": [
+    "./services/mcp-context/requirements.txt",
+    "./services/mcp-github/requirements.txt",
+    "./services/mcp-research/requirements.txt"
+  ]
+}

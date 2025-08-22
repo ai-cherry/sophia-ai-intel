@@ -1,0 +1,18 @@
+{
+  "status": "failure",
+  "query": "mcp_health_github",
+  "results": [],
+  "summary": {
+    "text": "Health check failed - missing GITHUB_APP_ID, GITHUB_PRIVATE_KEY env vars",
+    "confidence": 1.0,
+    "model": "n/a",
+    "sources": []
+  },
+  "timestamp": "2025-08-22T13:53:00Z",
+  "execution_time_ms": 0,
+  "errors": [{
+    "provider": "http",
+    "code": "healthz-failed",
+    "message": "Service requires GITHUB_APP_ID and GITHUB_PRIVATE_KEY to start"
+  }]
+}

@@ -1,0 +1,53 @@
+[
+  {
+    "path": "./libs/contracts/package.json",
+    "directory": "./libs/contracts",
+    "name": "@sophia/contracts",
+    "version": "1.0.0",
+    "scripts": {
+      "build": true,
+      "lint": false,
+      "test": false,
+      "typecheck": false
+    }
+  }
+,
+  {
+    "path": "./libs/llm-router/package.json",
+    "directory": "./libs/llm-router",
+    "name": "@sophia/llm-router",
+    "version": "1.0.0",
+    "scripts": {
+      "build": true,
+      "lint": false,
+      "test": true,
+      "typecheck": false
+    }
+  }
+,
+  {
+    "path": "./apps/dashboard/package.json",
+    "directory": "./apps/dashboard",
+    "name": "@sophia/dashboard",
+    "version": "1.0.0",
+    "scripts": {
+      "build": true,
+      "lint": false,
+      "test": true,
+      "typecheck": false
+    }
+  }
+,
+  {
+    "path": "./package.json",
+    "directory": ".",
+    "name": "sophia-ai-intel",
+    "version": "1.0.0",
+    "scripts": {
+      "build": true,
+      "lint": true,
+      "test": true,
+      "typecheck": false
+    }
+  }
+]

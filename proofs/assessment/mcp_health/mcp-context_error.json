@@ -1,0 +1,9 @@
+{
+  "status": "failure",
+  "query": "mcp_health_mcp-context",
+  "results": [],
+  "summary": {"text": "Health check failed for mcp-context", "confidence": 1.0, "model": "n/a", "sources": []},
+  "timestamp": "2025-08-22T07:05:07Z",
+  "execution_time_ms": 0,
+  "errors": [{"provider": "http", "code": "healthz-failed", "message": "Health check failed for mcp-context"}]
+}

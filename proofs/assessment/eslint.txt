@@ -1,0 +1,11 @@
+=== Linting Results ===
+Started: 2025-08-22T07:04:06Z
+
+
+> sophia-ai-intel@1.0.0 lint
+> eslint . --ext .ts,.tsx,.js,.jsx
+
+sh: 1: eslint: not found
+Lint check completed with warnings/errors
+
+Completed: 2025-08-22T07:04:07Z
