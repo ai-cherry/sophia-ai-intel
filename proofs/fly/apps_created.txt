@@ -1,0 +1,1 @@
+Fly.io apps created: sophiaai-dashboard, sophiaai-mcp-research, sophiaai-mcp-context, sophiaai-mcp-git

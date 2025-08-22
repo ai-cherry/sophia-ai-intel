@@ -1,11 +1,11 @@
 # Sophia AI Intel - Setup Progress
 
 ## Phase 1: Repository Hardening & Scaffold
-- [ ] Create monorepo directory structure
-- [ ] Initialize README.md with project overview
-- [ ] Create CODEOWNERS file
-- [ ] Set up package.json with workspace configuration
-- [ ] Create basic configuration files with ChatGPT-5 as default LLM
+- [x] Create monorepo directory structure
+- [x] Initialize README.md with project overview
+- [x] Create CODEOWNERS file
+- [x] Set up package.json with workspace configuration
+- [x] Create basic configuration files with ChatGPT-5 as default LLM
 
 ## Phase 2: Contracts & Types
 - [x] Set up libs/contracts with Zod schemas
@@ -35,4 +35,15 @@
 - [ ] Set up proof artifacts structure
 - [ ] Document API endpoints
 - [ ] Create deployment guides
+
+
+
+## Phase 7: Infrastructure Setup (In Progress)
+- [x] Clean up old Fly.io apps
+- [x] Create new Fly.io apps (sophiaai-dashboard, sophiaai-mcp-research, sophiaai-mcp-context, sophiaai-mcp-git)
+- [x] Verify Lambda Labs instances (2x GH200 96GB active)
+- [x] Configure authentication tokens
+- [ ] Set up Fly.io secrets for each service
+- [ ] Create initial service deployments
+- [ ] Configure multi-region deployment
 

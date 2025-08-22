@@ -1,0 +1,4 @@
+Lambda Labs instances found:
+Instance 1: 07c099ae5ceb48ffaccd5c91b0560c0e (192.222.51.223) - GH200 96GB - Active
+Instance 2: 9095c29b3292440fb81136810b0785a3 (192.222.50.242) - GH200 96GB - Active
+Both instances ready for Sophia AI workloads
