@@ -27,8 +27,9 @@ BRIGHTDATA_API_KEY = os.getenv("BRIGHTDATA_API_KEY")
 PORTKEY_API_KEY = os.getenv("PORTKEY_API_KEY")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
-# Environment variables - Caching
+# Environment variables - Caching & Vector Storage
 REDIS_URL = os.getenv("REDIS_URL")
+QDRANT_ENDPOINT = os.getenv("QDRANT_ENDPOINT")  # GitHub org secret name
 
 # Environment variables - Configuration
 DEFAULT_LLM_MODEL = os.getenv("DEFAULT_LLM_MODEL", "gpt-4o-mini")

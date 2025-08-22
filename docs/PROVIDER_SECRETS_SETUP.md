@@ -24,8 +24,8 @@
 | `SLACK_SIGNING_SECRET` | `[PROVIDED_BY_CEO]` | Slack webhook verification |
 | `SLACK_CLIENT_ID` | `[PROVIDED_BY_CEO]` | Slack OAuth client |
 | `SLACK_CLIENT_SECRET` | `[PROVIDED_BY_CEO]` | Slack OAuth secret |
-| `QDRANT_URL` | `[PROVIDED_BY_CEO]` | Vector database (semantic search) |
-| `REDIS_URL` | `[PROVIDED_BY_CEO]` | Cache database (performance) |
+| `QDRANT_ENDPOINT` | `✅ CONFIGURED` | Vector database (semantic search) |
+| `REDIS_URL` | `✅ CONFIGURED` | Cache database (performance) |
 
 ---
 
