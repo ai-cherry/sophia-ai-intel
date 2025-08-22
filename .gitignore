@@ -1,0 +1,10 @@
+
+# Security - NEVER commit these
+.env.vault
+.env.services
+*.pem
+*.key
+*_rsa
+*_rsa.pub
+*_ed25519
+*_ed25519.pub

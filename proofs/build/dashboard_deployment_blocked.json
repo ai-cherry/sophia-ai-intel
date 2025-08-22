@@ -1,0 +1,18 @@
+{
+  "status": "blocked",
+  "query": "dashboard_deployment",
+  "results": [],
+  "summary": {
+    "text": "Dashboard deployment blocked - build failed due to missing dist directory",
+    "confidence": 1.0,
+    "model": "n/a",
+    "sources": ["proofs/assessment/docker_builds.txt"]
+  },
+  "timestamp": "2025-08-22T13:54:00Z",
+  "execution_time_ms": 0,
+  "errors": [{
+    "provider": "docker",
+    "code": "build-failed",
+    "message": "Dashboard Docker build failed - dist/ directory not found. Need to run npm ci && npm run build first"
+  }]
+}

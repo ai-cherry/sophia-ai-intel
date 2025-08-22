@@ -1,0 +1,5 @@
+[
+  {"path": "./services/mcp-context/Dockerfile", "directory": "./services/mcp-context", "filename": "Dockerfile"},
+  {"path": "./services/mcp-github/Dockerfile", "directory": "./services/mcp-github", "filename": "Dockerfile"},
+  {"path": "./services/mcp-research/Dockerfile", "directory": "./services/mcp-research", "filename": "Dockerfile"},
+  {"path": "./apps/dashboard/Dockerfile.static", "directory": "./apps/dashboard", "filename": "Dockerfile.static"}]

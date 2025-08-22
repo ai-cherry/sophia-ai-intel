@@ -1,0 +1,9 @@
+{
+  "status": "failure",
+  "query": "pip_install_mcp-research",
+  "results": [],
+  "summary": {"text": "Failed to install requirements for mcp-research", "confidence": 1.0, "model": "n/a", "sources": []},
+  "timestamp": "2025-08-22T07:04:44Z",
+  "execution_time_ms": 0,
+  "errors": [{"provider": "pip", "code": "install-failed", "message": "Failed to install requirements for mcp-research"}]
+}

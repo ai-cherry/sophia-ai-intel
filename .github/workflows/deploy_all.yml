@@ -67,12 +67,37 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+
+      - name: Install root workspaces (if any)
+        run: |
+          if [ -f package.json ] && grep -q '"workspaces"' package.json; then
+            npm ci --workspaces --no-audit --no-fund || true
+          fi
+
+      - name: Build shared libs (contracts/clients) if present
+        run: |
+          if [ -d libs/contracts ]; then (cd libs/contracts && npm ci --no-audit --no-fund && npm run build || true); fi
+          if [ -d libs/clients ]; then (cd libs/clients && npm ci --no-audit --no-fund && npm run build || true); fi
       
-      - name: Build dist (Vite base '/')
+      - name: npm ci & build (dashboard)
         working-directory: apps/dashboard
         run: |
+          set -e
           npm ci --no-audit --no-fund || npm ci --no-audit --no-fund --legacy-peer-deps
-          npm run build
+          # if CI memory is tight, uncomment:
+          # export NODE_OPTIONS=--max-old-space-size=4096
+          npm run build | tee ../../proofs/build/dashboard_npm_build.txt
+          test -d dist || { echo "dist/ missing"; exit 2; }
+
+      - name: Verify dist exists
+        working-directory: apps/dashboard
+        run: ls -la dist
+
+      - name: Save npm-debug.log if present
+        if: failure()
+        working-directory: apps/dashboard
+        run: |
+          test -f npm-debug.log && cp npm-debug.log ../../proofs/build/npm-debug.log || true
 
       - name: Ensure Fly app exists
         env:
@@ -211,8 +236,15 @@ jobs:
           done
           if ! grep -q " 200 " proofs/healthz/${{ matrix.app }}.txt; then
             echo "Service not healthy; capturing logs…"
-            flyctl logs -a ${{ matrix.app }} --since 15m | tail -n 200 > proofs/fly/${{ matrix.app }}_logs.txt || true
+            flyctl logs -a ${{ matrix.app }} --since 20m | tail -n 400 > proofs/fly/${{ matrix.app }}_logs.txt || true
           fi
+
+      - name: Capture Fly logs on failure
+        if: failure()
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          flyctl logs -a ${{ matrix.app }} --since 20m | tail -n 400 > proofs/fly/${{ matrix.app }}_logs.txt || true
 
       - name: Machines JSON
         env:

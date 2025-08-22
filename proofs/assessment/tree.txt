@@ -1,0 +1,144 @@
+.
+├── .env.example
+├── .github
+│   └── workflows
+│       └── builder.yml
+├── CODEOWNERS
+├── README.md
+├── SETUP_COMPLETION_REPORT.md
+├── apps
+│   └── dashboard
+│       ├── Dockerfile.static
+│       ├── fly.toml
+│       ├── index.html
+│       ├── nginx.conf
+│       ├── package.json
+│       ├── src
+│       ├── tsconfig.json
+│       ├── tsconfig.node.json
+│       └── vite.config.ts
+├── docs
+│   ├── AUDIT_PLAN.md
+│   ├── PHASE1_COMPLETE.md
+│   ├── PHASE1_FINALIZATION_STATUS.md
+│   ├── PHASE1_FINAL_COMPLETION.md
+│   ├── PHASE1_FINAL_STATUS_REPORT.md
+│   ├── PHASE1_FINAL_VERIFICATION.md
+│   ├── PHASE1_QC_COMPLETION.md
+│   ├── PHASE1_VERIFICATION.md
+│   ├── POST_PHASE1_COMPLETION.md
+│   └── POST_PHASE1_FINAL.md
+├── libs
+│   ├── contracts
+│   │   ├── package.json
+│   │   ├── src
+│   │   └── tsconfig.json
+│   └── llm-router
+│       ├── package.json
+│       ├── src
+│       └── tsconfig.json
+├── ops
+│   └── infra
+│       ├── fly-dashboard.toml
+│       ├── fly-mcp-context.toml
+│       ├── fly-mcp-github.toml
+│       └── fly-mcp-research.toml
+├── package.json
+├── proofs
+│   ├── assessment
+│   │   ├── docker_builds.txt
+│   │   ├── docker_dashboard_error.json
+│   │   ├── docker_mcp-research_error.json
+│   │   ├── dockerfiles.json
+│   │   ├── env.txt
+│   │   ├── eslint.txt
+│   │   ├── fly_tomls.json
+│   │   ├── mcp_health
+│   │   ├── nginx_endpoints.txt
+│   │   ├── npm_build_error.json
+│   │   ├── npm_dashboard_build.txt
+│   │   ├── npm_install_error.json
+│   │   ├── packages.json
+│   │   ├── pip_mcp-context.txt
+│   │   ├── pip_mcp-github.txt
+│   │   ├── pip_mcp-research.txt
+│   │   ├── pip_mcp-research_error.json
+│   │   ├── python_packages.json
+│   │   ├── railway_scan.txt
+│   │   ├── tree.txt
+│   │   ├── tsc.txt
+│   │   ├── vite_base.txt
+│   │   └── workflows.json
+│   ├── deployment
+│   │   ├── current_status.json
+│   │   ├── normalized_errors.json
+│   │   └── service_status.md
+│   ├── fly
+│   │   ├── apps_created.txt
+│   │   ├── renames.txt
+│   │   ├── sophiaai-mcp-repo-v2_ewr_start.json
+│   │   ├── sophiaai-mcp-repo-v2_machines.json
+│   │   ├── sophiaai-mcp-repo-v2_machines_before.json
+│   │   ├── sophiaai-mcp-repo-v2_machines_ord.json
+│   │   ├── sophiaai-mcp-repo-v2_sjc_start.json
+│   │   ├── sophiaai-mcp-repo_logs.txt
+│   │   └── sophiaai-mcp-repo_machines.json
+│   ├── github
+│   │   ├── app_creation_status.md
+│   │   └── app_details.md
+│   ├── github_app
+│   │   └── created.json
+│   ├── healthz
+│   │   ├── sophiaai-dashboard-v2.txt
+│   │   ├── sophiaai-dashboard.txt
+│   │   ├── sophiaai-mcp-context-v2.txt
+│   │   ├── sophiaai-mcp-context.txt
+│   │   ├── sophiaai-mcp-repo-v2.txt
+│   │   ├── sophiaai-mcp-repo.txt
+│   │   ├── sophiaai-mcp-research-v2.txt
+│   │   └── sophiaai-mcp-research.txt
+│   ├── lambda
+│   │   └── instances_status.txt
+│   ├── llm
+│   │   └── router_allowlist.json
+│   ├── mcp_context
+│   │   ├── index.json
+│   │   └── search.json
+│   ├── mcp_repo
+│   │   ├── file_vite_config.json
+│   │   └── tree_dashboard.json
+│   ├── repo
+│   │   └── branch_protection.json
+│   └── secrets
+│       ├── deployment_status.txt
+│       ├── sophiaai-dashboard_secrets.txt
+│       ├── sophiaai-mcp-context_secrets.txt
+│       ├── sophiaai-mcp-repo_secrets.txt
+│       └── sophiaai-mcp-research_secrets.txt
+├── scripts
+│   ├── mcp_runner.py
+│   └── real_assess.sh
+├── services
+│   ├── mcp-context
+│   │   ├── Dockerfile
+│   │   ├── app.py
+│   │   ├── fly.toml
+│   │   └── requirements.txt
+│   ├── mcp-github
+│   │   ├── Dockerfile
+│   │   ├── app.py
+│   │   ├── fly.toml
+│   │   ├── github_app.py
+│   │   └── requirements.txt
+│   └── mcp-research
+│       ├── Dockerfile
+│       ├── app.py
+│       ├── fly.toml
+│       └── requirements.txt
+├── tests
+│   └── integration
+│       └── test_mcp_services.py
+├── todo.md
+└── tsconfig.json
+
+35 directories, 107 files

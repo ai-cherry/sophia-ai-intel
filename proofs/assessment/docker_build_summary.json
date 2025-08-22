@@ -1,0 +1,33 @@
+{
+  "timestamp": "2025-08-22T13:55:00Z",
+  "builds": [
+    {
+      "service": "mcp-context",
+      "dockerfile": "./services/mcp-context/Dockerfile",
+      "status": "PASS",
+      "image": "audit-mcp-context:latest",
+      "sha256": "f704f07b6f6b3abcb66a2acb8c0ace6cc80cc3ffaeaf288e001cbfb6626aba04"
+    },
+    {
+      "service": "mcp-github",
+      "dockerfile": "./services/mcp-github/Dockerfile",
+      "status": "PASS",
+      "image": "audit-mcp-github:latest",
+      "sha256": "68cf4a28184bbb470ca5e8cae9400c7ccfa36e87b71f44323b1f2c43587d37ee"
+    },
+    {
+      "service": "mcp-research",
+      "dockerfile": "./services/mcp-research/Dockerfile",
+      "status": "FAIL",
+      "error": "portkey-ai==0.1.11 version not available",
+      "fix": "Updated to portkey-ai>=1.14.0 in requirements.txt"
+    },
+    {
+      "service": "dashboard",
+      "dockerfile": "./apps/dashboard/Dockerfile.static",
+      "status": "FAIL",
+      "error": "dist/ directory not found",
+      "fix": "Need to run npm ci && npm run build before Docker build"
+    }
+  ]
+}

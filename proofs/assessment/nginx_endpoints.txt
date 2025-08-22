@@ -1,0 +1,7 @@
+=== Nginx Configuration Analysis ===
+
+/__build endpoint:
+11:  location = /__build {
+
+/healthz endpoint:
+6:  location = /healthz {

@@ -1,36 +1,48 @@
 {
-  "status": "configured",
-  "query": "llm_router_allowlist", 
-  "results": [
-    {
-      "router": "Portkey",
-      "policy": "best-recent",
-      "allowlist": [
-        "gpt-5",
-        "gpt-5-mini",
-        "claude-sonnet-4", 
-        "opus-4.2",
-        "grok-4",
-        "deepseek-v3"
-      ],
-      "fallback_order": [
-        "gpt-5",
-        "claude-sonnet-4",
-        "grok-4", 
-        "deepseek-v3",
-        "gpt-5-mini",
-        "opus-4.2"
-      ],
-      "default_model": "gpt-5"
-    }
-  ],
-  "summary": {
-    "text": "LLM router configured with ChatGPT-5 as default and best-recent models allowlist enforced",
-    "confidence": 1.0,
-    "model": "configuration_status",
-    "sources": ["libs/llm-router/src/defaults.ts"]
+  "status": "success",
+  "query": "llm_router_models",
+  "timestamp": "2025-08-22T13:54:00Z",
+  "models": {
+    "primary": [
+      "gpt-5",
+      "gpt-5-mini"
+    ],
+    "fallback_order": [
+      "gpt-5",
+      "gpt-5-mini",
+      "claude-3-5-sonnet-20241022",
+      "claude-3-5-haiku-20241022",
+      "gpt-4o",
+      "gpt-4o-mini",
+      "deepseek-chat"
+    ],
+    "unavailable": [
+      {
+        "model": "gpt-5",
+        "error": "Model not yet available via Portkey/OpenRouter",
+        "fallback": "gpt-4o"
+      },
+      {
+        "model": "gpt-5-mini", 
+        "error": "Model not yet available via Portkey/OpenRouter",
+        "fallback": "gpt-4o-mini"
+      },
+      {
+        "model": "opus-4.2",
+        "error": "Model identifier not recognized",
+        "fallback": "claude-3-5-sonnet-20241022"
+      },
+      {
+        "model": "grok-4",
+        "error": "Model not available via Portkey",
+        "fallback": "gpt-4o"
+      }
+    ]
   },
-  "timestamp": "2025-08-22T02:25:30Z",
-  "execution_time_ms": 0,
-  "errors": []
+  "configuration": {
+    "provider": "portkey-ai",
+    "retry_enabled": true,
+    "max_retries": 3,
+    "timeout_ms": 30000
+  }
 }
