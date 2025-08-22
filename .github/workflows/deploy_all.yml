@@ -16,18 +16,21 @@ permissions:
   contents: write
 
 env:
-  # Apps & URLs
-  APP_DASHBOARD:    sophiaai-dashboard
-  URL_DASHBOARD:    https://sophiaai-dashboard.fly.dev
+  # Apps & URLs (Pay Ready org - canonical -v2 names)
+  APP_DASHBOARD:    sophiaai-dashboard-v2
+  URL_DASHBOARD:    https://sophiaai-dashboard-v2.fly.dev
 
-  APP_MCP_REPO:     sophiaai-mcp-repo
-  URL_MCP_REPO:     https://sophiaai-mcp-repo.fly.dev
+  APP_MCP_REPO:     sophiaai-mcp-repo-v2
+  URL_MCP_REPO:     https://sophiaai-mcp-repo-v2.fly.dev
 
-  APP_MCP_RESEARCH: sophiaai-mcp-research
-  URL_MCP_RESEARCH: https://sophiaai-mcp-research.fly.dev
+  APP_MCP_RESEARCH: sophiaai-mcp-research-v2
+  URL_MCP_RESEARCH: https://sophiaai-mcp-research-v2.fly.dev
 
-  APP_MCP_CONTEXT:  sophiaai-mcp-context
-  URL_MCP_CONTEXT:  https://sophiaai-mcp-context.fly.dev
+  APP_MCP_CONTEXT:  sophiaai-mcp-context-v2
+  URL_MCP_CONTEXT:  https://sophiaai-mcp-context-v2.fly.dev
+
+  # Fly organization (Pay Ready)
+  FLY_ORG:          pay-ready
 
   # Build-id for fingerprints and cache-busting
   BUILD_ID:         ${{ github.run_id }}
@@ -59,8 +62,8 @@ jobs:
     needs: preflight
     env:
       FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-      APP: sophiaai-dashboard
-      URL: https://sophiaai-dashboard.fly.dev
+      APP: sophiaai-dashboard-v2
+      URL: https://sophiaai-dashboard-v2.fly.dev
     steps:
       - uses: actions/checkout@v4
 
@@ -71,9 +74,9 @@ jobs:
         run: |
           echo "::add-mask::$FLY_API_TOKEN"
           test -n "$FLY_API_TOKEN" || (echo "FLY_API_TOKEN missing" && exit 1)
-          flyctl version
+          flyctl version --access-token "$FLY_API_TOKEN"
           # This should print your Fly account email/org if token is valid
-          flyctl auth whoami
+          flyctl auth whoami --access-token "$FLY_API_TOKEN"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -116,7 +119,7 @@ jobs:
         run: |
           pwd
           ls -la
-          flyctl apps show ${{ env.APP }} >/dev/null 2>&1 || flyctl apps create ${{ env.APP }} --machines --yes
+          flyctl apps show ${{ env.APP }} --access-token "$FLY_API_TOKEN" >/dev/null 2>&1 || flyctl apps create ${{ env.APP }} --machines --org "$FLY_ORG" --access-token "$FLY_API_TOKEN" --yes
 
       - name: Deploy dashboard (Dockerfile.static)
         working-directory: apps/dashboard
@@ -131,6 +134,7 @@ jobs:
             --dockerfile ./Dockerfile.static \
             --build-arg VITE_BUILD_ID \
             --build-arg CACHE_BUSTER=${{ env.CACHE_BUSTER }} \
+            --access-token "$FLY_API_TOKEN" \
             --no-cache --yes
 
       - name: Wait for /healthz
@@ -160,7 +164,7 @@ jobs:
 
       - name: Machines JSON
         run: |
-          flyctl machines list -a ${{ env.APP }} --json | tee proofs/fly/${{ env.APP }}_machines.json
+          flyctl machines list -a ${{ env.APP }} --access-token "$FLY_API_TOKEN" --json | tee proofs/fly/${{ env.APP }}_machines.json
 
       - name: Commit dashboard proofs
         run: |
@@ -181,18 +185,18 @@ jobs:
       matrix:
         include:
           - name: mcp-repo
-            app:  sophiaai-mcp-repo
-            url:  https://sophiaai-mcp-repo.fly.dev
+            app:  sophiaai-mcp-repo-v2
+            url:  https://sophiaai-mcp-repo-v2.fly.dev
             path: services/mcp-github
             set_secrets: "false"
           - name: mcp-research
-            app:  sophiaai-mcp-research
-            url:  https://sophiaai-mcp-research.fly.dev
+            app:  sophiaai-mcp-research-v2
+            url:  https://sophiaai-mcp-research-v2.fly.dev
             path: services/mcp-research
             set_secrets: "true"
           - name: mcp-context
-            app:  sophiaai-mcp-context
-            url:  https://sophiaai-mcp-context.fly.dev
+            app:  sophiaai-mcp-context-v2
+            url:  https://sophiaai-mcp-context-v2.fly.dev
             path: services/mcp-context
             set_secrets: "true"
     steps:
@@ -205,13 +209,13 @@ jobs:
         run: |
           echo "::add-mask::$FLY_API_TOKEN"
           test -n "$FLY_API_TOKEN" || (echo "FLY_API_TOKEN missing" && exit 1)
-          flyctl version
+          flyctl version --access-token "$FLY_API_TOKEN"
           # This should print your Fly account email/org if token is valid
-          flyctl auth whoami
+          flyctl auth whoami --access-token "$FLY_API_TOKEN"
 
       - name: Ensure app exists
         run: |
-          flyctl apps show ${{ matrix.app }} >/dev/null 2>&1 || flyctl apps create ${{ matrix.app }} --machines --yes
+          flyctl apps show ${{ matrix.app }} --access-token "$FLY_API_TOKEN" >/dev/null 2>&1 || flyctl apps create ${{ matrix.app }} --machines --org "$FLY_ORG" --access-token "$FLY_API_TOKEN" --yes
 
       - name: Set Fly secrets (names only)
         if: ${{ matrix.set_secrets == 'true' }}
@@ -222,14 +226,14 @@ jobs:
         run: |
           # Research providers (optional)
           if [ "${TAVILY_API_KEY}" != "" ]; then
-            flyctl secrets set TAVILY_API_KEY=${TAVILY_API_KEY} -a ${{ matrix.app }}
+            flyctl secrets set TAVILY_API_KEY=${TAVILY_API_KEY} -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN"
           fi
           if [ "${SERPER_API_KEY}" != "" ]; then
-            flyctl secrets set SERPER_API_KEY=${SERPER_API_KEY} -a ${{ matrix.app }}
+            flyctl secrets set SERPER_API_KEY=${SERPER_API_KEY} -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN"
           fi
           # Context DB (optional)
           if [ "${NEON_DATABASE_URL}" != "" ] && [ "${{ matrix.name }}" = "mcp-context" ]; then
-            flyctl secrets set NEON_DATABASE_URL=${NEON_DATABASE_URL} -a ${{ matrix.app }}
+            flyctl secrets set NEON_DATABASE_URL=${NEON_DATABASE_URL} -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN"
           fi
 
       - name: Deploy service (Dockerfile)
@@ -237,12 +241,13 @@ jobs:
         run: |
           pwd
           ls -la
-          flyctl apps show ${{ matrix.app }} || flyctl apps create ${{ matrix.app }} --machines --yes
+          flyctl apps show ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || flyctl apps create ${{ matrix.app }} --machines --org "$FLY_ORG" --access-token "$FLY_API_TOKEN" --yes
           flyctl deploy \
             --app ${{ matrix.app }} \
             --config ./fly.toml \
             --dockerfile ./Dockerfile \
             --build-arg CACHE_BUSTER=${{ env.CACHE_BUSTER }} \
+            --access-token "$FLY_API_TOKEN" \
             --no-cache --yes
 
       - name: Wait for /healthz
@@ -257,17 +262,17 @@ jobs:
           done
           if ! grep -q " 200 " proofs/healthz/${{ matrix.app }}.txt; then
             echo "Service not healthy; capturing logs…"
-            flyctl logs -a ${{ matrix.app }} --since 20m | tail -n 400 > proofs/fly/${{ matrix.app }}_logs.txt || true
+            flyctl logs -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" --since 20m | tail -n 400 > proofs/fly/${{ matrix.app }}_logs.txt || true
           fi
 
       - name: Capture Fly logs on failure
         if: failure()
         run: |
-          flyctl logs -a ${{ matrix.app }} --since 20m | tail -n 400 > proofs/fly/${{ matrix.app }}_logs.txt || true
+          flyctl logs -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" --since 20m | tail -n 400 > proofs/fly/${{ matrix.app }}_logs.txt || true
 
       - name: Machines JSON
         run: |
-          flyctl machines list -a ${{ matrix.app }} --json | tee proofs/fly/${{ matrix.app }}_machines.json
+          flyctl machines list -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" --json | tee proofs/fly/${{ matrix.app }}_machines.json
 
       - name: Commit service proofs
         run: |
