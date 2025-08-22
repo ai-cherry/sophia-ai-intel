@@ -1,0 +1,43 @@
+{
+  "app_name": "SOPHIA GitHub MCP v2",
+  "app_id": 1821931,
+  "client_id": "Iv23lizvbjvEg2DY7aDs",
+  "owner": "@scoobyjava",
+  "description": "SOPHIA AI Assistant GitHub integration for read-only repository access",
+  "installation_status": "installed",
+  "permissions": {
+    "contents": "read",
+    "metadata": "read"
+  },
+  "repository_permissions": {
+    "selected": 1,
+    "mandatory": 1
+  },
+  "organization_permissions": {
+    "selected": 0,
+    "mandatory": 0
+  },
+  "account_permissions": {
+    "selected": 0,
+    "mandatory": 0
+  },
+  "events_subscribed": [
+    "installation_target",
+    "meta",
+    "security_advisory",
+    "commit_comment",
+    "create",
+    "delete",
+    "fork",
+    "gollum"
+  ],
+  "webhook_url": "https://sophiaai-mcp-repo.fly.dev/webhook",
+  "ssl_verification": "enabled",
+  "private_key_fingerprint": "SHA256:Zcf/4mHAamz/gMETHl+I8/dfhFBGxrk5A5MW63cUJM4=",
+  "created_date": "Aug 21, 2025",
+  "authentication_method": "github_app_jwt",
+  "credential_policy": "no_pat_usage",
+  "security_status": "compliant",
+  "timestamp": "2025-08-22T00:52:00Z"
+}
+

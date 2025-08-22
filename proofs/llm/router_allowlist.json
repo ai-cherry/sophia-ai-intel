@@ -1,0 +1,60 @@
+{
+  "router": "Portkey",
+  "strategy": "best_recent",
+  "allowlist": [
+    "gpt-5",
+    "gpt-5-mini", 
+    "claude-sonnet-4",
+    "opus-4.2",
+    "grok-4",
+    "deepseek-v3"
+  ],
+  "fallback_order": [
+    "gpt-5",
+    "claude-sonnet-4", 
+    "grok-4",
+    "deepseek-v3",
+    "gpt-5-mini",
+    "opus-4.2"
+  ],
+  "implemented_models": [
+    {
+      "name": "gpt-5",
+      "provider": "openai",
+      "weight": 100,
+      "fallback_order": 1,
+      "status": "primary"
+    },
+    {
+      "name": "claude-3-5-sonnet-20241022",
+      "provider": "anthropic", 
+      "weight": 90,
+      "fallback_order": 2,
+      "status": "fallback"
+    },
+    {
+      "name": "gpt-4o",
+      "provider": "openai",
+      "weight": 85,
+      "fallback_order": 3,
+      "status": "fallback"
+    },
+    {
+      "name": "gpt-4o-mini",
+      "provider": "openai",
+      "weight": 70,
+      "fallback_order": 4,
+      "status": "fallback"
+    }
+  ],
+  "configuration": {
+    "cache_enabled": true,
+    "logging_enabled": true,
+    "timeout_ms": 30000,
+    "retry_attempts": 3,
+    "fallback_enabled": true
+  },
+  "notes": "ChatGPT-5 configured as primary model with intelligent fallback to best-recent models only. Portkey routing with OpenRouter virtual key integration.",
+  "timestamp": "2025-08-22T00:52:00Z"
+}
+
