@@ -160,11 +160,11 @@ jobs:
         uses: superfly/flyctl-actions/setup-flyctl@master
       
       - name: Deploy to Fly.io
-        run: |
-          cd services/mcp-github
-          flyctl deploy --config fly.toml --dockerfile Dockerfile --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          cd services/mcp-github
+          flyctl deploy --config fly.toml --dockerfile Dockerfile --remote-only --app sophiaai-mcp-repo
       
       - name: Health check
         run: |
@@ -183,11 +183,11 @@ jobs:
         uses: superfly/flyctl-actions/setup-flyctl@master
       
       - name: Deploy to Fly.io
-        run: |
-          cd services/mcp-research
-          flyctl deploy --config fly.toml --dockerfile Dockerfile --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          cd services/mcp-research
+          flyctl deploy --config fly.toml --dockerfile Dockerfile --remote-only --app sophiaai-mcp-research
       
       - name: Health check
         run: |
@@ -206,11 +206,11 @@ jobs:
         uses: superfly/flyctl-actions/setup-flyctl@master
       
       - name: Deploy to Fly.io
-        run: |
-          cd services/mcp-context
-          flyctl deploy --config fly.toml --dockerfile Dockerfile --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          cd services/mcp-context
+          flyctl deploy --config fly.toml --dockerfile Dockerfile --remote-only --app sophiaai-mcp-context
       
       - name: Health check
         run: |
@@ -276,11 +276,11 @@ jobs:
         uses: superfly/flyctl-actions/setup-flyctl@master
       
       - name: Deploy to Fly.io
-        run: |
-          cd apps/dashboard
-          flyctl deploy --config fly.toml --dockerfile Dockerfile.static --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          cd apps/dashboard
+          flyctl deploy --config fly.toml --dockerfile Dockerfile.static --remote-only --app sophiaai-dashboard
       
       - name: Health check
         run: |
