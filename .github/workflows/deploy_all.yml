@@ -261,7 +261,7 @@ jobs:
           ZILLOW_API_KEY: ${{ secrets.ZILLOW_API_KEY }}
           # Storage
           NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
-          QDRANT_URL: ${{ secrets.QDRANT_URL }}
+          QDRANT_ENDPOINT: ${{ secrets.QDRANT_ENDPOINT }}
         run: |
           # Research providers (for research service)
           if [ "${{ matrix.name }}" = "mcp-research" ]; then
@@ -304,7 +304,7 @@ jobs:
             [ "${PORTKEY_API_KEY}" != "" ] && flyctl secrets set PORTKEY_API_KEY="${PORTKEY_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
             [ "${OPENROUTER_API_KEY}" != "" ] && flyctl secrets set OPENROUTER_API_KEY="${OPENROUTER_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
             [ "${REDIS_URL}" != "" ] && flyctl secrets set REDIS_URL="${REDIS_URL}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
-            [ "${QDRANT_URL}" != "" ] && flyctl secrets set QDRANT_URL="${QDRANT_URL}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            [ "${QDRANT_ENDPOINT}" != "" ] && flyctl secrets set QDRANT_ENDPOINT="${QDRANT_ENDPOINT}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
             # Storage (critical)
             [ "${NEON_DATABASE_URL}" != "" ] && flyctl secrets set NEON_DATABASE_URL="${NEON_DATABASE_URL}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
           fi

@@ -1,0 +1,42 @@
+{
+  "status": "blocked",
+  "query": "build_personal_purge_plan",
+  "results": [],
+  "summary": {
+    "text": "Personal org purge plan blocked: Cannot access FLY_TOKEN_PERSONAL from local environment to query apps",
+    "confidence": 1.0,
+    "model": "n/a",
+    "sources": ["github_actions_secrets"]
+  },
+  "timestamp": "2025-08-22T20:40:22.722Z",
+  "execution_time_ms": 0,
+  "errors": [
+    {
+      "provider": "fly",
+      "code": "token-not-accessible-locally",
+      "message": "Cannot access FLY_TOKEN_PERSONAL secret from local shell environment"
+    }
+  ],
+  "context": {
+    "canonical_apps": [
+      "sophiaai-dashboard-v2",
+      "sophiaai-mcp-repo-v2", 
+      "sophiaai-mcp-research-v2",
+      "sophiaai-mcp-context-v2",
+      "sophiaai-mcp-business-v2"
+    ],
+    "canonical_org": "pay-ready",
+    "required_operations": [
+      "List apps via FLY_TOKEN_PERSONAL (if exists)",
+      "Filter out apps matching canonical names in Pay Ready org",
+      "Create purge plan for non-canonical apps",
+      "Require CEO confirmation via confirm_purge_personal secret"
+    ],
+    "workflow_solution": "Deploy All workflow will handle token access and app verification"
+  },
+  "next_actions": [
+    "Check if FLY_TOKEN_PERSONAL exists in GitHub secrets",
+    "Deploy All workflow will list and verify app organization alignment", 
+    "CEO set confirm_purge_personal='DELETE PERSONAL APPS' if purge needed"
+  ]
+}
