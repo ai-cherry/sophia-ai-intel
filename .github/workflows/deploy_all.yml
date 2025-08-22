@@ -8,7 +8,7 @@ on:
         required: false
         default: "true"
       deploy_services:
-        description: "Deploy MCP services (repo, research, context)"
+        description: "Deploy MCP services (repo, research, context, business)"
         required: false
         default: "true"
 
@@ -28,6 +28,9 @@ env:
 
   APP_MCP_CONTEXT:  sophiaai-mcp-context-v2
   URL_MCP_CONTEXT:  https://sophiaai-mcp-context-v2.fly.dev
+
+  APP_MCP_BUSINESS: sophiaai-mcp-business-v2
+  URL_MCP_BUSINESS: https://sophiaai-mcp-business-v2.fly.dev
 
   # Fly organization (Pay Ready)
   FLY_ORG:          pay-ready
@@ -177,7 +180,7 @@ jobs:
 
   deploy-services:
     if: ${{ github.event.inputs.deploy_services != 'false' }}
-    name: Deploy MCP Services (repo, research, context) + Proofs
+    name: Deploy MCP Services (repo, research, context, business) + Proofs
     runs-on: ubuntu-latest
     needs: preflight
     env:
@@ -201,6 +204,11 @@ jobs:
             url:  https://sophiaai-mcp-context-v2.fly.dev
             path: services/mcp-context
             set_secrets: "true"
+          - name: mcp-business
+            app:  sophiaai-mcp-business-v2
+            url:  https://sophiaai-mcp-business-v2.fly.dev
+            path: services/mcp-business
+            set_secrets: "true"
     steps:
       - uses: actions/checkout@v4
 
@@ -222,38 +230,83 @@ jobs:
       - name: Set Fly secrets (names only)
         if: ${{ matrix.set_secrets == 'true' }}
         env:
-          # Search providers
+          # Research providers
           TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
           SERPER_API_KEY: ${{ secrets.SERPER_API_KEY }}
           PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
           EXA_API_KEY: ${{ secrets.EXA_API_KEY }}
-          # Scraping providers
           APIFY_API_KEY: ${{ secrets.APIFY_API_KEY }}
           ZENROWS_API_KEY: ${{ secrets.ZENROWS_API_KEY }}
           BRIGHTDATA_API_KEY: ${{ secrets.BRIGHTDATA_API_KEY }}
-          # LLM routing
           PORTKEY_API_KEY: ${{ secrets.PORTKEY_API_KEY }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          # Caching
           REDIS_URL: ${{ secrets.REDIS_URL }}
-          # Context DB
+          # Business providers
+          APOLLO_API_KEY: ${{ secrets.APOLLO_API_KEY }}
+          USERGEMS_API_KEY: ${{ secrets.USERGEMS_API_KEY }}
+          HUBSPOT_ACCESS_TOKEN: ${{ secrets.HUBSPOT_ACCESS_TOKEN }}
+          SALESFORCE_CLIENT_ID: ${{ secrets.SALESFORCE_CLIENT_ID }}
+          SALESFORCE_CLIENT_SECRET: ${{ secrets.SALESFORCE_CLIENT_SECRET }}
+          SALESFORCE_USERNAME: ${{ secrets.SALESFORCE_USERNAME }}
+          SALESFORCE_PASSWORD: ${{ secrets.SALESFORCE_PASSWORD }}
+          SALESFORCE_SECURITY_TOKEN: ${{ secrets.SALESFORCE_SECURITY_TOKEN }}
+          SALESFORCE_DOMAIN: ${{ secrets.SALESFORCE_DOMAIN }}
+          GONG_BASE_URL: ${{ secrets.GONG_BASE_URL }}
+          GONG_ACCESS_KEY: ${{ secrets.GONG_ACCESS_KEY }}
+          GONG_ACCESS_KEY_SECRET: ${{ secrets.GONG_ACCESS_KEY_SECRET }}
+          GONG_CLIENT_ACCESS_KEY: ${{ secrets.GONG_CLIENT_ACCESS_KEY }}
+          GONG_CLIENT_SECRET: ${{ secrets.GONG_CLIENT_SECRET }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_SIGNING_SECRET: ${{ secrets.SLACK_SIGNING_SECRET }}
+          ZILLOW_API_KEY: ${{ secrets.ZILLOW_API_KEY }}
+          # Storage
           NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+          QDRANT_URL: ${{ secrets.QDRANT_URL }}
         run: |
-          # Search providers (for research service)
+          # Research providers (for research service)
           if [ "${{ matrix.name }}" = "mcp-research" ]; then
             [ "${TAVILY_API_KEY}" != "" ] && flyctl secrets set TAVILY_API_KEY="${TAVILY_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
             [ "${SERPER_API_KEY}" != "" ] && flyctl secrets set SERPER_API_KEY="${SERPER_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
             [ "${PERPLEXITY_API_KEY}" != "" ] && flyctl secrets set PERPLEXITY_API_KEY="${PERPLEXITY_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
             [ "${EXA_API_KEY}" != "" ] && flyctl secrets set EXA_API_KEY="${EXA_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
-            # Scraping providers
             [ "${APIFY_API_KEY}" != "" ] && flyctl secrets set APIFY_API_KEY="${APIFY_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
             [ "${ZENROWS_API_KEY}" != "" ] && flyctl secrets set ZENROWS_API_KEY="${ZENROWS_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
             [ "${BRIGHTDATA_API_KEY}" != "" ] && flyctl secrets set BRIGHTDATA_API_KEY="${BRIGHTDATA_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
-            # LLM routing (critical)
             [ "${PORTKEY_API_KEY}" != "" ] && flyctl secrets set PORTKEY_API_KEY="${PORTKEY_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
             [ "${OPENROUTER_API_KEY}" != "" ] && flyctl secrets set OPENROUTER_API_KEY="${OPENROUTER_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
-            # Caching
             [ "${REDIS_URL}" != "" ] && flyctl secrets set REDIS_URL="${REDIS_URL}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+          fi
+          
+          # Business providers (for business service)
+          if [ "${{ matrix.name }}" = "mcp-business" ]; then
+            # CRM providers
+            [ "${APOLLO_API_KEY}" != "" ] && flyctl secrets set APOLLO_API_KEY="${APOLLO_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            [ "${USERGEMS_API_KEY}" != "" ] && flyctl secrets set USERGEMS_API_KEY="${USERGEMS_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            [ "${HUBSPOT_ACCESS_TOKEN}" != "" ] && flyctl secrets set HUBSPOT_ACCESS_TOKEN="${HUBSPOT_ACCESS_TOKEN}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            # Salesforce OAuth
+            [ "${SALESFORCE_CLIENT_ID}" != "" ] && flyctl secrets set SALESFORCE_CLIENT_ID="${SALESFORCE_CLIENT_ID}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            [ "${SALESFORCE_CLIENT_SECRET}" != "" ] && flyctl secrets set SALESFORCE_CLIENT_SECRET="${SALESFORCE_CLIENT_SECRET}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            [ "${SALESFORCE_USERNAME}" != "" ] && flyctl secrets set SALESFORCE_USERNAME="${SALESFORCE_USERNAME}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            [ "${SALESFORCE_PASSWORD}" != "" ] && flyctl secrets set SALESFORCE_PASSWORD="${SALESFORCE_PASSWORD}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            [ "${SALESFORCE_SECURITY_TOKEN}" != "" ] && flyctl secrets set SALESFORCE_SECURITY_TOKEN="${SALESFORCE_SECURITY_TOKEN}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            [ "${SALESFORCE_DOMAIN}" != "" ] && flyctl secrets set SALESFORCE_DOMAIN="${SALESFORCE_DOMAIN}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            # Revenue intelligence
+            [ "${GONG_BASE_URL}" != "" ] && flyctl secrets set GONG_BASE_URL="${GONG_BASE_URL}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            [ "${GONG_ACCESS_KEY}" != "" ] && flyctl secrets set GONG_ACCESS_KEY="${GONG_ACCESS_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            [ "${GONG_ACCESS_KEY_SECRET}" != "" ] && flyctl secrets set GONG_ACCESS_KEY_SECRET="${GONG_ACCESS_KEY_SECRET}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            [ "${GONG_CLIENT_ACCESS_KEY}" != "" ] && flyctl secrets set GONG_CLIENT_ACCESS_KEY="${GONG_CLIENT_ACCESS_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            [ "${GONG_CLIENT_SECRET}" != "" ] && flyctl secrets set GONG_CLIENT_SECRET="${GONG_CLIENT_SECRET}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            # Communication
+            [ "${SLACK_BOT_TOKEN}" != "" ] && flyctl secrets set SLACK_BOT_TOKEN="${SLACK_BOT_TOKEN}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            [ "${SLACK_SIGNING_SECRET}" != "" ] && flyctl secrets set SLACK_SIGNING_SECRET="${SLACK_SIGNING_SECRET}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            # Optional providers
+            [ "${ZILLOW_API_KEY}" != "" ] && flyctl secrets set ZILLOW_API_KEY="${ZILLOW_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            [ "${PORTKEY_API_KEY}" != "" ] && flyctl secrets set PORTKEY_API_KEY="${PORTKEY_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            [ "${OPENROUTER_API_KEY}" != "" ] && flyctl secrets set OPENROUTER_API_KEY="${OPENROUTER_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            [ "${REDIS_URL}" != "" ] && flyctl secrets set REDIS_URL="${REDIS_URL}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            [ "${QDRANT_URL}" != "" ] && flyctl secrets set QDRANT_URL="${QDRANT_URL}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            # Storage (critical)
+            [ "${NEON_DATABASE_URL}" != "" ] && flyctl secrets set NEON_DATABASE_URL="${NEON_DATABASE_URL}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
           fi
           
           # Context DB (for context service only)
@@ -320,5 +373,6 @@ jobs:
           echo "- MCP Repo: ${{ env.URL_MCP_REPO }}"       >> $GITHUB_STEP_SUMMARY
           echo "- MCP Research: ${{ env.URL_MCP_RESEARCH }}" >> $GITHUB_STEP_SUMMARY
           echo "- MCP Context: ${{ env.URL_MCP_CONTEXT }}"   >> $GITHUB_STEP_SUMMARY
+          echo "- MCP Business: ${{ env.URL_MCP_BUSINESS }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Proofs committed under \`proofs/healthz\`, \`proofs/build\`, \`proofs/fly\`, \`proofs/scans\`." >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,15 @@
+{
+  "status": "failed",
+  "window": "7d",
+  "channels": ["slack:#gtm"],
+  "digest_results": {},
+  "providers_used": [],
+  "providers_failed": [
+    {
+      "provider": "slack",
+      "error": "SLACK_BOT_TOKEN not configured"
+    }
+  ],
+  "execution_time_ms": 95,
+  "timestamp": "2025-08-22T19:43:50Z"
+}
