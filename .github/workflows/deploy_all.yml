@@ -37,6 +37,8 @@ jobs:
   preflight:
     name: Preflight (repo & secrets)
     runs-on: ubuntu-latest
+    env:
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
@@ -46,7 +48,8 @@ jobs:
 
       - name: Check Fly token
         run: |
-          test -n "${{ secrets.FLY_API_TOKEN }}" || { echo "❌ Missing FLY_API_TOKEN"; exit 1; }
+          echo "::add-mask::$FLY_API_TOKEN"
+          test -n "$FLY_API_TOKEN" || { echo "❌ Missing FLY_API_TOKEN"; exit 1; }
           echo "✅ Fly token exists (won't be printed)."
 
   deploy-dashboard:
@@ -55,6 +58,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: preflight
     env:
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
       APP: sophiaai-dashboard
       URL: https://sophiaai-dashboard.fly.dev
     steps:
@@ -62,6 +66,14 @@ jobs:
 
       - name: Install flyctl
         uses: superfly/flyctl-actions/setup-flyctl@master
+      
+      - name: Fly auth sanity check
+        run: |
+          echo "::add-mask::$FLY_API_TOKEN"
+          test -n "$FLY_API_TOKEN" || (echo "FLY_API_TOKEN missing" && exit 1)
+          flyctl version
+          # This should print your Fly account email/org if token is valid
+          flyctl auth whoami
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -100,18 +112,19 @@ jobs:
           test -f npm-debug.log && cp npm-debug.log ../../proofs/build/npm-debug.log || true
 
       - name: Ensure Fly app exists
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         working-directory: apps/dashboard
         run: |
-          flyctl apps show $APP >/dev/null 2>&1 || flyctl apps create $APP --machines --yes
+          pwd
+          ls -la
+          flyctl apps show ${{ env.APP }} >/dev/null 2>&1 || flyctl apps create ${{ env.APP }} --machines --yes
 
       - name: Deploy dashboard (Dockerfile.static)
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-          VITE_BUILD_ID: ${{ env.BUILD_ID }}
         working-directory: apps/dashboard
+        env:
+          VITE_BUILD_ID: ${{ env.BUILD_ID }}
         run: |
+          pwd
+          ls -la Dockerfile.static fly.toml dist/ || true
           flyctl deploy \
             --app ${{ env.APP }} \
             --config ./fly.toml \
@@ -146,8 +159,6 @@ jobs:
           fi
 
       - name: Machines JSON
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
           flyctl machines list -a ${{ env.APP }} --json | tee proofs/fly/${{ env.APP }}_machines.json
 
@@ -164,6 +175,8 @@ jobs:
     name: Deploy MCP Services (repo, research, context) + Proofs
     runs-on: ubuntu-latest
     needs: preflight
+    env:
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
     strategy:
       matrix:
         include:
@@ -187,17 +200,22 @@ jobs:
 
       - name: Install flyctl
         uses: superfly/flyctl-actions/setup-flyctl@master
+      
+      - name: Fly auth sanity check
+        run: |
+          echo "::add-mask::$FLY_API_TOKEN"
+          test -n "$FLY_API_TOKEN" || (echo "FLY_API_TOKEN missing" && exit 1)
+          flyctl version
+          # This should print your Fly account email/org if token is valid
+          flyctl auth whoami
 
       - name: Ensure app exists
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
           flyctl apps show ${{ matrix.app }} >/dev/null 2>&1 || flyctl apps create ${{ matrix.app }} --machines --yes
 
       - name: Set Fly secrets (names only)
         if: ${{ matrix.set_secrets == 'true' }}
         env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
           TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
           SERPER_API_KEY: ${{ secrets.SERPER_API_KEY }}
           NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
@@ -215,10 +233,11 @@ jobs:
           fi
 
       - name: Deploy service (Dockerfile)
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         working-directory: ${{ matrix.path }}
         run: |
+          pwd
+          ls -la
+          flyctl apps show ${{ matrix.app }} || flyctl apps create ${{ matrix.app }} --machines --yes
           flyctl deploy \
             --app ${{ matrix.app }} \
             --config ./fly.toml \
@@ -243,14 +262,10 @@ jobs:
 
       - name: Capture Fly logs on failure
         if: failure()
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
           flyctl logs -a ${{ matrix.app }} --since 20m | tail -n 400 > proofs/fly/${{ matrix.app }}_logs.txt || true
 
       - name: Machines JSON
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
           flyctl machines list -a ${{ matrix.app }} --json | tee proofs/fly/${{ matrix.app }}_machines.json
 
