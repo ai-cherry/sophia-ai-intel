@@ -1,0 +1,320 @@
+name: Deploy & Prove — Fly.io + Curl Evidence
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - "services/**"
+      - ".github/workflows/deploy_prove.yml"
+      - "apps/dashboard/**"
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write  # needed to commit proofs back
+  id-token: write  # (if you later use OIDC with secrets managers)
+  actions: read
+
+env:
+  # App base URLs used for proof curl commands
+  DASHBOARD_URL: https://sophiaai-dashboard.fly.dev
+  MCP_REPO_URL: https://sophiaai-mcp-repo.fly.dev
+  MCP_RESEARCH_URL: https://sophiaai-mcp-research.fly.dev
+  MCP_CONTEXT_URL: https://sophiaai-mcp-context.fly.dev
+  CACHE_BUSTER: ${{ github.run_id }}-${{ github.run_attempt }}
+
+jobs:
+  deploy-dashboard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Fly auth
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          if [ -z "$FLY_API_TOKEN" ]; then
+            echo "❌ Missing FLY_API_TOKEN secret"; exit 1
+          fi
+          echo "✅ Fly token configured"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build dashboard
+        working-directory: apps/dashboard
+        run: |
+          npm ci --no-audit --no-fund || npm ci --no-audit --no-fund --legacy-peer-deps
+          npm run build
+
+      - name: Ensure app exists (idempotent)
+        working-directory: apps/dashboard
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          flyctl apps create sophiaai-dashboard --machines --yes || echo "App exists."
+
+      - name: Deploy dashboard
+        working-directory: apps/dashboard
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          VITE_BUILD_ID: ${{ github.run_id }}
+        run: |
+          flyctl deploy \
+            --config ./fly.toml \
+            --dockerfile ./Dockerfile.static \
+            --build-arg VITE_BUILD_ID \
+            --build-arg CACHE_BUSTER=${CACHE_BUSTER} \
+            --no-cache \
+            --yes
+
+      - name: Prove /healthz (headers + body)
+        run: |
+          mkdir -p proofs/healthz
+          echo "====== $(date -u) ${DASHBOARD_URL}/healthz ======" | tee proofs/healthz/dashboard.txt
+          curl -i -sS "${DASHBOARD_URL}/healthz" | tee -a proofs/healthz/dashboard.txt
+          echo "" >> proofs/healthz/dashboard.txt
+
+      - name: Verify 200 OK
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" "${DASHBOARD_URL}/healthz")
+          echo "HTTP ${code}"
+          [ "$code" = "200" ] || (echo "❌ ${DASHBOARD_URL}/healthz not 200"; exit 1)
+
+      - name: Prove /__build endpoint
+        run: |
+          mkdir -p proofs/build
+          echo "====== $(date -u) ${DASHBOARD_URL}/__build ======" | tee proofs/build/dashboard_build.txt
+          curl -sS "${DASHBOARD_URL}/__build" | tee -a proofs/build/dashboard_build.txt
+
+      - name: Commit proofs to repo
+        if: always()
+        run: |
+          set -e
+          git config user.name  "sophia-bot"
+          git config user.email "sophia-bot@users.noreply.github.com"
+          git add proofs/healthz/dashboard.txt proofs/build/dashboard_build.txt 2>/dev/null || true
+          if ! git diff --cached --quiet; then
+            git commit -m "[proof] dashboard: /healthz curl proof (run ${{ github.run_id }})"
+            git push origin HEAD:${GITHUB_REF#refs/heads/}
+          else
+            echo "No proof changes to commit."
+          fi
+
+  deploy-mcp-services:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: mcp-github
+            app: sophiaai-mcp-repo
+            subdir: services/mcp-github
+            urlenv: MCP_REPO_URL
+            set_secrets: "false"
+          - name: mcp-research
+            app: sophiaai-mcp-research
+            subdir: services/mcp-research
+            urlenv: MCP_RESEARCH_URL
+            set_secrets: "true"
+          - name: mcp-context
+            app: sophiaai-mcp-context
+            subdir: services/mcp-context
+            urlenv: MCP_CONTEXT_URL
+            set_secrets: "true"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Fly auth
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          if [ -z "$FLY_API_TOKEN" ]; then
+            echo "❌ Missing FLY_API_TOKEN secret"; exit 1
+          fi
+          echo "✅ Fly token configured"
+
+      - name: Ensure app exists (idempotent)
+        working-directory: ${{ matrix.subdir }}
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          flyctl apps create ${{ matrix.app }} --machines --yes || echo "App exists."
+
+      - name: Set Fly secrets (if needed)
+        if: ${{ matrix.set_secrets == 'true' }}
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+          SERPER_API_KEY: ${{ secrets.SERPER_API_KEY }}
+          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+        run: |
+          # Research providers (optional)
+          if [ "${{ matrix.name }}" = "mcp-research" ]; then
+            if [ "${TAVILY_API_KEY}" != "" ]; then
+              flyctl secrets set TAVILY_API_KEY=${TAVILY_API_KEY} -a ${{ matrix.app }}
+            fi
+            if [ "${SERPER_API_KEY}" != "" ]; then
+              flyctl secrets set SERPER_API_KEY=${SERPER_API_KEY} -a ${{ matrix.app }}
+            fi
+          fi
+          # Context DB (optional)
+          if [ "${{ matrix.name }}" = "mcp-context" ]; then
+            if [ "${NEON_DATABASE_URL}" != "" ]; then
+              flyctl secrets set NEON_DATABASE_URL=${NEON_DATABASE_URL} -a ${{ matrix.app }}
+            fi
+          fi
+
+      - name: Deploy ${{ matrix.name }}
+        working-directory: ${{ matrix.subdir }}
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          # Prefer Dockerfile + fly.toml in the service subdir
+          flyctl deploy \
+            --config ./fly.toml \
+            --dockerfile ./Dockerfile \
+            --build-arg CACHE_BUSTER=${CACHE_BUSTER} \
+            --no-cache \
+            --yes
+
+      - name: Roll machines on old image (best-effort)
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          set -e
+          APP=${{ matrix.app }}
+          IDS=$(flyctl machines list -a $APP --json | jq -r '.[] | select(.state=="started") | .id')
+          for ID in $IDS; do
+            echo "🔄 Restarting machine $ID for $APP"
+            flyctl machines restart $ID -a $APP --yes || true
+          done
+
+      - name: Prove /healthz (headers + body)
+        env:
+          TARGET_URL: ${{ env[matrix.urlenv] }}
+        run: |
+          mkdir -p proofs/healthz
+          echo "====== $(date -u) ${TARGET_URL}/healthz ======" | tee proofs/healthz/${{ matrix.name }}.txt
+          curl -i -sS "${TARGET_URL}/healthz" | tee -a proofs/healthz/${{ matrix.name }}.txt
+          echo "" >> proofs/healthz/${{ matrix.name }}.txt
+
+      - name: Verify 200 OK
+        env:
+          TARGET_URL: ${{ env[matrix.urlenv] }}
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" "${TARGET_URL}/healthz")
+          echo "HTTP ${code}"
+          [ "$code" = "200" ] || (echo "❌ ${TARGET_URL}/healthz not 200"; exit 1)
+
+      - name: Save Fly machines JSON
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          mkdir -p proofs/fly
+          flyctl machines list -a ${{ matrix.app }} --json | tee proofs/fly/${{ matrix.app }}_machines.json
+
+      - name: Capture logs if failed
+        if: failure()
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          mkdir -p proofs/fly
+          flyctl logs -a ${{ matrix.app }} --since 15m | tail -n 200 > proofs/fly/${{ matrix.app }}_logs.txt || true
+
+      - name: Append job summary
+        env:
+          TARGET_URL: ${{ env[matrix.urlenv] }}
+        run: |
+          echo "### ${{ matrix.app }} deployed" >> $GITHUB_STEP_SUMMARY
+          echo "- URL: ${TARGET_URL}" >> $GITHUB_STEP_SUMMARY
+          echo "- Health: ✅ 200 (/healthz)" >> $GITHUB_STEP_SUMMARY
+
+      - name: Commit proofs to repo
+        if: always()
+        run: |
+          set -e
+          git config user.name  "sophia-bot"
+          git config user.email "sophia-bot@users.noreply.github.com"
+          git add proofs/healthz/${{ matrix.name }}.txt proofs/fly/${{ matrix.app }}_machines.json proofs/fly/${{ matrix.app }}_logs.txt 2>/dev/null || true
+          # Only commit if there are changes
+          if ! git diff --cached --quiet; then
+            git commit -m "[proof] ${{ matrix.name }}: /healthz curl proof + machines (run ${{ github.run_id }})"
+            git push origin HEAD:${GITHUB_REF#refs/heads/}
+          else
+            echo "No proof changes to commit."
+          fi
+
+  summary:
+    name: Final Summary
+    runs-on: ubuntu-latest
+    needs: [deploy-dashboard, deploy-mcp-services]
+    if: always()
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Pull latest proofs
+        run: |
+          git pull origin ${GITHUB_REF#refs/heads/}
+
+      - name: Generate deployment summary
+        run: |
+          echo "## 🚀 Deployment Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Services Deployed:" >> $GITHUB_STEP_SUMMARY
+          echo "- Dashboard: ${DASHBOARD_URL}" >> $GITHUB_STEP_SUMMARY
+          echo "- MCP GitHub: ${MCP_REPO_URL}" >> $GITHUB_STEP_SUMMARY
+          echo "- MCP Research: ${MCP_RESEARCH_URL}" >> $GITHUB_STEP_SUMMARY
+          echo "- MCP Context: ${MCP_CONTEXT_URL}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Proof Artifacts:" >> $GITHUB_STEP_SUMMARY
+          echo "- Health checks: \`proofs/healthz/\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Build info: \`proofs/build/\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Machine states: \`proofs/fly/\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Run ID: ${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Create deployment status file
+        run: |
+          mkdir -p proofs/deployment
+          cat > proofs/deployment/status_${{ github.run_id }}.json <<EOF
+          {
+            "run_id": "${{ github.run_id }}",
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "ref": "${GITHUB_REF}",
+            "sha": "${GITHUB_SHA}",
+            "services": {
+              "dashboard": "${DASHBOARD_URL}",
+              "mcp_github": "${MCP_REPO_URL}",
+              "mcp_research": "${MCP_RESEARCH_URL}",
+              "mcp_context": "${MCP_CONTEXT_URL}"
+            }
+          }
+          EOF
+          git config user.name  "sophia-bot"
+          git config user.email "sophia-bot@users.noreply.github.com"
+          git add proofs/deployment/status_${{ github.run_id }}.json
+          git commit -m "[proof] deployment status for run ${{ github.run_id }}" || true
+          git push origin HEAD:${GITHUB_REF#refs/heads/} || true
