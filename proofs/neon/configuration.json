@@ -1,0 +1,22 @@
+{
+  "timestamp": "2025-08-22T17:22:00Z",
+  "status": "configured",
+  "database": {
+    "provider": "Neon",
+    "created": "Aug 22, 2025 10:18 am",
+    "endpoint": "ep-rough-dew-af6w48m3-pooler.c-2.us-west-2.aws.neon.tech",
+    "database_name": "neondb",
+    "owner": "neondb_owner",
+    "pooler": true,
+    "ssl_mode": "require",
+    "channel_binding": "require"
+  },
+  "data_api": {
+    "rest_endpoint": "https://app-sparkling-wildflower-99699121.dpl.myneon.app",
+    "environment": "production"
+  },
+  "authentication": {
+    "provider": "Neon Auth",
+    "jwks_url": "https://api.stack-auth.com/api/v1/projects/b17512e4-eb5b-4466-a90c-5b5255217ff7/.well-known/jwks.json"
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "message": "Resource not accessible by personal access token",
+  "documentation_url": "https://docs.github.com/rest/apps/installations#list-app-installations-accessible-to-the-user-access-token",
+  "status": "403"
+}

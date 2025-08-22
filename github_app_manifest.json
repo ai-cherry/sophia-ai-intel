@@ -1,0 +1,17 @@
+{
+  "name": "Sophia AI Intel Bot",
+  "description": "GitHub App for Sophia AI Intel repository operations",
+  "url": "https://github.com/ai-cherry/sophia-ai-intel",
+  "hook_attributes": {
+    "active": false
+  },
+  "public": false,
+  "default_permissions": {
+    "contents": "read",
+    "issues": "write",
+    "pull_requests": "write",
+    "actions": "read",
+    "metadata": "read"
+  },
+  "default_events": []
+}

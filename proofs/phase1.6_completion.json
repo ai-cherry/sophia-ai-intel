@@ -1,0 +1,68 @@
+{
+  "timestamp": "2025-08-22T17:01:00Z",
+  "phase": "1.6",
+  "title": "API-Based Secret Discovery & Wiring",
+  "status": "PARTIAL",
+  "credentials_provided": {
+    "GITHUB_PAT": "Provided and functional",
+    "PORTKEY_API_KEY": "Provided",
+    "NEON_API_TOKEN": "Provided but no projects found",
+    "FLY_ORG_TOKEN": "Provided but flyctl not available in environment"
+  },
+  "completed_tasks": {
+    "github_secrets_inventory": {
+      "status": "PARTIAL",
+      "findings": "GitHub API accessible, no Actions secrets returned (likely none configured)",
+      "artifacts": ["proofs/secrets/gh_actions_secrets.json"]
+    },
+    "github_app_installation": {
+      "status": "NOT_FOUND",
+      "findings": "No GitHub App installation found for this repository",
+      "artifacts": ["proofs/github_app/installation.json"]
+    },
+    "neon_discovery": {
+      "status": "NO_PROJECTS",
+      "findings": "Neon API token valid but no projects found in account",
+      "artifacts": ["proofs/neon/projects.json"]
+    },
+    "fly_authentication": {
+      "status": "BLOCKED",
+      "findings": "flyctl not installed in current environment",
+      "recommendation": "Run in GitHub Actions environment with flyctl pre-installed"
+    }
+  },
+  "secrets_to_add": {
+    "github_actions": {
+      "GITHUB_APP_ID": "Not yet configured",
+      "GITHUB_INSTALLATION_ID": "Not yet configured",
+      "GITHUB_PRIVATE_KEY": "Not yet configured",
+      "NEON_DATABASE_URL": "Needs to be created from Neon project",
+      "PORTKEY_API_KEY": "Ready to add",
+      "FLY_API_TOKEN": "Already configured"
+    }
+  },
+  "next_steps": [
+    "Create Neon project and database to obtain NEON_DATABASE_URL",
+    "Create GitHub App for repository and add credentials",
+    "Add all secrets to GitHub Actions via Settings > Secrets",
+    "Run deploy_all.yml workflow in GitHub Actions (has flyctl)",
+    "Verify services can connect with provided secrets"
+  ],
+  "normalized_errors": [
+    {
+      "provider": "neon",
+      "code": "NO_PROJECTS",
+      "message": "No Neon projects found with provided API token"
+    },
+    {
+      "provider": "github_app",
+      "code": "NOT_INSTALLED",
+      "message": "No GitHub App installation found for ai-cherry/sophia-ai-intel"
+    },
+    {
+      "provider": "fly",
+      "code": "TOOL_MISSING",
+      "message": "flyctl not available in current environment"
+    }
+  ]
+}

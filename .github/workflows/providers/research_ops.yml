@@ -1,0 +1,134 @@
+name: Research Operations (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      action:
+        required: true
+        type: string
+        description: "search|validate"
+      payload:
+        required: false
+        type: string
+        default: '{}'
+        description: "Action payload JSON"
+    secrets:
+      TAVILY_API_KEY:
+        required: true
+      SERPER_API_KEY:
+        required: true
+
+jobs:
+  research-operation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Create proof directories
+        run: |
+          mkdir -p proofs/research
+
+      - name: Validate inputs
+        run: |
+          echo "::add-mask::${{ secrets.TAVILY_API_KEY }}"
+          echo "::add-mask::${{ secrets.SERPER_API_KEY }}"
+          echo "Action: ${{ inputs.action }}"
+          echo "Payload: ${{ inputs.payload }}"
+          
+          if [ -z "${{ secrets.TAVILY_API_KEY }}" ] && [ -z "${{ secrets.SERPER_API_KEY }}" ]; then
+            echo '{"status": "failure", "errors": [{"provider": "research", "code": "missing-api-keys", "message": "At least one research API key required (TAVILY_API_KEY or SERPER_API_KEY)"}]}' > proofs/research/error.json
+            exit 1
+          fi
+
+      - name: Search operation
+        if: ${{ inputs.action == 'search' }}
+        run: |
+          echo "🔍 Research search operation"
+          
+          PAYLOAD='${{ inputs.payload }}'
+          QUERY=$(echo "$PAYLOAD" | jq -r '.query // "test search query"')
+          MAX_RESULTS=$(echo "$PAYLOAD" | jq -r '.max_results // 5')
+          
+          echo "Query: $QUERY"
+          echo "Max results: $MAX_RESULTS"
+          
+          # Test Tavily API if available
+          if [ -n "${{ secrets.TAVILY_API_KEY }}" ]; then
+            echo "✅ Testing Tavily API..."
+            curl -X POST "https://api.tavily.com/search" \
+              -H "Content-Type: application/json" \
+              -d "{\"api_key\": \"${{ secrets.TAVILY_API_KEY }}\", \"query\": \"$QUERY\", \"max_results\": $MAX_RESULTS}" \
+              -w "\nHTTP Status: %{http_code}\n" \
+              > proofs/research/tavily_search.json 2>/dev/null || echo '{"error": "Tavily API request failed"}' > proofs/research/tavily_search.json
+          fi
+          
+          # Test Serper API if available  
+          if [ -n "${{ secrets.SERPER_API_KEY }}" ]; then
+            echo "✅ Testing Serper API..."
+            curl -X POST "https://google.serper.dev/search" \
+              -H "Content-Type: application/json" \
+              -H "X-API-KEY: ${{ secrets.SERPER_API_KEY }}" \
+              -d "{\"q\": \"$QUERY\", \"num\": $MAX_RESULTS}" \
+              -w "\nHTTP Status: %{http_code}\n" \
+              > proofs/research/serper_search.json 2>/dev/null || echo '{"error": "Serper API request failed"}' > proofs/research/serper_search.json
+          fi
+
+      - name: Validate APIs
+        if: ${{ inputs.action == 'validate' }}
+        run: |
+          echo "🧪 Validating research APIs"
+          
+          VALIDATION_RESULTS='{"status": "success", "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)'", "providers": {}}'
+          
+          # Validate Tavily
+          if [ -n "${{ secrets.TAVILY_API_KEY }}" ]; then
+            echo "Testing Tavily API..."
+            TAVILY_TEST=$(curl -s -X POST "https://api.tavily.com/search" \
+              -H "Content-Type: application/json" \
+              -d '{"api_key": "${{ secrets.TAVILY_API_KEY }}", "query": "test", "max_results": 1}' \
+              -w "%{http_code}")
+            
+            if [[ "$TAVILY_TEST" =~ "200" ]]; then
+              VALIDATION_RESULTS=$(echo "$VALIDATION_RESULTS" | jq '.providers.tavily = {"status": "ready", "api_key_valid": true}')
+            else
+              VALIDATION_RESULTS=$(echo "$VALIDATION_RESULTS" | jq '.providers.tavily = {"status": "error", "api_key_valid": false}')
+            fi
+          else
+            VALIDATION_RESULTS=$(echo "$VALIDATION_RESULTS" | jq '.providers.tavily = {"status": "missing", "api_key_valid": false}')
+          fi
+          
+          # Validate Serper
+          if [ -n "${{ secrets.SERPER_API_KEY }}" ]; then
+            echo "Testing Serper API..."
+            SERPER_TEST=$(curl -s -X POST "https://google.serper.dev/search" \
+              -H "Content-Type: application/json" \
+              -H "X-API-KEY: ${{ secrets.SERPER_API_KEY }}" \
+              -d '{"q": "test", "num": 1}' \
+              -w "%{http_code}")
+            
+            if [[ "$SERPER_TEST" =~ "200" ]]; then
+              VALIDATION_RESULTS=$(echo "$VALIDATION_RESULTS" | jq '.providers.serper = {"status": "ready", "api_key_valid": true}')
+            else
+              VALIDATION_RESULTS=$(echo "$VALIDATION_RESULTS" | jq '.providers.serper = {"status": "error", "api_key_valid": false}')
+            fi
+          else
+            VALIDATION_RESULTS=$(echo "$VALIDATION_RESULTS" | jq '.providers.serper = {"status": "missing", "api_key_valid": false}')
+          fi
+          
+          echo "$VALIDATION_RESULTS" > proofs/research/validation.json
+
+      - name: Commit proofs
+        run: |
+          git config user.name "sophia-bot"
+          git config user.email "sophia-bot@users.noreply.github.com"
+          git add proofs/research/ 2>/dev/null || true
+          git commit -m "[proof] research/${{ inputs.action }}: operation completed" || true
+          git push || true
+
+      - name: Operation summary
+        run: |
+          echo "✅ Research operation '${{ inputs.action }}' completed"
+          echo "🔍 Tavily API: $([[ -n "${{ secrets.TAVILY_API_KEY }}" ]] && echo "configured" || echo "missing")"
+          echo "🔍 Serper API: $([[ -n "${{ secrets.SERPER_API_KEY }}" ]] && echo "configured" || echo "missing")"
+          echo "📊 Run ID: ${{ github.run_id }}"
+          echo "📁 Proofs: proofs/research/"

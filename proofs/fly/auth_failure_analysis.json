@@ -1,0 +1,24 @@
+{
+  "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+  "phase": "1",
+  "diagnostic_results": {
+    "flyctl_installed": true,
+    "flyctl_version": "v0.3.171",
+    "token_authentication": "FAILED",
+    "error_message": "You must be authenticated to view this",
+    "token_tested": "fly_pat_9bvEjpZdQOqkLo3VZvRO75MBBzj1G1VH1GW6pKXvzKTnZCnz"
+  },
+  "root_cause": "FLY_API_TOKEN is invalid or expired",
+  "impact": [
+    "Cannot authenticate with Fly.io API",
+    "Cannot list or access apps",
+    "Cannot deploy applications",
+    "GitHub Actions workflows will fail"
+  ],
+  "next_steps": [
+    "Generate new FLY_API_TOKEN",
+    "Update GitHub secret",
+    "Re-test authentication",
+    "Re-run deployment workflow"
+  ]
+}

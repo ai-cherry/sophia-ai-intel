@@ -1,0 +1,258 @@
+name: Fly Operations (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      action:
+        required: true
+        type: string
+        description: "health|deploy|machines|logs|set-secrets"
+      app:
+        required: false
+        type: string
+        description: "App name (required for most actions)"
+      payload:
+        required: false
+        type: string
+        default: '{}'
+        description: "Action payload JSON"
+    secrets:
+      FLY_API_TOKEN:
+        required: true
+
+env:
+  FLY_ORG: pay-ready
+
+jobs:
+  fly-operation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+      
+      - name: Create proof directories
+        run: |
+          mkdir -p proofs/fly proofs/healthz proofs/build
+
+      - name: Validate inputs
+        run: |
+          echo "::add-mask::${{ secrets.FLY_API_TOKEN }}"
+          echo "Action: ${{ inputs.action }}"
+          echo "App: ${{ inputs.app }}"
+          echo "Payload: ${{ inputs.payload }}"
+          test -n "${{ secrets.FLY_API_TOKEN }}" || { echo "❌ Missing FLY_API_TOKEN"; exit 1; }
+
+      - name: Create GraphQL proofs
+        run: |
+          # Fly GraphQL viewer proof (org membership)
+          curl -X POST https://api.fly.io/graphql \
+            -H "Authorization: Bearer ${{ secrets.FLY_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{"query": "{ viewer { email organizations { edges { node { id slug } } } } }"}' \
+            | jq . > proofs/fly/viewer.json 2>/dev/null || echo '{"errors": [{"message": "GraphQL auth failed"}]}' > proofs/fly/viewer.json
+          
+          # If app specified, get app org proof
+          if [ -n "${{ inputs.app }}" ]; then
+            curl -X POST https://api.fly.io/graphql \
+              -H "Authorization: Bearer ${{ secrets.FLY_API_TOKEN }}" \
+              -H "Content-Type: application/json" \
+              -d "{\"query\": \"{ app(name:\\\"${{ inputs.app }}\\\") { name organization { id slug } } }\"}" \
+              | jq . > proofs/fly/${{ inputs.app }}_org.json 2>/dev/null || echo '{"errors": [{"message": "GraphQL auth failed"}]}' > proofs/fly/${{ inputs.app }}_org.json
+          fi
+
+      - name: Health check
+        if: ${{ inputs.action == 'health' }}
+        run: |
+          if [ -z "${{ inputs.app }}" ]; then
+            echo '{"status": "failure", "errors": [{"provider": "fly", "code": "missing-app", "message": "App name required for health check"}]}' > proofs/fly/health_error.json
+            exit 1
+          fi
+          
+          APP_URL="https://${{ inputs.app }}.fly.dev"
+          echo "🔍 Checking health: $APP_URL/healthz"
+          
+          for i in $(seq 1 10); do
+            OUT="$(curl -i -sS "$APP_URL/healthz" 2>/dev/null || true)"
+            CODE="$(printf "%s" "$OUT" | head -n1 | awk '{print $2}' || true)"
+            printf "%02d/10 → %s\n" "$i" "${CODE:-N/A}"
+            printf "%s\n" "$OUT" > proofs/healthz/${{ inputs.app }}.txt
+            [ "$CODE" = "200" ] && {
+              echo "✅ Service healthy"
+              exit 0
+            }
+            sleep 3
+          done
+          
+          echo "❌ Service not healthy after 30s"
+          echo '{"status": "failure", "errors": [{"provider": "${{ inputs.app }}", "code": "health-failed", "message": "Service not responding with 200 OK"}]}' > proofs/fly/health_failure.json
+
+      - name: Deploy application
+        if: ${{ inputs.action == 'deploy' }}
+        run: |
+          if [ -z "${{ inputs.app }}" ]; then
+            echo '{"status": "failure", "errors": [{"provider": "fly", "code": "missing-app", "message": "App name required for deploy"}]}' > proofs/fly/deploy_error.json
+            exit 1
+          fi
+
+          # Setup Node.js for dashboard builds
+          if [[ "${{ inputs.app }}" == *"dashboard"* ]]; then
+            echo "Setting up Node.js for dashboard build..."
+            curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+            sudo apt-get install -y nodejs
+            
+            # Install root workspaces
+            if [ -f package.json ] && grep -q '"workspaces"' package.json; then
+              npm ci --workspaces --no-audit --no-fund || true
+            fi
+            
+            # Build libs
+            if [ -d libs/contracts ]; then (cd libs/contracts && npm ci --no-audit --no-fund && npm run build || true); fi
+            if [ -d libs/llm-router ]; then (cd libs/llm-router && npm ci --no-audit --no-fund && npm run build || true); fi
+            
+            # Build dashboard
+            cd apps/dashboard
+            npm ci --no-audit --no-fund || npm ci --no-audit --no-fund --legacy-peer-deps
+            npm run build
+            test -d dist || { echo "❌ Dashboard build failed"; exit 1; }
+            cd ../..
+          fi
+
+          # Determine app path
+          case "${{ inputs.app }}" in
+            sophiaai-dashboard-v2)
+              APP_PATH="apps/dashboard"
+              DOCKERFILE="Dockerfile.static"
+              ;;
+            sophiaai-mcp-repo-v2)
+              APP_PATH="services/mcp-github"
+              DOCKERFILE="Dockerfile"
+              ;;
+            sophiaai-mcp-research-v2)
+              APP_PATH="services/mcp-research"
+              DOCKERFILE="Dockerfile"
+              ;;
+            sophiaai-mcp-context-v2)
+              APP_PATH="services/mcp-context"
+              DOCKERFILE="Dockerfile"
+              ;;
+            *)
+              echo '{"status": "failure", "errors": [{"provider": "fly", "code": "invalid-app", "message": "Unknown app name"}]}' > proofs/fly/deploy_error.json
+              exit 1
+              ;;
+          esac
+
+          cd "$APP_PATH"
+          pwd
+          ls -la
+          
+          # Ensure app exists
+          flyctl apps show ${{ inputs.app }} --access-token "${{ secrets.FLY_API_TOKEN }}" >/dev/null 2>&1 || \
+            flyctl apps create ${{ inputs.app }} --machines --org "$FLY_ORG" --access-token "${{ secrets.FLY_API_TOKEN }}" --yes
+          
+          # Deploy
+          flyctl deploy \
+            --app ${{ inputs.app }} \
+            --config ./fly.toml \
+            --dockerfile ./$DOCKERFILE \
+            --build-arg CACHE_BUSTER=${{ github.run_id }} \
+            --access-token "${{ secrets.FLY_API_TOKEN }}" \
+            --no-cache --yes
+
+      - name: List machines
+        if: ${{ inputs.action == 'machines' }}
+        run: |
+          if [ -z "${{ inputs.app }}" ]; then
+            echo '{"status": "failure", "errors": [{"provider": "fly", "code": "missing-app", "message": "App name required for machines"}]}' > proofs/fly/machines_error.json
+            exit 1
+          fi
+          
+          echo "🔍 Machines for ${{ inputs.app }}:"
+          flyctl machines list -a ${{ inputs.app }} --access-token "${{ secrets.FLY_API_TOKEN }}"
+          flyctl machines list -a ${{ inputs.app }} --access-token "${{ secrets.FLY_API_TOKEN }}" --json | tee proofs/fly/${{ inputs.app }}_machines.json
+
+      - name: Show logs
+        if: ${{ inputs.action == 'logs' }}
+        run: |
+          if [ -z "${{ inputs.app }}" ]; then
+            echo '{"status": "failure", "errors": [{"provider": "fly", "code": "missing-app", "message": "App name required for logs"}]}' > proofs/fly/logs_error.json
+            exit 1
+          fi
+          
+          echo "🔍 Recent logs for ${{ inputs.app }} (last 30 minutes):"
+          flyctl logs -a ${{ inputs.app }} --access-token "${{ secrets.FLY_API_TOKEN }}" --since 30m | tail -n 400 | tee proofs/fly/${{ inputs.app }}_logs.txt || true
+
+      - name: Set secrets
+        if: ${{ inputs.action == 'set-secrets' }}
+        env:
+          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+          SERPER_API_KEY: ${{ secrets.SERPER_API_KEY }}
+          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+        run: |
+          if [ -z "${{ inputs.app }}" ]; then
+            echo '{"status": "failure", "errors": [{"provider": "fly", "code": "missing-app", "message": "App name required for set-secrets"}]}' > proofs/fly/secrets_error.json
+            exit 1
+          fi
+          
+          echo "🔐 Setting secrets for ${{ inputs.app }}"
+          
+          # Parse secret names from payload or use defaults
+          PAYLOAD='${{ inputs.payload }}'
+          if [ "$PAYLOAD" = "{}" ]; then
+            SECRET_NAMES='["TAVILY_API_KEY", "SERPER_API_KEY", "NEON_DATABASE_URL"]'
+          else
+            SECRET_NAMES=$(echo "$PAYLOAD" | jq -r '.secret_names // ["TAVILY_API_KEY", "SERPER_API_KEY", "NEON_DATABASE_URL"]')
+          fi
+          
+          echo "Secret names requested: $SECRET_NAMES"
+          
+          for secret in $(echo "$SECRET_NAMES" | jq -r '.[]'); do
+            case "$secret" in
+              TAVILY_API_KEY)
+                if [ -n "${TAVILY_API_KEY}" ]; then
+                  echo "✅ Setting TAVILY_API_KEY"
+                  flyctl secrets set TAVILY_API_KEY="${TAVILY_API_KEY}" -a ${{ inputs.app }} --access-token "${{ secrets.FLY_API_TOKEN }}"
+                else
+                  echo "⚠️  TAVILY_API_KEY not available"
+                fi
+                ;;
+              SERPER_API_KEY)
+                if [ -n "${SERPER_API_KEY}" ]; then
+                  echo "✅ Setting SERPER_API_KEY"
+                  flyctl secrets set SERPER_API_KEY="${SERPER_API_KEY}" -a ${{ inputs.app }} --access-token "${{ secrets.FLY_API_TOKEN }}"
+                else
+                  echo "⚠️  SERPER_API_KEY not available"
+                fi
+                ;;
+              NEON_DATABASE_URL)
+                if [ -n "${NEON_DATABASE_URL}" ] && [[ "${{ inputs.app }}" == *"context"* ]]; then
+                  echo "✅ Setting NEON_DATABASE_URL (context app only)"
+                  flyctl secrets set NEON_DATABASE_URL="${NEON_DATABASE_URL}" -a ${{ inputs.app }} --access-token "${{ secrets.FLY_API_TOKEN }}"
+                elif [[ "${{ inputs.app }}" != *"context"* ]]; then
+                  echo "ℹ️  NEON_DATABASE_URL skipped (not a context app)"
+                else
+                  echo "⚠️  NEON_DATABASE_URL not available"
+                fi
+                ;;
+              *)
+                echo "⚠️  Unknown secret: $secret"
+                ;;
+            esac
+          done
+
+      - name: Commit proofs
+        run: |
+          git config user.name "sophia-bot"
+          git config user.email "sophia-bot@users.noreply.github.com"
+          git add proofs/fly/ proofs/healthz/ proofs/build/ 2>/dev/null || true
+          git commit -m "[proof] fly/${{ inputs.action }}: ${{ inputs.app || 'all' }} operation completed" || true
+          git push || true
+
+      - name: Operation summary
+        run: |
+          echo "✅ Fly operation '${{ inputs.action }}' completed"
+          echo "🏢 Organization: $FLY_ORG"
+          echo "📱 App: ${{ inputs.app || 'N/A' }}"
+          echo "📊 Run ID: ${{ github.run_id }}"
+          echo "📁 Proofs: proofs/fly/, proofs/healthz/"

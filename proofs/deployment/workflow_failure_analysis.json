@@ -1,0 +1,13 @@
+{
+  "timestamp": "2025-08-22T18:02:50Z",
+  "run_id": 17162486592,
+  "status": "failure",
+  "analysis": "Preflight passed, MCP and Dashboard deployments failed",
+  "likely_cause": "Fly.io deployment issue - apps exist but deployment failing",
+  "next_steps": [
+    "Check Fly.io auth in GitHub Actions",
+    "Verify Docker build is working",
+    "Check if apps have sufficient resources"
+  ],
+  "url": "https://github.com/ai-cherry/sophia-ai-intel/actions/runs/17162486592"
+}

@@ -1,0 +1,12 @@
+{
+  "timestamp": "2025-08-22T17:48:02Z",
+  "run_id": 17162233137,
+  "job": "Deploy Dashboard",
+  "status": "failure",
+  "error": {
+    "provider": "github_actions",
+    "code": "build_failed",
+    "message": "Dashboard build failed - needs investigation of specific error"
+  },
+  "workflow_url": "https://github.com/ai-cherry/sophia-ai-intel/actions/runs/17162233137"
+}

@@ -1,0 +1,9 @@
+{
+  "timestamp": "2025-08-22T18:02:08Z",
+  "action": "workflow_dispatch",
+  "workflow": "deploy_all.yml",
+  "run_id": "17162486592",
+  "status": "triggered",
+  "phase": "1.7",
+  "url": "https://github.com/ai-cherry/sophia-ai-intel/actions/runs/17162486592"
+}
