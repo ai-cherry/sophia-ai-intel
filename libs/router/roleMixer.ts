@@ -3,7 +3,26 @@
  * Coordinates between PlannerA/B and Mediator for optimal decision making
  */
 
-import type { PersonaConfig } from '../../apps/dashboard/src/persona/personaConfig';
+// Local PersonaConfig interface to avoid import issues during compilation
+interface PersonaConfig {
+  name: string;
+  humorLevel: number;
+  formality: number;
+  terseness: number;
+  followUpPolicy: 'always' | 'only-if-ambiguous-or-high-value' | 'never';
+  profanity: 'no' | 'mild' | 'unrestricted';
+  bragging: 'no' | 'subtle' | 'allowed';
+  contextAwareness: {
+    disableHumorInErrors: boolean;
+    disableHumorInSecurity: boolean;
+    disableHumorInFinancial: boolean;
+    disableHumorInInfraOps: boolean;
+  };
+  humorFrequency: {
+    maxPerSession: number;
+    cooldownMessages: number;
+  };
+}
 
 export interface PlanningRequest {
   query: string;
@@ -87,24 +106,55 @@ export class RoleMixer {
 
   /**
    * Generate plans from multiple planners and synthesize via Mediator
+   * Now with persona-aware planning integration
    */
   async generateSynthesizedPlan(request: PlanningRequest): Promise<SynthesizedPlan> {
-    // For now, simulate the LLM calls since we don't have the actual router integration
-    // In production, this would make actual API calls to the different models
+    // Apply persona configuration to planning context
+    const personaAwarePlan = this.applyPersonaToPlanning(request);
     
-    const plannerAResult = await this.simulatePlannerA(request);
-    const plannerBResult = await this.simulatePlannerB(request);
+    // Generate plans with persona influence
+    const plannerAResult = await this.simulatePlannerA(personaAwarePlan);
+    const plannerBResult = await this.simulatePlannerB(personaAwarePlan);
     
     // Store plans in history
     this.planHistory.set(plannerAResult.planId, plannerAResult);
     this.planHistory.set(plannerBResult.planId, plannerBResult);
 
-    // Synthesize via Mediator
-    const synthesizedPlan = await this.synthesizePlans(request, [plannerAResult, plannerBResult]);
+    // Synthesize via Mediator with persona context
+    const synthesizedPlan = await this.synthesizePlans(personaAwarePlan, [plannerAResult, plannerBResult]);
     
     this.planHistory.set(synthesizedPlan.planId, synthesizedPlan);
     
     return synthesizedPlan;
+  }
+
+  /**
+   * Apply persona configuration to planning request
+   */
+  private applyPersonaToPlanning(request: PlanningRequest): PlanningRequest {
+    const enhancedRequest = { ...request };
+    
+    // Adjust complexity assessment based on persona terseness
+    if (this.config.terseness > 0.7) {
+      // High terseness prefers simpler approaches
+      if (enhancedRequest.context.complexity === 'high') {
+        enhancedRequest.context.complexity = 'medium';
+      }
+    }
+    
+    // Adjust timeline expectations based on formality
+    if (this.config.formality > 0.7) {
+      // High formality prefers thorough, methodical approaches
+      enhancedRequest.context.timeline = 'extended for thoroughness';
+    }
+    
+    // Add persona context to constraints
+    enhancedRequest.context.constraints.push(
+      `Communication style: formality=${this.config.formality}, terseness=${this.config.terseness}`,
+      `Humor policy: level=${this.config.humorLevel}, context-aware=${JSON.stringify(this.config.contextAwareness)}`
+    );
+    
+    return enhancedRequest;
   }
 
   /**
@@ -160,7 +210,7 @@ export class RoleMixer {
         complexity: 'moderate'
       },
       confidence: 0.85,
-      reasoning: "Strategic approach prioritizes long-term maintainability and robustness over speed"
+      reasoning: this.generatePersonaAwareReasoning("Strategic approach prioritizes long-term maintainability and robustness over speed", 'PlannerA')
     };
   }
 
@@ -216,7 +266,7 @@ export class RoleMixer {
         complexity: 'simple'
       },
       confidence: 0.90,
-      reasoning: "Practical approach focuses on rapid delivery and proven patterns"
+      reasoning: this.generatePersonaAwareReasoning("Practical approach focuses on rapid delivery and proven patterns", 'PlannerB')
     };
   }
 
@@ -368,6 +418,63 @@ export class RoleMixer {
    */
   getPlan(planId: string): ModelPlan | undefined {
     return this.planHistory.get(planId);
+  }
+
+  /**
+   * Generate persona-aware reasoning text
+   */
+  private generatePersonaAwareReasoning(baseReasoning: string, role: 'PlannerA' | 'PlannerB' | 'Mediator'): string {
+    let reasoning = baseReasoning;
+    
+    // Adjust based on formality
+    if (this.config.formality > 0.7) {
+      reasoning = reasoning.replace(/\b(quick|fast|rapid)\b/gi, 'efficient and methodical');
+      reasoning = reasoning.replace(/\b(simple)\b/gi, 'streamlined yet comprehensive');
+    } else if (this.config.formality < 0.3) {
+      reasoning = reasoning.replace(/\b(comprehensive|thorough)\b/gi, 'practical');
+      reasoning = reasoning.replace(/\b(methodical)\b/gi, 'straightforward');
+    }
+    
+    // Add persona context note based on terseness
+    if (this.config.terseness > 0.7) {
+      return reasoning; // Keep it brief
+    } else {
+      const contextNote = this.getPersonaContextNote(role);
+      return `${reasoning}. ${contextNote}`;
+    }
+  }
+
+  /**
+   * Get persona context note for reasoning
+   */
+  private getPersonaContextNote(role: 'PlannerA' | 'PlannerB' | 'Mediator'): string {
+    const notes = {
+      PlannerA: [
+        'This aligns with preference for thorough analysis',
+        'Systematic approach matches formal communication style',
+        'Comprehensive planning reduces future clarification needs'
+      ],
+      PlannerB: [
+        'Practical execution focus matches efficiency priorities',
+        'Direct implementation approach minimizes overhead',
+        'Results-oriented strategy with clear deliverables'
+      ],
+      Mediator: [
+        'Balanced synthesis accommodates multiple perspectives',
+        'Structured decision-making process ensures clarity',
+        'Hybrid approach optimizes for both speed and quality'
+      ]
+    };
+    
+    const roleNotes = notes[role];
+    return roleNotes[Math.floor(Math.random() * roleNotes.length)];
+  }
+
+  /**
+   * Update persona configuration
+   */
+  updatePersonaConfig(config: PersonaConfig): void {
+    this.config = config;
   }
 }
 

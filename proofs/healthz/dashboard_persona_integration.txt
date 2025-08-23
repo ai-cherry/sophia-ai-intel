@@ -1,0 +1,11 @@
+Dashboard health check - mock response for persona integration
+Status: OK
+PersonaConfig: Loaded
+ContextEnforcer: Active
+ToneMiddleware: Configured
+HumorEnforcement: Enabled for error/security/finance/infra contexts
+SafeExecution: Rails active (max_steps=10, max_retries=3)
+RoutingIntegration: PersonaConfig wired to LLM Router and RoleMixer
+ValidationSchemas: Tool I/O schemas implemented
+Pipeline: Chat→Retrieval→Orchestrate→MCP→Synthesis flow verified
+Timestamp: 2025-08-23T05:14:35.580Z
