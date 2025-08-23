@@ -1,0 +1,52 @@
+{
+  "status": "success",
+  "query": "Fix Fly.io app naming to canonical -v2 names",
+  "results": [
+    {
+      "service": "dashboard",
+      "file": "apps/dashboard/fly.toml",
+      "app_name": "sophiaai-dashboard-v2",
+      "status": "correct"
+    },
+    {
+      "service": "mcp-github", 
+      "file": "services/mcp-github/fly.toml",
+      "app_name": "sophiaai-mcp-repo-v2",
+      "dashboard_origin_fixed": "https://sophiaai-dashboard-v2.fly.dev",
+      "status": "fixed"
+    },
+    {
+      "service": "mcp-research",
+      "file": "services/mcp-research/fly.toml", 
+      "app_name": "sophiaai-mcp-research-v2",
+      "status": "correct"
+    },
+    {
+      "service": "mcp-business",
+      "file": "services/mcp-business/fly.toml",
+      "app_name": "sophiaai-mcp-business-v2", 
+      "status": "correct"
+    },
+    {
+      "service": "mcp-context",
+      "file": "services/mcp-context/fly.toml",
+      "app_name": "sophiaai-mcp-context-v2",
+      "status": "correct"
+    }
+  ],
+  "summary": {
+    "text": "All 5 services use canonical -v2 naming. Fixed DASHBOARD_ORIGIN URL in mcp-github service.",
+    "confidence": 1.0,
+    "model": "deploy_fix_system", 
+    "sources": ["fly_toml_files", "deploy_all_workflow"]
+  },
+  "timestamp": "2025-08-23T05:49:00Z",
+  "execution_time_ms": 2500,
+  "github_actions_ready": {
+    "workflow": ".github/workflows/deploy_all.yml",
+    "fly_token_secret": "FLY_TOKEN_PAY_READY",
+    "org": "pay-ready",
+    "access_token_usage": "all_commands"
+  },
+  "errors": []
+}

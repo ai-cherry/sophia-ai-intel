@@ -1,0 +1,51 @@
+app = "sophiaai-jobs-v2"
+primary_region = "ord"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 8080
+  processes = ["app"]
+
+[[services.ports]]
+  port = 80
+  handlers = ["http"]
+  force_https = true
+
+[[services.ports]]
+  port = 443
+  handlers = ["http", "tls"]
+
+[services.concurrency]
+  type = "connections"
+  hard_limit = 25
+  soft_limit = 20
+
+[[services.tcp_checks]]
+  interval = "15s"
+  timeout = "2s"
+  grace_period = "1s"
+
+[env]
+  JOBS_ENVIRONMENT = "production"
+  TENANT = "pay-ready"
+  
+# Scheduled machine configuration for hourly reindex
+[[machines]]
+  role = "scheduled"
+  schedule = "0 */1 * * *"  # Every hour
+  process = "reindex"
+  cmd = ["python", "/app/reindex.py"]
+  
+[machines.vm]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512
+  
+[machines.restart]
+  policy = "never"  # One-shot execution
+
+[machines.checks]
+  # No health checks needed for scheduled jobs

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import Footer from './components/Footer'
 import ChatInterface from './components/ChatInterface'
+import JobsPanel from './components/JobsPanel'
 import { buildGuard } from './lib/buildInfo'
 import { personaConfigManager } from './persona/personaConfig'
 
@@ -12,6 +13,7 @@ function App() {
 
   const tabs = [
     { id: 'chat', label: 'Chat' },
+    { id: 'jobs', label: 'Jobs' },
     { id: 'gtm', label: 'GTM' },
     { id: 'status', label: 'System Status' },
     { id: 'integrations', label: 'Integrations' },
@@ -487,6 +489,18 @@ function App() {
               <strong>🔒 CEO Notice:</strong> All write operations require manual approval via Sophia Infra workflows.
               Read-only data is refreshed automatically. Provider availability depends on configured secrets.
             </div>
+          </div>
+        )}
+
+        {activeTab === 'jobs' && (
+          <div style={{
+            background: '#fff',
+            padding: '2rem',
+            borderRadius: '8px',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          }}>
+            <h2 style={{ margin: '0 0 1.5rem 0' }}>Jobs Management</h2>
+            <JobsPanel />
           </div>
         )}
 

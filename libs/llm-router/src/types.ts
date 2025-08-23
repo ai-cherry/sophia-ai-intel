@@ -10,6 +10,24 @@ export interface LLMRequest {
   metadata?: Record<string, any>;
 }
 
+export interface MessageContext {
+  isError?: boolean;
+  isSecurity?: boolean;
+  isFinancial?: boolean;
+  isInfraOp?: boolean;
+  messageType?: 'response' | 'error' | 'info' | 'warning';
+  originalPrompt?: string;
+}
+
+export interface PersonaAwareRequest extends LLMRequest {
+  context?: MessageContext;
+  personaOverrides?: {
+    humorLevel?: number;
+    formality?: number;
+    terseness?: number;
+  };
+}
+
 export interface LLMResponse {
   id: string;
   model: string;

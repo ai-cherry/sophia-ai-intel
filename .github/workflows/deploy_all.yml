@@ -11,6 +11,10 @@ on:
         description: "Deploy MCP services (repo, research, context, business)"
         required: false
         default: "true"
+      deploy_jobs:
+        description: "Deploy jobs service (scheduled agents)"
+        required: false
+        default: "true"
 
 permissions:
   contents: write
@@ -31,6 +35,9 @@ env:
 
   APP_MCP_BUSINESS: sophiaai-mcp-business-v2
   URL_MCP_BUSINESS: https://sophiaai-mcp-business-v2.fly.dev
+
+  APP_JOBS:         sophiaai-jobs-v2
+  URL_JOBS:         https://sophiaai-jobs-v2.fly.dev
 
   # Fly organization (Pay Ready)
   FLY_ORG:          pay-ready
@@ -360,10 +367,68 @@ jobs:
           git commit -m "[proof] ${{ matrix.app }}: healthz + machines (+ logs if failing)" || true
           git push || true
 
+  deploy-jobs:
+    if: ${{ github.event.inputs.deploy_jobs != 'false' }}
+    name: Deploy Jobs Service (scheduled agents) + Proofs
+    runs-on: ubuntu-latest
+    needs: preflight
+    env:
+      FLY_API_TOKEN: ${{ secrets.FLY_TOKEN_PAY_READY }}
+      FLY_ORG: pay-ready
+      APP: sophiaai-jobs-v2
+      URL: https://sophiaai-jobs-v2.fly.dev
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+      
+      - name: Fly auth sanity check
+        run: |
+          echo "::add-mask::$FLY_API_TOKEN"
+          test -n "$FLY_API_TOKEN" || (echo "FLY_API_TOKEN missing" && exit 1)
+          flyctl version --access-token "$FLY_API_TOKEN"
+          flyctl auth whoami --access-token "$FLY_API_TOKEN"
+
+      - name: Ensure app exists
+        run: |
+          flyctl apps show ${{ env.APP }} --access-token "$FLY_API_TOKEN" >/dev/null 2>&1 || flyctl apps create ${{ env.APP }} --machines --org "$FLY_ORG" --access-token "$FLY_API_TOKEN" --yes
+
+      - name: Deploy jobs service (Dockerfile)
+        working-directory: jobs
+        run: |
+          pwd
+          ls -la
+          flyctl deploy \
+            --app ${{ env.APP }} \
+            --config ./fly.toml \
+            --dockerfile ./Dockerfile \
+            --build-arg CACHE_BUSTER=${{ env.CACHE_BUSTER }} \
+            --access-token "$FLY_API_TOKEN" \
+            --no-cache --yes
+
+      - name: Wait for initial deployment
+        run: |
+          sleep 30  # Give scheduled machine time to initialize
+          echo "Jobs service deployed as scheduled machine"
+
+      - name: Check machines
+        run: |
+          flyctl machines list -a ${{ env.APP }} --access-token "$FLY_API_TOKEN" --json | tee proofs/fly/${{ env.APP }}_machines.json
+
+      - name: Commit jobs proofs
+        run: |
+          git config user.name  "sophia-bot"
+          git config user.email "sophia-bot@users.noreply.github.com"
+          git add proofs/fly/${{ env.APP }}_machines.json
+          git commit -m "[proof] ${{ env.APP }}: machines (scheduled)" || true
+          git push || true
+
   summary:
     name: Summary
     runs-on: ubuntu-latest
-    needs: [preflight, deploy-dashboard, deploy-services]
+    needs: [preflight, deploy-dashboard, deploy-services, deploy-jobs]
+    if: always()
     steps:
       - uses: actions/checkout@v4
       - name: Write job summary
@@ -374,5 +439,6 @@ jobs:
           echo "- MCP Research: ${{ env.URL_MCP_RESEARCH }}" >> $GITHUB_STEP_SUMMARY
           echo "- MCP Context: ${{ env.URL_MCP_CONTEXT }}"   >> $GITHUB_STEP_SUMMARY
           echo "- MCP Business: ${{ env.URL_MCP_BUSINESS }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Jobs (Scheduled): ${{ env.URL_JOBS }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Proofs committed under \`proofs/healthz\`, \`proofs/build\`, \`proofs/fly\`, \`proofs/scans\`." >> $GITHUB_STEP_SUMMARY

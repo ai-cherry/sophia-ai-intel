@@ -1,0 +1,62 @@
+# Sophia AI Intelligence Platform - Code Ownership
+# =================================================
+# 
+# This file defines who must review code changes to specific parts of the codebase.
+# All pull requests, especially those from the Sophia Builder, require CEO approval.
+
+# Global defaults - CEO approval required for all changes
+* @ceo @sophiaai-admin @lead-developer
+
+# Infrastructure and deployment - CEO + Admin required
+/.github/ @ceo @sophiaai-admin
+/scripts/ @ceo @sophiaai-admin
+/fly.toml @ceo @sophiaai-admin
+/.env* @ceo @sophiaai-admin
+/docker* @ceo @sophiaai-admin
+/.infra/ @ceo @sophiaai-admin
+
+# Core services - CEO approval required
+/services/ @ceo @sophiaai-admin @lead-developer
+/apps/ @ceo @sophiaai-admin @lead-developer
+
+# Libraries and frameworks - Technical approval required
+/libs/ @ceo @lead-developer @senior-developer
+/packages/ @ceo @lead-developer @senior-developer
+
+# Security and authentication
+/libs/persona/ @ceo @sophiaai-admin
+/libs/execution/ @ceo @sophiaai-admin
+/libs/validation/ @ceo @sophiaai-admin
+
+# Builder system - CEO approval mandatory (Sophia Builder PRs)
+/libs/builder/ @ceo @sophiaai-admin
+/.github/workflows/sophia-builder.yml @ceo @sophiaai-admin
+
+# Documentation - Content team can approve
+/docs/ @ceo @content-lead @technical-writer
+/README.md @ceo @content-lead
+
+# Proofs and artifacts - Admin approval sufficient
+/proofs/ @sophiaai-admin @lead-developer
+
+# Configuration files - CEO approval required
+/package.json @ceo @lead-developer
+/tsconfig.json @ceo @lead-developer
+/pyproject.toml @ceo @lead-developer
+/requirements.txt @lead-developer @senior-developer
+
+# Database schemas and migrations - CEO + DBA approval
+/libs/memory/schema.sql @ceo @database-admin
+/scripts/*sql @ceo @database-admin
+
+# Special files requiring CEO approval
+/LICENSE @ceo
+/.gitignore @ceo @lead-developer
+/.vscode/ @lead-developer @senior-developer
+
+# Workflow files - CEO approval mandatory
+/.github/workflows/ @ceo @sophiaai-admin
+
+# AI-generated code (from Sophia Builder) - Special review process
+# These patterns will match PR branches created by the builder
+sophia-* @ceo @sophiaai-admin @lead-developer
