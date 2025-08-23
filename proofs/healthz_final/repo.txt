@@ -1,0 +1,1 @@
+{"status":"healthy","service":"sophia-mcp-github","version":"1.0.0","timestamp":"2025-08-23T07:54:33Z","uptime_ms":1755935673628,"repo":"ai-cherry/sophia-ai-intel"}
