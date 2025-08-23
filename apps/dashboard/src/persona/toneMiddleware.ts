@@ -4,6 +4,7 @@
  */
 
 import { PersonaConfig, personaConfigManager } from './personaConfig';
+import { ContextEnforcer, createContextEnforcer } from '../../../../libs/persona/contextEnforcer';
 
 export interface MessageContext {
   isError?: boolean;
@@ -56,8 +57,11 @@ export class ToneMiddleware {
   private lastHumorIndex: number = -1;
   private messageCount: number = 0;
   private sessionHumorCount: number = 0;
+  private contextEnforcer: ContextEnforcer;
 
-  constructor(private configManager: typeof personaConfigManager) {}
+  constructor(private configManager: typeof personaConfigManager) {
+    this.contextEnforcer = createContextEnforcer(this.configManager.getConfig());
+  }
 
   /**
    * Main processing function for applying tone adjustments
@@ -69,14 +73,39 @@ export class ToneMiddleware {
     this.messageCount++;
     this.configManager.incrementMessageCount();
 
-    const config = this.configManager.getConfig();
-    const toneProfile = this.configManager.getToneProfile();
+    // Update context enforcer with latest config
+    this.contextEnforcer.updatePersonaConfig(this.configManager.getConfig());
+
+    // Advanced context analysis using the enforcer
+    const contextAnalysis = this.contextEnforcer.analyzeContext({
+      message,
+      prompt: context.originalPrompt,
+      metadata: { messageType: context.messageType },
+    });
+
+    // Apply humor enforcement if needed
+    const enforcement = this.contextEnforcer.shouldEnforceHumorZero(contextAnalysis);
+    const enforcedConfig = enforcement.shouldEnforce
+      ? this.contextEnforcer.applyEnforcement(contextAnalysis)
+      : this.configManager.getConfig();
+
+    // Get tone profile from potentially modified config
+    const toneProfile = {
+      formality: enforcedConfig.formality,
+      terseness: enforcedConfig.terseness,
+      warmth: Math.max(0.2, 1 - enforcedConfig.formality),
+    };
     
     let processedMessage = message;
     const toneAdjustments: string[] = [];
     let humorAdded = false;
 
-    // Detect context automatically if not provided
+    // Log enforcement if applied
+    if (enforcement.shouldEnforce) {
+      toneAdjustments.push(`humor-enforcement: ${enforcement.reason}`);
+    }
+
+    // Detect context automatically if not provided (legacy detection)
     const detectedContext = this.detectMessageContext(message);
     const finalContext = { ...detectedContext, ...context };
 
@@ -92,8 +121,8 @@ export class ToneMiddleware {
       toneAdjustments.push(`terseness: ${toneProfile.terseness}`);
     }
 
-    // Add humor if appropriate
-    if (this.shouldAddHumor(finalContext)) {
+    // Add humor only if not enforced to zero
+    if (!enforcement.shouldEnforce && this.shouldAddHumor(finalContext, enforcedConfig.humorLevel)) {
       const humorResult = this.addCleverHumor(processedMessage);
       if (humorResult.humorAdded) {
         processedMessage = humorResult.message;
@@ -102,6 +131,8 @@ export class ToneMiddleware {
         this.configManager.recordHumorUsed();
         toneAdjustments.push('humor: subtle');
       }
+    } else if (enforcement.shouldEnforce) {
+      toneAdjustments.push('humor: disabled (sensitive context)');
     }
 
     return {
@@ -131,8 +162,14 @@ export class ToneMiddleware {
 
   /**
    * Determine if humor should be added based on context and config
+   * Enhanced with humor level parameter
    */
-  private shouldAddHumor(context: MessageContext): boolean {
+  private shouldAddHumor(context: MessageContext, humorLevel?: number): boolean {
+    const currentHumorLevel = humorLevel ?? this.configManager.getConfig().humorLevel;
+    
+    // If humor level is 0, never use humor
+    if (currentHumorLevel <= 0) return false;
+    
     return this.configManager.shouldUseHumor(context);
   }
 
@@ -236,12 +273,25 @@ export class ToneMiddleware {
     messageCount: number;
     humorCount: number;
     humorRate: number;
+    enforcementStats: any;
   } {
     return {
       messageCount: this.messageCount,
       humorCount: this.sessionHumorCount,
       humorRate: this.messageCount > 0 ? this.sessionHumorCount / this.messageCount : 0,
+      enforcementStats: this.contextEnforcer.getEnforcementStats(),
     };
+  }
+
+  /**
+   * Check if a message would trigger humor enforcement
+   */
+  wouldEnforceHumor(message: string, additionalContext?: Record<string, any>): boolean {
+    const analysis = this.contextEnforcer.analyzeContext({
+      message,
+      ...additionalContext,
+    });
+    return this.contextEnforcer.shouldEnforceHumorZero(analysis).shouldEnforce;
   }
 }
 

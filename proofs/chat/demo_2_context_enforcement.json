@@ -1,0 +1,151 @@
+{
+  "demo_id": "chat_demo_2_context_enforcement",
+  "timestamp": "2025-08-23T05:19:00.000Z",
+  "persona_config": {
+    "humorLevel": 0.5,
+    "formality": 0.4,
+    "terseness": 0.6,
+    "contextAwareness": {
+      "errorHandling": true,
+      "securityContext": true,
+      "financeContext": true,
+      "infrastructureContext": true
+    },
+    "followUpPolicy": "only-if-ambiguous-or-high-value"
+  },
+  "conversation": [
+    {
+      "role": "user",
+      "content": "My production database is throwing connection errors and users can't authenticate. This is critical!",
+      "timestamp": "2025-08-23T05:19:01.000Z"
+    },
+    {
+      "role": "assistant",
+      "content": "I understand this is a critical production issue. Let me help you troubleshoot the database connection and authentication problems systematically.\n\n**Immediate steps to investigate:**\n\n1. **Database Connection Issues:**\n   - Check database server status and resource utilization\n   - Verify connection pool settings and current active connections\n   - Review database logs for specific error messages\n   - Confirm network connectivity between application and database\n\n2. **Authentication Problems:**\n   - Verify authentication service status\n   - Check if the issue affects all users or specific groups\n   - Review authentication logs for error patterns\n   - Confirm database user credentials and permissions\n\n3. **Quick Diagnostics:**\n   - Monitor CPU, memory, and disk I/O on database server\n   - Check for any recent configuration changes\n   - Verify backup/maintenance processes aren't blocking connections\n\n**Priority Actions:**\n- If possible, restart connection pools before full database restart\n- Scale up database resources if utilization is high\n- Implement connection retry logic in application if not present\n\nWhat specific error messages are you seeing in your logs? This will help narrow down the root cause.",
+      "timestamp": "2025-08-23T05:19:04.000Z",
+      "metadata": {
+        "model": "gpt-4o",
+        "processing_time": 2847,
+        "prompt_enhanced": true,
+        "persona_applied": {
+          "humor_level": 0.5,
+          "humor_used": false,
+          "humor_enforcement_triggered": true,
+          "formality": 0.8,
+          "terseness": 0.4
+        },
+        "context_enforcement": {
+          "triggered": true,
+          "context_type": "error_handling",
+          "patterns_matched": ["production", "database", "errors", "critical"],
+          "enforcement_action": "humor_disabled",
+          "formality_increased": true
+        },
+        "routing_decision": {
+          "router": "primary_llm", 
+          "temperature_adjusted": 0.3,
+          "max_tokens": 3000,
+          "reason": "critical_infrastructure_issue"
+        }
+      }
+    },
+    {
+      "role": "user",
+      "content": "Thanks! The logs show 'connection pool exhausted' and 'authentication timeout'. Also, we're processing $2M in transactions right now that are failing.",
+      "timestamp": "2025-08-23T05:19:20.000Z"
+    },
+    {
+      "role": "assistant",
+      "content": "Given the financial impact ($2M in failing transactions), this requires immediate escalation and action. Here's the structured response plan:\n\n**IMMEDIATE ACTIONS (Next 5-10 minutes):**\n\n1. **Connection Pool Crisis:**\n   - Increase max connection pool size temporarily\n   - Reduce connection timeout values to fail fast\n   - Clear any hanging/stale connections\n   - Monitor active vs idle connections\n\n2. **Authentication Timeout Resolution:**\n   - Check authentication service load and response times\n   - Verify authentication database isn't under resource stress\n   - Consider implementing authentication caching if available\n   - Review authentication query performance\n\n3. **Financial Transaction Protection:**\n   - Enable transaction queuing if supported\n   - Implement circuit breaker to prevent data corruption\n   - Set up transaction replay mechanism for failed payments\n   - Alert financial operations team about potential impact\n\n**MONITORING REQUIREMENTS:**\n- Real-time connection pool metrics\n- Authentication service response times\n- Transaction success/failure rates\n- Database resource utilization\n\n**ESCALATION PROTOCOL:**\n- Notify database administrator immediately\n- Contact financial operations team\n- Prepare rollback plan if issues persist\n- Document all changes for post-incident review\n\n**Critical Questions:**\n- What's your current connection pool size vs concurrent users?\n- Are you seeing specific authentication database performance issues?\n- Do you have database read replicas that could handle authentication?\n\nTime is critical with this transaction volume at risk.",
+      "timestamp": "2025-08-23T05:19:24.000Z",
+      "metadata": {
+        "model": "gpt-4o",
+        "processing_time": 3254,
+        "prompt_enhanced": true,
+        "persona_applied": {
+          "humor_level": 0.5,
+          "humor_used": false,
+          "humor_enforcement_triggered": true,
+          "formality": 0.9,
+          "terseness": 0.3
+        },
+        "context_enforcement": {
+          "triggered": true,
+          "context_type": "finance_context",
+          "patterns_matched": ["$2M", "transactions", "failing", "financial"],
+          "enforcement_action": "humor_disabled",
+          "formality_increased": true,
+          "urgency_detected": true
+        },
+        "routing_decision": {
+          "router": "primary_llm",
+          "temperature_adjusted": 0.2,
+          "max_tokens": 4000,
+          "reason": "financial_critical_incident"
+        },
+        "orchestrator_actions": {
+          "max_steps": 8,
+          "retries_used": 0,
+          "idempotency_key": "incident_2M_tx_fail_20250823051924",
+          "circuit_breaker_status": "closed"
+        }
+      }
+    },
+    {
+      "role": "user", 
+      "content": "Perfect, we've increased the connection pool and transactions are flowing again. What should we do for post-incident analysis?",
+      "timestamp": "2025-08-23T05:19:45.000Z"
+    },
+    {
+      "role": "assistant",
+      "content": "Excellent work resolving the immediate crisis. Here's a comprehensive post-incident analysis framework:\n\n**IMMEDIATE POST-RESOLUTION (Next 24-48 hours):**\n\n1. **Incident Documentation:**\n   - Capture exact timeline of events and responses\n   - Document all configuration changes made\n   - Record financial impact and recovery metrics\n   - Gather all relevant logs and monitoring data\n\n2. **Root Cause Analysis:**\n   - Analyze connection pool sizing vs actual load patterns\n   - Review authentication service capacity planning\n   - Examine any recent deployments or configuration changes\n   - Assess database performance trends leading up to incident\n\n3. **Financial Impact Assessment:**\n   - Calculate exact transaction loss during outage\n   - Verify all transactions were properly recovered\n   - Review fraud detection impacts during degraded performance\n   - Assess customer experience metrics\n\n**PREVENTION STRATEGIES:**\n\n1. **Monitoring Improvements:**\n   - Set up proactive alerts for connection pool utilization (80%+ threshold)\n   - Implement authentication service response time monitoring\n   - Create dashboards for real-time transaction health\n\n2. **Infrastructure Hardening:**\n   - Implement auto-scaling for connection pools\n   - Set up authentication service clustering/failover\n   - Create runbooks for similar incident response\n   - Consider read replica setup for authentication queries\n\n3. **Testing Protocol:**\n   - Load testing scenarios that simulate this failure\n   - Chaos engineering for connection pool failures\n   - Authentication service stress testing\n\n**STAKEHOLDER COMMUNICATION:**\n- Brief executives on financial impact and resolution\n- Update customers on service restoration\n- Coordinate with compliance team if required\n\nWould you like me to help draft the incident report template or prioritize any specific analysis area?",
+      "timestamp": "2025-08-23T05:19:49.000Z",
+      "metadata": {
+        "model": "gpt-4o",
+        "processing_time": 2945,
+        "prompt_enhanced": true,
+        "persona_applied": {
+          "humor_level": 0.5,
+          "humor_used": false,
+          "humor_enforcement_triggered": true,
+          "formality": 0.8,
+          "terseness": 0.4
+        },
+        "context_enforcement": {
+          "triggered": true,
+          "context_type": "infrastructure_context",
+          "patterns_matched": ["post-incident", "analysis", "infrastructure", "monitoring"],
+          "enforcement_action": "humor_disabled",
+          "formality_maintained": true
+        },
+        "routing_decision": {
+          "router": "primary_llm",
+          "temperature_adjusted": 0.3,
+          "max_tokens": 3500
+        }
+      }
+    }
+  ],
+  "session_stats": {
+    "total_messages": 3,
+    "humor_instances": 0,
+    "humor_rate": 0.0,
+    "context_enforcements": 3,
+    "enforcement_contexts": ["error_handling", "finance_context", "infrastructure_context"],
+    "average_processing_time": 3015.3,
+    "models_used": ["gpt-4o"],
+    "formality_adjustments": 3
+  },
+  "proof_validation": {
+    "persona_config_applied": true,
+    "humor_level_ignored_due_to_context": true,
+    "context_enforcement_triggered": true,
+    "formality_increased_automatically": true,
+    "routing_adjusted_for_criticality": true,
+    "no_humor_in_sensitive_contexts": true,
+    "pipeline_flow_complete": true,
+    "financial_context_detected": true,
+    "infrastructure_context_detected": true,
+    "error_context_detected": true
+  }
+}

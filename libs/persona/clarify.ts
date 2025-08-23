@@ -3,7 +3,26 @@
  * Determines when and how to ask clarifying questions based on ambiguity analysis
  */
 
-import type { PersonaConfig } from '../../apps/dashboard/src/persona/personaConfig';
+// Local PersonaConfig interface to avoid import issues during compilation
+interface PersonaConfig {
+  name: string;
+  humorLevel: number;
+  formality: number;
+  terseness: number;
+  followUpPolicy: 'always' | 'only-if-ambiguous-or-high-value' | 'never';
+  profanity: 'no' | 'mild' | 'unrestricted';
+  bragging: 'no' | 'subtle' | 'allowed';
+  contextAwareness: {
+    disableHumorInErrors: boolean;
+    disableHumorInSecurity: boolean;
+    disableHumorInFinancial: boolean;
+    disableHumorInInfraOps: boolean;
+  };
+  humorFrequency: {
+    maxPerSession: number;
+    cooldownMessages: number;
+  };
+}
 
 export interface AmbiguityAnalysis {
   intentClarity: number; // 0-1, higher = clearer intent
@@ -251,37 +270,42 @@ export class ClarificationPolicy {
     const { overallScore, ambiguityFactors } = analysis;
     const { followUpPolicy } = this.config;
 
+    // Apply persona-aware humor constraints to clarification context
+    const humorDisallowedContext = this.isHumorDisallowed(context, ambiguityFactors);
+    
     // Never ask if policy is set to never
     if (followUpPolicy === 'never') {
       return {
         shouldAsk: false,
         type: 'none',
         reasoning: 'Follow-up policy set to never ask clarifying questions',
-        defaultAssumption: this.generateDefaultAssumption(analysis, context)
+        defaultAssumption: this.generatePersonaAwareAssumption(analysis, context)
       };
     }
 
     // Always ask if policy is set to always
     if (followUpPolicy === 'always') {
-      return this.generateClarificationQuestion(analysis, context, 
-        overallScore > 0.7 ? 'targeted' : 'with-default');
+      return this.generatePersonaAwareClarificationQuestion(analysis, context,
+        overallScore > 0.7 ? 'targeted' : 'with-default', humorDisallowedContext);
     }
 
-    // Apply ambiguity thresholds for 'only-if-ambiguous-or-high-value' policy
-    if (overallScore >= 0.65) {
+    // Apply persona-adjusted ambiguity thresholds
+    const adjustedThresholds = this.getPersonaAdjustedThresholds();
+    
+    if (overallScore >= adjustedThresholds.high) {
       // Low ambiguity - proceed with assumption
       return {
         shouldAsk: false,
         type: 'none',
-        reasoning: `Low ambiguity (score: ${overallScore.toFixed(2)}) - proceeding with best assumption`,
-        defaultAssumption: this.generateDefaultAssumption(analysis, context)
+        reasoning: `Low ambiguity (score: ${overallScore.toFixed(2)}) - proceeding with persona-informed assumption`,
+        defaultAssumption: this.generatePersonaAwareAssumption(analysis, context)
       };
-    } else if (overallScore >= 0.35) {
+    } else if (overallScore >= adjustedThresholds.medium) {
       // Medium ambiguity - ask targeted question
-      return this.generateClarificationQuestion(analysis, context, 'targeted');
+      return this.generatePersonaAwareClarificationQuestion(analysis, context, 'targeted', humorDisallowedContext);
     } else {
       // High ambiguity - ask question with default
-      return this.generateClarificationQuestion(analysis, context, 'with-default');
+      return this.generatePersonaAwareClarificationQuestion(analysis, context, 'with-default', humorDisallowedContext);
     }
   }
 
@@ -463,7 +487,150 @@ export class ClarificationService {
     this.analyzer = new AmbiguityAnalyzer(config);
     this.policy = new ClarificationPolicy(config, this.analyzer);
   }
+
+  /**
+   * Get current persona configuration
+   */
+  getPersonaConfig(): PersonaConfig {
+    return this.analyzer['config']; // Access private config
+  }
 }
+
+/**
+ * Extended ClarificationPolicy with persona integration methods
+ */
+declare module './clarify' {
+  interface ClarificationPolicy {
+    isHumorDisallowed(context: ClarificationContext, factors: AmbiguityFactor[]): boolean;
+    getPersonaAdjustedThresholds(): { high: number; medium: number };
+    generatePersonaAwareAssumption(analysis: AmbiguityAnalysis, context: ClarificationContext): string;
+    generatePersonaAwareClarificationQuestion(
+      analysis: AmbiguityAnalysis,
+      context: ClarificationContext,
+      type: 'targeted' | 'with-default',
+      humorDisallowed: boolean
+    ): ClarificationDecision;
+  }
+}
+
+// Add methods to ClarificationPolicy prototype
+Object.assign(ClarificationPolicy.prototype, {
+  /**
+   * Check if humor should be disallowed based on context and factors
+   */
+  isHumorDisallowed(context: ClarificationContext, factors: AmbiguityFactor[]): boolean {
+    // Check for sensitive context types
+    const sensitiveTypes = ['error', 'security', 'financial', 'infrastructure'];
+    const hasSensitiveContext = sensitiveTypes.some(type =>
+      context.domain?.toLowerCase().includes(type) ||
+      factors.some(f => f.description.toLowerCase().includes(type))
+    );
+
+    // Apply persona's contextAwareness settings
+    return hasSensitiveContext && (
+      (context.domain?.includes('error') && this.config.contextAwareness.disableHumorInErrors) ||
+      (context.domain?.includes('security') && this.config.contextAwareness.disableHumorInSecurity) ||
+      (context.domain?.includes('financial') && this.config.contextAwareness.disableHumorInFinancial) ||
+      (context.domain?.includes('infrastructure') && this.config.contextAwareness.disableHumorInInfraOps)
+    );
+  },
+
+  /**
+   * Get persona-adjusted ambiguity thresholds
+   */
+  getPersonaAdjustedThresholds(): { high: number; medium: number } {
+    // Base thresholds
+    let highThreshold = 0.65;
+    let mediumThreshold = 0.35;
+
+    // Adjust based on formality (more formal = ask fewer questions)
+    if (this.config.formality > 0.7) {
+      highThreshold += 0.1;
+      mediumThreshold += 0.1;
+    } else if (this.config.formality < 0.3) {
+      highThreshold -= 0.1;
+      mediumThreshold -= 0.05;
+    }
+
+    // Adjust based on terseness (more terse = higher bar for questions)
+    if (this.config.terseness > 0.7) {
+      highThreshold += 0.15;
+      mediumThreshold += 0.1;
+    }
+
+    return {
+      high: Math.min(0.9, Math.max(0.3, highThreshold)),
+      medium: Math.min(0.7, Math.max(0.1, mediumThreshold))
+    };
+  },
+
+  /**
+   * Generate persona-aware default assumption
+   */
+  generatePersonaAwareAssumption(analysis: AmbiguityAnalysis, context: ClarificationContext): string {
+    const baseAssumption = this.generateDefaultAssumption(analysis, context);
+    
+    // Adjust assumption tone based on persona
+    if (this.config.formality > 0.7) {
+      return `Based on analysis: ${baseAssumption}`;
+    } else if (this.config.formality < 0.3) {
+      return `Going with: ${baseAssumption}`;
+    }
+    
+    return baseAssumption;
+  },
+
+  /**
+   * Generate persona-aware clarification question
+   */
+  generatePersonaAwareClarificationQuestion(
+    analysis: AmbiguityAnalysis,
+    context: ClarificationContext,
+    type: 'targeted' | 'with-default',
+    humorDisallowed: boolean
+  ): ClarificationDecision {
+    const baseDecision = this.generateClarificationQuestion(analysis, context, type);
+    
+    if (!baseDecision.question) return baseDecision;
+
+    // Adjust question tone based on persona
+    let adjustedQuestion = baseDecision.question;
+    
+    if (this.config.formality > 0.7) {
+      adjustedQuestion = adjustedQuestion
+        .replace(/^What's/, 'What is')
+        .replace(/Can you/, 'Could you please')
+        .replace(/\?$/, ', if you would?');
+    } else if (this.config.formality < 0.3) {
+      adjustedQuestion = adjustedQuestion
+        .replace(/Could you please/, 'Can you')
+        .replace(/What is/, "What's");
+    }
+
+    // Apply terseness
+    if (this.config.terseness > 0.7) {
+      adjustedQuestion = adjustedQuestion
+        .replace(/\b(please|if you would|kindly)\b/gi, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    // Remove any humor if context disallows it
+    if (humorDisallowed && this.config.humorLevel > 0) {
+      // Strip casual language that might be perceived as humorous
+      adjustedQuestion = adjustedQuestion
+        .replace(/\b(just|simply|basically)\b/gi, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    return {
+      ...baseDecision,
+      question: adjustedQuestion,
+      reasoning: `${baseDecision.reasoning} (persona-adjusted: formality=${this.config.formality}, terseness=${this.config.terseness}, humor=${humorDisallowed ? 'disabled' : 'enabled'})`
+    };
+  }
+});
 
 // Export factory function
 export function createClarificationService(config: PersonaConfig): ClarificationService {
