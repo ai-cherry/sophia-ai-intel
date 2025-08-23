@@ -1,0 +1,67 @@
+{
+  "version": "1.0",
+  "updated": "2025-08-23T04:29:00Z",
+  "description": "Sophia AI Model Routing Roles - Specialized LLM assignments for different functions",
+  "roles": {
+    "PlannerA": {
+      "model": "claude-sonnet-4",
+      "provider": "anthropic",
+      "description": "Strategic planning and architecture decisions",
+      "strengths": ["complex reasoning", "system design", "risk assessment"],
+      "use_cases": ["technical architecture", "project planning", "problem decomposition"],
+      "context_window": 200000,
+      "temperature": 0.3,
+      "max_tokens": 4096
+    },
+    "PlannerB": {
+      "model": "deepseek-v3",
+      "provider": "deepseek",
+      "description": "Alternative planning perspective and validation",
+      "strengths": ["cost efficiency", "practical solutions", "alternative approaches"],
+      "use_cases": ["plan validation", "cost optimization", "implementation alternatives"],
+      "context_window": 128000,
+      "temperature": 0.4,
+      "max_tokens": 4096
+    },
+    "Mediator": {
+      "model": "gpt-4",
+      "provider": "openai",
+      "description": "Conflict resolution and plan synthesis",
+      "strengths": ["plan comparison", "decision synthesis", "trade-off analysis"],
+      "use_cases": ["merging conflicting plans", "final decision making", "stakeholder alignment"],
+      "context_window": 128000,
+      "temperature": 0.2,
+      "max_tokens": 4096
+    },
+    "Coder": {
+      "model": "deepseek-coder",
+      "provider": "deepseek", 
+      "description": "Code implementation and technical execution",
+      "strengths": ["code generation", "debugging", "technical implementation"],
+      "use_cases": ["writing code", "fixing bugs", "technical execution"],
+      "context_window": 64000,
+      "temperature": 0.1,
+      "max_tokens": 8192
+    }
+  },
+  "routing_rules": {
+    "planning_requests": ["PlannerA", "PlannerB"],
+    "implementation_requests": ["Coder"],
+    "decision_synthesis": ["Mediator"],
+    "code_review": ["Coder", "PlannerA"],
+    "architecture_review": ["PlannerA", "Mediator"],
+    "cost_optimization": ["PlannerB"]
+  },
+  "fallback_hierarchy": [
+    "PlannerA",
+    "Mediator", 
+    "PlannerB",
+    "Coder"
+  ],
+  "concurrent_planning": {
+    "enabled": true,
+    "max_parallel": 2,
+    "synthesis_required": true,
+    "mediator_role": "Mediator"
+  }
+}
