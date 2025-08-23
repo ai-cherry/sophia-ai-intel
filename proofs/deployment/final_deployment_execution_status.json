@@ -1,0 +1,57 @@
+{
+  "execution_timestamp": "2025-08-23T07:54:42Z",
+  "deployment_phase": "Final Deployment Execution",
+  "execution_status": "PARTIALLY_COMPLETED",
+  "summary": "Deployment execution attempted with mixed results",
+  "results": {
+    "flyctl_app_creation": {
+      "status": "BLOCKED",
+      "reason": "flyctl not available in execution environment",
+      "impact": "Apps may need to be created through Fly.io console or CI/CD"
+    },
+    "package_lock_verification": {
+      "status": "SUCCESS",
+      "details": "package-lock.json exists and is committed (commit 2538839)"
+    },
+    "workflow_dispatch": {
+      "status": "BLOCKED", 
+      "error": "HTTP 403: Resource not accessible by integration",
+      "reason": "Insufficient GitHub permissions for workflow dispatch"
+    },
+    "health_check_results": {
+      "status": "PARTIAL_SUCCESS",
+      "healthy_services": 1,
+      "total_services": 6,
+      "details": {
+        "sophiaai-mcp-repo-v2": "HEALTHY - uptime 20+ days",
+        "sophiaai-dashboard-v2": "FAILED", 
+        "sophiaai-jobs-v2": "FAILED",
+        "sophiaai-mcp-business-v2": "FAILED",
+        "sophiaai-mcp-research-v2": "FAILED", 
+        "sophiaai-mcp-context-v2": "FAILED"
+      }
+    }
+  },
+  "deployment_assessment": {
+    "overall_status": "16.7% OPERATIONAL",
+    "critical_issues": [
+      "5 out of 6 services not responding to health checks",
+      "GitHub workflow dispatch blocked by permissions",
+      "flyctl unavailable for app management"
+    ],
+    "operational_services": [
+      "sophia-mcp-github (repo service) - fully functional"
+    ],
+    "next_actions_required": [
+      "Investigate why 5 services are not responding",
+      "Resolve GitHub integration permissions",
+      "Manual deployment verification through Fly.io console",
+      "Service restart/redeploy may be needed for failed services"
+    ]
+  },
+  "artifacts_collected": {
+    "health_proofs": "proofs/healthz_final/",
+    "deployment_logs": "proofs/deployment/",
+    "status": "COMPLETED"
+  }
+}
