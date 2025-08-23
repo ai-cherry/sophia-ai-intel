@@ -1,0 +1,47 @@
+app = "sophiaai-mcp-lambda-v2"
+primary_region = "ord"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[vm]
+  memory = "1gb"
+  cpu_kind = "shared"
+  cpus = 1
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 8080
+  processes = ["app"]
+
+[[services.ports]]
+  port = 80
+  handlers = ["http"]
+  force_https = true
+
+[[services.ports]]
+  port = 443
+  handlers = ["http", "tls"]
+
+[services.concurrency]
+  type = "requests"
+  soft_limit = 25
+  hard_limit = 50
+
+[[services.http_checks]]
+  method = "GET"
+  path = "/healthz"
+  interval = "30s"
+  timeout = "20s"
+  grace_period = "60s"
+
+[deploy]
+  strategy = "rolling"
+  wait_timeout = "10m"
+
+[experimental]
+  auto_rollback = true
+
+[env]
+  TENANT = "pay-ready"
+  LAMBDA_API_ENDPOINT = "https://cloud.lambdalabs.com/api/v1"
