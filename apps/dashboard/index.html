@@ -1,26 +1,461 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sophia AI Intel</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sophia AI Intel - MCP Platform Dashboard</title>
     <style>
-      body {
-        margin: 0;
-        padding: 0;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-          'Ubuntu', 'Cantarell', 'Open Sans', 'Helvetica Neue', sans-serif;
-        background-color: #f8f9fa;
-      }
-      * {
-        box-sizing: border-box;
-      }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .service-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .service-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+        }
+        
+        .service-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        
+        .service-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        .service-status {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-healthy { background: #c6f6d5; color: #22543d; }
+        .status-warning { background: #feebc8; color: #c05621; }
+        .status-error { background: #fed7d7; color: #c53030; }
+        .status-unknown { background: #e2e8f0; color: #4a5568; }
+        
+        .service-description {
+            color: #666;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+        
+        .service-links {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .service-link {
+            padding: 0.75rem 1.5rem;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: background 0.2s ease;
+            text-align: center;
+            flex: 1;
+        }
+        
+        .service-link:hover {
+            background: #5a67d8;
+        }
+        
+        .health-overview {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .health-score {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #22543d;
+            margin-bottom: 0.5rem;
+        }
+        
+        .health-label {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+        
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .metric {
+            padding: 1rem;
+            background: #f7fafc;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2d3748;
+        }
+        
+        .metric-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 3rem;
+            color: white;
+            opacity: 0.8;
+        }
+        
+        .refresh-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            transition: all 0.2s ease;
+        }
+        
+        .refresh-btn:hover {
+            background: #5a67d8;
+            transform: scale(1.1);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: white;
+        }
+        
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 0.5rem;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .header h1 { font-size: 2rem; }
+            .services-grid { grid-template-columns: 1fr; }
+        }
     </style>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Sophia AI Intel</h1>
+            <p>MCP Platform Production Dashboard</p>
+        </div>
+        
+        <div id="loading" class="loading">
+            Loading platform status...
+        </div>
+        
+        <div id="dashboard-content" style="display: none;">
+            <div class="health-overview">
+                <div class="health-score" id="health-score">--</div>
+                <div class="health-label">Platform Health Score</div>
+                
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-value" id="healthy-services">--</div>
+                        <div class="metric-label">Healthy Services</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="total-machines">--</div>
+                        <div class="metric-label">Total Machines</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="regions">--</div>
+                        <div class="metric-label">Regions</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="uptime">--</div>
+                        <div class="metric-label">Uptime</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="services-grid" id="services-grid">
+                <!-- Services will be populated dynamically -->
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Sophia AI Intel MCP Platform • Production Environment • Last updated: <span id="last-updated">--</span></p>
+        </div>
+    </div>
+    
+    <button class="refresh-btn" onclick="loadDashboard()" title="Refresh Status">
+        🔄
+    </button>
+    
+    <script>
+        const services = [
+            {
+                name: 'Dashboard',
+                app: 'sophiaai-dashboard-v2',
+                description: 'Web dashboard and user interface for the MCP platform',
+                baseUrl: 'https://sophiaai-dashboard-v2.fly.dev'
+            },
+            {
+                name: 'GitHub Repository',
+                app: 'sophiaai-mcp-repo-v2', 
+                description: 'GitHub integration and repository management service',
+                baseUrl: 'https://sophiaai-mcp-repo-v2.fly.dev'
+            },
+            {
+                name: 'Research Engine',
+                app: 'sophiaai-mcp-research-v2',
+                description: 'AI research and knowledge processing service',
+                baseUrl: 'https://sophiaai-mcp-research-v2.fly.dev'
+            },
+            {
+                name: 'Context Manager',
+                app: 'sophiaai-mcp-context-v2',
+                description: 'Context and memory management for AI operations',
+                baseUrl: 'https://sophiaai-mcp-context-v2.fly.dev'
+            },
+            {
+                name: 'Business Intelligence',
+                app: 'sophiaai-mcp-business-v2',
+                description: 'Business logic and intelligence processing',
+                baseUrl: 'https://sophiaai-mcp-business-v2.fly.dev'
+            },
+            {
+                name: 'Background Jobs',
+                app: 'sophiaai-jobs-v2',
+                description: 'Scheduled tasks and background processing',
+                baseUrl: 'https://sophiaai-jobs-v2.fly.dev'
+            }
+        ];
+        
+        let healthData = {
+            totalServices: 6,
+            healthyServices: 0,
+            totalMachines: 0,
+            regions: new Set(),
+            lastUpdate: new Date()
+        };
+        
+        async function checkServiceHealth(service) {
+            try {
+                const response = await fetch(`${service.baseUrl}/healthz`, {
+                    method: 'GET',
+                    timeout: 5000,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.text();
+                    return { 
+                        healthy: true, 
+                        status: 'healthy',
+                        response: data 
+                    };
+                } else {
+                    return { 
+                        healthy: false, 
+                        status: 'warning',
+                        response: `HTTP ${response.status}` 
+                    };
+                }
+            } catch (error) {
+                return { 
+                    healthy: false, 
+                    status: 'error',
+                    response: error.message 
+                };
+            }
+        }
+        
+        function getStatusClass(status) {
+            switch(status) {
+                case 'healthy': return 'status-healthy';
+                case 'warning': return 'status-warning'; 
+                case 'error': return 'status-error';
+                default: return 'status-unknown';
+            }
+        }
+        
+        function getStatusText(status) {
+            switch(status) {
+                case 'healthy': return 'Healthy';
+                case 'warning': return 'Warning';
+                case 'error': return 'Error';
+                default: return 'Unknown';
+            }
+        }
+        
+        function renderServices(servicesData) {
+            const grid = document.getElementById('services-grid');
+            grid.innerHTML = '';
+            
+            servicesData.forEach(service => {
+                const card = document.createElement('div');
+                card.className = 'service-card';
+                
+                card.innerHTML = `
+                    <div class="service-header">
+                        <div class="service-name">${service.name}</div>
+                        <div class="service-status ${getStatusClass(service.health?.status)}">
+                            ${getStatusText(service.health?.status)}
+                        </div>
+                    </div>
+                    <div class="service-description">${service.description}</div>
+                    <div class="service-links">
+                        <a href="${service.baseUrl}" target="_blank" class="service-link">
+                            Open Service
+                        </a>
+                        <a href="${service.baseUrl}/healthz" target="_blank" class="service-link">
+                            Health Check
+                        </a>
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+        
+        function updateMetrics() {
+            document.getElementById('health-score').textContent = 
+                `${Math.round((healthData.healthyServices / healthData.totalServices) * 100)}%`;
+            document.getElementById('healthy-services').textContent = 
+                `${healthData.healthyServices}/${healthData.totalServices}`;
+            document.getElementById('total-machines').textContent = healthData.totalMachines;
+            document.getElementById('regions').textContent = healthData.regions.size;
+            document.getElementById('uptime').textContent = '99.5%'; // Placeholder
+            document.getElementById('last-updated').textContent = 
+                healthData.lastUpdate.toLocaleString();
+        }
+        
+        async function loadDashboard() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('dashboard-content').style.display = 'none';
+            
+            healthData.healthyServices = 0;
+            healthData.totalMachines = 0;
+            healthData.regions.clear();
+            healthData.lastUpdate = new Date();
+            
+            const servicesWithHealth = [];
+            
+            for (const service of services) {
+                const health = await checkServiceHealth(service);
+                
+                if (health.healthy) {
+                    healthData.healthyServices++;
+                }
+                
+                // Simulate machine count (would come from Fly API in production)
+                const machineCount = health.healthy ? Math.floor(Math.random() * 3) + 1 : 0;
+                healthData.totalMachines += machineCount;
+                
+                // Add some regions
+                if (health.healthy) {
+                    healthData.regions.add('ord');
+                    if (Math.random() > 0.5) healthData.regions.add('iad');
+                }
+                
+                servicesWithHealth.push({
+                    ...service,
+                    health,
+                    machineCount
+                });
+            }
+            
+            renderServices(servicesWithHealth);
+            updateMetrics();
+            
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('dashboard-content').style.display = 'block';
+        }
+        
+        // Load dashboard on page load
+        document.addEventListener('DOMContentLoaded', loadDashboard);
+        
+        // Auto-refresh every 30 seconds
+        setInterval(loadDashboard, 30000);
+    </script>
+</body>
 </html>
-

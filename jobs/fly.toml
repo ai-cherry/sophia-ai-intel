@@ -9,31 +9,10 @@ primary_region = "ord"
   cpu_kind = "shared"
   cpus = 1
 
-[[services]]
-  protocol = "tcp"
-  internal_port = 8080
-  processes = ["app"]
+# No HTTP services needed - this is a scheduled job only
 
-[[services.ports]]
-  port = 80
-  handlers = ["http"]
-  force_https = true
-
-[[services.ports]]
-  port = 443
-  handlers = ["http", "tls"]
-
-[services.concurrency]
-  type = "requests"
-  soft_limit = 50
-  hard_limit = 75
-
-[[services.http_checks]]
-  method = "GET"
-  path = "/healthz"
-  interval = "15s"
-  timeout = "2s"
-  grace_period = "30s"
+[processes]
+  reindex = "python reindex.py"
 
 [env]
   JOBS_ENVIRONMENT = "production"
