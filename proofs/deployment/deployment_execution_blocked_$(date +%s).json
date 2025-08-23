@@ -1,0 +1,34 @@
+{
+  "deployment_execution_status": "BLOCKED",
+  "timestamp": "2025-08-23T14:17:14.670Z",
+  "failure_reason": "GitHub API permissions insufficient",
+  "details": {
+    "error": "HTTP 403: Resource not accessible by integration",
+    "current_auth": "scoobyjava (GITHUB_TOKEN)",
+    "required_permission": "workflow_dispatch",
+    "target_repo": "ai-cherry/sophia-ai-intel",
+    "attempted_workflows": [
+      "reset_deploy.yml (ID: 183459134)",
+      "Deploy All (Dashboard + MCPs) — Fly (ID: 183302517)"
+    ]
+  },
+  "infrastructure_status": {
+    "fly_authentication": "WORKING",
+    "fly_apps_created": "YES - All 6 apps exist",
+    "secrets_configured": "YES - FLY_ORG_KEY present",
+    "docker_builds": "FAILED - Need workflow execution"
+  },
+  "alternative_approaches": {
+    "direct_fly_deploy": "Possible but requires manual build process",
+    "github_ui_manual": "Available via web interface",
+    "token_elevation": "Required for CLI automation"
+  },
+  "immediate_action_required": {
+    "priority": "CRITICAL",
+    "options": [
+      "Use GitHub web UI to manually dispatch workflow",
+      "Request elevated GitHub token permissions",
+      "Execute direct Fly CLI deployment with manual builds"
+    ]
+  }
+}

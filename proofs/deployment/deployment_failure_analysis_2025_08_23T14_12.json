@@ -1,0 +1,135 @@
+{
+  "deployment_failure_analysis": {
+    "timestamp": "2025-08-23T14:12:07.810Z",
+    "workflow_run_analyzed": 17176258341,
+    "failure_summary": {
+      "total_jobs": 8,
+      "successful_jobs": 2,
+      "failed_jobs": 2, 
+      "cancelled_jobs": 4,
+      "failure_cascade": true
+    },
+    "detailed_job_analysis": {
+      "preflight": {
+        "job_id": 48732546837,
+        "status": "SUCCESS",
+        "duration": "3 seconds",
+        "key_validations": [
+          "Repository checkout: ✅ SUCCESS",
+          "Fly token validation: ✅ SUCCESS",
+          "Proofs directories creation: ✅ SUCCESS"
+        ],
+        "conclusion": "Authentication and basic setup working correctly"
+      },
+      "dashboard_deployment": {
+        "job_id": 48732548100,
+        "status": "FAILURE",
+        "duration": "14 seconds",
+        "failure_step": "Deploy service (Dockerfile)",
+        "impact": "Dashboard service (sophiaai-dashboard-v2.fly.dev) unreachable",
+        "subsequent_steps": "All post-deployment steps skipped due to failure"
+      },
+      "mcp_services_repo": {
+        "job_id": 48732548108,
+        "status": "CANCELLED",
+        "duration": "18 seconds",
+        "failure_step": "Deploy service (Dockerfile) - cancelled mid-execution",
+        "note": "Despite cancellation, MCP Repo service is actually running and healthy",
+        "anomaly": "Service operational despite job cancellation - suggests existing deployment"
+      },
+      "mcp_services_business": {
+        "job_id": 48732548110,
+        "status": "FAILURE", 
+        "duration": "5 seconds",
+        "failure_step": "Deploy service (Dockerfile)",
+        "secrets_status": "Secrets set successfully before deployment failure",
+        "impact": "MCP Business service unreachable"
+      },
+      "other_mcp_jobs": {
+        "status": "NOT_EXECUTED",
+        "reason": "Dependency failures caused workflow termination",
+        "services_affected": ["MCP Research", "MCP Context", "Jobs"]
+      },
+      "summary_job": {
+        "job_id": 48732555603,
+        "status": "SUCCESS",
+        "purpose": "Generated workflow summary despite failures"
+      }
+    },
+    "root_cause_analysis": {
+      "primary_issue": "Docker deployment failures across multiple services",
+      "evidence": [
+        "Dashboard deployment failed at 'Deploy service (Dockerfile)' step",
+        "MCP Business deployment failed at same step immediately after secrets were set",
+        "MCP Repo deployment was cancelled but shows existing healthy deployment"
+      ],
+      "likely_causes": [
+        {
+          "cause": "Docker build or registry issues",
+          "probability": "HIGH",
+          "evidence": "Multiple services failing at identical Docker deployment step"
+        },
+        {
+          "cause": "Fly.io platform resource constraints", 
+          "probability": "MEDIUM",
+          "evidence": "Rapid failures suggest resource allocation issues"
+        },
+        {
+          "cause": "Network connectivity during deployment",
+          "probability": "LOW", 
+          "evidence": "Preflight checks passed, indicating basic connectivity works"
+        }
+      ]
+    },
+    "infrastructure_impact": {
+      "operational_services": 1,
+      "failed_services": 5,
+      "platform_availability": "16.7%",
+      "critical_functions_affected": [
+        "AI Dashboard UI (primary user interface)",
+        "Research capabilities (MCP Research)",
+        "Context management (MCP Context)", 
+        "Business intelligence (MCP Business)",
+        "Background job processing (Jobs service)"
+      ],
+      "working_functions": [
+        "GitHub repository integration (MCP Repo)"
+      ]
+    },
+    "deployment_pattern_analysis": {
+      "authentication": "WORKING - FLY_ORG_KEY properly configured",
+      "secrets_management": "WORKING - Secrets successfully set before deployment failures",
+      "app_provisioning": "WORKING - Apps exist and are accessible",
+      "docker_deployment": "FAILING - Multiple services failing at Docker step",
+      "health_checking": "BLOCKED - Cannot verify due to deployment failures"
+    },
+    "contradictory_evidence": {
+      "mcp_repo_anomaly": {
+        "observation": "MCP Repo service shows healthy status despite job cancellation",
+        "uptime_evidence": "1,755,958,223,704 milliseconds (~20+ days uptime)",
+        "hypothesis": "Service was deployed successfully in previous workflow run",
+        "implication": "Docker deployment can work when conditions are right"
+      }
+    }
+  },
+  "immediate_remediation_required": [
+    {
+      "priority": "P0-CRITICAL",
+      "action": "Investigate Docker build logs for dashboard and MCP business services",
+      "timeline": "Within 1 hour",
+      "owner": "DevOps/Platform Team"
+    },
+    {
+      "priority": "P0-CRITICAL", 
+      "action": "Check Fly.io organization limits and resource quotas",
+      "timeline": "Within 1 hour",
+      "owner": "Infrastructure Team"
+    },
+    {
+      "priority": "P1-HIGH",
+      "action": "Manual deployment attempt with verbose logging enabled",
+      "timeline": "Within 2 hours",
+      "owner": "Deployment Team"
+    }
+  ]
+}

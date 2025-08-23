@@ -1,0 +1,49 @@
+{
+  "status": "blocked",
+  "operation": "reset_deploy_workflow_dispatch",
+  "timestamp": "2025-08-23T13:53:57.998Z",
+  "command_attempted": "gh workflow run reset_deploy.yml -f mode=deploy -f recreate_apps=false -R ai-cherry/sophia-ai-intel",
+  "error": {
+    "code": "HTTP_403",
+    "message": "Resource not accessible by integration",
+    "github_api_endpoint": "https://api.github.com/repos/ai-cherry/sophia-ai-intel/actions/workflows/183459134/dispatches"
+  },
+  "authentication": {
+    "account": "scoobyjava",
+    "token_type": "GITHUB_TOKEN",
+    "token_permissions": "limited_integration_scope"
+  },
+  "resolution": {
+    "method": "manual_github_ui_trigger",
+    "reason": "CEO-gated deployment requires elevated permissions and environment approval",
+    "steps": [
+      "Navigate to GitHub Actions workflows page",
+      "Select 'Reset & Deploy (Fly + Proofs) — all cloud' workflow", 
+      "Click 'Run workflow' button",
+      "Configure inputs: mode=deploy, recreate_apps=false",
+      "Click 'Run workflow' to execute",
+      "Approve production environment gate when prompted"
+    ]
+  },
+  "workflow_details": {
+    "name": "Reset & Deploy (Fly + Proofs) — all cloud",
+    "file": ".github/workflows/reset_deploy.yml",
+    "requires_environment_approval": true,
+    "environment_name": "production",
+    "estimated_duration": "30-60 minutes",
+    "services_to_deploy": [
+      "sophiaai-dashboard-v2",
+      "sophiaai-mcp-repo-v2",
+      "sophiaai-mcp-research-v2", 
+      "sophiaai-mcp-business-v2",
+      "sophiaai-mcp-context-v2",
+      "sophiaai-jobs-v2"
+    ]
+  },
+  "next_steps": {
+    "immediate_action": "Manual workflow trigger via GitHub UI",
+    "workflow_url": "https://github.com/ai-cherry/sophia-ai-intel/actions/workflows/reset_deploy.yml",
+    "monitoring_url": "https://github.com/ai-cherry/sophia-ai-intel/actions",
+    "post_deploy_verification": "Check proofs/deployment/ for completion status"
+  }
+}

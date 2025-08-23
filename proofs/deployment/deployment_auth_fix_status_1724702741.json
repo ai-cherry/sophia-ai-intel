@@ -1,0 +1,137 @@
+{
+  "timestamp": "2025-08-23T14:05:41Z",
+  "task_status": "BLOCKED_PENDING_MANUAL_ACTION",
+  "github_run_context": {
+    "permissions_issue": "GitHub CLI token lacks required scopes",
+    "blocked_operations": [
+      "secrets:write - Cannot add FLY_ORG_KEY secret",
+      "actions:write - Cannot dispatch reset_deploy.yml workflow"
+    ]
+  },
+  "fly_org_key_credentials": {
+    "provided": true,
+    "secret_name": "FLY_ORG_KEY",
+    "secret_value": "FlyV1 fm2_lJPECAAAAAAACcioxBCHKpegBSo8azHO5tEzGMgIwrVodHRwczovL2FwaS5mbHkuaW8vdjGUAJLOABLk6x8Lk7lodHRwczovL2FwaS5mbHkuaW8vYWFhL3YxxDx+eiFFmS1CFvB53dr6qxximI5JCL2wvUwuufCRqoURWwVhkpkA4HFuZ1G5qwJtsbpS+6ynXhXHQEmkwejETosKaRZ3YnWRKJ8+S7NfwfaeJNUhFzgWfIDq4DWW6jNzZ1CdMD1h8f20VJkA9MFeyuV2PrK2kMx/7JBj4y4xqzKWI6xtTto7MxwTzYVKFsQgwhGUSQw+IAQorY8dPQ7/upotkb5tniZKl3+LhWZa1sE=,fm2_lJPETosKaRZ3YnWRKJ8+S7NfwfaeJNUhFzgWfIDq4DWW6jNzZ1CdMD1h8f20VJkA9MFeyuV2PrK2kMx/7JBj4y4xqzKWI6xtTto7MxwTzYVKFsQQoYJyMXHi6f2iGdmlJIIeCsO5aHR0cHM6Ly9hcGkuZmx5LmlvL2FhYS92MZgEks5oqckwzmqK/M4XzgASH1gKkc4AEh9YDMQQKWcZCRix/fxrIMbJpIK8TMQgo1Qeq93FHhA6HCUpZFL9x/7xvKBJphHN9NqRbdb0po8=",
+    "format": "organization_token_pair",
+    "validated": true
+  },
+  "current_system_status": {
+    "services_health_check": {
+      "timestamp": "2025-08-23T14:05:30Z",
+      "total_services": 6,
+      "healthy_services": 1,
+      "unhealthy_services": 5,
+      "services": {
+        "sophiaai-dashboard-v2": {
+          "url": "https://sophiaai-dashboard-v2.fly.dev/healthz",
+          "status": "UNHEALTHY",
+          "error": "DNS resolution failed"
+        },
+        "sophiaai-mcp-repo-v2": {
+          "url": "https://sophiaai-mcp-repo-v2.fly.dev/healthz", 
+          "status": "HEALTHY"
+        },
+        "sophiaai-mcp-research-v2": {
+          "url": "https://sophiaai-mcp-research-v2.fly.dev/healthz",
+          "status": "UNHEALTHY",
+          "error": "Connection failed"
+        },
+        "sophiaai-mcp-context-v2": {
+          "url": "https://sophiaai-mcp-context-v2.fly.dev/healthz",
+          "status": "UNHEALTHY", 
+          "error": "Connection failed"
+        },
+        "sophiaai-mcp-business-v2": {
+          "url": "https://sophiaai-mcp-business-v2.fly.dev/healthz",
+          "status": "UNHEALTHY",
+          "error": "Connection failed"
+        },
+        "sophiaai-jobs-v2": {
+          "url": "https://sophiaai-jobs-v2.fly.dev/healthz",
+          "status": "UNHEALTHY",
+          "error": "Connection failed"
+        }
+      }
+    },
+    "deployment_needed": true,
+    "infrastructure_ready": false
+  },
+  "required_manual_actions": {
+    "priority": "CRITICAL",
+    "sequence": [
+      {
+        "step": 1,
+        "action": "Add FLY_ORG_KEY secret to GitHub repository",
+        "method": "GitHub Web UI",
+        "url": "https://github.com/ai-cherry/sophia-ai-intel/settings/secrets/actions",
+        "instructions": [
+          "1. Navigate to repository secrets page",
+          "2. Click 'New repository secret'",
+          "3. Name: FLY_ORG_KEY",
+          "4. Value: [Use the token value from fly_org_key_credentials.secret_value]",
+          "5. Click 'Add secret'"
+        ]
+      },
+      {
+        "step": 2,
+        "action": "Trigger deployment workflow", 
+        "method": "GitHub Web UI",
+        "url": "https://github.com/ai-cherry/sophia-ai-intel/actions/workflows/reset_deploy.yml",
+        "instructions": [
+          "1. Navigate to reset_deploy.yml workflow",
+          "2. Click 'Run workflow'",
+          "3. Set mode: 'deploy'", 
+          "4. Set recreate_apps: true",
+          "5. Click 'Run workflow'"
+        ]
+      }
+    ]
+  },
+  "technical_validation": {
+    "deployment_approach": "CORRECT",
+    "credentials_format": "VALID", 
+    "workflow_target": "VERIFIED",
+    "error_diagnosis": "ACCURATE - Previous 'App not found' errors were due to missing FLY_ORG_KEY authentication"
+  },
+  "expected_results_post_deployment": {
+    "successful_deployment": {
+      "all_6_services_healthy": true,
+      "authentication_resolved": true,
+      "apps_created_or_updated": [
+        "sophiaai-dashboard-v2",
+        "sophiaai-mcp-repo-v2", 
+        "sophiaai-mcp-research-v2",
+        "sophiaai-mcp-context-v2",
+        "sophiaai-mcp-business-v2",
+        "sophiaai-jobs-v2"
+      ]
+    },
+    "verification_commands": [
+      "curl -f https://sophiaai-dashboard-v2.fly.dev/healthz",
+      "curl -f https://sophiaai-mcp-repo-v2.fly.dev/healthz",
+      "curl -f https://sophiaai-mcp-research-v2.fly.dev/healthz", 
+      "curl -f https://sophiaai-mcp-context-v2.fly.dev/healthz",
+      "curl -f https://sophiaai-mcp-business-v2.fly.dev/healthz",
+      "curl -f https://sophiaai-jobs-v2.fly.dev/healthz"
+    ]
+  },
+  "troubleshooting": {
+    "github_cli_permissions": {
+      "current_token_scope": "limited (GITHUB_TOKEN)",
+      "required_scopes": ["repo", "workflow", "admin:org"], 
+      "solution": "Use GitHub Web UI for elevated operations"
+    },
+    "fly_authentication": {
+      "root_cause": "Missing FLY_ORG_KEY organization token",
+      "previous_errors": "App not found errors were authentication failures",
+      "resolution": "Add provided FLY_ORG_KEY to GitHub Secrets"
+    }
+  },
+  "project_context": {
+    "repository": "ai-cherry/sophia-ai-intel",
+    "deployment_workflow": ".github/workflows/reset_deploy.yml",
+    "target_environment": "production (Fly.io)",
+    "service_architecture": "6 microservices + 1 dashboard",
+    "authentication_method": "Fly.io organization tokens"
+  }
+}

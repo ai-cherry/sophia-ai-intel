@@ -1,0 +1,148 @@
+{
+  "deployment_monitoring_report": {
+    "timestamp": "2025-08-23T14:11:02.915Z",
+    "mission_status": "CRITICAL - DEPLOYMENT FAILURE DETECTED",
+    "summary": {
+      "total_services": 6,
+      "healthy_services": 1,
+      "failed_services": 5,
+      "success_rate": "16.7%"
+    },
+    "github_actions_status": {
+      "workflow_name": "Deploy All (Dashboard + MCPs) — Fly (Docker-only, Proof-first)",
+      "workflow_id": 183302517,
+      "last_run": {
+        "id": 17176258341,
+        "status": "completed",
+        "conclusion": "failure",
+        "created_at": "2025-08-23T13:55:16Z",
+        "updated_at": "2025-08-23T13:55:51Z",
+        "duration": "35 seconds",
+        "trigger": "workflow_dispatch",
+        "actor": "scoobyjava"
+      },
+      "analysis": "Recent deployment attempts are failing consistently. The most recent failure occurred 14 minutes before this monitoring check."
+    },
+    "service_health_verification": {
+      "dashboard": {
+        "service": "sophiaai-dashboard-v2.fly.dev",
+        "endpoint": "https://sophiaai-dashboard-v2.fly.dev/healthz",
+        "status": "FAILED",
+        "http_code": "000",
+        "response_time": "0.016148s",
+        "error": "Connection failed - service unreachable"
+      },
+      "mcp_repo": {
+        "service": "sophiaai-mcp-repo-v2.fly.dev",
+        "endpoint": "https://sophiaai-mcp-repo-v2.fly.dev/healthz",
+        "status": "HEALTHY",
+        "http_code": "200",
+        "response_time": "0.150357s",
+        "response": {
+          "status": "healthy",
+          "service": "sophia-mcp-github",
+          "version": "1.0.0",
+          "timestamp": "2025-08-23T14:10:23Z",
+          "uptime_ms": 1755958223704,
+          "repo": "ai-cherry/sophia-ai-intel"
+        }
+      },
+      "mcp_research": {
+        "service": "sophiaai-mcp-research-v2.fly.dev",
+        "endpoint": "https://sophiaai-mcp-research-v2.fly.dev/healthz",
+        "status": "FAILED",
+        "http_code": "000",
+        "response_time": "0.015478s",
+        "error": "Connection failed - service unreachable"
+      },
+      "mcp_context": {
+        "service": "sophiaai-mcp-context-v2.fly.dev",
+        "endpoint": "https://sophiaai-mcp-context-v2.fly.dev/healthz",
+        "status": "FAILED",
+        "http_code": "000",
+        "response_time": "0.015483s",
+        "error": "Connection failed - service unreachable"
+      },
+      "mcp_business": {
+        "service": "sophiaai-mcp-business-v2.fly.dev",
+        "endpoint": "https://sophiaai-mcp-business-v2.fly.dev/healthz",
+        "status": "FAILED",
+        "http_code": "000",
+        "response_time": "0.032886s",
+        "error": "Connection failed - service unreachable"
+      },
+      "jobs": {
+        "service": "sophiaai-jobs-v2.fly.dev",
+        "endpoint": "https://sophiaai-jobs-v2.fly.dev/healthz",
+        "status": "FAILED",
+        "http_code": "000",
+        "response_time": "0.031903s",
+        "error": "Connection failed - service unreachable"
+      }
+    },
+    "critical_issues_identified": [
+      {
+        "severity": "CRITICAL",
+        "issue": "5 out of 6 microservices are unreachable",
+        "impact": "83.3% of the Sophia AI Intelligence System is non-functional",
+        "services_affected": [
+          "Dashboard",
+          "MCP Research",
+          "MCP Context", 
+          "MCP Business",
+          "Jobs"
+        ]
+      },
+      {
+        "severity": "HIGH",
+        "issue": "Continuous deployment failures",
+        "impact": "New deployments are not succeeding",
+        "evidence": "GitHub Actions workflow failing consistently since 2025-08-23T13:55:16Z"
+      },
+      {
+        "severity": "MEDIUM",
+        "issue": "Only MCP Repo service operational",
+        "impact": "Limited functionality available - only GitHub repository integration working",
+        "note": "MCP Repo shows healthy status with significant uptime (1.7B+ milliseconds)"
+      }
+    ],
+    "deployment_diagnostics": {
+      "likely_causes": [
+        "FLY_ORG_KEY authentication issues during deployment",
+        "Docker build failures for affected services", 
+        "Resource allocation problems on Fly.io platform",
+        "Environment variable configuration errors",
+        "Network connectivity issues to deployment targets"
+      ],
+      "deployment_pattern": "Partial deployment success - suggests infrastructure-level issues rather than code issues",
+      "working_service_analysis": "MCP Repo service shows normal health and extended uptime, indicating the platform can host services when properly deployed"
+    },
+    "recommended_actions": [
+      {
+        "priority": 1,
+        "action": "Investigate GitHub Actions deployment logs for the failed workflow run ID 17176258341",
+        "reason": "Root cause analysis of the most recent deployment failure"
+      },
+      {
+        "priority": 2,
+        "action": "Verify FLY_ORG_KEY secret is properly configured and has sufficient permissions",
+        "reason": "Authentication failures are a common cause of deployment failures"
+      },
+      {
+        "priority": 3,
+        "action": "Check Fly.io organization quotas and resource limits",
+        "reason": "Multiple service failures could indicate resource constraints"
+      },
+      {
+        "priority": 4,
+        "action": "Review and re-run the deployment workflow with debug logging enabled",
+        "reason": "Fresh deployment attempt with enhanced observability"
+      }
+    ],
+    "ceo_gate_status": "BLOCKED",
+    "ceo_gate_reason": "Deployment verification failed - only 16.7% of services operational",
+    "next_monitoring_window": "2025-08-23T14:26:02.915Z",
+    "escalation_required": true,
+    "escalation_reason": "Critical system failure - enterprise AI platform is 83% non-functional"
+  }
+}
