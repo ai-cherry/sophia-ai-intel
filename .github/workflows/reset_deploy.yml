@@ -35,6 +35,7 @@ permissions:
 
 env:
   FLY_ORG: pay-ready
+  FLY_PRIMARY_REGION: iad
   CACHE_BUSTER: ${{ github.run_id }}-${{ github.run_attempt }}
   # Service URLs for health checks
   DASHBOARD_URL: https://sophiaai-dashboard-v2.fly.dev
@@ -59,6 +60,11 @@ jobs:
 
       - name: Install flyctl
         uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Install jq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
 
       - name: Fly auth
         env:
@@ -130,7 +136,7 @@ jobs:
           echo "Creating apps in organization: $FLY_ORG"
           for app in $(echo "$apps" | jq -r '.[].app'); do
             echo "Creating app: $app"
-            flyctl apps create $app --org $FLY_ORG --machines --yes || echo "App $app already exists."
+            flyctl apps create "$app" --org "$FLY_ORG" --region "$FLY_PRIMARY_REGION" || echo "App $app already exists."
           done
 
       - name: Seed secrets from FLY_APP_SECRETS_JSON
@@ -245,9 +251,15 @@ jobs:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
           VITE_BUILD_ID: ${{ github.run_id }}
         run: |
+          set -e
+          if [ -f ./Dockerfile.static ]; then
+            DOCKERFILE_ARG="--dockerfile ./Dockerfile.static"
+          else
+            DOCKERFILE_ARG=""
+          fi
           flyctl deploy \
             --config ./fly.toml \
-            --dockerfile ./Dockerfile.static \
+            $DOCKERFILE_ARG \
             --build-arg VITE_BUILD_ID \
             --build-arg CACHE_BUSTER=${CACHE_BUSTER} \
             --remote-only \
@@ -512,6 +524,10 @@ jobs:
             ["mcp-context"]="${MCP_CONTEXT_URL}"
             ["mcp-business"]="${MCP_BUSINESS_URL}"
           )
+          
+          if [ "${{ inputs.skip_dashboard }}" = "true" ]; then
+            unset services[dashboard]
+          fi
           
           health_results="{"
           first=true
