@@ -1,3 +1,31 @@
+"""
+Sophia AI GitHub Integration MCP Service
+
+This module provides GitHub API integration capabilities through a GitHub App,
+enabling secure access to repository content, file operations, and repository
+metadata for the Sophia AI intelligence platform.
+
+Key Features:
+- GitHub App authentication for secure API access
+- Repository file content retrieval with base64 encoding
+- Directory tree browsing and navigation
+- Comprehensive error handling with normalized responses
+- Health monitoring and credential validation
+
+GitHub App Integration:
+- Uses GitHub App credentials (App ID, Installation ID, Private Key)
+- Provides access to specific repositories based on app installation
+- Supports cross-origin requests from Sophia AI dashboard
+
+Security:
+- Private key-based authentication for GitHub App
+- Installation-specific access tokens
+- CORS configuration for dashboard integration
+
+Version: 2.0.0
+Author: Sophia AI Intelligence Team
+"""
+
 import os
 import time
 from fastapi import FastAPI, HTTPException, Query
@@ -9,7 +37,7 @@ from github_app import gh_get, MissingCredentialsError
 REPO = os.getenv("GITHUB_REPO", "ai-cherry/sophia-ai-intel")
 DASHBOARD_ORIGIN = os.getenv("DASHBOARD_ORIGIN", "https://sophiaai-dashboard.fly.dev")
 
-app = FastAPI(title="sophia-mcp-github", version="1.0.0")
+app = FastAPI(title="sophia-mcp-github-v2", version="2.0.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -19,16 +47,30 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 def normalized_error(provider: str, code: str, message: str):
-    """Return normalized error JSON format"""
+    """
+    Create normalized error response format for consistent error handling.
+    
+    Standardizes error responses across GitHub operations to ensure consistent
+    debugging and error handling capabilities.
+    
+    Args:
+        provider (str): GitHub provider identifier (typically "github_app")
+        code (str): Error code identifier for programmatic error handling
+        message (str): Human-readable error message describing the issue
+        
+    Returns:
+        Dict[str, Any]: Normalized error object with timestamp
+        
+    Example:
+        >>> normalized_error("github_app", "MISSING_CREDENTIALS", "GitHub App credentials not configured")
+    """
     return {
-        "error": {
-            "provider": provider,
-            "code": code,
-            "message": message
-        },
-        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        "error": {"provider": provider, "code": code, "message": message},
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
     }
+
 
 @app.get("/healthz")
 async def healthz():
@@ -40,7 +82,7 @@ async def healthz():
         missing.append("GITHUB_INSTALLATION_ID")
     if not os.getenv("GITHUB_PRIVATE_KEY"):
         missing.append("GITHUB_PRIVATE_KEY")
-    
+
     if missing:
         return JSONResponse(
             status_code=503,
@@ -54,25 +96,27 @@ async def healthz():
                 "error": normalized_error(
                     "github_app",
                     "MISSING_CREDENTIALS",
-                    f"Missing required credentials: {', '.join(missing)}"
-                )
-            }
+                    f"Missing required credentials: {', '.join(missing)}",
+                ),
+            },
         )
-    
+
     return {
         "status": "healthy",
-        "service": "sophia-mcp-github", 
-        "version": "1.0.0", 
+        "service": "sophia-mcp-github",
+        "version": "1.0.0",
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "uptime_ms": int(time.time() * 1000),
-        "repo": REPO
+        "repo": REPO,
     }
+
 
 class FileResponse(BaseModel):
     path: str
     ref: str
     encoding: str
     content: str  # base64
+
 
 @app.get("/repo/file", response_model=FileResponse)
 async def repo_file(path: str = Query(...), ref: str = Query("main")):
@@ -89,13 +133,13 @@ async def repo_file(path: str = Query(...), ref: str = Query("main")):
     except MissingCredentialsError as e:
         return JSONResponse(
             status_code=503,
-            content=normalized_error("github_app", "MISSING_CREDENTIALS", str(e))
+            content=normalized_error("github_app", "MISSING_CREDENTIALS", str(e)),
         )
     except Exception as e:
         return JSONResponse(
-            status_code=500,
-            content=normalized_error("github_app", "API_ERROR", str(e))
+            status_code=500, content=normalized_error("github_app", "API_ERROR", str(e))
         )
+
 
 @app.get("/repo/tree")
 async def repo_tree(path: str = Query(""), ref: str = Query("main")):
@@ -106,18 +150,30 @@ async def repo_tree(path: str = Query(""), ref: str = Query("main")):
     try:
         data = await gh_get(api_path)
         if isinstance(data, dict) and data.get("type") == "file":
-            return {"path": path, "ref": ref, "entries": [{"type":"file","name":data["name"],"path":data["path"]}]}
+            return {
+                "path": path,
+                "ref": ref,
+                "entries": [
+                    {"type": "file", "name": data["name"], "path": data["path"]}
+                ],
+            }
         entries = []
         for item in data:
-            entries.append({"type": item["type"], "name": item["name"], "path": item["path"], "size": item.get("size", 0)})
+            entries.append(
+                {
+                    "type": item["type"],
+                    "name": item["name"],
+                    "path": item["path"],
+                    "size": item.get("size", 0),
+                }
+            )  # Break lines due to E501
         return {"path": path, "ref": ref, "entries": entries}
     except MissingCredentialsError as e:
         return JSONResponse(
             status_code=503,
-            content=normalized_error("github_app", "MISSING_CREDENTIALS", str(e))
+            content=normalized_error("github_app", "MISSING_CREDENTIALS", str(e)),
         )
     except Exception as e:
         return JSONResponse(
-            status_code=500,
-            content=normalized_error("github_app", "API_ERROR", str(e))
+            status_code=500, content=normalized_error("github_app", "API_ERROR", str(e))
         )

@@ -1,566 +1,629 @@
 /**
- * Sophia AI Tool I/O Schemas
- * Strict TypeScript validation schemas for all tool inputs and outputs
- * (TypeScript equivalent to Pydantic schemas)
+ * Tool Schemas - Strict I/O validation for all tool calls
+ * ======================================================
+ * 
+ * Centralized schema definitions for validating inputs and outputs
+ * of all tool calls with comprehensive error handling and type safety.
  */
 
-// Simple validation library implementation (lightweight alternative to zod)
-type ValidationError = {
-  field: string;
-  message: string;
-  value: any;
-};
-
-class ValidationResult<T> {
-  constructor(
-    public success: boolean,
-    public data?: T,
-    public errors: ValidationError[] = []
-  ) {}
+/** Base schema interface */
+export interface Schema {
+  type: string
+  required?: boolean
+  description?: string
+  validate?: (value: any) => ValidationResult
 }
 
-function validate<T>(schema: Schema<T>, data: any): ValidationResult<T> {
-  const errors: ValidationError[] = [];
-  const result = schema.validate(data, errors);
-  
-  if (errors.length > 0) {
-    return new ValidationResult<T>(false, undefined, errors);
-  }
-  
-  return new ValidationResult<T>(true, result);
+/** String schema with constraints */
+export interface StringSchema extends Schema {
+  type: 'string'
+  minLength?: number
+  maxLength?: number
+  pattern?: RegExp
+  enum?: string[]
 }
 
-interface Schema<T> {
-  validate(data: any, errors: ValidationError[]): T;
+/** Number schema with constraints */
+export interface NumberSchema extends Schema {
+  type: 'number'
+  minimum?: number
+  maximum?: number
+  multipleOf?: number
 }
 
-// Basic schema types
-class StringSchema implements Schema<string> {
-  constructor(
-    private options: {
-      required?: boolean;
-      minLength?: number;
-      maxLength?: number;
-      pattern?: RegExp;
-      enum?: string[];
-    } = {}
-  ) {}
-
-  validate(data: any, errors: ValidationError[]): string {
-    if (this.options.required && (data === undefined || data === null)) {
-      errors.push({ field: 'value', message: 'Required field', value: data });
-      return '';
-    }
-
-    if (typeof data !== 'string') {
-      errors.push({ field: 'value', message: 'Must be a string', value: data });
-      return '';
-    }
-
-    if (this.options.minLength && data.length < this.options.minLength) {
-      errors.push({ field: 'value', message: `Minimum length ${this.options.minLength}`, value: data });
-    }
-
-    if (this.options.maxLength && data.length > this.options.maxLength) {
-      errors.push({ field: 'value', message: `Maximum length ${this.options.maxLength}`, value: data });
-    }
-
-    if (this.options.pattern && !this.options.pattern.test(data)) {
-      errors.push({ field: 'value', message: 'Pattern mismatch', value: data });
-    }
-
-    if (this.options.enum && !this.options.enum.includes(data)) {
-      errors.push({ field: 'value', message: `Must be one of: ${this.options.enum.join(', ')}`, value: data });
-    }
-
-    return data;
-  }
+/** Boolean schema */
+export interface BooleanSchema extends Schema {
+  type: 'boolean'
 }
 
-class NumberSchema implements Schema<number> {
-  constructor(
-    private options: {
-      required?: boolean;
-      min?: number;
-      max?: number;
-      integer?: boolean;
-    } = {}
-  ) {}
-
-  validate(data: any, errors: ValidationError[]): number {
-    if (this.options.required && (data === undefined || data === null)) {
-      errors.push({ field: 'value', message: 'Required field', value: data });
-      return 0;
-    }
-
-    const num = Number(data);
-    if (isNaN(num)) {
-      errors.push({ field: 'value', message: 'Must be a number', value: data });
-      return 0;
-    }
-
-    if (this.options.integer && !Number.isInteger(num)) {
-      errors.push({ field: 'value', message: 'Must be an integer', value: data });
-    }
-
-    if (this.options.min !== undefined && num < this.options.min) {
-      errors.push({ field: 'value', message: `Minimum value ${this.options.min}`, value: data });
-    }
-
-    if (this.options.max !== undefined && num > this.options.max) {
-      errors.push({ field: 'value', message: `Maximum value ${this.options.max}`, value: data });
-    }
-
-    return num;
-  }
+/** Array schema */
+export interface ArraySchema extends Schema {
+  type: 'array'
+  items: Schema
+  minItems?: number
+  maxItems?: number
 }
 
-class ObjectSchema<T> implements Schema<T> {
-  constructor(private fields: Record<string, Schema<any>>) {}
-
-  validate(data: any, errors: ValidationError[]): T {
-    if (typeof data !== 'object' || data === null) {
-      errors.push({ field: 'root', message: 'Must be an object', value: data });
-      return {} as T;
-    }
-
-    const result: any = {};
-    
-    for (const [fieldName, fieldSchema] of Object.entries(this.fields)) {
-      const fieldErrors: ValidationError[] = [];
-      result[fieldName] = fieldSchema.validate(data[fieldName], fieldErrors);
-      
-      // Prefix field names with the current field
-      fieldErrors.forEach(error => {
-        error.field = `${fieldName}.${error.field}`;
-        errors.push(error);
-      });
-    }
-
-    return result as T;
-  }
+/** Object schema */
+export interface ObjectSchema extends Schema {
+  type: 'object'
+  properties: Record<string, Schema>
+  additionalProperties?: boolean
+  requiredProps?: string[]
 }
 
-class ArraySchema<T> implements Schema<T[]> {
-  constructor(
-    private itemSchema: Schema<T>,
-    private options: {
-      minItems?: number;
-      maxItems?: number;
-      required?: boolean;
-    } = {}
-  ) {}
+/** Union schema for multiple types */
+export interface UnionSchema extends Schema {
+  type: 'union'
+  schemas: Schema[]
+}
 
-  validate(data: any, errors: ValidationError[]): T[] {
-    if (this.options.required && (data === undefined || data === null)) {
-      errors.push({ field: 'value', message: 'Required field', value: data });
-      return [];
-    }
+/** Validation result */
+export interface ValidationResult {
+  isValid: boolean
+  errors: ValidationError[]
+  sanitizedValue?: any
+}
 
-    if (!Array.isArray(data)) {
-      errors.push({ field: 'value', message: 'Must be an array', value: data });
-      return [];
-    }
+/** Validation error details */
+export interface ValidationError {
+  path: string
+  message: string
+  code: string
+  expectedType?: string
+  actualType?: string
+  value?: any
+}
 
-    if (this.options.minItems && data.length < this.options.minItems) {
-      errors.push({ field: 'value', message: `Minimum ${this.options.minItems} items`, value: data });
-    }
-
-    if (this.options.maxItems && data.length > this.options.maxItems) {
-      errors.push({ field: 'value', message: `Maximum ${this.options.maxItems} items`, value: data });
-    }
-
-    const result: T[] = [];
-    data.forEach((item, index) => {
-      const itemErrors: ValidationError[] = [];
-      const validatedItem = this.itemSchema.validate(item, itemErrors);
-      
-      itemErrors.forEach(error => {
-        error.field = `[${index}].${error.field}`;
-        errors.push(error);
-      });
-      
-      result.push(validatedItem);
-    });
-
-    return result;
-  }
+/** Tool definition with input/output schemas */
+export interface ToolDefinition {
+  name: string
+  description: string
+  inputSchema: Schema
+  outputSchema: Schema
+  examples?: Array<{
+    input: any
+    output: any
+    description: string
+  }>
 }
 
 // Helper functions for creating schemas
-const str = (options?: Parameters<typeof StringSchema>[0]) => new StringSchema(options);
-const num = (options?: Parameters<typeof NumberSchema>[0]) => new NumberSchema(options);
-const obj = <T>(fields: Record<string, Schema<any>>) => new ObjectSchema<T>(fields);
-const arr = <T>(itemSchema: Schema<T>, options?: Parameters<typeof ArraySchema<T>>[0]) => new ArraySchema(itemSchema, options);
-
-// Common tool schemas
-export interface McpToolRequest {
-  service: string;
-  method: string;
-  params: Record<string, any>;
-  timeout?: number;
-  retries?: number;
-  idempotencyKey?: string;
+export function str(options: Partial<StringSchema> = {}): StringSchema {
+  return { type: 'string', ...options }
 }
 
-export interface McpToolResponse {
-  success: boolean;
-  data?: any;
-  error?: string;
-  service: string;
-  method: string;
-  duration: number;
-  cached: boolean;
+export function num(options: Partial<NumberSchema> = {}): NumberSchema {
+  return { type: 'number', ...options }
 }
 
-export interface RetrievalRequest {
-  query: string;
-  maxResults?: number;
-  threshold?: number;
-  includeMetadata?: boolean;
-  filters?: Record<string, any>;
+export function bool(options: Partial<BooleanSchema> = {}): BooleanSchema {
+  return { type: 'boolean', ...options }
 }
 
-export interface RetrievalResponse {
-  results: Array<{
-    id: string;
-    content: string;
-    score: number;
-    metadata?: Record<string, any>;
-  }>;
-  totalResults: number;
-  query: string;
-  processingTime: number;
+export function arr(items: Schema, options: Partial<ArraySchema> = {}): ArraySchema {
+  return { type: 'array', items, ...options }
 }
 
-export interface WebResearchRequest {
-  query: string;
-  maxResults?: number;
-  domains?: string[];
-  timeRange?: 'day' | 'week' | 'month' | 'year' | 'all';
-  language?: string;
+export function obj(properties: Record<string, Schema>, options: Partial<ObjectSchema> = {}): ObjectSchema {
+  return { type: 'object', properties, ...options }
 }
 
-export interface WebResearchResponse {
-  results: Array<{
-    title: string;
-    url: string;
-    snippet: string;
-    publishedAt?: string;
-    domain: string;
-    relevanceScore: number;
-  }>;
-  query: string;
-  totalFound: number;
-  searchTime: number;
+export function union(schemas: Schema[], options: Partial<UnionSchema> = {}): UnionSchema {
+  return { type: 'union', schemas, ...options }
 }
 
-export interface PlanningRequest {
-  query: string;
-  context: string;
-  constraints: string[];
-  maxSteps?: number;
-  complexity?: 'low' | 'medium' | 'high';
-  timeframe?: string;
-}
+/** Schema validator class */
+export class SchemaValidator {
+  /**
+   * Validate a value against a schema
+   */
+  validate(value: any, schema: Schema, path = ''): ValidationResult {
+    const errors: ValidationError[] = []
+    let sanitizedValue = value
 
-export interface PlanningResponse {
-  planId: string;
-  steps: Array<{
-    id: string;
-    type: string;
-    description: string;
-    estimatedTime: string;
-    dependencies: string[];
-  }>;
-  estimatedTotalTime: string;
-  confidence: number;
-  alternatives?: string[];
-}
-
-export interface SynthesisRequest {
-  sources: Array<{
-    type: 'retrieval' | 'web' | 'mcp' | 'planning';
-    content: any;
-    weight?: number;
-  }>;
-  outputFormat?: 'summary' | 'detailed' | 'structured';
-  maxLength?: number;
-  includeReferences?: boolean;
-}
-
-export interface SynthesisResponse {
-  synthesis: string;
-  confidence: number;
-  sources: Array<{
-    type: string;
-    used: boolean;
-    weight: number;
-  }>;
-  keyPoints: string[];
-  references?: string[];
-}
-
-// Schema definitions
-export const McpToolRequestSchema = obj<McpToolRequest>({
-  service: str({ required: true, minLength: 1, maxLength: 100 }),
-  method: str({ required: true, minLength: 1, maxLength: 100 }),
-  params: new ObjectSchema({}),
-  timeout: num({ min: 1000, max: 300000, integer: true }),
-  retries: num({ min: 0, max: 5, integer: true }),
-  idempotencyKey: str({ maxLength: 255 }),
-});
-
-export const McpToolResponseSchema = obj<McpToolResponse>({
-  success: new Schema<boolean>() {
-    validate(data: any, errors: ValidationError[]): boolean {
-      if (typeof data !== 'boolean') {
-        errors.push({ field: 'value', message: 'Must be a boolean', value: data });
-        return false;
-      }
-      return data;
+    // Check required
+    if (schema.required && (value === undefined || value === null)) {
+      errors.push({
+        path,
+        message: `Field is required`,
+        code: 'REQUIRED',
+        expectedType: schema.type,
+        actualType: typeof value,
+        value
+      })
+      return { isValid: false, errors }
     }
-  },
-  data: new Schema<any>() {
-    validate(data: any): any { return data; }
-  },
-  error: str(),
-  service: str({ required: true }),
-  method: str({ required: true }),
-  duration: num({ required: true, min: 0 }),
-  cached: new Schema<boolean>() {
-    validate(data: any, errors: ValidationError[]): boolean {
-      if (typeof data !== 'boolean') {
-        errors.push({ field: 'value', message: 'Must be a boolean', value: data });
-        return false;
-      }
-      return data;
+
+    // Skip validation if value is undefined/null and not required
+    if (value === undefined || value === null) {
+      return { isValid: true, errors: [], sanitizedValue: value }
     }
-  },
-});
 
-export const RetrievalRequestSchema = obj<RetrievalRequest>({
-  query: str({ required: true, minLength: 1, maxLength: 1000 }),
-  maxResults: num({ min: 1, max: 100, integer: true }),
-  threshold: num({ min: 0, max: 1 }),
-  includeMetadata: new Schema<boolean>() {
-    validate(data: any, errors: ValidationError[]): boolean {
-      if (data !== undefined && typeof data !== 'boolean') {
-        errors.push({ field: 'value', message: 'Must be a boolean', value: data });
-        return false;
-      }
-      return data ?? false;
+    // Type-specific validation
+    switch (schema.type) {
+      case 'string':
+        return this.validateString(value, schema as StringSchema, path)
+      case 'number':
+        return this.validateNumber(value, schema as NumberSchema, path)
+      case 'boolean':
+        return this.validateBoolean(value, schema as BooleanSchema, path)
+      case 'array':
+        return this.validateArray(value, schema as ArraySchema, path)
+      case 'object':
+        return this.validateObject(value, schema as ObjectSchema, path)
+      case 'union':
+        return this.validateUnion(value, schema as UnionSchema, path)
+      default:
+        errors.push({
+          path,
+          message: `Unknown schema type: ${schema.type}`,
+          code: 'UNKNOWN_TYPE',
+          value
+        })
     }
-  },
-  filters: new ObjectSchema({}),
-});
 
-export const RetrievalResponseSchema = obj<RetrievalResponse>({
-  results: arr(obj({
-    id: str({ required: true }),
-    content: str({ required: true }),
-    score: num({ required: true, min: 0, max: 1 }),
-    metadata: new ObjectSchema({}),
-  }), { required: true }),
-  totalResults: num({ required: true, min: 0, integer: true }),
-  query: str({ required: true }),
-  processingTime: num({ required: true, min: 0 }),
-});
+    return { isValid: errors.length === 0, errors, sanitizedValue }
+  }
 
-export const WebResearchRequestSchema = obj<WebResearchRequest>({
-  query: str({ required: true, minLength: 1, maxLength: 500 }),
-  maxResults: num({ min: 1, max: 50, integer: true }),
-  domains: arr(str({ pattern: /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/ })),
-  timeRange: str({ enum: ['day', 'week', 'month', 'year', 'all'] }),
-  language: str({ minLength: 2, maxLength: 5 }),
-});
+  private validateString(value: any, schema: StringSchema, path: string): ValidationResult {
+    const errors: ValidationError[] = []
+    let sanitizedValue = value
 
-export const WebResearchResponseSchema = obj<WebResearchResponse>({
-  results: arr(obj({
-    title: str({ required: true }),
-    url: str({ required: true, pattern: /^https?:\/\/.+/ }),
-    snippet: str({ required: true }),
-    publishedAt: str(),
-    domain: str({ required: true }),
-    relevanceScore: num({ required: true, min: 0, max: 1 }),
-  }), { required: true }),
-  query: str({ required: true }),
-  totalFound: num({ required: true, min: 0, integer: true }),
-  searchTime: num({ required: true, min: 0 }),
-});
-
-export const PlanningRequestSchema = obj<PlanningRequest>({
-  query: str({ required: true, minLength: 1, maxLength: 2000 }),
-  context: str({ required: true, maxLength: 5000 }),
-  constraints: arr(str({ maxLength: 500 }), { required: true }),
-  maxSteps: num({ min: 1, max: 20, integer: true }),
-  complexity: str({ enum: ['low', 'medium', 'high'] }),
-  timeframe: str({ maxLength: 100 }),
-});
-
-export const PlanningResponseSchema = obj<PlanningResponse>({
-  planId: str({ required: true, pattern: /^[a-zA-Z0-9_-]+$/ }),
-  steps: arr(obj({
-    id: str({ required: true }),
-    type: str({ required: true }),
-    description: str({ required: true }),
-    estimatedTime: str({ required: true }),
-    dependencies: arr(str(), { required: true }),
-  }), { required: true, minItems: 1, maxItems: 20 }),
-  estimatedTotalTime: str({ required: true }),
-  confidence: num({ required: true, min: 0, max: 1 }),
-  alternatives: arr(str()),
-});
-
-export const SynthesisRequestSchema = obj<SynthesisRequest>({
-  sources: arr(obj({
-    type: str({ required: true, enum: ['retrieval', 'web', 'mcp', 'planning'] }),
-    content: new Schema<any>() { validate(data: any): any { return data; } },
-    weight: num({ min: 0, max: 1 }),
-  }), { required: true, minItems: 1, maxItems: 10 }),
-  outputFormat: str({ enum: ['summary', 'detailed', 'structured'] }),
-  maxLength: num({ min: 100, max: 10000, integer: true }),
-  includeReferences: new Schema<boolean>() {
-    validate(data: any, errors: ValidationError[]): boolean {
-      if (data !== undefined && typeof data !== 'boolean') {
-        errors.push({ field: 'value', message: 'Must be a boolean', value: data });
-        return false;
+    // Type check
+    if (typeof value !== 'string') {
+      // Try to convert
+      if (typeof value === 'number' || typeof value === 'boolean') {
+        sanitizedValue = String(value)
+      } else {
+        errors.push({
+          path,
+          message: `Expected string, got ${typeof value}`,
+          code: 'INVALID_TYPE',
+          expectedType: 'string',
+          actualType: typeof value,
+          value
+        })
+        return { isValid: false, errors }
       }
-      return data ?? false;
     }
-  },
-});
 
-export const SynthesisResponseSchema = obj<SynthesisResponse>({
-  synthesis: str({ required: true, minLength: 1 }),
-  confidence: num({ required: true, min: 0, max: 1 }),
-  sources: arr(obj({
-    type: str({ required: true }),
-    used: new Schema<boolean>() {
-      validate(data: any, errors: ValidationError[]): boolean {
-        return typeof data === 'boolean' ? data : false;
+    const strValue = sanitizedValue as string
+
+    // Length validation
+    if (schema.minLength !== undefined && strValue.length < schema.minLength) {
+      errors.push({
+        path,
+        message: `String too short (min: ${schema.minLength}, actual: ${strValue.length})`,
+        code: 'MIN_LENGTH',
+        value
+      })
+    }
+
+    if (schema.maxLength !== undefined && strValue.length > schema.maxLength) {
+      errors.push({
+        path,
+        message: `String too long (max: ${schema.maxLength}, actual: ${strValue.length})`,
+        code: 'MAX_LENGTH',
+        value
+      })
+    }
+
+    // Pattern validation
+    if (schema.pattern && !schema.pattern.test(strValue)) {
+      errors.push({
+        path,
+        message: `String does not match pattern: ${schema.pattern.source}`,
+        code: 'PATTERN_MISMATCH',
+        value
+      })
+    }
+
+    // Enum validation
+    if (schema.enum && !schema.enum.includes(strValue)) {
+      errors.push({
+        path,
+        message: `Value not in allowed enum: [${schema.enum.join(', ')}]`,
+        code: 'ENUM_MISMATCH',
+        value
+      })
+    }
+
+    return { isValid: errors.length === 0, errors, sanitizedValue }
+  }
+
+  private validateNumber(value: any, schema: NumberSchema, path: string): ValidationResult {
+    const errors: ValidationError[] = []
+    let sanitizedValue = value
+
+    // Type check and conversion
+    if (typeof value !== 'number') {
+      if (typeof value === 'string' && !isNaN(Number(value))) {
+        sanitizedValue = Number(value)
+      } else {
+        errors.push({
+          path,
+          message: `Expected number, got ${typeof value}`,
+          code: 'INVALID_TYPE',
+          expectedType: 'number',
+          actualType: typeof value,
+          value
+        })
+        return { isValid: false, errors }
       }
-    },
-    weight: num({ required: true, min: 0, max: 1 }),
-  }), { required: true }),
-  keyPoints: arr(str({ minLength: 1 }), { required: true }),
-  references: arr(str({ minLength: 1 })),
-});
+    }
 
-// Validation utilities
-export class ToolValidator {
-  /**
-   * Validate MCP tool request
-   */
-  static validateMcpRequest(data: any): ValidationResult<McpToolRequest> {
-    return validate(McpToolRequestSchema, data);
+    const numValue = sanitizedValue as number
+
+    // NaN check
+    if (isNaN(numValue)) {
+      errors.push({
+        path,
+        message: `Value is NaN`,
+        code: 'NAN',
+        value
+      })
+      return { isValid: false, errors }
+    }
+
+    // Range validation
+    if (schema.minimum !== undefined && numValue < schema.minimum) {
+      errors.push({
+        path,
+        message: `Number below minimum (min: ${schema.minimum}, actual: ${numValue})`,
+        code: 'BELOW_MINIMUM',
+        value
+      })
+    }
+
+    if (schema.maximum !== undefined && numValue > schema.maximum) {
+      errors.push({
+        path,
+        message: `Number above maximum (max: ${schema.maximum}, actual: ${numValue})`,
+        code: 'ABOVE_MAXIMUM',
+        value
+      })
+    }
+
+    // Multiple validation
+    if (schema.multipleOf !== undefined && numValue % schema.multipleOf !== 0) {
+      errors.push({
+        path,
+        message: `Number not a multiple of ${schema.multipleOf}`,
+        code: 'NOT_MULTIPLE',
+        value
+      })
+    }
+
+    return { isValid: errors.length === 0, errors, sanitizedValue }
   }
 
-  /**
-   * Validate MCP tool response
-   */
-  static validateMcpResponse(data: any): ValidationResult<McpToolResponse> {
-    return validate(McpToolResponseSchema, data);
+  private validateBoolean(value: any, schema: BooleanSchema, path: string): ValidationResult {
+    const errors: ValidationError[] = []
+    let sanitizedValue = value
+
+    if (typeof value !== 'boolean') {
+      // Try to convert
+      if (value === 'true' || value === '1' || value === 1) {
+        sanitizedValue = true
+      } else if (value === 'false' || value === '0' || value === 0) {
+        sanitizedValue = false
+      } else {
+        errors.push({
+          path,
+          message: `Expected boolean, got ${typeof value}`,
+          code: 'INVALID_TYPE',
+          expectedType: 'boolean',
+          actualType: typeof value,
+          value
+        })
+      }
+    }
+
+    return { isValid: errors.length === 0, errors, sanitizedValue }
   }
 
-  /**
-   * Validate retrieval request
-   */
-  static validateRetrievalRequest(data: any): ValidationResult<RetrievalRequest> {
-    return validate(RetrievalRequestSchema, data);
+  private validateArray(value: any, schema: ArraySchema, path: string): ValidationResult {
+    const errors: ValidationError[] = []
+    let sanitizedValue = value
+
+    if (!Array.isArray(value)) {
+      errors.push({
+        path,
+        message: `Expected array, got ${typeof value}`,
+        code: 'INVALID_TYPE',
+        expectedType: 'array',
+        actualType: typeof value,
+        value
+      })
+      return { isValid: false, errors }
+    }
+
+    const arrValue = value as any[]
+
+    // Length validation
+    if (schema.minItems !== undefined && arrValue.length < schema.minItems) {
+      errors.push({
+        path,
+        message: `Array too short (min: ${schema.minItems}, actual: ${arrValue.length})`,
+        code: 'MIN_ITEMS',
+        value
+      })
+    }
+
+    if (schema.maxItems !== undefined && arrValue.length > schema.maxItems) {
+      errors.push({
+        path,
+        message: `Array too long (max: ${schema.maxItems}, actual: ${arrValue.length})`,
+        code: 'MAX_ITEMS',
+        value
+      })
+    }
+
+    // Validate each item
+    const sanitizedItems: any[] = []
+    arrValue.forEach((item, index) => {
+      const itemResult = this.validate(item, schema.items, `${path}[${index}]`)
+      if (!itemResult.isValid) {
+        errors.push(...itemResult.errors)
+      } else {
+        sanitizedItems.push(itemResult.sanitizedValue)
+      }
+    })
+
+    if (errors.length === 0) {
+      sanitizedValue = sanitizedItems
+    }
+
+    return { isValid: errors.length === 0, errors, sanitizedValue }
   }
 
-  /**
-   * Validate retrieval response
-   */
-  static validateRetrievalResponse(data: any): ValidationResult<RetrievalResponse> {
-    return validate(RetrievalResponseSchema, data);
+  private validateObject(value: any, schema: ObjectSchema, path: string): ValidationResult {
+    const errors: ValidationError[] = []
+    let sanitizedValue = value
+
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+      errors.push({
+        path,
+        message: `Expected object, got ${Array.isArray(value) ? 'array' : typeof value}`,
+        code: 'INVALID_TYPE',
+        expectedType: 'object',
+        actualType: Array.isArray(value) ? 'array' : typeof value,
+        value
+      })
+      return { isValid: false, errors }
+    }
+
+    const objValue = value as Record<string, any>
+    const sanitizedObj: Record<string, any> = {}
+
+    // Validate required properties
+    if (schema.requiredProps) {
+      for (const requiredProp of schema.requiredProps) {
+        if (!(requiredProp in objValue)) {
+          errors.push({
+            path: `${path}.${requiredProp}`,
+            message: `Required property missing: ${requiredProp}`,
+            code: 'REQUIRED_PROPERTY',
+            value: undefined
+          })
+        }
+      }
+    }
+
+    // Validate each property
+    for (const [propName, propSchema] of Object.entries(schema.properties)) {
+      const propPath = path ? `${path}.${propName}` : propName
+      const propValue = objValue[propName]
+      
+      const propResult = this.validate(propValue, propSchema, propPath)
+      if (!propResult.isValid) {
+        errors.push(...propResult.errors)
+      } else if (propResult.sanitizedValue !== undefined) {
+        sanitizedObj[propName] = propResult.sanitizedValue
+      }
+    }
+
+    // Check for additional properties
+    if (!schema.additionalProperties) {
+      const allowedProps = new Set(Object.keys(schema.properties))
+      for (const propName of Object.keys(objValue)) {
+        if (!allowedProps.has(propName)) {
+          errors.push({
+            path: `${path}.${propName}`,
+            message: `Additional property not allowed: ${propName}`,
+            code: 'ADDITIONAL_PROPERTY',
+            value: objValue[propName]
+          })
+        }
+      }
+    } else {
+      // Include additional properties in sanitized result
+      for (const [propName, propValue] of Object.entries(objValue)) {
+        if (!(propName in schema.properties)) {
+          sanitizedObj[propName] = propValue
+        }
+      }
+    }
+
+    if (errors.length === 0) {
+      sanitizedValue = sanitizedObj
+    }
+
+    return { isValid: errors.length === 0, errors, sanitizedValue }
   }
 
-  /**
-   * Validate web research request
-   */
-  static validateWebResearchRequest(data: any): ValidationResult<WebResearchRequest> {
-    return validate(WebResearchRequestSchema, data);
-  }
+  private validateUnion(value: any, schema: UnionSchema, path: string): ValidationResult {
+    const allErrors: ValidationError[] = []
+    
+    // Try each schema in the union
+    for (const unionSchema of schema.schemas) {
+      const result = this.validate(value, unionSchema, path)
+      if (result.isValid) {
+        return result // Return first successful validation
+      }
+      allErrors.push(...result.errors)
+    }
 
-  /**
-   * Validate web research response
-   */
-  static validateWebResearchResponse(data: any): ValidationResult<WebResearchResponse> {
-    return validate(WebResearchResponseSchema, data);
+    // If no schema matched, return combined errors
+    return {
+      isValid: false,
+      errors: [{
+        path,
+        message: `Value does not match any of the union types`,
+        code: 'UNION_MISMATCH',
+        value
+      }]
+    }
   }
+}
 
-  /**
-   * Validate planning request
-   */
-  static validatePlanningRequest(data: any): ValidationResult<PlanningRequest> {
-    return validate(PlanningRequestSchema, data);
-  }
+// Global validator instance
+export const validator = new SchemaValidator()
 
-  /**
-   * Validate planning response
-   */
-  static validatePlanningResponse(data: any): ValidationResult<PlanningResponse> {
-    return validate(PlanningResponseSchema, data);
-  }
+/** Tool schema definitions */
+export const TOOL_SCHEMAS: Record<string, ToolDefinition> = {
+  // MCP Business Tools
+  prospects_search: {
+    name: 'prospects_search',
+    description: 'Search business prospects with filtering',
+    inputSchema: obj({
+      query: str({ description: 'Search query', maxLength: 500 }),
+      filters: obj({
+        industry: str({ required: false }),
+        size: str({ enum: ['startup', 'small', 'medium', 'large'], required: false }),
+        location: str({ required: false })
+      }, { required: false })
+    }),
+    outputSchema: obj({
+      results: arr(obj({
+        id: str({ required: true }),
+        name: str({ required: true }),
+        industry: str({ required: true }),
+        size: str({ required: true }),
+        score: num({ minimum: 0, maximum: 1 })
+      })),
+      total: num({ minimum: 0 }),
+      executionTimeMs: num({ minimum: 0 })
+    })
+  },
 
-  /**
-   * Validate synthesis request
-   */
-  static validateSynthesisRequest(data: any): ValidationResult<SynthesisRequest> {
-    return validate(SynthesisRequestSchema, data);
-  }
+  // MCP Research Tools
+  arxiv_search: {
+    name: 'arxiv_search',
+    description: 'Search academic papers on ArXiv',
+    inputSchema: obj({
+      query: str({ description: 'Research query', maxLength: 200, required: true }),
+      max_results: num({ minimum: 1, maximum: 100, required: false })
+    }),
+    outputSchema: obj({
+      papers: arr(obj({
+        id: str({ required: true }),
+        title: str({ required: true }),
+        authors: arr(str()),
+        abstract: str({ required: true }),
+        published: str({ required: true }),
+        url: str({ required: true })
+      })),
+      query: str({ required: true }),
+      total_found: num({ minimum: 0 })
+    })
+  },
 
-  /**
-   * Validate synthesis response
-   */
-  static validateSynthesisResponse(data: any): ValidationResult<SynthesisResponse> {
-    return validate(SynthesisResponseSchema, data);
-  }
+  // MCP Context Tools  
+  context_search: {
+    name: 'context_search',
+    description: 'Search contextual information',
+    inputSchema: obj({
+      query: str({ description: 'Context search query', maxLength: 300, required: true }),
+      limit: num({ minimum: 1, maximum: 50, required: false }),
+      filters: obj({
+        type: str({ enum: ['document', 'conversation', 'code'], required: false }),
+        date_range: obj({
+          start: str({ required: false }),
+          end: str({ required: false })
+        }, { required: false })
+      }, { required: false })
+    }),
+    outputSchema: obj({
+      results: arr(obj({
+        id: str({ required: true }),
+        content: str({ required: true }),
+        type: str({ required: true }),
+        relevance: num({ minimum: 0, maximum: 1 }),
+        metadata: obj({}, { additionalProperties: true, required: false })
+      })),
+      total: num({ minimum: 0 }),
+      query: str({ required: true })
+    })
+  },
 
-  /**
-   * Generic validation helper
-   */
-  static validate<T>(schema: Schema<T>, data: any): ValidationResult<T> {
-    return validate(schema, data);
+  // Standard response schema for errors
+  error: {
+    name: 'error',
+    description: 'Standard error response',
+    inputSchema: obj({}),
+    outputSchema: obj({
+      success: bool({ required: true }),
+      error_code: str({ required: true }),
+      message: str({ required: true }),
+      details: obj({}, { additionalProperties: true, required: false }),
+      timestamp: str({ required: true }),
+      execution_id: str({ required: false })
+    })
   }
 }
 
 /**
- * Decorator for validating function inputs and outputs
+ * Validate tool input against its schema
  */
-export function validateIO<TInput, TOutput>(
-  inputSchema: Schema<TInput>,
-  outputSchema: Schema<TOutput>
-) {
-  return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
-    const method = descriptor.value;
+export function validateToolInput(toolName: string, input: any): ValidationResult {
+  const toolDef = TOOL_SCHEMAS[toolName]
+  if (!toolDef) {
+    return {
+      isValid: false,
+      errors: [{
+        path: '',
+        message: `Unknown tool: ${toolName}`,
+        code: 'UNKNOWN_TOOL',
+        value: toolName
+      }]
+    }
+  }
 
-    descriptor.value = async function (...args: any[]) {
-      // Validate input
-      if (args.length > 0) {
-        const inputValidation = validate(inputSchema, args[0]);
-        if (!inputValidation.success) {
-          throw new Error(`Input validation failed: ${JSON.stringify(inputValidation.errors)}`);
-        }
-        args[0] = inputValidation.data;
-      }
-
-      // Execute method
-      const result = await method.apply(this, args);
-
-      // Validate output
-      const outputValidation = validate(outputSchema, result);
-      if (!outputValidation.success) {
-        console.error(`Output validation failed for ${propertyName}:`, outputValidation.errors);
-        // Don't throw on output validation failure, just log
-      }
-
-      return outputValidation.data || result;
-    };
-  };
+  return validator.validate(input, toolDef.inputSchema)
 }
 
-// Export validation utilities
-export { validate, ValidationResult, ValidationError };
+/**
+ * Validate tool output against its schema
+ */
+export function validateToolOutput(toolName: string, output: any): ValidationResult {
+  const toolDef = TOOL_SCHEMAS[toolName]
+  if (!toolDef) {
+    return {
+      isValid: false,
+      errors: [{
+        path: '',
+        message: `Unknown tool: ${toolName}`,
+        code: 'UNKNOWN_TOOL',
+        value: toolName
+      }]
+    }
+  }
+
+  return validator.validate(output, toolDef.outputSchema)
+}
+
+/**
+ * Get tool definition by name
+ */
+export function getToolDefinition(toolName: string): ToolDefinition | null {
+  return TOOL_SCHEMAS[toolName] || null
+}
+
+/**
+ * Register a new tool schema
+ */
+export function registerToolSchema(toolDef: ToolDefinition): void {
+  TOOL_SCHEMAS[toolDef.name] = toolDef
+}

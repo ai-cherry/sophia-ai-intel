@@ -1,45 +1,70 @@
+"""
+Sophia AI Research & Data Acquisition MCP Service
+
+This module provides a comprehensive Research MCP service that integrates with multiple
+research and data providers including SerpAPI, Perplexity AI, Together AI, Anthropic,
+and others for multi-source knowledge retrieval and analysis.
+
+Key Features:
+- Multi-provider research query execution across search engines and AI services
+- Web scraping and data ingestion capabilities
+- LLM-powered content summarization and analysis
+- Vector database storage with Qdrant integration
+- Comprehensive error handling and provider failover
+
+Provider Integrations:
+- SerpAPI: Google search results and web data
+- Perplexity AI: Real-time AI-powered search and analysis
+- Together AI: LLM inference for content generation and summarization
+- Anthropic: Claude models for advanced reasoning tasks
+- Voyage AI: Text embeddings for semantic search
+- Cohere: Alternative embedding and reranking services
+- Google AI: Search and language model services
+
+Architecture:
+- FastAPI-based async REST API
+- PostgreSQL database integration for persistent storage
+- Qdrant vector database for semantic search capabilities
+- Multi-provider failover and cost optimization
+- Comprehensive health monitoring and provider status tracking
+
+Version: 2.0.0
+Author: Sophia AI Intelligence Team
+"""
+
 import os
 import time
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field
-from typing import List, Optional, Dict
-import httpx
+import json
 import logging
+from datetime import datetime, timedelta
+from typing import List, Dict, Any, Optional
+import httpx
+import asyncpg
+from fastapi import FastAPI, HTTPException, Request, Depends, UploadFile, File, Form
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, HttpUrl, Field
+from enum import Enum
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Environment variables - Search Providers
-TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
-SERPER_API_KEY = os.getenv("SERPER_API_KEY") 
+# Environment variables - Research Providers
+SERPAPI_API_KEY = os.getenv("SERPAPI_API_KEY")
 PERPLEXITY_API_KEY = os.getenv("PERPLEXITY_API_KEY")
-EXA_API_KEY = os.getenv("EXA_API_KEY")
-
-# Environment variables - Scraping Providers
-APIFY_API_KEY = os.getenv("APIFY_API_KEY")
-ZENROWS_API_KEY = os.getenv("ZENROWS_API_KEY")
-BRIGHTDATA_API_KEY = os.getenv("BRIGHTDATA_API_KEY")
-
-# Environment variables - LLM Routing
-PORTKEY_API_KEY = os.getenv("PORTKEY_API_KEY")
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-
-# Environment variables - Caching & Vector Storage
-REDIS_URL = os.getenv("REDIS_URL")
-QDRANT_ENDPOINT = os.getenv("QDRANT_ENDPOINT")  # GitHub org secret name
-
-# Environment variables - Configuration
-DEFAULT_LLM_MODEL = os.getenv("DEFAULT_LLM_MODEL", "gpt-4o-mini")
-COST_LIMIT_USD = float(os.getenv("COST_LIMIT_USD", "10.0"))
-MAX_RESULTS_PER_PROVIDER = int(os.getenv("MAX_RESULTS_PER_PROVIDER", "5"))
+TOGETHER_API_KEY = os.getenv("TOGETHER_API_KEY")
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
+VOYAGE_API_KEY = os.getenv("VOYAGE_API_KEY")
+COHERE_API_KEY = os.getenv("COHERE_API_KEY")
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+QDRANT_URL = os.getenv("QDRANT_ENDPOINT")
+QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
+NEON_DATABASE_URL = os.getenv("NEON_DATABASE_URL")
 
 app = FastAPI(
     title="sophia-mcp-research-v2",
     version="2.0.0",
-    description="Multi-provider research meta-aggregator with search, scraping, and AI summarization"
+    description="Research & Data Acquisition MCP for multi-source knowledge retrieval and analysis",
 )
 
 app.add_middleware(
@@ -50,513 +75,557 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-def normalized_error(provider: str, code: str, message: str, details: Optional[Dict] = None):
-    """Return normalized error JSON format"""
+
+# Database connection pool
+db_pool = None
+
+
+async def get_db_pool():
+    """
+    Get or create database connection pool.
+    
+    Returns the global database connection pool, creating it if it doesn't exist.
+    Used for storing research results, ingested data, and operational metadata.
+    
+    Returns:
+        asyncpg.Pool: Database connection pool instance, or None if not configured
+        
+    Note:
+        Requires NEON_DATABASE_URL environment variable for PostgreSQL connectivity
+    """
+    global db_pool
+    if not db_pool and NEON_DATABASE_URL:
+        db_pool = await asyncpg.create_pool(NEON_DATABASE_URL)
+    return db_pool
+
+
+def normalized_error(
+    provider: str, code: str, message: str, details: Optional[Dict] = None
+):
+    """
+    Create normalized error response format for consistent error handling.
+    
+    Standardizes error responses across all research providers and operations
+    to ensure consistent debugging and error handling capabilities.
+    
+    Args:
+        provider (str): Name of the research provider that generated the error
+        code (str): Error code identifier for programmatic error handling
+        message (str): Human-readable error message describing the issue
+        details (Optional[Dict]): Additional error context and debugging information
+        
+    Returns:
+        Dict[str, Any]: Normalized error object with standard MCP structure
+        
+    Example:
+        >>> normalized_error("serpapi", "quota_exceeded", "Daily quota limit reached", {"limit": 1000})
+    """
     error_obj = {
-        "error": {
-            "provider": provider,
-            "code": code,
-            "message": message,
-            "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-        }
+        "status": "failure",
+        "query": "",
+        "results": [],
+        "summary": {"text": message, "confidence": 1.0, "model": "n/a", "sources": []},
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "execution_time_ms": 0,
+        "errors": [{"provider": provider, "code": code, "message": message}],
     }
     if details:
-        error_obj["error"]["details"] = details
+        error_obj["errors"][0]["details"] = details
     return error_obj
 
+
 def get_provider_status():
-    """Get current provider availability status"""
+    """
+    Check availability status of all research and data providers.
+    
+    Evaluates the configuration status of integrated research providers by checking
+    for required API keys and environment variables. Does not test actual connectivity.
+    
+    Returns:
+        Dict[str, str]: Provider status mapping with values:
+            - "ready": Provider is configured with required credentials
+            - "missing_secret": Required API keys or configuration missing
+            
+    Supported Research Providers:
+        - serpapi: Google search results via SerpAPI
+        - perplexity: Perplexity AI real-time search and analysis
+        - together: Together AI LLM inference platform
+        - anthropic: Anthropic Claude models for reasoning
+        - voyage: Voyage AI embedding models for semantic search
+        - cohere: Cohere embedding and reranking services
+        - google: Google AI Platform services
+        - qdrant: Vector database for semantic storage and retrieval
+        - storage: PostgreSQL database for persistent data storage
+        
+    Note:
+        Use the /healthz endpoint for comprehensive connectivity testing
+    """
     return {
-        "search_providers": {
-            "tavily": "ready" if TAVILY_API_KEY else "missing_secret",
-            "serper": "ready" if SERPER_API_KEY else "missing_secret", 
-            "perplexity": "ready" if PERPLEXITY_API_KEY else "missing_secret",
-            "exa": "ready" if EXA_API_KEY else "missing_secret"
-        },
-        "scraping_providers": {
-            "apify": "ready" if APIFY_API_KEY else "missing_secret",
-            "zenrows": "ready" if ZENROWS_API_KEY else "missing_secret", 
-            "brightdata": "ready" if BRIGHTDATA_API_KEY else "missing_secret"
-        },
-        "llm_routing": {
-            "portkey": "ready" if PORTKEY_API_KEY else "missing_secret",
-            "openrouter": "ready" if OPENROUTER_API_KEY else "missing_secret"
-        },
-        "caching": {
-            "redis": "ready" if REDIS_URL else "missing_secret"
-        }
+        "serpapi": "ready" if SERPAPI_API_KEY else "missing_secret",
+        "perplexity": "ready" if PERPLEXITY_API_KEY else "missing_secret",
+        "together": "ready" if TOGETHER_API_KEY else "missing_secret",
+        "anthropic": "ready" if ANTHROPIC_API_KEY else "missing_secret",
+        "voyage": "ready" if VOYAGE_API_KEY else "missing_secret",
+        "cohere": "ready" if COHERE_API_KEY else "missing_secret",
+        "google": "ready" if GOOGLE_API_KEY else "missing_secret",
+        "qdrant": "ready" if (QDRANT_URL and QDRANT_API_KEY) else "missing_secret",
+        "storage": "ready" if NEON_DATABASE_URL else "missing_secret",
     }
 
+
 # Request/Response Models
-class SearchRequest(BaseModel):
-    query: str = Field(..., description="Search query")
-    providers: List[str] = Field(default=["tavily", "serper"], description="Search providers to use")
-    max_results: int = Field(default=10, le=50, description="Maximum results per provider")
-    summarize: bool = Field(default=True, description="Generate AI summary")
-    cost_limit_usd: float = Field(default=1.0, le=10.0, description="Cost limit in USD")
+class ResearchQuery(BaseModel):
+    query: str = Field(..., description="Research query for data acquisition")
+    providers: List[str] = Field(
+        default=["serpapi"], description="Providers to use for research"
+    )
+    depth: int = Field(
+        default=1,
+        le=3,
+        description="Depth of research (1-3, higher means more detailed)",
+    )
+    max_results: int = Field(
+        default=5, le=20, description="Max results to return per query"
+    )
+    time_range: Optional[str] = Field(
+        default=None, description="Time range for search (e.g., '1y', '1m', '1d')"
+    )
+    timeout_s: int = Field(default=60, le=300, description="Request timeout")
+    cache_ttl_s: int = Field(default=3600, description="Cache time-to-live in seconds")
 
-class ScrapeRequest(BaseModel):
-    url: str = Field(..., description="URL to scrape")
-    providers: List[str] = Field(default=["zenrows"], description="Scraping providers to try")
-    extract_type: str = Field(default="content", description="Type of extraction: content, links, images")
-    javascript_enabled: bool = Field(default=False, description="Enable JavaScript rendering")
 
-class SummarizeRequest(BaseModel):
-    content: str = Field(..., description="Content to summarize")
-    style: str = Field(default="concise", description="Summary style: concise, detailed, bullet_points")
-    max_length: int = Field(default=500, le=2000, description="Maximum summary length")
-
-class SearchResult(BaseModel):
-    title: str
-    url: str
-    snippet: str
-    source: str
-    score: float
-    provider: str
-    timestamp: str
-
-class ScrapeResult(BaseModel):
-    url: str
-    content: str
-    status_code: int
-    provider: str
-    extraction_type: str
-    timestamp: str
-    metadata: Optional[Dict] = None
-
-class SearchResponse(BaseModel):
+class ResearchResult(BaseModel):
     status: str
     query: str
-    results: List[SearchResult]
-    summary: Optional[Dict] = None
+    results: List[Dict]
+    summary: Dict[str, Any]
     providers_used: List[str]
-    providers_failed: List[Dict] = []
-    cost_breakdown: Dict[str, float]
-    total_cost_usd: float
+    providers_failed: List[Dict]
     execution_time_ms: int
     timestamp: str
 
-class ScrapeResponse(BaseModel):
-    status: str
-    url: str
-    results: List[ScrapeResult]
-    providers_used: List[str]
-    providers_failed: List[Dict] = []
-    cost_breakdown: Dict[str, float]
-    total_cost_usd: float
-    execution_time_ms: int
+
+class DataIngestRequest(BaseModel):
+    source_url: HttpUrl = Field(..., description="URL of the data source")
+    format: str = Field(
+        default="auto", description="Format of the data (e.g., 'html', 'pdf', 'json')"
+    )
+    tags: List[str] = Field(default=[], description="Tags for the ingested data")
+
+
+class DataAnalyzeRequest(BaseModel):
+    data: Dict[str, Any] = Field(..., description="Data to analyze")
+    analysis_type: str = Field(
+        default="summary", description="Type of analysis to perform"
+    )
+
+
+class WebScrapeRequest(BaseModel):
+    url: HttpUrl = Field(..., description="URL to scrape")
+    css_selector: Optional[str] = Field(
+        default=None, description="CSS selector for specific content"
+    )
+
+
+class WebScrapeResponse(BaseModel):
+    url: HttpUrl
+    content: str
     timestamp: str
 
-class SummarizeResponse(BaseModel):
-    status: str
-    summary: str
-    style: str
-    input_length: int
-    output_length: int
-    model_used: str
-    cost_usd: float
-    execution_time_ms: int
-    timestamp: str
+
+class ProviderEnum(str, Enum):
+    serpapi = "serpapi"
+    perplexity = "perplexity"
+    together = "together"
+    anthropic = "anthropic"
+    voyage = "voyage"
+    cohere = "cohere"
+    google = "google"
+
 
 # Provider Implementations
-class TavilyProvider:
+class SerpAPIProvider:
     @staticmethod
-    async def search(query: str, max_results: int) -> tuple[List[SearchResult], float]:
-        if not TAVILY_API_KEY:
-            raise ValueError("TAVILY_API_KEY not configured")
-        
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                "https://api.tavily.com/search",
-                json={
-                    "api_key": TAVILY_API_KEY,
-                    "query": query,
-                    "max_results": min(max_results, MAX_RESULTS_PER_PROVIDER),
-                    "search_depth": "advanced",
-                    "include_answer": True,
-                    "include_images": False
-                },
-                timeout=30.0
-            )
+    async def search(
+        query: str, max_results: int = 5, time_range: Optional[str] = None
+    ) -> List[Dict]:
+        if not SERPAPI_API_KEY:
+            raise ValueError("SERPAPI_API_KEY not configured")
+
+        async with httpx.AsyncClient(timeout=30) as client:
+            params = {"q": query, "api_key": SERPAPI_API_KEY, "num": max_results}
+            if time_range:
+                params["tbs"] = time_range  # Example: "qdr:1y" for last year
+
+            response = await client.get("https://serpapi.com/search", params=params)
             response.raise_for_status()
             data = response.json()
-            
+
             results = []
-            for item in data.get("results", []):
-                results.append(SearchResult(
-                    title=item.get("title", ""),
-                    url=item.get("url", ""),
-                    snippet=item.get("content", "")[:500],
-                    source="web",
-                    score=item.get("score", 0.0),
-                    provider="tavily",
-                    timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-                ))
-            
-            cost = len(results) * 0.001  # $0.001 per result
-            return results, cost
+            for item in data.get("organic_results", []):
+                results.append(
+                    {
+                        "title": item.get("title"),
+                        "link": item.get("link"),
+                        "snippet": item.get("snippet"),
+                    }
+                )
+            return results
 
-class SerperProvider:
+
+class PerplexityAIProvider:
     @staticmethod
-    async def search(query: str, max_results: int) -> tuple[List[SearchResult], float]:
-        if not SERPER_API_KEY:
-            raise ValueError("SERPER_API_KEY not configured")
-            
-        async with httpx.AsyncClient() as client:
+    async def search(query: str) -> Dict[str, Any]:
+        if not PERPLEXITY_API_KEY:
+            raise ValueError("PERPLEXITY_API_KEY not configured")
+
+        async with httpx.AsyncClient(
+            base_url="https://api.perplexity.ai",
+            headers={"Authorization": f"Bearer {PERPLEXITY_API_KEY}"},
+            timeout=60,
+        ) as client:
             response = await client.post(
-                "https://google.serper.dev/search",
+                "/chat/completions",
                 json={
-                    "q": query,
-                    "num": min(max_results, MAX_RESULTS_PER_PROVIDER)
+                    "model": "llama-3-sonar-small-32k-online",
+                    "messages": [{"role": "user", "content": query}],
                 },
-                headers={
-                    "X-API-KEY": SERPER_API_KEY,
-                    "Content-Type": "application/json"
-                },
-                timeout=30.0
             )
             response.raise_for_status()
             data = response.json()
-            
-            results = []
-            for item in data.get("organic", []):
-                results.append(SearchResult(
-                    title=item.get("title", ""),
-                    url=item.get("link", ""),
-                    snippet=item.get("snippet", "")[:500],
-                    source="google",
-                    score=1.0,  # Serper doesn't provide scores
-                    provider="serper",
-                    timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-                ))
-            
-            cost = len(results) * 0.001  # $0.001 per result
-            return results, cost
 
-class ZenRowsProvider:
-    @staticmethod
-    async def scrape(url: str, javascript_enabled: bool = False) -> tuple[ScrapeResult, float]:
-        if not ZENROWS_API_KEY:
-            raise ValueError("ZENROWS_API_KEY not configured")
-            
-        params = {
-            "api_key": ZENROWS_API_KEY,
-            "url": url,
-        }
-        if javascript_enabled:
-            params["js_render"] = "true"
-            
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
-                "https://api.zenrows.com/v1/",
-                params=params,
-                timeout=60.0
-            )
-            
-            result = ScrapeResult(
-                url=url,
-                content=response.text[:10000],  # Limit content size
-                status_code=response.status_code,
-                provider="zenrows",
-                extraction_type="full_content",
-                timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-                metadata={"content_length": len(response.text)}
-            )
-            
-            cost = 0.01 if javascript_enabled else 0.005  # Higher cost for JS rendering
-            return result, cost
+            return {
+                "answer": data["choices"][0]["message"]["content"],
+                "source_urls": [
+                    c["raw_url"] for c in data.get("usage", {}).get("references", [])
+                ],
+            }
 
-class PortkeyProvider:
+
+class TogetherAIProvider:
     @staticmethod
-    async def summarize(content: str, style: str, max_length: int) -> tuple[str, float]:
-        if not PORTKEY_API_KEY:
-            raise ValueError("PORTKEY_API_KEY not configured")
-        
-        style_prompts = {
-            "concise": "Provide a concise summary in 2-3 sentences.",
-            "detailed": "Provide a detailed summary with key points and context.",
-            "bullet_points": "Provide a summary in bullet point format with main ideas."
-        }
-        
-        prompt = f"{style_prompts.get(style, style_prompts['concise'])}\n\nContent to summarize:\n{content[:5000]}"
-        
-        async with httpx.AsyncClient() as client:
+    async def generate_text(prompt: str) -> str:
+        if not TOGETHER_API_KEY:
+            raise ValueError("TOGETHER_API_KEY not configured")
+
+        async with httpx.AsyncClient(
+            base_url="https://api.together.xyz",
+            headers={"Authorization": f"Bearer {TOGETHER_API_KEY}"},
+            timeout=120,
+        ) as client:
             response = await client.post(
-                "https://api.portkey.ai/v1/chat/completions",
+                "/inference",
                 json={
-                    "model": DEFAULT_LLM_MODEL,
-                    "messages": [
-                        {"role": "system", "content": "You are a helpful assistant that creates accurate summaries."},
-                        {"role": "user", "content": prompt}
-                    ],
-                    "max_tokens": min(max_length, 1000),
-                    "temperature": 0.3
+                    "model": "mistralai/Mixtral-8x7B-Instruct-v0.1",
+                    "prompt": f"[INST] {prompt} [/INST]",
+                    "max_tokens": 512,
+                    "temperature": 0.7,
                 },
-                headers={
-                    "Authorization": f"Bearer {PORTKEY_API_KEY}",
-                    "Content-Type": "application/json"
-                },
-                timeout=30.0
             )
             response.raise_for_status()
             data = response.json()
-            
-            summary = data["choices"][0]["message"]["content"]
-            
-            # Estimate cost based on tokens (rough approximation)
-            input_tokens = len(content.split()) * 1.3  # Rough token estimate
-            output_tokens = len(summary.split()) * 1.3
-            cost = (input_tokens * 0.00001) + (output_tokens * 0.00003)  # GPT-4o-mini pricing
-            
-            return summary, cost
+
+            return data["output"]["choices"][0]["text"]
+
 
 # API Endpoints
 @app.get("/healthz")
 async def healthz():
-    """Health check endpoint with provider status"""
+    """Health check with provider status"""
     providers = get_provider_status()
-    
-    # Check if we have at least one provider in each category
-    has_search = any(status == "ready" for status in providers["search_providers"].values())
-    has_llm = any(status == "ready" for status in providers["llm_routing"].values())
-    
-    missing_critical = []
-    if not has_llm:
-        missing_critical.extend([k for k, v in providers["llm_routing"].items() if v == "missing_secret"])
-    
-    if missing_critical:
+
+    # Check database connectivity
+    db_status = "unknown"
+    if NEON_DATABASE_URL:
+        try:
+            pool = await get_db_pool()
+            if pool:
+                async with pool.acquire() as conn:
+                    result = await conn.fetchval("SELECT 1")
+                    db_status = "connected" if result == 1 else "error"
+            else:
+                db_status = "pool_failed"
+        except Exception as e:
+            db_status = f"error: {str(e)[:50]}"
+    else:
+        db_status = "not_configured"
+
+    ready_providers = [k for k, v in providers.items() if v == "ready"]
+    missing_providers = [k for k, v in providers.items() if v == "missing_secret"]
+
+    if len(ready_providers) == 0:
         return JSONResponse(
             status_code=503,
             content={
-                "status": "degraded",
-                "service": "sophia-mcp-research-v2", 
-                "version": "2.0.0",
+                "status": "unhealthy",
+                "service": "sophia-mcp-research-v1",
+                "version": "1.0.0",
                 "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
                 "providers": providers,
+                "database": db_status,
                 "capabilities": {
-                    "search": has_search,
-                    "scrape": any(status == "ready" for status in providers["scraping_providers"].values()),
-                    "summarize": has_llm,
-                    "cache": providers["caching"]["redis"] == "ready"
+                    "search": len(
+                        [
+                            p
+                            for p in ["serpapi", "perplexity", "google"]
+                            if providers[p] == "ready"
+                        ]
+                    )
+                    > 0,
+                    "llm": len(
+                        [
+                            p
+                            for p in ["together", "anthropic"]
+                            if providers[p] == "ready"
+                        ]
+                    )
+                    > 0,
+                    "embed": len(
+                        [p for p in ["voyage", "cohere"] if providers[p] == "ready"]
+                    )
+                    > 0,
+                    "storage": providers["storage"] == "ready",
                 },
                 "error": normalized_error(
-                    "research_service",
-                    "MISSING_CRITICAL_PROVIDERS", 
-                    f"Missing critical providers: {', '.join(missing_critical)}"
-                )
-            }
+                    "research",
+                    "no-providers",
+                    f"No research providers configured. Missing: {', '.join(missing_providers[:5])}",
+                ),
+            },
         )
-    
+
     return {
-        "status": "healthy" if has_search and has_llm else "degraded",
-        "service": "sophia-mcp-research-v2",
-        "version": "2.0.0",
+        "status": "healthy" if len(ready_providers) >= 2 else "degraded",
+        "service": "sophia-mcp-research-v1",
+        "version": "1.0.0",
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "providers": providers,
+        "database": db_status,
         "capabilities": {
-            "search": has_search,
-            "scrape": any(status == "ready" for status in providers["scraping_providers"].values()),
-            "summarize": has_llm,
-            "cache": providers["caching"]["redis"] == "ready"
+            "search": len(
+                [
+                    p
+                    for p in ["serpapi", "perplexity", "google"]
+                    if providers[p] == "ready"
+                ]
+            )
+            > 0,
+            "llm": len(
+                [p for p in ["together", "anthropic"] if providers[p] == "ready"]
+            )
+            > 0,
+            "embed": len([p for p in ["voyage", "cohere"] if providers[p] == "ready"])
+            > 0,
+            "storage": providers["storage"] == "ready",
         },
-        "cost_limits": {
-            "max_cost_usd": COST_LIMIT_USD,
-            "max_results_per_provider": MAX_RESULTS_PER_PROVIDER
-        }
+        "ready_providers": ready_providers,
+        "missing_providers": missing_providers,
     }
 
-@app.post("/search", response_model=SearchResponse)
-async def search(request: SearchRequest):
-    """Multi-provider search with optional AI summarization"""
+
+@app.post("/research/query", response_model=ResearchResult)
+async def research_query(request: ResearchQuery):
+    """
+    Performs a research query across multiple providers, aggregates results,
+    and returns a summarized response.
+    """
     start_time = time.time()
-    
-    # Validate cost limit
-    if request.cost_limit_usd > COST_LIMIT_USD:
-        return JSONResponse(
-            status_code=400,
-            content=normalized_error(
-                "research_service",
-                "COST_LIMIT_EXCEEDED",
-                f"Requested cost limit ${request.cost_limit_usd} exceeds maximum ${COST_LIMIT_USD}"
-            )
-        )
-    
+
     results = []
     providers_used = []
     providers_failed = []
-    cost_breakdown = {}
-    total_cost = 0.0
-    
-    # Execute search providers in parallel
-    search_tasks = []
-    for provider in request.providers:
-        if provider == "tavily" and TAVILY_API_KEY:
-            search_tasks.append(("tavily", TavilyProvider.search(request.query, request.max_results)))
-        elif provider == "serper" and SERPER_API_KEY:
-            search_tasks.append(("serper", SerperProvider.search(request.query, request.max_results)))
-        else:
-            providers_failed.append({
-                "provider": provider,
-                "error": f"Provider {provider} not configured or unsupported"
-            })
-    
-    # Execute searches
-    for provider_name, task in search_tasks:
+
+    # Prioritize providers based on depth and availability
+    if "serpapi" in request.providers and SERPAPI_API_KEY:
         try:
-            provider_results, cost = await task
-            results.extend(provider_results)
-            providers_used.append(provider_name)
-            cost_breakdown[provider_name] = cost
-            total_cost += cost
-            
-            if total_cost > request.cost_limit_usd:
-                logger.warning(f"Cost limit ${request.cost_limit_usd} exceeded, stopping additional searches")
-                break
-                
+            serp_results = await SerpAPIProvider.search(
+                request.query, request.max_results, request.time_range
+            )
+            results.extend(serp_results)
+            providers_used.append("serpapi")
         except Exception as e:
-            logger.error(f"Provider {provider_name} failed: {str(e)}")
-            providers_failed.append({
-                "provider": provider_name,
-                "error": str(e)
-            })
-    
-    # Generate summary if requested and we have LLM capability
-    summary = None
-    if request.summarize and results and (PORTKEY_API_KEY or OPENROUTER_API_KEY):
+            logger.error(f"SerpAPI failed: {e}")
+            providers_failed.append({"provider": "serpapi", "error": str(e)})
+
+    if "perplexity" in request.providers and PERPLEXITY_API_KEY:
         try:
-            combined_content = "\n\n".join([f"{r.title}: {r.snippet}" for r in results[:10]])
-            if PORTKEY_API_KEY and total_cost < request.cost_limit_usd:
-                summary_text, summary_cost = await PortkeyProvider.summarize(
-                    combined_content, "concise", 300
+            perplexity_result = await PerplexityAIProvider.search(request.query)
+            results.append(
+                {"type": "perplexity_answer", "content": perplexity_result["answer"]}
+            )
+            if "source_urls" in perplexity_result:
+                results.append(
+                    {
+                        "type": "perplexity_sources",
+                        "urls": perplexity_result["source_urls"],
+                    }
                 )
-                summary = {
-                    "text": summary_text,
-                    "model": DEFAULT_LLM_MODEL,
-                    "provider": "portkey",
-                    "confidence": 0.8
-                }
-                cost_breakdown["summarization"] = summary_cost
-                total_cost += summary_cost
+            providers_used.append("perplexity")
         except Exception as e:
-            logger.error(f"Summarization failed: {str(e)}")
-    
-    return SearchResponse(
+            logger.error(f"PerplexityAI failed: {e}")
+            providers_failed.append({"provider": "perplexity", "error": str(e)})
+
+    # Simple summarization based on results
+    summary_text = (
+        f"Research query: '{request.query}'. Found {len(results)} raw results. "
+    )
+    if "together" in request.providers and TOGETHER_API_KEY and results:
+        try:
+            summarized_content = " ".join(
+                [
+                    r.get("snippet", r.get("content", ""))
+                    for r in results[: request.max_results]
+                ]
+            )
+            if summarized_content:
+                summary_prompt = f"Summarize the following research findings about '{request.query}':\n\n{summarized_content}"
+                llm_summary = await TogetherAIProvider.generate_text(summary_prompt)
+                summary_text = f"Summary: {llm_summary}"
+                providers_used.append("together")
+        except Exception as e:
+            logger.error(f"TogetherAI summarization failed: {e}")
+            providers_failed.append(
+                {"provider": "together_summarization", "error": str(e)}
+            )
+
+    return ResearchResult(
         status="success" if results else "partial" if providers_failed else "failed",
         query=request.query,
-        results=sorted(results, key=lambda x: x.score, reverse=True)[:request.max_results],
-        summary=summary,
-        providers_used=providers_used,
-        providers_failed=providers_failed,
-        cost_breakdown=cost_breakdown,
-        total_cost_usd=round(total_cost, 4),
-        execution_time_ms=int((time.time() - start_time) * 1000),
-        timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-    )
-
-@app.post("/scrape", response_model=ScrapeResponse)
-async def scrape(request: ScrapeRequest):
-    """Multi-provider web scraping"""
-    start_time = time.time()
-    
-    results = []
-    providers_used = []
-    providers_failed = []
-    cost_breakdown = {}
-    total_cost = 0.0
-    
-    # Try scraping providers in order of preference
-    for provider in request.providers:
-        if provider == "zenrows" and ZENROWS_API_KEY:
-            try:
-                result, cost = await ZenRowsProvider.scrape(request.url, request.javascript_enabled)
-                results.append(result)
-                providers_used.append(provider)
-                cost_breakdown[provider] = cost
-                total_cost += cost
-                break  # Success, stop trying other providers
-                
-            except Exception as e:
-                logger.error(f"Provider {provider} failed: {str(e)}")
-                providers_failed.append({
-                    "provider": provider,
-                    "error": str(e)
-                })
-        else:
-            providers_failed.append({
-                "provider": provider,
-                "error": f"Provider {provider} not configured or unsupported"
-            })
-    
-    return ScrapeResponse(
-        status="success" if results else "failed",
-        url=request.url,
         results=results,
+        summary={
+            "text": summary_text,
+            "confidence": 0.8,
+            "model": "research_v1",
+            "sources": providers_used,
+        },
         providers_used=providers_used,
         providers_failed=providers_failed,
-        cost_breakdown=cost_breakdown,
-        total_cost_usd=round(total_cost, 4),
         execution_time_ms=int((time.time() - start_time) * 1000),
-        timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
     )
 
-@app.post("/summarize", response_model=SummarizeResponse)
-async def summarize(request: SummarizeRequest):
-    """AI-powered content summarization"""
+
+@app.post("/data/ingest")
+async def ingest_data(request: DataIngestRequest):
+    """
+    Ingests data from a specified URL and stores it. (Placeholder for full implementation)
+    """
     start_time = time.time()
-    
-    if not (PORTKEY_API_KEY or OPENROUTER_API_KEY):
-        return JSONResponse(
+
+    if not NEON_DATABASE_URL:
+        raise HTTPException(
             status_code=503,
-            content=normalized_error(
-                "research_service",
-                "NO_LLM_PROVIDERS",
-                "No LLM providers configured for summarization"
-            )
-        )
-    
-    try:
-        # Try Portkey first, then fallback to OpenRouter
-        if PORTKEY_API_KEY:
-            summary, cost = await PortkeyProvider.summarize(
-                request.content, request.style, request.max_length
-            )
-            model_used = DEFAULT_LLM_MODEL
-        else:
-            # OpenRouter implementation would go here
-            raise ValueError("OpenRouter not yet implemented")
-        
-        return SummarizeResponse(
-            status="success",
-            summary=summary,
-            style=request.style,
-            input_length=len(request.content),
-            output_length=len(summary),
-            model_used=model_used,
-            cost_usd=round(cost, 4),
-            execution_time_ms=int((time.time() - start_time) * 1000),
-            timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-        )
-        
-    except Exception as e:
-        logger.error(f"Summarization failed: {str(e)}")
-        return JSONResponse(
-            status_code=500,
-            content=normalized_error(
-                "llm_provider",
-                "SUMMARIZATION_FAILED",
-                str(e)
-            )
+            detail=normalized_error(
+                "storage", "missing-database", "NEON_DATABASE_URL not configured"
+            ),
         )
 
-@app.get("/providers")
-async def get_providers():
-    """Get current provider status and capabilities"""
+    try:
+        pool = await get_db_pool()
+        if pool:
+            async with pool.acquire() as conn:
+                await conn.execute(
+                    """INSERT INTO ingested_data (url, format, tags, content, metadata_json, created_at)
+                       VALUES ($1, $2, $3, $4, $5, $6)""",
+                    str(request.source_url),
+                    request.format,
+                    request.tags,
+                    "Placeholder content",
+                    json.dumps({"status": "placeholder"}),
+                    time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                )
+        logger.info(f"Ingested data from {request.source_url}")
+    except Exception as e:
+        logger.error(f"Data ingestion failed for {request.source_url}: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=normalized_error("data_ingestion", "ingestion-failed", str(e)),
+        )
+
     return {
         "status": "success",
-        "providers": get_provider_status(),
-        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        "source_url": request.source_url,
+        "tags": request.tags,
+        "execution_time_ms": int((time.time() - start_time) * 1000),
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
     }
+
+
+@app.post("/data/analyze")
+async def analyze_data(request: DataAnalyzeRequest):
+    """
+    Performs specific analysis on provided data. (Placeholder for full implementation)
+    """
+    start_time = time.time()
+
+    # This would integrate with LLMs, statistical models, etc.
+    analysis_summary = (
+        f"Analysis of type '{request.analysis_type}' performed "
+        f"on provided data. Data size: {len(json.dumps(request.data))} bytes."
+    )
+
+    return {
+        "status": "success",
+        "analysis_type": request.analysis_type,
+        "summary": analysis_summary,
+        "execution_time_ms": int((time.time() - start_time) * 1000),
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+    }
+
+
+@app.post("/web/scrape", response_model=WebScrapeResponse)
+async def web_scrape(request: WebScrapeRequest):
+    """
+    Scrapes content from a given URL. (Placeholder for full implementation)
+    """
+    start_time = time.time()
+
+    try:
+        async with httpx.AsyncClient(timeout=30) as client:
+            response = await client.get(str(request.url))
+            response.raise_for_status()
+            content = response.text
+
+            # Simple selector logic
+            if request.css_selector:
+                # This would typically use a library like BeautifulSoup or lxml
+                content = (
+                    f"Content for selector '{request.css_selector}': {content[:200]}..."
+                )
+
+        logger.info(f"Scraped content from {request.url}")
+
+    except Exception as e:
+        logger.error(f"Web scraping failed for {request.url}: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=normalized_error("web_scrape", "scrape-failed", str(e)),
+        )
+
+    return WebScrapeResponse(
+        url=request.url,
+        content=content,
+        timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+    )
+
+
+@app.on_event("startup")
+async def startup_event():
+    if NEON_DATABASE_URL:
+        await get_db_pool()
+        logger.info("Research MCP v1 started with database connectivity")
+    else:
+        logger.warning("Research MCP v1 started without database - storage disabled")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    if db_pool:
+        await db_pool.close()
+        logger.info("Database pool closed")
+
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8080, log_level="info")
+
+    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")

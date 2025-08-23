@@ -4,7 +4,7 @@ primary_region = "ord"
 [env]
   PORT = "8080"
   GITHUB_REPO = "ai-cherry/sophia-ai-intel"
-  DASHBOARD_ORIGIN = "https://sophiaai-dashboard.fly.dev"
+  DASHBOARD_ORIGIN = "https://sophiaai-dashboard-v2.fly.dev"
 
 [http_service]
   internal_port = 8080

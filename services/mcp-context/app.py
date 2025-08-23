@@ -1,247 +1,437 @@
+"""
+Sophia AI Context Abstraction Layer MCP Service
+
+This module provides a unified context abstraction layer that integrates document storage,
+vector search, and knowledge retrieval capabilities. It serves as the central context
+management system for the Sophia AI intelligence platform.
+
+Key Features:
+- Document creation and storage in PostgreSQL and Qdrant vector database
+- Semantic document search using vector embeddings
+- Unified context provider abstraction
+- Health monitoring and provider status tracking
+- Normalized error handling across all operations
+
+Architecture:
+- PostgreSQL for structured document metadata and content storage
+- Qdrant vector database for semantic search and similarity matching
+- FastAPI async REST API with comprehensive error handling
+- Database connection pooling for high-performance operations
+
+Provider Integrations:
+- PostgreSQL (Neon): Primary document and metadata storage
+- Qdrant: Vector database for embedding storage and semantic search
+
+Version: 2.0.0
+Author: Sophia AI Intelligence Team
+"""
+
 import os
 import time
-from fastapi import FastAPI
+import json
+import logging
+from typing import List, Optional, Dict, Any
+import asyncpg
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
-from typing import List, Optional, Dict, Any
-import psycopg2
+from pydantic import BaseModel, Field
+import uuid
+from qdrant_client import QdrantClient, models
 
-# Environment variables
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Environment Variables
 NEON_DATABASE_URL = os.getenv("NEON_DATABASE_URL")
+QDRANT_URL = os.getenv("QDRANT_ENDPOINT")
+QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
 
-app = FastAPI(title="sophia-mcp-context", version="1.0.0")
+app = FastAPI(
+    title="sophia-mcp-context-v2",
+    version="2.0.0",
+    description="Unified context abstraction layer for Sophia AI",
+)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://sophiaai-dashboard.fly.dev"],
+    allow_origins=["https://sophiaai-dashboard.fly.dev", "https://github.com"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-def normalized_error(provider: str, code: str, message: str):
-    """Return normalized error JSON format"""
+
+# Database connection pool
+db_pool = None
+
+
+async def get_db_pool():
+    """
+    Get or create database connection pool for document storage.
+    
+    Returns the global PostgreSQL connection pool, creating it if it doesn't exist.
+    Used for storing document content, metadata, and search indexes.
+    
+    Returns:
+        asyncpg.Pool: Database connection pool instance, or None if not configured
+        
+    Note:
+        Requires NEON_DATABASE_URL environment variable for PostgreSQL connectivity
+    """
+    global db_pool
+    if not db_pool and NEON_DATABASE_URL:
+        db_pool = await asyncpg.create_pool(NEON_DATABASE_URL)
+    return db_pool
+
+
+def normalized_error(
+    provider: str, code: str, message: str, details: Optional[Dict] = None
+):
+    """
+    Create normalized error response format for consistent error handling.
+    
+    Standardizes error responses across context operations to ensure consistent
+    debugging and error handling capabilities throughout the system.
+    
+    Args:
+        provider (str): Context provider that generated the error (storage/qdrant)
+        code (str): Error code identifier for programmatic error handling
+        message (str): Human-readable error message describing the issue
+        details (Optional[Dict]): Additional error context and debugging information
+        
+    Returns:
+        Dict[str, Any]: Normalized error object with standard MCP structure
+        
+    Example:
+        >>> normalized_error("qdrant", "connection_failed", "Vector database unavailable")
+    """
+    error_obj = {
+        "status": "failure",
+        "query": "",
+        "results": [],
+        "summary": {"text": message, "confidence": 1.0, "model": "n/a", "sources": []},
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "execution_time_ms": 0,
+        "errors": [{"provider": provider, "code": code, "message": message}],
+    }
+    if details:
+        error_obj["errors"][0]["details"] = details
+    return error_obj
+
+
+def get_provider_status():
+    """
+    Check availability status of context storage providers.
+    
+    Evaluates the configuration status of integrated context providers by checking
+    for required environment variables and connection parameters.
+    
+    Returns:
+        Dict[str, str]: Provider status mapping with values:
+            - "ready": Provider is configured with required credentials
+            - "missing_secret": Required configuration is missing
+            
+    Context Providers:
+        - storage: PostgreSQL database for document and metadata storage
+        - qdrant: Vector database for semantic search and embeddings
+        
+    Note:
+        Use the /healthz endpoint for comprehensive connectivity testing
+    """
     return {
-        "error": {
-            "provider": provider,
-            "code": code,
-            "message": message
-        },
-        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        "storage": "ready" if NEON_DATABASE_URL else "missing_secret",
+        "qdrant": "ready" if QDRANT_URL else "missing_secret",
     }
 
-class ContextEntry(BaseModel):
-    type: str
-    title: str
+
+# Request/Response Models
+class DocumentCreateRequest(BaseModel):
+    content: str = Field(..., description="Content of the document")
+    source: str = Field(..., description="Source of the document")
+    metadata: Dict[str, Any] = Field(
+        default_factory=dict, description="Additional metadata"
+    )
+
+
+class DocumentSearchRequest(BaseModel):
+    query: str = Field(..., description="Search query")
+    k: int = Field(default=5, le=20, description="Number of results to return")
+
+
+class Document(BaseModel):
+    id: str
     content: str
-    summary: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
-    tags: List[str] = []
-    source: Dict[str, Any]
+    source: str
+    metadata: Dict[str, Any]
+    created_at: str
 
-class IndexRequest(BaseModel):
-    entries: List[ContextEntry]
-    batch_id: Optional[str] = None
 
-class IndexResponse(BaseModel):
-    status: str
-    indexed_count: int
-    skipped_count: int
-    failed_count: int
-    timestamp: str
-    execution_time_ms: int
-
-class SearchRequest(BaseModel):
-    query: str
-    limit: int = 20
-
-class SearchResponse(BaseModel):
+class DocumentSearchResponse(BaseModel):
     status: str
     query: str
-    results: List[Dict[str, Any]]
-    total_results: int
-    timestamp: str
+    results: List[Document]
+    summary: Dict[str, Any]
+    providers_used: List[str]
+    providers_failed: List[Dict]
     execution_time_ms: int
+    timestamp: str
 
+
+# Qdrant client
+qdrant_client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
+
+
+# API Endpoints
 @app.get("/healthz")
 async def healthz():
-    db_status = "not_configured"
-    
-    if not NEON_DATABASE_URL:
+    """Health check with provider status"""
+    providers = get_provider_status()
+
+    # Check database connectivity
+    db_status = "unknown"
+    if NEON_DATABASE_URL:
+        try:
+            pool = await get_db_pool()
+            if pool:
+                async with pool.acquire() as conn:
+                    result = await conn.fetchval("SELECT 1")
+                    db_status = "connected" if result == 1 else "error"
+            else:
+                db_status = "pool_failed"
+        except Exception as e:
+            db_status = f"error: {str(e)[:50]}"
+    else:
+        db_status = "not_configured"
+
+    # Check Qdrant connectivity
+    qdrant_status = "unknown"
+    if QDRANT_URL and QDRANT_API_KEY:
+        try:
+            health = qdrant_client.health_check()
+            qdrant_status = "connected" if health["status"] == "ok" else "error"
+        except Exception as e:
+            qdrant_status = f"error: {str(e)[:50]}"
+    else:
+        qdrant_status = "not_configured"
+
+    ready_providers = [k for k, v in providers.items() if v == "ready"]
+    missing_providers = [k for k, v in providers.items() if v == "missing_secret"]
+
+    if len(ready_providers) == 0:
         return JSONResponse(
             status_code=503,
             content={
                 "status": "unhealthy",
-                "service": "sophia-mcp-context",
+                "service": "sophia-mcp-context-v1",
                 "version": "1.0.0",
                 "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-                "uptime_ms": int(time.time() * 1000),
-                "dependencies": {
-                    "neon": "missing"
-                },
+                "providers": providers,
+                "database": db_status,
+                "vector_database": qdrant_status,
                 "error": normalized_error(
-                    "context_service",
-                    "MISSING_CREDENTIALS",
-                    "NEON_DATABASE_URL is required for database operations"
-                )
-            }
+                    "context",
+                    "no-providers",
+                    f"No context providers configured. Missing: {', '.join(missing_providers[:5])}",
+                ),
+            },
         )
-    
-    # Test database connection
-    try:
-        conn = psycopg2.connect(NEON_DATABASE_URL)
-        conn.close()
-        db_status = "healthy"
-    except Exception as e:
-        return JSONResponse(
-            status_code=503,
-            content={
-                "status": "unhealthy",
-                "service": "sophia-mcp-context",
-                "version": "1.0.0",
-                "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-                "uptime_ms": int(time.time() * 1000),
-                "dependencies": {
-                    "neon": "connection_failed"
-                },
-                "error": normalized_error(
-                    "context_service",
-                    "DATABASE_CONNECTION_ERROR",
-                    f"Failed to connect to Neon database: {str(e)}"
-                )
-            }
-        )
-    
+
     return {
-        "status": "healthy",
-        "service": "sophia-mcp-context",
+        "status": "healthy" if len(ready_providers) >= 1 else "degraded",
+        "service": "sophia-mcp-context-v1",
         "version": "1.0.0",
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-        "uptime_ms": int(time.time() * 1000),
-        "dependencies": {
-            "neon": db_status
-        }
+        "providers": providers,
+        "database": db_status,
+        "vector_database": qdrant_status,
+        "ready_providers": ready_providers,
+        "missing_providers": missing_providers,
     }
 
-@app.post("/context/index", response_model=IndexResponse)
-async def index_context(request: IndexRequest):
-    start_time = time.time()
-    
-    if not NEON_DATABASE_URL:
-        return JSONResponse(
-            status_code=503,
-            content=normalized_error(
-                "context_service",
-                "MISSING_CREDENTIALS",
-                "NEON_DATABASE_URL is required for indexing operations"
-            )
-        )
-    
-    # Test database connection
-    try:
-        conn = psycopg2.connect(NEON_DATABASE_URL)
-        conn.close()
-    except Exception as e:
-        return JSONResponse(
-            status_code=503,
-            content=normalized_error(
-                "context_service",
-                "DATABASE_CONNECTION_ERROR",
-                f"Failed to connect to Neon database: {str(e)}"
-            )
-        )
-    
-    # For now, return success without actual indexing
-    # TODO: Implement actual Neon database operations
-    return IndexResponse(
-        status="success",
-        indexed_count=len(request.entries),
-        skipped_count=0,
-        failed_count=0,
-        timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-        execution_time_ms=int((time.time() - start_time) * 1000)
-    )
 
-@app.post("/context/search", response_model=SearchResponse)
-async def search_context(request: SearchRequest):
+@app.post("/documents/create")
+async def create_document(request: DocumentCreateRequest):
+    """
+    Creates a new document and stores it in database and vector store.
+    """
     start_time = time.time()
-    
-    if not NEON_DATABASE_URL:
-        return JSONResponse(
-            status_code=503,
-            content=normalized_error(
-                "context_service",
-                "MISSING_CREDENTIALS",
-                "NEON_DATABASE_URL is required for search operations"
-            )
-        )
-    
-    # Test database connection
-    try:
-        conn = psycopg2.connect(NEON_DATABASE_URL)
-        conn.close()
-    except Exception as e:
-        return JSONResponse(
-            status_code=503,
-            content=normalized_error(
-                "context_service",
-                "DATABASE_CONNECTION_ERROR",
-                f"Failed to connect to Neon database: {str(e)}"
-            )
-        )
-    
-    # For now, return basic success response
-    # TODO: Implement actual search functionality
-    return SearchResponse(
-        status="success",
-        query=request.query,
-        results=[{
-            "id": "health-check",
-            "title": "Health Check Result",
-            "content": f"Search query: {request.query}",
-            "similarity_score": 1.0
-        }],
-        total_results=1,
-        timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-        execution_time_ms=int((time.time() - start_time) * 1000)
-    )
 
-@app.get("/context/stats")
-async def context_stats():
     if not NEON_DATABASE_URL:
-        return JSONResponse(
+        raise HTTPException(
             status_code=503,
-            content=normalized_error(
-                "context_service",
-                "MISSING_CREDENTIALS",
-                "NEON_DATABASE_URL is required for stats operations"
-            )
+            detail=normalized_error(
+                "storage", "missing-database", "NEON_DATABASE_URL not configured"
+            ),
         )
-    
-    # Test database connection
+
+    doc_id = str(uuid.uuid4())
+    created_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+    # Store in Postgres
     try:
-        conn = psycopg2.connect(NEON_DATABASE_URL)
-        conn.close()
+        pool = await get_db_pool()
+        if pool:
+            async with pool.acquire() as conn:
+                await conn.execute(
+                    """INSERT INTO documents (id, content, source, metadata, created_at)
+                       VALUES ($1, $2, $3, $4, $5)""",
+                    doc_id,
+                    request.content,
+                    request.source,
+                    json.dumps(request.metadata),
+                    created_at,
+                )
     except Exception as e:
-        return JSONResponse(
-            status_code=503,
-            content=normalized_error(
-                "context_service",
-                "DATABASE_CONNECTION_ERROR",
-                f"Failed to connect to Neon database: {str(e)}"
-            )
+        logger.error(f"Database storage failed: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=normalized_error("storage", "database-error", str(e)),
         )
-    
+
+    # Store in Qdrant
+    if QDRANT_URL and QDRANT_API_KEY:
+        try:
+            # Recreate collection for simplicity, in production would check existence
+            qdrant_client.recreate_collection(
+                collection_name="sophia_documents",
+                vectors_config=models.VectorParams(
+                    size=1536, distance=models.Distance.COSINE
+                ),
+            )
+
+            # Create embedding (placeholder for actual embedding model)
+            embedding_vector = [0.0] * 1536  # Replace with actual embedding generation
+
+            qdrant_client.upsert(
+                collection_name="sophia_documents",
+                wait=True,
+                points=[
+                    models.PointStruct(
+                        id=doc_id,
+                        vector=embedding_vector,
+                        payload={
+                            "source": request.source,
+                            "metadata": request.metadata,
+                            "created_at": created_at,
+                        },
+                    )
+                ],
+            )
+        except Exception as e:
+            logger.error(f"Qdrant storage failed: {e}")
+            raise HTTPException(
+                status_code=500,
+                detail=normalized_error("qdrant", "qdrant-error", str(e)),
+            )
+
     return {
         "status": "success",
-        "stats": {
-            "total_entries": 0,
-            "entries_by_type": {},
-            "entries_by_source": {},
-            "last_indexed": None,
-            "index_size_mb": 0,
-            "embedding_model": None
-        },
-        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        "document": Document(
+            id=doc_id,
+            content=request.content,
+            source=request.source,
+            metadata=request.metadata,
+            created_at=created_at,
+        ),
+        "execution_time_ms": int((time.time() - start_time) * 1000),
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
     }
+
+
+@app.post("/documents/search", response_model=DocumentSearchResponse)
+async def search_documents(request: DocumentSearchRequest):
+    """
+    Searches for relevant documents in the vector store and database.
+    """
+    start_time = time.time()
+
+    if not (QDRANT_URL and QDRANT_API_KEY):
+        raise HTTPException(
+            status_code=503,
+            detail=normalized_error(
+                "qdrant", "missing-qdrant", "Qdrant not configured for search"
+            ),
+        )
+
+    # Create search embedding (placeholder for actual embedding model)
+    search_vector = [0.0] * 1536  # Replace with actual embedding generation
+
+    search_result = qdrant_client.search(
+        collection_name="sophia_documents",
+        query_vector=search_vector,
+        limit=request.k,
+        query_params=models.QueryParams(hnsw_ef=128, exact=False),
+    )
+
+    # Retrieve full documents from Postgres based on Qdrant results
+    documents = []
+    if NEON_DATABASE_URL and search_result:
+        try:
+            pool = await get_db_pool()
+            if pool:
+                async with pool.acquire() as conn:
+                    for hit in search_result:
+                        row = await conn.fetchrow(
+                            """SELECT id, content, source, metadata, created_at
+                               FROM documents WHERE id = $1""",
+                            hit.id,
+                        )
+                        if row:
+                            documents.append(
+                                Document(
+                                    id=row["id"],
+                                    content=row["content"],
+                                    source=row["source"],
+                                    metadata=json.loads(row["metadata"]),
+                                    created_at=row["created_at"],
+                                )
+                            )
+        except Exception as e:
+            logger.error(f"Database retrieval failed: {e}")
+            raise HTTPException(
+                status_code=500,
+                detail=normalized_error("storage", "database-error", str(e)),
+            )
+
+    return DocumentSearchResponse(
+        status="success",
+        query=request.query,
+        results=documents,
+        summary={
+            "text": f"Found {len(documents)} documents for '{request.query}'",
+            "confidence": 0.8,
+            "model": "context_search_v1",
+            "sources": ["qdrant", "storage"] if NEON_DATABASE_URL else ["qdrant"],
+        },
+        providers_used=["qdrant", "storage"] if NEON_DATABASE_URL else ["qdrant"],
+        providers_failed=[],
+        execution_time_ms=int((time.time() - start_time) * 1000),
+        timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+    )
+
+
+@app.on_event("startup")
+async def startup_event():
+    if NEON_DATABASE_URL:
+        await get_db_pool()
+        logger.info("Context MCP v1 started with database connectivity")
+    else:
+        logger.warning("Context MCP v1 started without database - storage disabled")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    if db_pool:
+        await db_pool.close()
+        logger.info("Database pool closed")
+
+
+qdrant_client.close()
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")

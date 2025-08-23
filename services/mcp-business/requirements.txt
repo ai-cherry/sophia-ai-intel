@@ -6,3 +6,5 @@ python-dotenv==1.0.1
 asyncpg==0.29.0
 python-multipart==0.0.9
 aiofiles==23.2.1
+PyJWT==2.8.0
+cryptography==41.0.7

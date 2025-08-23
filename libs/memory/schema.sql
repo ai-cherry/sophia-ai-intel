@@ -138,23 +138,38 @@ CREATE TABLE IF NOT EXISTS organizations (
     INDEX idx_organizations_domain (domain)
 );
 
--- Knowledge fragments for organizational learning
+-- Enhanced knowledge fragments with quality assessment and LlamaIndex support
 CREATE TABLE IF NOT EXISTS knowledge_fragments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     organization_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
     project_id UUID REFERENCES projects(id) ON DELETE CASCADE,
-    fragment_type VARCHAR(50) NOT NULL, -- 'pattern', 'best_practice', 'solution', 'decision', 'lesson_learned'
+    fragment_type VARCHAR(50) NOT NULL, -- 'knowledge', 'okr', 'process', 'pattern', 'best_practice', 'solution', 'decision', 'lesson_learned'
     title VARCHAR(500) NOT NULL,
     content TEXT NOT NULL,
     tags JSONB DEFAULT '[]',
     confidence_score FLOAT DEFAULT 0.0, -- How reliable this knowledge is
     usage_count INTEGER DEFAULT 0, -- How often this knowledge has been referenced
-    source_type VARCHAR(50), -- 'conversation', 'code_analysis', 'documentation', 'manual'
+    source_type VARCHAR(50), -- 'notion', 'file_upload', 'conversation', 'code_analysis', 'documentation', 'manual'
     source_reference VARCHAR(1000), -- Link back to source
     embedding_vector VECTOR(1536), -- For semantic search
     created_by VARCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    
+    -- Enhanced fields for quality assessment and promotion
+    quality_score FLOAT DEFAULT 0.0,
+    quality_metrics JSONB DEFAULT '{}',
+    processing_metadata JSONB DEFAULT '{}',
+    access_level VARCHAR(20) DEFAULT 'tenant', -- 'public', 'tenant', 'private'
+    promotion_status VARCHAR(20) DEFAULT 'local', -- 'local', 'review_pending', 'global_readonly', 'rejected'
+    llama_index_metadata JSONB DEFAULT '{}',
+    
+    -- Content chunking and structure
+    chunk_index INTEGER DEFAULT 0,
+    total_chunks INTEGER DEFAULT 1,
+    parent_document_id UUID,
+    semantic_density FLOAT DEFAULT 0.0,
+    readability_score FLOAT DEFAULT 0.0,
     
     -- Indexing
     INDEX idx_knowledge_org_id (organization_id),
@@ -162,13 +177,115 @@ CREATE TABLE IF NOT EXISTS knowledge_fragments (
     INDEX idx_knowledge_type (fragment_type),
     INDEX idx_knowledge_tags USING GIN (tags),
     INDEX idx_knowledge_confidence (confidence_score),
-    INDEX idx_knowledge_created_at (created_at)
+    INDEX idx_knowledge_created_at (created_at),
+    INDEX idx_knowledge_quality_score (quality_score),
+    INDEX idx_knowledge_access_level (access_level),
+    INDEX idx_knowledge_promotion_status (promotion_status),
+    INDEX idx_knowledge_parent_doc (parent_document_id),
+    
+    UNIQUE(organization_id, title, chunk_index)
 );
 
--- Vector search index for knowledge fragments
-CREATE INDEX idx_knowledge_embedding_vector ON knowledge_fragments 
+-- Enhanced vector search indexes for knowledge fragments
+CREATE INDEX idx_knowledge_embedding_vector ON knowledge_fragments
 USING ivfflat (embedding_vector vector_cosine_ops)
 WITH (lists = 100);
+
+-- Quality-weighted vector search for high-quality content
+CREATE INDEX idx_knowledge_quality_vector ON knowledge_fragments
+USING ivfflat (embedding_vector vector_cosine_ops)
+WHERE quality_score >= 0.7;
+
+-- Global-readonly content vector search
+CREATE INDEX idx_knowledge_global_vector ON knowledge_fragments
+USING ivfflat (embedding_vector vector_cosine_ops)
+WHERE promotion_status = 'global_readonly';
+
+-- Enhanced full-text search with quality boost
+CREATE INDEX idx_knowledge_content_quality_fts ON knowledge_fragments
+USING gin(
+    setweight(to_tsvector('english', title), 'A') ||
+    setweight(to_tsvector('english', content), 'B') ||
+    setweight(to_tsvector('english', COALESCE(quality_score::text, '')), 'C')
+);
+
+-- Quality assessment tracking
+CREATE TABLE IF NOT EXISTS quality_assessments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    knowledge_fragment_id UUID NOT NULL REFERENCES knowledge_fragments(id) ON DELETE CASCADE,
+    assessment_type VARCHAR(50) NOT NULL, -- 'initial', 'reeval', 'promotion_review'
+    quality_score FLOAT NOT NULL,
+    quality_metrics JSONB NOT NULL,
+    assessor_type VARCHAR(50) NOT NULL, -- 'automated', 'human', 'hybrid'
+    assessor_id VARCHAR(255),
+    confidence_score FLOAT DEFAULT 0.0,
+    recommendations JSONB DEFAULT '{}',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    
+    INDEX idx_quality_assessments_fragment_id (knowledge_fragment_id),
+    INDEX idx_quality_assessments_score (quality_score),
+    INDEX idx_quality_assessments_type (assessment_type),
+    INDEX idx_quality_assessments_created_at (created_at)
+);
+
+-- File upload tracking
+CREATE TABLE IF NOT EXISTS document_uploads (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    upload_id VARCHAR(100) UNIQUE NOT NULL,
+    original_filename VARCHAR(500) NOT NULL,
+    file_type VARCHAR(20) NOT NULL,
+    file_size_bytes BIGINT NOT NULL,
+    uploaded_by VARCHAR(255) NOT NULL,
+    session_id VARCHAR(255),
+    tenant_id VARCHAR(255),
+    processing_status VARCHAR(50) DEFAULT 'pending', -- 'pending', 'processing', 'completed', 'failed'
+    processing_metadata JSONB DEFAULT '{}',
+    fragments_created INTEGER DEFAULT 0,
+    quality_avg FLOAT DEFAULT 0.0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    processed_at TIMESTAMP WITH TIME ZONE,
+    
+    INDEX idx_document_uploads_upload_id (upload_id),
+    INDEX idx_document_uploads_status (processing_status),
+    INDEX idx_document_uploads_user (uploaded_by),
+    INDEX idx_document_uploads_session (session_id),
+    INDEX idx_document_uploads_tenant (tenant_id),
+    INDEX idx_document_uploads_created_at (created_at)
+);
+
+-- Link uploaded documents to generated fragments
+CREATE TABLE IF NOT EXISTS document_fragment_links (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    document_upload_id UUID NOT NULL REFERENCES document_uploads(id) ON DELETE CASCADE,
+    knowledge_fragment_id UUID NOT NULL REFERENCES knowledge_fragments(id) ON DELETE CASCADE,
+    chunk_index INTEGER NOT NULL,
+    extraction_metadata JSONB DEFAULT '{}',
+    
+    UNIQUE(document_upload_id, knowledge_fragment_id),
+    INDEX idx_doc_fragment_upload (document_upload_id),
+    INDEX idx_doc_fragment_knowledge (knowledge_fragment_id),
+    INDEX idx_doc_fragment_chunk (chunk_index)
+);
+
+-- Global-readonly knowledge index
+CREATE TABLE IF NOT EXISTS global_knowledge_index (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    knowledge_fragment_id UUID NOT NULL REFERENCES knowledge_fragments(id) ON DELETE CASCADE,
+    promotion_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    promoted_by VARCHAR(255),
+    promotion_reason TEXT,
+    global_access_level VARCHAR(20) DEFAULT 'readonly', -- 'readonly', 'reference'
+    usage_stats JSONB DEFAULT '{}',
+    ceo_approval_required BOOLEAN DEFAULT FALSE,
+    ceo_approved_by VARCHAR(255),
+    ceo_approved_at TIMESTAMP WITH TIME ZONE,
+    
+    UNIQUE(knowledge_fragment_id),
+    INDEX idx_global_knowledge_promoted (promotion_date),
+    INDEX idx_global_knowledge_access (global_access_level),
+    INDEX idx_global_knowledge_ceo_approval (ceo_approval_required),
+    INDEX idx_global_knowledge_promoted_by (promoted_by)
+);
 
 -- Context relationships for tracking how different pieces relate
 CREATE TABLE IF NOT EXISTS context_relationships (
