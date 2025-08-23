@@ -1,11 +1,14 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import Footer from './components/Footer'
 import ChatInterface from './components/ChatInterface'
 import { buildGuard } from './lib/buildInfo'
+import { personaConfigManager } from './persona/personaConfig'
 
 function App() {
   const [activeTab, setActiveTab] = useState('chat')
   const [gtmData, setGtmData] = useState({ prospects: [], signals: {}, loading: false, error: null })
+  const [personaEnabled, setPersonaEnabled] = useState(true)
+  const [humorLevel, setHumorLevel] = useState(0.25)
 
   const tabs = [
     { id: 'chat', label: 'Chat' },
@@ -136,13 +139,92 @@ function App() {
         background: '#f8f9fa'
       }}>
         {activeTab === 'chat' && (
-          <div style={{ 
-            background: '#fff', 
-            padding: '2rem', 
+          <div style={{
+            background: '#fff',
+            padding: '0',
             borderRadius: '8px',
             boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
           }}>
-            <ChatInterface />
+            {/* Chat Header with Persona Controls */}
+            <div style={{
+              padding: '1rem 2rem',
+              borderBottom: '1px solid #eee',
+              background: '#f8f9fa',
+              borderRadius: '8px 8px 0 0',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <div>
+                <h3 style={{ margin: 0, color: '#333' }}>Sophia AI Chat</h3>
+                <p style={{ margin: '0.25rem 0 0 0', color: '#666', fontSize: '0.8rem' }}>
+                  Intelligent AI Assistant with Adaptive Personality
+                </p>
+              </div>
+              
+              {/* Persona Controls */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <label style={{
+                    fontSize: '0.8rem',
+                    color: '#666',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                  }}>
+                    <input
+                      type="checkbox"
+                      checked={personaEnabled}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        setPersonaEnabled(e.target.checked)
+                        const config = personaConfigManager.getConfig()
+                        personaConfigManager.updateConfig({
+                          humorLevel: e.target.checked ? config.humorLevel : 0
+                        })
+                      }}
+                      style={{ margin: 0 }}
+                    />
+                    Personality
+                  </label>
+                </div>
+                
+                {personaEnabled && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontSize: '0.8rem', color: '#666' }}>😐</span>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      value={humorLevel}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        const level = parseFloat(e.target.value)
+                        setHumorLevel(level)
+                        personaConfigManager.updateConfig({ humorLevel: level })
+                      }}
+                      style={{
+                        width: '80px',
+                        accentColor: '#007bff'
+                      }}
+                    />
+                    <span style={{ fontSize: '0.8rem', color: '#666' }}>😄</span>
+                    <span style={{
+                      fontSize: '0.7rem',
+                      color: '#888',
+                      minWidth: '35px',
+                      textAlign: 'right'
+                    }}>
+                      {Math.round(humorLevel * 100)}%
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Chat Interface */}
+            <div style={{ padding: '2rem' }}>
+              <ChatInterface />
+            </div>
           </div>
         )}
 

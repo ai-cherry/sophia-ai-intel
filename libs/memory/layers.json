@@ -1,0 +1,117 @@
+{
+  "version": "1.0",
+  "updated": "2025-08-23T04:31:00Z",
+  "description": "Sophia AI Memory Layer Configuration - Multi-layer memory management for different types of context",
+  "layers": {
+    "shortTerm": {
+      "name": "Short-term Chat Memory",
+      "description": "Recent conversation context and immediate working memory",
+      "storage": "in-memory",
+      "capacity": {
+        "maxMessages": 50,
+        "maxTokens": 32000,
+        "windowSize": "sliding"
+      },
+      "decay": {
+        "strategy": "exponential",
+        "factor": 0.6,
+        "timeUnit": "hours"
+      },
+      "retention": {
+        "duration": "4 hours",
+        "priority": "recent_first"
+      }
+    },
+    "codeContext": {
+      "name": "Code & Symbol Context",
+      "description": "Code symbols, embeddings, and technical implementation context",
+      "storage": "hybrid",
+      "sources": {
+        "primary": "qdrant",
+        "secondary": "neon_postgresql",
+        "cache": "redis"
+      },
+      "embeddings": {
+        "model": "text-embedding-3-small",
+        "dimensions": 1536,
+        "similarity_threshold": 0.7
+      },
+      "indexing": {
+        "symbols": true,
+        "functions": true,
+        "classes": true,
+        "comments": true,
+        "documentation": true
+      },
+      "search": {
+        "semantic_similarity": true,
+        "keyword_matching": true,
+        "fuzzy_matching": false
+      }
+    },
+    "bizContext": {
+      "name": "Business Intelligence Context", 
+      "description": "OKRs, accounts, prospects, and business metrics",
+      "storage": "neon_postgresql",
+      "tables": {
+        "okrs": "business_okrs",
+        "accounts": "business_prospects", 
+        "metrics": "business_metrics",
+        "signals": "revenue_signals"
+      },
+      "refresh": {
+        "frequency": "hourly",
+        "sources": ["mcp-business", "telegram", "hubspot"]
+      },
+      "context_window": {
+        "max_prospects": 20,
+        "max_signals": 10,
+        "time_range": "30 days"
+      }
+    },
+    "personalNotes": {
+      "name": "Personal Notes & Preferences",
+      "description": "Per-user Notion pages and personal context",
+      "storage": "notion",
+      "structure": {
+        "user_pages": true,
+        "shared_docs": true,
+        "templates": true
+      },
+      "sync": {
+        "frequency": "on-demand",
+        "webhook_enabled": true,
+        "bidirectional": false
+      },
+      "privacy": {
+        "user_isolation": true,
+        "encryption_at_rest": true,
+        "access_control": "strict"
+      }
+    }
+  },
+  "integration": {
+    "prompt_enhancer": {
+      "inject_code_context": true,
+      "inject_biz_context": true,
+      "inject_personal_notes": false,
+      "max_context_tokens": 8000
+    },
+    "chat_interface": {
+      "show_context_indicators": true,
+      "allow_context_selection": true,
+      "context_preview": true
+    }
+  },
+  "performance": {
+    "cache_strategy": "aggressive",
+    "preload_common": true,
+    "lazy_load_personal": true,
+    "max_concurrent_queries": 5
+  },
+  "fallback": {
+    "on_qdrant_failure": "use_postgresql_only",
+    "on_postgresql_failure": "use_in_memory_only",
+    "on_notion_failure": "skip_personal_context"
+  }
+}

@@ -1,0 +1,175 @@
+{
+  "status": "success",
+  "query": "Sophia AI clarifying question decision examples",
+  "results": [
+    {
+      "case_1_low_ambiguity": {
+        "input": {
+          "intent": "Deploy the latest version of the dashboard to production",
+          "context": "Using existing Fly.io configuration with health monitoring",
+          "constraints": ["production environment", "use existing configuration", "enable monitoring"],
+          "originalPrompt": "Deploy the latest version",
+          "clarificationContext": {
+            "domain": "technical",
+            "userExpertise": "intermediate",
+            "urgency": "medium",
+            "previousInteractions": 5,
+            "hasTimeConstraints": false
+          }
+        },
+        "analysis": {
+          "intentClarity": 0.85,
+          "constraintCompleteness": 0.75,
+          "contextSufficiency": 0.70,
+          "overallScore": 0.78,
+          "ambiguityFactors": [
+            {
+              "type": "missing_context",
+              "description": "Could specify exact version or commit",
+              "severity": "low",
+              "suggestion": "Specify version details if different from latest"
+            }
+          ]
+        },
+        "decision": {
+          "shouldAsk": false,
+          "type": "none",
+          "reasoning": "Low ambiguity (score: 0.78) - proceeding with best assumption",
+          "defaultAssumption": "Assuming standard deployment with latest commit from main branch"
+        }
+      }
+    },
+    {
+      "case_2_medium_ambiguity": {
+        "input": {
+          "intent": "Improve the system performance",
+          "context": "Dashboard seems slow sometimes",
+          "constraints": ["don't break existing functionality"],
+          "originalPrompt": "Make the dashboard faster",
+          "clarificationContext": {
+            "domain": "technical",
+            "userExpertise": "beginner",
+            "urgency": "low",
+            "previousInteractions": 2,
+            "hasTimeConstraints": false
+          }
+        },
+        "analysis": {
+          "intentClarity": 0.45,
+          "constraintCompleteness": 0.40,
+          "contextSufficiency": 0.35,
+          "overallScore": 0.42,
+          "ambiguityFactors": [
+            {
+              "type": "unclear_intent",
+              "description": "Intent contains vague language about 'improving performance'",
+              "severity": "medium",
+              "suggestion": "Ask for specific performance goals or metrics"
+            },
+            {
+              "type": "incomplete_constraints",
+              "description": "Missing scope and technical constraints",
+              "severity": "medium",
+              "suggestion": "Clarify scope of performance improvements"
+            },
+            {
+              "type": "missing_context",
+              "description": "Limited context about specific performance issues",
+              "severity": "medium",
+              "suggestion": "Provide details about when and where slowness occurs"
+            }
+          ]
+        },
+        "decision": {
+          "shouldAsk": true,
+          "type": "targeted",
+          "question": "What specific performance improvements are you looking for?",
+          "suggestedAnswers": [
+            "Faster page load times and UI responsiveness",
+            "Better API response times and data loading"
+          ],
+          "reasoning": "Medium ambiguity in unclear_intent: Intent contains vague language about 'improving performance'"
+        }
+      }
+    },
+    {
+      "case_3_high_ambiguity": {
+        "input": {
+          "intent": "Fix the issue",
+          "context": "Something isn't working right",
+          "constraints": [],
+          "originalPrompt": "There's a problem, can you fix it?",
+          "clarificationContext": {
+            "domain": "technical",
+            "userExpertise": "beginner",
+            "urgency": "high",
+            "previousInteractions": 0,
+            "hasTimeConstraints": true
+          }
+        },
+        "analysis": {
+          "intentClarity": 0.20,
+          "constraintCompleteness": 0.10,
+          "contextSufficiency": 0.15,
+          "overallScore": 0.17,
+          "ambiguityFactors": [
+            {
+              "type": "unclear_intent",
+              "description": "Intent lacks clear action words and specificity",
+              "severity": "high",
+              "suggestion": "Clarify what specific action should be taken"
+            },
+            {
+              "type": "incomplete_constraints",
+              "description": "No constraints specified",
+              "severity": "high",
+              "suggestion": "Clarify requirements, timeline, or technical constraints"
+            },
+            {
+              "type": "missing_context",
+              "description": "Minimal context provided",
+              "severity": "high",
+              "suggestion": "Provide more background about the issue"
+            }
+          ]
+        },
+        "decision": {
+          "shouldAsk": true,
+          "type": "with-default",
+          "question": "What specific issue are you experiencing?",
+          "suggestedAnswers": [
+            "Dashboard not loading or showing errors",
+            "Specific feature or function not working properly"
+          ],
+          "defaultAssumption": "If no response, will check system health and recent deployments for obvious issues",
+          "reasoning": "High ambiguity in unclear_intent: Intent lacks clear action words and specificity"
+        }
+      }
+    }
+  ],
+  "summary": {
+    "text": "Three clarification decision cases demonstrate ambiguity scoring from 0.17 (high ambiguity - ask with default) to 0.78 (low ambiguity - proceed with assumption)",
+    "confidence": 1.0,
+    "model": "clarification_policy_v1",
+    "sources": [
+      "libs/persona/clarify.ts",
+      "apps/dashboard/src/persona/personaConfig.ts"
+    ]
+  },
+  "timestamp": "2025-08-23T04:34:30Z",
+  "execution_time_ms": 125,
+  "policy_validation": {
+    "threshold_low": "< 0.35 = proceed with assumption",
+    "threshold_medium": "0.35-0.7 = ask targeted question", 
+    "threshold_high": "> 0.7 = ask question with default",
+    "follow_up_policy": "only-if-ambiguous-or-high-value",
+    "factors_considered": [
+      "intent_clarity",
+      "constraint_completeness", 
+      "context_sufficiency",
+      "user_expertise_level",
+      "urgency_level"
+    ]
+  },
+  "errors": []
+}
