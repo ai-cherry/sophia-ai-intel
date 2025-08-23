@@ -273,14 +273,18 @@ jobs:
           # Wait for deployment to be ready
           sleep 30
           
-          # Health check with retries
-          for i in {1..5}; do
+          # Health check with retries (enhanced for production reliability)
+          for i in {1..8}; do
             if curl -f -sS "${DASHBOARD_URL}/healthz"; then
               echo "✅ Dashboard health check passed on attempt $i"
               break
             else
               echo "⚠️  Dashboard health check failed on attempt $i, retrying..."
-              sleep 10
+              if [ $i -eq 8 ]; then
+                echo "❌ Dashboard health check failed after 8 attempts - triggering rollback"
+                exit 1
+              fi
+              sleep 15
             fi
           done
           
@@ -290,10 +294,26 @@ jobs:
           echo "" >> proofs/healthz/sophiaai-dashboard-v2.txt
 
       - name: Capture build info
+        if: always()
         run: |
           mkdir -p proofs/build
           echo "====== $(date -u) ${DASHBOARD_URL}/__build ======" | tee proofs/build/dashboard_build.txt
           curl -sS "${DASHBOARD_URL}/__build" | tee -a proofs/build/dashboard_build.txt || echo "Build endpoint failed"
+
+      - name: Auto-rollback on dashboard failure
+        if: failure()
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          echo "🔄 Dashboard deployment failed - attempting auto-rollback..."
+          flyctl apps releases -a sophiaai-dashboard-v2 --json | jq -r '.[1].version' > /tmp/prev_version || echo "No previous version found"
+          if [ -s /tmp/prev_version ]; then
+            PREV_VERSION=$(cat /tmp/prev_version)
+            echo "Rolling back to version: $PREV_VERSION"
+            flyctl releases rollback "$PREV_VERSION" -a sophiaai-dashboard-v2 --yes || echo "Rollback failed"
+          else
+            echo "No previous version available for rollback"
+          fi
 
       - name: Commit dashboard proofs
         run: |
@@ -387,14 +407,18 @@ jobs:
           # Wait for deployment to be ready
           sleep 30
           
-          # Health check with retries
-          for i in {1..5}; do
+          # Health check with retries (enhanced for production reliability)
+          for i in {1..8}; do
             if curl -f -sS "${TARGET_URL}/healthz"; then
               echo "✅ ${{ matrix.name }} health check passed on attempt $i"
               break
             else
               echo "⚠️  ${{ matrix.name }} health check failed on attempt $i, retrying..."
-              sleep 15
+              if [ $i -eq 8 ]; then
+                echo "❌ ${{ matrix.name }} health check failed after 8 attempts - triggering rollback"
+                exit 1
+              fi
+              sleep 20
             fi
           done
           
@@ -404,6 +428,7 @@ jobs:
           echo "" >> proofs/healthz/${{ matrix.name }}.txt
 
       - name: Capture machine state
+        if: always()
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
@@ -417,6 +442,21 @@ jobs:
         run: |
           mkdir -p proofs/fly
           flyctl logs -a ${{ matrix.app }} --since 15m | tail -n 200 > proofs/fly/${{ matrix.app }}_logs.txt || true
+
+      - name: Auto-rollback on service failure
+        if: failure()
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          echo "🔄 ${{ matrix.name }} deployment failed - attempting auto-rollback..."
+          flyctl apps releases -a ${{ matrix.app }} --json | jq -r '.[1].version' > /tmp/prev_version || echo "No previous version found"
+          if [ -s /tmp/prev_version ]; then
+            PREV_VERSION=$(cat /tmp/prev_version)
+            echo "Rolling back ${{ matrix.app }} to version: $PREV_VERSION"
+            flyctl releases rollback "$PREV_VERSION" -a ${{ matrix.app }} --yes || echo "Rollback failed for ${{ matrix.app }}"
+          else
+            echo "No previous version available for rollback for ${{ matrix.app }}"
+          fi
 
       - name: Commit service proofs
         if: always()
