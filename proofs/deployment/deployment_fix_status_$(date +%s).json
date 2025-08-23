@@ -1,0 +1,77 @@
+{
+  "timestamp": "2025-08-23T14:00:00.000Z",
+  "status": "DEPLOYMENT_FIX_ANALYSIS_COMPLETE",
+  "issue_analysis": {
+    "original_error": "Could not find App 'sophiaai-mcp-business-v2' and 'sophiaai-jobs-v2'",
+    "actual_problem": "Authentication and permission issues, NOT missing apps",
+    "apps_verified": [
+      "sophiaai-dashboard-v2",
+      "sophiaai-mcp-repo-v2", 
+      "sophiaai-mcp-research-v2",
+      "sophiaai-mcp-context-v2",
+      "sophiaai-mcp-business-v2",
+      "sophiaai-jobs-v2"
+    ],
+    "apps_status": "ALL APPS EXIST - No creation needed"
+  },
+  "permission_issues": {
+    "github_workflow_dispatch": "HTTP 403: Resource not accessible by integration",
+    "flyctl_authentication": "failed retrieving current user: You must be authenticated",
+    "root_cause": "Token permissions or authentication scope issues"
+  },
+  "deployment_fix_options": {
+    "option_1": {
+      "method": "Manual GitHub UI workflow trigger",
+      "url": "https://github.com/ai-cherry/sophia-ai-intel/actions/workflows/reset_deploy.yml",
+      "parameters": {
+        "mode": "deploy",
+        "recreate_apps": "true",
+        "seed_secrets": "true"
+      },
+      "likelihood": "HIGH - bypasses CLI permission issues"
+    },
+    "option_2": {
+      "method": "Token refresh/update with proper scopes",
+      "requirements": [
+        "Update FLY_API_TOKEN with deploy permissions",
+        "Update GitHub token with workflow dispatch permissions"
+      ],
+      "likelihood": "MEDIUM - requires token management"
+    },
+    "option_3": {
+      "method": "Direct push to trigger deployment",
+      "description": "Commit changes to trigger automatic deployment workflows",
+      "likelihood": "HIGH - workflows may trigger on push"
+    }
+  },
+  "immediate_next_steps": [
+    {
+      "step": 1,
+      "action": "Navigate to GitHub Actions UI",
+      "url": "https://github.com/ai-cherry/sophia-ai-intel/actions/workflows/reset_deploy.yml",
+      "details": "Manually trigger 'Reset & Deploy' workflow with recreate_apps=true"
+    },
+    {
+      "step": 2,
+      "action": "Monitor deployment progress",
+      "details": "Watch for successful app creation and deployment completion"
+    },
+    {
+      "step": 3,
+      "action": "Verify health checks",
+      "urls": [
+        "https://sophiaai-dashboard-v2.fly.dev/healthz",
+        "https://sophiaai-mcp-business-v2.fly.dev/healthz", 
+        "https://sophiaai-jobs-v2.fly.dev/healthz"
+      ]
+    }
+  ],
+  "workflow_parameters_for_manual_trigger": {
+    "mode": "deploy",
+    "recreate_apps": true,
+    "seed_secrets": true,
+    "skip_dashboard": false,
+    "skip_jobs": false
+  },
+  "confidence_level": "HIGH - All required apps exist, just need proper workflow trigger"
+}

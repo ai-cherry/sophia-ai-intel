@@ -1,0 +1,322 @@
+version: 2
+
+updates:
+  # Enable Dependabot for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "sophia-ai-team"
+    assignees:
+      - "sophia-ai-team"
+    commit-message:
+      prefix: "[security]"
+      prefix-development: "[dev-security]"
+    labels:
+      - "dependencies"
+      - "security"
+      - "github-actions"
+
+  # Dashboard (Node.js/npm)
+  - package-ecosystem: "npm"
+    directory: "/apps/dashboard"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+      time: "06:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "sophia-ai-team"
+    assignees:
+      - "sophia-ai-team"
+    commit-message:
+      prefix: "[dashboard-deps]"
+      prefix-development: "[dev-dashboard-deps]"
+    labels:
+      - "dependencies"
+      - "dashboard"
+      - "npm"
+    # Security updates only for production
+    allow:
+      - dependency-type: "direct"
+        update-type: "security"
+      - dependency-type: "indirect"
+        update-type: "security"
+      - dependency-type: "direct"
+        update-type: "version-update:semver-patch"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  # MCP Services (Python/pip)
+  - package-ecosystem: "pip"
+    directory: "/services/mcp-github"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+      time: "06:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "sophia-ai-team"
+    assignees:
+      - "sophia-ai-team"
+    commit-message:
+      prefix: "[mcp-github-deps]"
+    labels:
+      - "dependencies"
+      - "mcp-github"
+      - "python"
+    allow:
+      - dependency-type: "direct"
+        update-type: "security"
+      - dependency-type: "indirect"
+        update-type: "security"
+      - dependency-type: "direct"
+        update-type: "version-update:semver-patch"
+
+  - package-ecosystem: "pip"
+    directory: "/services/mcp-research"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+      time: "06:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "sophia-ai-team"
+    assignees:
+      - "sophia-ai-team"
+    commit-message:
+      prefix: "[mcp-research-deps]"
+    labels:
+      - "dependencies"
+      - "mcp-research"
+      - "python"
+    allow:
+      - dependency-type: "direct"
+        update-type: "security"
+      - dependency-type: "indirect"
+        update-type: "security"
+      - dependency-type: "direct"
+        update-type: "version-update:semver-patch"
+
+  - package-ecosystem: "pip"
+    directory: "/services/mcp-context"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+      time: "06:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "sophia-ai-team"
+    assignees:
+      - "sophia-ai-team"
+    commit-message:
+      prefix: "[mcp-context-deps]"
+    labels:
+      - "dependencies"
+      - "mcp-context"
+      - "python"
+    allow:
+      - dependency-type: "direct"
+        update-type: "security"
+      - dependency-type: "indirect"
+        update-type: "security"
+      - dependency-type: "direct"
+        update-type: "version-update:semver-patch"
+
+  - package-ecosystem: "pip"
+    directory: "/services/mcp-business"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+      time: "06:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "sophia-ai-team"
+    assignees:
+      - "sophia-ai-team"
+    commit-message:
+      prefix: "[mcp-business-deps]"
+    labels:
+      - "dependencies"
+      - "mcp-business"
+      - "python"
+    allow:
+      - dependency-type: "direct"
+        update-type: "security"
+      - dependency-type: "indirect"
+        update-type: "security"
+      - dependency-type: "direct"
+        update-type: "version-update:semver-patch"
+
+  # Jobs service (Python/pip)
+  - package-ecosystem: "pip"
+    directory: "/jobs"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+      time: "06:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "sophia-ai-team"
+    assignees:
+      - "sophia-ai-team"
+    commit-message:
+      prefix: "[jobs-deps]"
+    labels:
+      - "dependencies"
+      - "jobs"
+      - "python"
+    allow:
+      - dependency-type: "direct"
+        update-type: "security"
+      - dependency-type: "indirect"
+        update-type: "security"
+      - dependency-type: "direct"
+        update-type: "version-update:semver-patch"
+
+  # Library packages (Node.js)
+  - package-ecosystem: "npm"
+    directory: "/libs/contracts"
+    schedule:
+      interval: "weekly"
+      day: "thursday"
+      time: "06:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "sophia-ai-team"
+    commit-message:
+      prefix: "[contracts-deps]"
+    labels:
+      - "dependencies"
+      - "libs"
+      - "contracts"
+    allow:
+      - dependency-type: "direct"
+        update-type: "security"
+      - dependency-type: "indirect"
+        update-type: "security"
+
+  - package-ecosystem: "npm"
+    directory: "/libs/llm-router"
+    schedule:
+      interval: "weekly"
+      day: "thursday"
+      time: "06:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "sophia-ai-team"
+    commit-message:
+      prefix: "[llm-router-deps]"
+    labels:
+      - "dependencies"
+      - "libs"
+      - "llm-router"
+    allow:
+      - dependency-type: "direct"
+        update-type: "security"
+      - dependency-type: "indirect"
+        update-type: "security"
+
+  # Docker base images
+  - package-ecosystem: "docker"
+    directory: "/apps/dashboard"
+    schedule:
+      interval: "weekly"
+      day: "friday"
+      time: "06:00"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "sophia-ai-team"
+    assignees:
+      - "sophia-ai-team"
+    commit-message:
+      prefix: "[docker]"
+    labels:
+      - "dependencies"
+      - "docker"
+      - "dashboard"
+
+  - package-ecosystem: "docker"
+    directory: "/services/mcp-github"
+    schedule:
+      interval: "weekly"
+      day: "friday"
+      time: "06:00"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "sophia-ai-team"
+    commit-message:
+      prefix: "[docker]"
+    labels:
+      - "dependencies"
+      - "docker"
+      - "mcp-github"
+
+  - package-ecosystem: "docker"
+    directory: "/services/mcp-research"
+    schedule:
+      interval: "weekly"
+      day: "friday"
+      time: "06:00"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "sophia-ai-team"
+    commit-message:
+      prefix: "[docker]"
+    labels:
+      - "dependencies"
+      - "docker"
+      - "mcp-research"
+
+  - package-ecosystem: "docker"
+    directory: "/services/mcp-context"
+    schedule:
+      interval: "weekly"
+      day: "friday"
+      time: "06:00"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "sophia-ai-team"
+    commit-message:
+      prefix: "[docker]"
+    labels:
+      - "dependencies"
+      - "docker"
+      - "mcp-context"
+
+  - package-ecosystem: "docker"
+    directory: "/services/mcp-business"
+    schedule:
+      interval: "weekly"
+      day: "friday"
+      time: "06:00"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "sophia-ai-team"
+    commit-message:
+      prefix: "[docker]"
+    labels:
+      - "dependencies"
+      - "docker"
+      - "mcp-business"
+
+  - package-ecosystem: "docker"
+    directory: "/jobs"
+    schedule:
+      interval: "weekly"
+      day: "friday"
+      time: "06:00"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "sophia-ai-team"
+    commit-message:
+      prefix: "[docker]"
+    labels:
+      - "dependencies"
+      - "docker"
+      - "jobs"
