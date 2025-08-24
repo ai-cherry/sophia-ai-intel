@@ -1,0 +1,480 @@
+.
+├── .env.example
+├── .github
+│   ├── CODEOWNERS
+│   ├── dependabot.yml
+│   ├── scripts
+│   │   └── fly-ensure-app.sh
+│   └── workflows
+│       ├── builder.yml
+│       ├── ci.yml
+│       ├── cleanup_personal_org.yml
+│       ├── context_index.yml
+│       ├── deploy_all.yml
+│       ├── deploy_prove.yml
+│       ├── disaster_recovery_drill.yml
+│       ├── docs_guard.yml
+│       ├── index_on_merge.yml
+│       ├── nightly_health_proofs.yml
+│       ├── nightly_smoke.yml
+│       ├── notion_sync.yml
+│       ├── providers
+│       │   ├── biz_ops.yml
+│       │   ├── context_db_ops.yml
+│       │   ├── fly_ops.yml
+│       │   ├── github_ops.yml
+│       │   ├── gong_ops.yml
+│       │   ├── lambda_ops.yml
+│       │   ├── mem0_ops.yml
+│       │   ├── qdrant_ops.yml
+│       │   ├── redis_ops.yml
+│       │   ├── research_ops.yml
+│       │   ├── router_ops.yml
+│       │   └── slack_ops.yml
+│       ├── reset_deploy.yml
+│       ├── secrets_sync.yml
+│       ├── sophia-builder.yml
+│       ├── sophia_infra.yml
+│       └── swarm_lint.yml
+├── .gitignore
+├── .infra
+│   └── secrets_map.json
+├── .vscode
+│   └── settings.json
+├── CODEOWNERS
+├── README.md
+├── SETUP_COMPLETION_REPORT.md
+├── apps
+│   └── dashboard
+│       ├── Dockerfile.static
+│       ├── build-production.sh
+│       ├── fly.toml
+│       ├── fly.toml.backup
+│       ├── index.html
+│       ├── nginx.conf
+│       ├── package-lock.json
+│       ├── package.json
+│       ├── src
+│       │   ├── App.tsx
+│       │   ├── components
+│       │   │   ├── ChatInterface.tsx
+│       │   │   ├── Footer.tsx
+│       │   │   ├── JobsPanel.tsx
+│       │   │   └── PersonaControls.tsx
+│       │   ├── lib
+│       │   │   ├── buildInfo.ts
+│       │   │   └── chatApi.ts
+│       │   ├── main.tsx
+│       │   └── persona
+│       │       ├── personaConfig.ts
+│       │       └── toneMiddleware.ts
+│       ├── tsconfig.json
+│       ├── tsconfig.node.json
+│       └── vite.config.ts
+├── docs
+│   ├── BUSINESS_MCP.md
+│   ├── CLOUD_CONTROL_USAGE.md
+│   ├── CODEBASE_AUDIT.md
+│   ├── DEPLOYMENT_PHASE1_REPORT.md
+│   ├── DEPLOYMENT_PREFLIGHT_CHECKLIST.md
+│   ├── DEPLOYMENT_STATUS.md
+│   ├── DEPLOY_FIX_SUMMARY_1_9_4.md
+│   ├── EVAL_CANARY_ROLLBACK_ARCHITECTURE.md
+│   ├── FLY_AUTH_RESOLUTION_PLAN.md
+│   ├── FLY_TOKEN_ACTION_REQUIRED.md
+│   ├── INFRA_OPERATIONS.md
+│   ├── KNOWLEDGE_SYNC.md
+│   ├── MEMORY_ARCHITECTURE.md
+│   ├── PERSONA_V1.md
+│   ├── PHASE2_ROADMAP.md
+│   ├── PHASE_1_7_SUMMARY.md
+│   ├── PHASE_BC_ARCHITECTURE_PLAN.md
+│   ├── PHASE_BC_COMPLETION.md
+│   ├── PRODUCTION_ENVIRONMENT_SETUP.md
+│   ├── PRODUCTION_RUNBOOK.md
+│   ├── PRODUCTION_SLO_MONITORING.md
+│   ├── PROMPT_PIPELINE.md
+│   ├── PROVIDER_SECRETS_SETUP.md
+│   ├── RESEARCH_MCP.md
+│   ├── RESET_DEPLOY_EXECUTION_GUIDE.md
+│   ├── RESET_DEPLOY_SECRETS_SETUP.md
+│   ├── ROO_AUTO_EXECUTION_CONFIG.md
+│   ├── ROO_EXTERNAL_SERVICES_CONFIG.md
+│   ├── SECRETS.md
+│   ├── STABILITY_READINESS.md
+│   └── SWARM_CHARTER.md
+├── eslint.config.js
+├── github_app_manifest.json
+├── jobs
+│   ├── Dockerfile
+│   ├── fly.toml
+│   ├── reindex.py
+│   └── requirements.txt
+├── libs
+│   ├── auth
+│   │   ├── mcp_tokens.py
+│   │   └── requirements.txt
+│   ├── builder
+│   │   ├── builderService.ts
+│   │   └── commandParser.ts
+│   ├── contracts
+│   │   ├── package.json
+│   │   ├── src
+│   │   │   ├── builder.ts
+│   │   │   ├── common.ts
+│   │   │   ├── context.ts
+│   │   │   ├── github.ts
+│   │   │   ├── index.ts
+│   │   │   ├── llm.ts
+│   │   │   └── research.ts
+│   │   └── tsconfig.json
+│   ├── execution
+│   │   └── safeExecutor.ts
+│   ├── llm-router
+│   │   ├── package.json
+│   │   ├── src
+│   │   │   ├── config.ts
+│   │   │   ├── defaults.ts
+│   │   │   ├── index.ts
+│   │   │   ├── router.ts
+│   │   │   └── types.ts
+│   │   └── tsconfig.json
+│   ├── memory
+│   │   ├── layers.json
+│   │   └── schema.sql
+│   ├── orchestrator
+│   │   └── safeExecutor.ts
+│   ├── persona
+│   │   ├── clarify.ts
+│   │   ├── contextEnforcer.ts
+│   │   └── rules.md
+│   ├── prompt
+│   │   ├── __tests__
+│   │   │   └── prompt_enhancer.test.ts
+│   │   └── prompt_enhancer.ts
+│   ├── retrieval
+│   │   └── retrievalRouter.ts
+│   ├── router
+│   │   ├── roleMixer.ts
+│   │   └── roles.json
+│   ├── routing
+│   │   └── personaRouter.ts
+│   └── validation
+│       └── toolSchemas.ts
+├── ops
+│   └── infra
+│       ├── fly-dashboard.toml
+│       ├── fly-mcp-context.toml
+│       ├── fly-mcp-github.toml
+│       └── fly-mcp-research.toml
+├── package.json
+├── proofs
+│   ├── assessment
+│   │   ├── docker_build_summary.json
+│   │   ├── docker_builds.txt
+│   │   ├── docker_dashboard_error.json
+│   │   ├── docker_mcp-research_error.json
+│   │   ├── dockerfiles.json
+│   │   ├── env.txt
+│   │   ├── env_required.json
+│   │   ├── eslint.txt
+│   │   ├── fly_tomls.json
+│   │   ├── mcp_health
+│   │   │   ├── mcp-context_error.json
+│   │   │   ├── mcp-context_local.txt
+│   │   │   ├── mcp-github_error.json
+│   │   │   ├── mcp-github_local.txt
+│   │   │   ├── mcp-research_error.json
+│   │   │   └── mcp-research_local.txt
+│   │   ├── nginx_endpoints.txt
+│   │   ├── npm_build_error.json
+│   │   ├── npm_dashboard_build.txt
+│   │   ├── npm_install_error.json
+│   │   ├── packages.json
+│   │   ├── pip_mcp-context.txt
+│   │   ├── pip_mcp-github.txt
+│   │   ├── pip_mcp-research.txt
+│   │   ├── pip_mcp-research_error.json
+│   │   ├── python_packages.json
+│   │   ├── railway_scan.txt
+│   │   ├── tree.txt
+│   │   ├── tsc.txt
+│   │   ├── vite_base.txt
+│   │   └── workflows.json
+│   ├── audit_phase.txt
+│   ├── audit_round2.txt
+│   ├── biz
+│   │   ├── db_migration.txt
+│   │   ├── digest_1724356985.json
+│   │   ├── healthz.txt
+│   │   ├── providers.json
+│   │   ├── search_1724356980.json
+│   │   ├── secrets_matrix.json
+│   │   ├── telegram_integration_complete.json
+│   │   └── telegram_secrets_matrix.json
+│   ├── builder
+│   │   ├── ceo_gated_builder_complete.json
+│   │   └── workflow_analysis.json
+│   ├── chat
+│   │   ├── demo_1_normal_humor_enabled.json
+│   │   ├── demo_2_context_enforcement.json
+│   │   ├── demo_3_full_pipeline_orchestration.json
+│   │   └── pipeline_integration.json
+│   ├── ci
+│   │   ├── prompt_enhancer_tests.json
+│   │   └── summary.json
+│   ├── context
+│   │   ├── index_run.json
+│   │   ├── index_workflows.json
+│   │   └── search_smoke.json
+│   ├── deploy
+│   │   └── matrix.json
+│   ├── deployment
+│   │   ├── FINAL_DEPLOYMENT_STATUS_2025_08_23_2200.json
+│   │   ├── INFRASTRUCTURE_ANALYSIS_AND_RECOMMENDATIONS.md
+│   │   ├── PRODUCTION_READY_MCP_PLATFORM_REPORT.md
+│   │   ├── SOPHIA_AI_DEPLOYMENT_MONITORING_SUMMARY_2025_08_23.md
+│   │   ├── SOPHIA_AI_FINAL_DEPLOYMENT_STATUS_2025_08_23.json
+│   │   ├── cli_deployment_blocked_${{ date +%s }}.json
+│   │   ├── current_status.json
+│   │   ├── deploy_all_blocked.json
+│   │   ├── deploy_all_phase_1_9_4.json
+│   │   ├── deploy_all_workflow_dispatch_blocked.json
+│   │   ├── deployment_auth_fix_status_1724702741.json
+│   │   ├── deployment_execution_blocked_$(date +%s).json
+│   │   ├── deployment_failure_analysis_2025_08_23T14_12.json
+│   │   ├── deployment_fix_status_$(date +%s).json
+│   │   ├── final_deployment_attempt_2025_08_23.json
+│   │   ├── final_deployment_execution_status.json
+│   │   ├── fly_org_key_setup_required.json
+│   │   ├── interim_status_report.json
+│   │   ├── live_deployment_monitoring_2025_08_23T14_11.json
+│   │   ├── mcp_services_status.json
+│   │   ├── normalized_errors.json
+│   │   ├── phase1_final.json
+│   │   ├── phase1_summary.json
+│   │   ├── post_deploy_progress_monitoring.json
+│   │   ├── post_deploy_status_2025_08_22.json
+│   │   ├── service_status.md
+│   │   ├── sophia_ai_deployment_initiated_$(date +%s).json
+│   │   ├── status_17158741440.json
+│   │   ├── status_17159386511.json
+│   │   ├── token_auth_failure.json
+│   │   ├── workflow_dispatch_blocked.json
+│   │   ├── workflow_failure_analysis.json
+│   │   ├── workflow_status.json
+│   │   └── workflow_triggered_phase17.json
+│   ├── fly
+│   │   ├── apps.json
+│   │   ├── apps__personal_blocked.json
+│   │   ├── apps_created.json
+│   │   ├── apps_created.txt
+│   │   ├── apps_ensure_blocked.json
+│   │   ├── apps_personal_access_blocked.json
+│   │   ├── auth_diagnostic.txt
+│   │   ├── auth_diagnostic_v2.txt
+│   │   ├── auth_failure_analysis.json
+│   │   ├── auth_failure_graphql.json
+│   │   ├── graphql_auth_failed.json
+│   │   ├── machines_list_blocked.json
+│   │   ├── naming_fixes_complete.json
+│   │   ├── personal_purge_plan.json
+│   │   ├── phase_1_9_3_summary.json
+│   │   ├── purge_confirmation_missing.json
+│   │   ├── renames.txt
+│   │   ├── secrets_access_blocked.json
+│   │   ├── sophiaai-dashboard-v2_health_error.json
+│   │   ├── sophiaai-mcp-business-v2_health_error.json
+│   │   ├── sophiaai-mcp-context-v2_health_error.json
+│   │   ├── sophiaai-mcp-repo-v2_ewr_start.json
+│   │   ├── sophiaai-mcp-repo-v2_machines.json
+│   │   ├── sophiaai-mcp-repo-v2_machines_before.json
+│   │   ├── sophiaai-mcp-repo-v2_machines_ord.json
+│   │   ├── sophiaai-mcp-repo-v2_sjc_start.json
+│   │   ├── sophiaai-mcp-repo_logs.txt
+│   │   ├── sophiaai-mcp-repo_machines.json
+│   │   ├── sophiaai-mcp-research-v2_health_error.json
+│   │   ├── tokens_index.json
+│   │   ├── toml_checks.json
+│   │   ├── viewer.json
+│   │   ├── viewer__pay_ready.json
+│   │   ├── viewer__pay_ready_v2.json
+│   │   └── viewer_token_access_blocked.json
+│   ├── github
+│   │   ├── app_creation_status.md
+│   │   └── app_details.md
+│   ├── github_app
+│   │   ├── app_creation.json
+│   │   ├── created.json
+│   │   ├── installation.json
+│   │   └── installations.json
+│   ├── healthz
+│   │   ├── dashboard_persona_integration.txt
+│   │   ├── orchestrator_persona_integration.txt
+│   │   ├── services_status_pre_deploy.json
+│   │   ├── sophiaai-dashboard-v2.txt
+│   │   ├── sophiaai-dashboard-v2_fresh.txt
+│   │   ├── sophiaai-dashboard.txt
+│   │   ├── sophiaai-mcp-business-v2.txt
+│   │   ├── sophiaai-mcp-context-v2.txt
+│   │   ├── sophiaai-mcp-context.txt
+│   │   ├── sophiaai-mcp-repo-v2.txt
+│   │   ├── sophiaai-mcp-repo-v2_fresh.txt
+│   │   ├── sophiaai-mcp-repo.txt
+│   │   ├── sophiaai-mcp-research-v2.txt
+│   │   └── sophiaai-mcp-research.txt
+│   ├── healthz_final
+│   │   ├── business.txt
+│   │   ├── context.txt
+│   │   ├── dashboard.txt
+│   │   ├── jobs.txt
+│   │   ├── repo.txt
+│   │   └── research.txt
+│   ├── infra
+│   │   └── ceo_gated_verification.json
+│   ├── infrastructure
+│   │   ├── final_infrastructure_status.json
+│   │   ├── nightly_smoke_enabled.json
+│   │   ├── preflight_envmap.json
+│   │   ├── ready_for_deployment.json
+│   │   └── tech_debt_cleanup_plan.json
+│   ├── knowledge
+│   │   ├── foundational_knowledge_implementation.json
+│   │   └── notion_sync_scaffold.json
+│   ├── lambda
+│   │   ├── instances_status.txt
+│   │   └── lambda_integration_success.json
+│   ├── llm
+│   │   └── router_allowlist.json
+│   ├── mcp_context
+│   │   ├── index.json
+│   │   └── search.json
+│   ├── mcp_repo
+│   │   ├── file_vite_config.json
+│   │   ├── tools_list_fresh.json
+│   │   └── tree_dashboard.json
+│   ├── neon
+│   │   ├── configuration.json
+│   │   ├── project_creation.json
+│   │   ├── projects.json
+│   │   └── smoke.txt
+│   ├── persona
+│   │   ├── clarify_cases.json
+│   │   ├── deployment_status_post_commit.json
+│   │   ├── knobs.json
+│   │   ├── sophia_persona_v1_complete.json
+│   │   └── ui_integration.json
+│   ├── phase1.5_completion.json
+│   ├── phase1.6_completion.json
+│   ├── phase15_complete.json
+│   ├── phase15_knowledge_stack.json
+│   ├── phase15_retrieval.txt
+│   ├── phase_bc_completion_proof.json
+│   ├── pipeline
+│   │   └── eight_step_demo_execution.json
+│   ├── providers
+│   │   ├── infrastructure_complete.json
+│   │   ├── qdrant_provided.json
+│   │   ├── secrets_provided.json
+│   │   └── validation_summary.json
+│   ├── qdrant
+│   │   ├── collections_after_deploy.json
+│   │   └── create_biz_prospects_skipped.json
+│   ├── redis
+│   │   └── ttl_probe.json
+│   ├── repo
+│   │   └── branch_protection.json
+│   ├── research
+│   │   ├── providers.json
+│   │   └── secrets_matrix.json
+│   ├── router
+│   │   └── roles.json
+│   ├── screens
+│   │   ├── dashboard_factory.png.json
+│   │   └── dashboard_gtm.png.json
+│   ├── secrets
+│   │   ├── deployment_status.txt
+│   │   ├── gh_actions_secrets.json
+│   │   ├── github_api_blocked.json
+│   │   ├── matrix.json
+│   │   ├── public_key.json
+│   │   ├── schema_map.json
+│   │   ├── sophiaai-dashboard_secrets.txt
+│   │   ├── sophiaai-mcp-context_secrets.txt
+│   │   ├── sophiaai-mcp-repo_secrets.txt
+│   │   └── sophiaai-mcp-research_secrets.txt
+│   ├── sophia_readiness_summary.json
+│   ├── swarm
+│   │   └── docs_index.json
+│   ├── tree.txt
+│   ├── tree_round2.txt
+│   ├── tree_round3.txt
+│   └── validation
+│       └── acceptance_criteria_summary.json
+├── scripts
+│   ├── add_github_secrets.sh
+│   ├── auto_recovery.sh
+│   ├── create_biz_tables.sql
+│   ├── demo_mcp_tokens.py
+│   ├── deploy_now.sh
+│   ├── health_monitor.sh
+│   ├── load_credentials.sh
+│   ├── mcp_runner.py
+│   ├── post_deploy_verify.sh
+│   ├── production_deploy.sh
+│   ├── production_smoke_test.sh
+│   ├── real_assess.sh
+│   ├── scale_mcp_platform.sh
+│   ├── seed_knowledge_stack.py
+│   ├── setup_external_services.sh
+│   ├── setup_fly_apps.sh
+│   ├── setup_github_secrets.sh
+│   ├── test_fly_token.sh
+│   └── update_fly_token.sh
+├── services
+│   ├── mcp-business
+│   │   ├── Dockerfile
+│   │   ├── app.py
+│   │   ├── fly.toml
+│   │   ├── fly.toml.backup
+│   │   ├── mcp_auth.py
+│   │   └── requirements.txt
+│   ├── mcp-context
+│   │   ├── Dockerfile
+│   │   ├── app.py
+│   │   ├── enhanced_app.py
+│   │   ├── fly.toml
+│   │   ├── fly.toml.backup
+│   │   ├── requirements.txt
+│   │   ├── requirements_enhanced.txt
+│   │   └── symbol_indexer.py
+│   ├── mcp-github
+│   │   ├── Dockerfile
+│   │   ├── app.py
+│   │   ├── fly.toml
+│   │   ├── fly.toml.backup
+│   │   ├── github_app.py
+│   │   └── requirements.txt
+│   ├── mcp-lambda
+│   │   ├── Dockerfile
+│   │   ├── app.py
+│   │   ├── fly.toml
+│   │   └── requirements.txt
+│   ├── mcp-research
+│   │   ├── Dockerfile
+│   │   ├── app.py
+│   │   ├── fly.toml
+│   │   ├── fly.toml.backup
+│   │   └── requirements.txt
+│   └── orchestrator
+│       └── orchestrator.ts
+├── set_secrets.py
+├── tests
+│   ├── continuity_scan
+│   │   └── test_continuity_scan.py
+│   └── integration
+│       └── test_mcp_services.py
+├── todo.md
+└── tsconfig.json
+
+80 directories, 398 files
