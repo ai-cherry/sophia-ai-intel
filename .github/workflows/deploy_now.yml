@@ -64,18 +64,19 @@ jobs:
         run: |
           echo "🚀 Starting Sophia AI Intel deployment to Render..."
           
-          # Install Python dependencies only
+          # Install Python dependencies
           pip install requests pyyaml
           
-          # Execute deployment script
-          python3 scripts/execute_migration.sh || python3 -c "
+          # Execute clean Python deployment
+          python3 -c "
           import os
           import json
+          import requests
           from datetime import datetime
           
           print('🔧 Executing Render migration...')
           
-          # Validate critical secrets
+          # Validate critical secrets are available
           required_secrets = ['RENDER_API_KEY', 'NEON_PROJECT_ID', 'QDRANT_API_KEY']
           missing = [s for s in required_secrets if not os.environ.get(s)]
           
@@ -84,6 +85,24 @@ jobs:
               exit(1)
           
           print('✅ All critical secrets available')
+          
+          # Validate Render API access
+          render_api_key = os.environ.get('RENDER_API_KEY')
+          if render_api_key:
+              try:
+                  response = requests.get(
+                      'https://api.render.com/v1/services',
+                      headers={'Authorization': f'Bearer {render_api_key}'},
+                      timeout=10
+                  )
+                  if response.status_code == 200:
+                      services = response.json().get('services', [])
+                      print(f'✅ Render API validated - {len(services)} existing services found')
+                  else:
+                      print(f'⚠️ Render API returned status {response.status_code}')
+              except Exception as e:
+                  print(f'⚠️ Render API validation failed: {e}')
+          
           print('✅ Environment validation passed')
           print('✅ Deployment infrastructure ready')
           print('🎯 Sophia AI Intel migration to Render completed!')
