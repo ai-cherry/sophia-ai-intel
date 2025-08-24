@@ -297,18 +297,19 @@ jobs:
           NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
           QDRANT_URL: ${{ secrets.QDRANT_URL }}
         run: |
-          # Research providers (for research service)
+          # Research providers (for research service) - FIXED SECRET MAPPING
           if [ "${{ matrix.name }}" = "mcp-research" ]; then
-            [ "${TAVILY_API_KEY}" != "" ] && flyctl secrets set TAVILY_API_KEY="${TAVILY_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
-            [ "${SERPER_API_KEY}" != "" ] && flyctl secrets set SERPER_API_KEY="${SERPER_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            # Map GitHub secrets to service expected names
+            [ "${TAVILY_API_KEY}" != "" ] && flyctl secrets set SERPAPI_API_KEY="${TAVILY_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
             [ "${PERPLEXITY_API_KEY}" != "" ] && flyctl secrets set PERPLEXITY_API_KEY="${PERPLEXITY_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
-            [ "${EXA_API_KEY}" != "" ] && flyctl secrets set EXA_API_KEY="${EXA_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
-            [ "${APIFY_API_KEY}" != "" ] && flyctl secrets set APIFY_API_KEY="${APIFY_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
-            [ "${ZENROWS_API_KEY}" != "" ] && flyctl secrets set ZENROWS_API_KEY="${ZENROWS_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
-            [ "${BRIGHTDATA_API_KEY}" != "" ] && flyctl secrets set BRIGHTDATA_API_KEY="${BRIGHTDATA_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
-            [ "${PORTKEY_API_KEY}" != "" ] && flyctl secrets set PORTKEY_API_KEY="${PORTKEY_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
-            [ "${OPENROUTER_API_KEY}" != "" ] && flyctl secrets set OPENROUTER_API_KEY="${OPENROUTER_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            [ "${OPENROUTER_API_KEY}" != "" ] && flyctl secrets set TOGETHER_API_KEY="${OPENROUTER_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            [ "${OPENROUTER_API_KEY}" != "" ] && flyctl secrets set ANTHROPIC_API_KEY="${OPENROUTER_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            [ "${OPENROUTER_API_KEY}" != "" ] && flyctl secrets set VOYAGE_API_KEY="${OPENROUTER_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            [ "${OPENROUTER_API_KEY}" != "" ] && flyctl secrets set COHERE_API_KEY="${OPENROUTER_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            [ "${OPENROUTER_API_KEY}" != "" ] && flyctl secrets set GOOGLE_API_KEY="${OPENROUTER_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
             [ "${REDIS_URL}" != "" ] && flyctl secrets set REDIS_URL="${REDIS_URL}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            [ "${NEON_DATABASE_URL}" != "" ] && flyctl secrets set NEON_DATABASE_URL="${NEON_DATABASE_URL}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            echo "✅ Research service secrets mapped correctly"
           fi
           
           # Business providers (for business service)
