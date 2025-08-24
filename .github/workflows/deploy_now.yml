@@ -7,16 +7,38 @@ on:
       - 'DEPLOY_NOW'
 
 env:
-  RENDER_API_TOKEN: ${{ secrets.RENDER_API_TOKEN }}
-  NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+  # Render Configuration (corrected secret name)
+  RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+  RENDER_PASSWORD: ${{ secrets.RENDER_PASSWORD }}
+  
+  # Neon Database Configuration (using component secrets)
+  NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
+  NEON_BRANCH_ID: ${{ secrets.NEON_BRANCH_ID }}
+  NEON_PASSWORD: ${{ secrets.NEON_PASSWORD }}
+  NEON_AUTH_JWKS_URL: ${{ secrets.NEON_AUTH_JWKS_URL }}
+  NEON_REST_API_ENDPOINT: ${{ secrets.NEON_REST_API_ENDPOINT }}
+  
+  # Redis Configuration (using available secret names)
+  REDIS_HOST: ${{ secrets.REDIS_HOST }}
+  REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
+  REDIS_USER_KEY: ${{ secrets.REDIS_USER_KEY }}
   REDIS_ACCOUNT_KEY: ${{ secrets.REDIS_ACCOUNT_KEY }}
-  REDIS_DATABASE_ENDPOINT: ${{ secrets.REDIS_DATABASE_ENDPOINT }}
+  REDIS_API_KEY: ${{ secrets.REDIS_API_KEY }}
+  REDIS_PORT: ${{ secrets.REDIS_PORT }}
+  
+  # External Services
   QDRANT_API_KEY: ${{ secrets.QDRANT_API_KEY }}
   MEM0_API_KEY: ${{ secrets.MEM0_API_KEY }}
   LAMBDA_API_KEY: ${{ secrets.LAMBDA_API_KEY }}
+  
+  # AI APIs
   ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  
+  # Business Integration
   HUBSPOT_API_TOKEN: ${{ secrets.HUBSPOT_API_TOKEN }}
+  
+  # GitHub Integration
   GH_PAT_TOKEN: ${{ secrets.GH_PAT_TOKEN }}
 
 jobs:
