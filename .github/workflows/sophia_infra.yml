@@ -8,7 +8,7 @@ on:
         required: true
         type: choice
         options:
-          - fly
+          - render
           - github
           - router
           - qdrant
@@ -27,9 +27,8 @@ on:
         options:
           - health
           - deploy
-          - machines
+          - status
           - logs
-          - set-secrets
           - list
           - create
           - drop
@@ -49,16 +48,20 @@ on:
           - digest
           - notify
           - upload
-      app:
-        description: "App name (Fly only)"
+      service:
+        description: "Service name (Render only)"
         required: false
         type: choice
         options:
-          - sophiaai-dashboard-v2
-          - sophiaai-mcp-repo-v2
-          - sophiaai-mcp-research-v2
-          - sophiaai-mcp-context-v2
-          - sophiaai-mcp-business-v2
+          - sophia-dashboard
+          - sophia-github
+          - sophia-research
+          - sophia-context
+          - sophia-business
+          - sophia-lambda
+          - sophia-hubspot
+          - sophia-orchestrator
+          - sophia-jobs
       payload_json:
         description: "Operation payload (JSON)"
         required: false
@@ -71,20 +74,20 @@ permissions:
 environment: production
 
 env:
-  # Pay Ready org (canonical)
-  FLY_ORG: pay-ready
+  # Render platform (migrated from Fly.io)
+  RENDER_PLATFORM: render
 
 jobs:
   # Route to provider-specific workflows
-  fly-operations:
-    if: ${{ inputs.provider == 'fly' }}
-    uses: ./.github/workflows/providers/fly_ops.yml
+  render-operations:
+    if: ${{ inputs.provider == 'render' }}
+    uses: ./.github/workflows/providers/render_ops.yml
     with:
       action: ${{ inputs.action }}
-      app: ${{ inputs.app }}
+      service: ${{ inputs.service }}
       payload: ${{ inputs.payload_json }}
     secrets:
-      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
 
   github-operations:
     if: ${{ inputs.provider == 'github' }}
@@ -223,7 +226,7 @@ jobs:
   summary:
     name: Operation Summary
     runs-on: ubuntu-latest
-    needs: [fly-operations, github-operations, router-operations, qdrant-operations, mem0-operations, redis-operations, slack-operations, gong-operations, lambda-operations, context-db-operations, research-operations, business-operations]
+    needs: [render-operations, github-operations, router-operations, qdrant-operations, mem0-operations, redis-operations, slack-operations, gong-operations, lambda-operations, context-db-operations, research-operations, business-operations]
     if: always()
     steps:
       - uses: actions/checkout@v4
@@ -233,7 +236,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Provider:** ${{ inputs.provider }}" >> $GITHUB_STEP_SUMMARY
           echo "**Action:** ${{ inputs.action }}" >> $GITHUB_STEP_SUMMARY
-          echo "**App:** ${{ inputs.app || 'N/A' }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Service:** ${{ inputs.service || 'N/A' }}" >> $GITHUB_STEP_SUMMARY
           echo "**Payload:** \`${{ inputs.payload_json }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Run ID:** ${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
           echo "**Triggered by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
@@ -242,7 +245,7 @@ jobs:
           echo "Check \`proofs/${{ inputs.provider }}/\` directory for operation artifacts." >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Available Providers" >> $GITHUB_STEP_SUMMARY
-          echo "- **fly**: Deploy, health, machines, logs, set-secrets" >> $GITHUB_STEP_SUMMARY
+          echo "- **render**: Deploy, health, status, logs, list" >> $GITHUB_STEP_SUMMARY
           echo "- **github**: Protect branches, audit secrets" >> $GITHUB_STEP_SUMMARY
           echo "- **router**: Allowlist management, route testing" >> $GITHUB_STEP_SUMMARY
           echo "- **qdrant**: Vector DB operations (if configured)" >> $GITHUB_STEP_SUMMARY

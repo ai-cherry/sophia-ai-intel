@@ -1,0 +1,252 @@
+name: Render Operations Provider
+
+on:
+  workflow_call:
+    inputs:
+      action:
+        required: true
+        type: string
+      service:
+        required: false
+        type: string
+      payload:
+        required: false
+        type: string
+        default: '{}'
+    secrets:
+      RENDER_API_KEY:
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  render-operation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq curl
+          mkdir -p proofs/render/
+      
+      - name: Validate Render authentication
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+        run: |
+          if [ -z "$RENDER_API_KEY" ]; then
+            echo "❌ RENDER_API_KEY is required"
+            exit 1
+          fi
+          echo "✅ Render authentication validated"
+      
+      - name: Execute Render operation
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          ACTION: ${{ inputs.action }}
+          SERVICE: ${{ inputs.service }}
+          PAYLOAD: ${{ inputs.payload }}
+        run: |
+          echo "🚀 Executing Render operation: $ACTION"
+          TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          
+          case "$ACTION" in
+            "health")
+              echo "🏥 Checking service health..."
+              if [ -n "$SERVICE" ]; then
+                # Check specific service
+                SERVICE_URL="https://${SERVICE}.onrender.com"
+                echo "Checking $SERVICE_URL/healthz"
+                
+                if curl -sf "$SERVICE_URL/healthz" > /tmp/health_response; then
+                  echo "✅ $SERVICE is healthy"
+                  HEALTH_STATUS="healthy"
+                else
+                  echo "❌ $SERVICE health check failed"
+                  HEALTH_STATUS="unhealthy"
+                fi
+                
+                cat > "proofs/render/${SERVICE}_health_${TIMESTAMP}.json" <<EOF
+          {
+            "service": "$SERVICE",
+            "timestamp": "$TIMESTAMP",
+            "url": "$SERVICE_URL",
+            "status": "$HEALTH_STATUS",
+            "response": $(cat /tmp/health_response 2>/dev/null | jq -Rs . || echo "\"unavailable\"")
+          }
+          EOF
+              else
+                # Check all services
+                SERVICES=(
+                  "sophia-dashboard"
+                  "sophia-github"
+                  "sophia-research"
+                  "sophia-context"
+                  "sophia-business"
+                  "sophia-lambda"
+                  "sophia-hubspot"
+                  "sophia-orchestrator"
+                  "sophia-jobs"
+                )
+                
+                ALL_HEALTHY=true
+                HEALTH_RESULTS="[]"
+                
+                for service in "${SERVICES[@]}"; do
+                  service_url="https://${service}.onrender.com"
+                  echo "Checking $service_url/healthz"
+                  
+                  if curl -sf "$service_url/healthz" > /tmp/health_response_$service; then
+                    echo "✅ $service is healthy"
+                    status="healthy"
+                  else
+                    echo "❌ $service health check failed"
+                    status="unhealthy"
+                    ALL_HEALTHY=false
+                  fi
+                  
+                  service_result=$(cat <<EOF
+          {
+            "service": "$service",
+            "url": "$service_url",
+            "status": "$status",
+            "response": $(cat /tmp/health_response_$service 2>/dev/null | jq -Rs . || echo "\"unavailable\"")
+          }
+          EOF
+                  )
+                  
+                  HEALTH_RESULTS=$(echo "$HEALTH_RESULTS" | jq ". + [$service_result]")
+                done
+                
+                cat > "proofs/render/all_services_health_${TIMESTAMP}.json" <<EOF
+          {
+            "timestamp": "$TIMESTAMP",
+            "all_healthy": $ALL_HEALTHY,
+            "services": $HEALTH_RESULTS
+          }
+          EOF
+              fi
+              ;;
+              
+            "deploy")
+              echo "🚀 Triggering Render deployment..."
+              if [ -n "$SERVICE" ]; then
+                # Get service ID first
+                services_response=$(curl -s -H "Authorization: Bearer $RENDER_API_KEY" \
+                  "https://api.render.com/v1/services?name=${SERVICE}" 2>/dev/null || echo '{"services":[]}')
+                
+                service_id=$(echo "$services_response" | jq -r '.services[0].id // empty')
+                
+                if [ -n "$service_id" ]; then
+                  echo "Found service ID: $service_id"
+                  
+                  # Trigger deployment
+                  deploy_response=$(curl -s -X POST \
+                    -H "Authorization: Bearer $RENDER_API_KEY" \
+                    -H "Content-Type: application/json" \
+                    "https://api.render.com/v1/services/${service_id}/deploys" \
+                    2>/dev/null || echo '{}')
+                  
+                  echo "$deploy_response" | jq . > "proofs/render/${SERVICE}_deploy_${TIMESTAMP}.json"
+                  echo "✅ Deployment triggered for $SERVICE"
+                else
+                  echo "❌ Service $SERVICE not found"
+                  exit 1
+                fi
+              else
+                echo "❌ SERVICE parameter required for deploy action"
+                exit 1
+              fi
+              ;;
+              
+            "list")
+              echo "📋 Listing Render services..."
+              services_response=$(curl -s -H "Authorization: Bearer $RENDER_API_KEY" \
+                "https://api.render.com/v1/services" 2>/dev/null || echo '{"services":[]}')
+              
+              echo "$services_response" | jq . > "proofs/render/services_list_${TIMESTAMP}.json"
+              
+              # Display summary
+              service_count=$(echo "$services_response" | jq '.services | length')
+              echo "📊 Found $service_count services:"
+              echo "$services_response" | jq -r '.services[]? | "  - \(.name) (\(.type))"'
+              ;;
+              
+            "logs")
+              echo "📜 Fetching service logs..."
+              if [ -n "$SERVICE" ]; then
+                # Get service ID first
+                services_response=$(curl -s -H "Authorization: Bearer $RENDER_API_KEY" \
+                  "https://api.render.com/v1/services?name=${SERVICE}" 2>/dev/null || echo '{"services":[]}')
+                
+                service_id=$(echo "$services_response" | jq -r '.services[0].id // empty')
+                
+                if [ -n "$service_id" ]; then
+                  echo "Fetching logs for service ID: $service_id"
+                  
+                  # Note: Render API doesn't provide direct log access, but we can check recent deploys
+                  deploys_response=$(curl -s -H "Authorization: Bearer $RENDER_API_KEY" \
+                    "https://api.render.com/v1/services/${service_id}/deploys?limit=5" \
+                    2>/dev/null || echo '{"deploys":[]}')
+                  
+                  echo "$deploys_response" | jq . > "proofs/render/${SERVICE}_recent_deploys_${TIMESTAMP}.json"
+                  echo "✅ Recent deploy information saved for $SERVICE"
+                else
+                  echo "❌ Service $SERVICE not found"
+                  exit 1
+                fi
+              else
+                echo "❌ SERVICE parameter required for logs action"
+                exit 1
+              fi
+              ;;
+              
+            "status")
+              echo "📊 Getting Render service status..."
+              if [ -n "$SERVICE" ]; then
+                # Get specific service status
+                services_response=$(curl -s -H "Authorization: Bearer $RENDER_API_KEY" \
+                  "https://api.render.com/v1/services?name=${SERVICE}" 2>/dev/null || echo '{"services":[]}')
+                
+                service_detail=$(echo "$services_response" | jq '.services[0] // {}')
+                echo "$service_detail" | jq . > "proofs/render/${SERVICE}_status_${TIMESTAMP}.json"
+                
+                service_status=$(echo "$service_detail" | jq -r '.status // "unknown"')
+                echo "✅ $SERVICE status: $service_status"
+              else
+                # Get all services status
+                services_response=$(curl -s -H "Authorization: Bearer $RENDER_API_KEY" \
+                  "https://api.render.com/v1/services" 2>/dev/null || echo '{"services":[]}')
+                
+                echo "$services_response" | jq . > "proofs/render/all_services_status_${TIMESTAMP}.json"
+                
+                echo "📊 Service status summary:"
+                echo "$services_response" | jq -r '.services[]? | "  - \(.name): \(.status // "unknown")"'
+              fi
+              ;;
+              
+            *)
+              echo "❌ Unknown action: $ACTION"
+              echo "Available actions: health, deploy, list, logs, status"
+              exit 1
+              ;;
+          esac
+          
+          echo "✅ Render operation completed: $ACTION"
+      
+      - name: Commit operation proofs
+        run: |
+          git config user.name "sophia-bot"
+          git config user.email "sophia-bot@users.noreply.github.com"
+          
+          git add proofs/render/ 2>/dev/null || true
+          
+          if ! git diff --cached --quiet; then
+            git commit -m "[render-ops] ${{ inputs.action }} operation $(date +%Y-%m-%d)" || true
+            git push origin HEAD:${GITHUB_REF#refs/heads/} || true
+            echo "✅ Operation proofs committed"
+          else
+            echo "ℹ️ No new proofs to commit"
+          fi

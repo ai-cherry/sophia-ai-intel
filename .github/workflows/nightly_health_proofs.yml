@@ -19,14 +19,17 @@ permissions:
   actions: read
 
 env:
-  # Service URLs for health checks
-  DASHBOARD_URL: https://sophiaai-dashboard-v2.fly.dev
-  MCP_REPO_URL: https://sophiaai-mcp-repo-v2.fly.dev
-  MCP_RESEARCH_URL: https://sophiaai-mcp-research-v2.fly.dev
-  MCP_CONTEXT_URL: https://sophiaai-mcp-context-v2.fly.dev
-  MCP_BUSINESS_URL: https://sophiaai-mcp-business-v2.fly.dev
-  JOBS_URL: https://sophiaai-jobs-v2.fly.dev
-  FLY_ORG: pay-ready
+  # Service URLs for health checks (Render migration)
+  DASHBOARD_URL: https://sophia-dashboard.onrender.com
+  MCP_REPO_URL: https://sophia-github.onrender.com
+  MCP_RESEARCH_URL: https://sophia-research.onrender.com
+  MCP_CONTEXT_URL: https://sophia-context.onrender.com
+  MCP_BUSINESS_URL: https://sophia-business.onrender.com
+  MCP_LAMBDA_URL: https://sophia-lambda.onrender.com
+  MCP_HUBSPOT_URL: https://sophia-hubspot.onrender.com
+  MCP_ORCHESTRATOR_URL: https://sophia-orchestrator.onrender.com
+  JOBS_URL: https://sophia-jobs.onrender.com
+  RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
   ALERT_WEBHOOK_URL: ${{ secrets.ALERT_WEBHOOK_URL }}
 
 jobs:
@@ -40,24 +43,21 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install flyctl
-        uses: superfly/flyctl-actions/setup-flyctl@master
-
-      - name: Install jq and curl
+      - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y jq curl
 
-      - name: Fly authentication check
+      - name: Render authentication check
         env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
         run: |
-          if [ -z "$FLY_API_TOKEN" ]; then
-            echo "⚠️ FLY_API_TOKEN not available - some checks will be skipped"
-            echo "FLY_AUTH_AVAILABLE=false" >> $GITHUB_ENV
+          if [ -z "$RENDER_API_KEY" ]; then
+            echo "⚠️ RENDER_API_KEY not available - resource monitoring will be limited"
+            echo "RENDER_AUTH_AVAILABLE=false" >> $GITHUB_ENV
           else
-            echo "✅ Fly authentication available"
-            echo "FLY_AUTH_AVAILABLE=true" >> $GITHUB_ENV
+            echo "✅ Render authentication available"
+            echo "RENDER_AUTH_AVAILABLE=true" >> $GITHUB_ENV
           fi
 
       - name: Comprehensive service health checks
@@ -70,10 +70,13 @@ jobs:
           
           declare -A services=(
             ["dashboard"]="${DASHBOARD_URL}"
-            ["mcp-repo"]="${MCP_REPO_URL}"
+            ["mcp-github"]="${MCP_REPO_URL}"
             ["mcp-research"]="${MCP_RESEARCH_URL}"
             ["mcp-context"]="${MCP_CONTEXT_URL}"
             ["mcp-business"]="${MCP_BUSINESS_URL}"
+            ["mcp-lambda"]="${MCP_LAMBDA_URL}"
+            ["mcp-hubspot"]="${MCP_HUBSPOT_URL}"
+            ["mcp-orchestrator"]="${MCP_ORCHESTRATOR_URL}"
             ["jobs"]="${JOBS_URL}"
           )
           
@@ -149,79 +152,72 @@ jobs:
           echo "HEALTH_ALL_SERVICES_UP=$all_healthy" >> $GITHUB_ENV
           echo "HEALTH_SUMMARY_PATH=proofs/nightly/health/$HEALTH_DATE/summary.json" >> $GITHUB_ENV
 
-      - name: Fly.io cost and resource monitoring
-        if: ${{ env.FLY_AUTH_AVAILABLE == 'true' && (inputs.include_cost_analysis != false) }}
+      - name: Render service monitoring
+        if: ${{ env.RENDER_AUTH_AVAILABLE == 'true' && (inputs.include_cost_analysis != false) }}
         env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
         run: |
-          echo "💰 Collecting Fly.io cost and resource data..."
+          echo "💰 Collecting Render service and resource data..."
           mkdir -p proofs/cost/$(date +%Y-%m-%d)
           
           COST_DATE=$(date +%Y-%m-%d)
           COST_TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
           
-          # Get all apps
-          echo "📊 Scanning Fly apps..."
-          apps_list=$(flyctl apps list --json 2>/dev/null || echo "[]")
-          echo "$apps_list" | jq . > "proofs/cost/$COST_DATE/apps_list.json"
+          # Get all services via Render API
+          echo "📊 Scanning Render services..."
+          services_response=$(curl -s -H "Authorization: Bearer $RENDER_API_KEY" \
+            "https://api.render.com/v1/services" 2>/dev/null || echo '{"services":[]}')
           
-          # Get machines for each app
-          total_machines=0
-          total_memory_mb=0
-          total_cpu_cores=0
-          app_details="[]"
+          echo "$services_response" | jq . > "proofs/cost/$COST_DATE/services_list.json"
           
-          for app in $(echo "$apps_list" | jq -r '.[].Name' 2>/dev/null); do
-            echo "🔍 Analyzing app: $app"
-            
-            machines=$(flyctl machines list -a "$app" --json 2>/dev/null || echo "[]")
-            machine_count=$(echo "$machines" | jq 'length')
-            
-            if [ "$machine_count" -gt 0 ]; then
-              app_memory=$(echo "$machines" | jq '[.[] | .config.guest.memory_mb // 0] | add')
-              app_cpu=$(echo "$machines" | jq '[.[] | .config.guest.cpus // 0] | add')
+          # Process services data
+          total_services=0
+          total_instances=0
+          service_details="[]"
+          
+          if [ "$(echo "$services_response" | jq '.services | length' 2>/dev/null)" -gt 0 ]; then
+            for service_id in $(echo "$services_response" | jq -r '.services[].id' 2>/dev/null); do
+              echo "🔍 Analyzing service: $service_id"
               
-              total_machines=$((total_machines + machine_count))
-              total_memory_mb=$((total_memory_mb + app_memory))
-              total_cpu_cores=$((total_cpu_cores + app_cpu))
+              # Get service details
+              service_detail=$(curl -s -H "Authorization: Bearer $RENDER_API_KEY" \
+                "https://api.render.com/v1/services/$service_id" 2>/dev/null || echo '{}')
               
-              app_details=$(echo "$app_details" | jq --arg app "$app" --argjson machines "$machines" --argjson count "$machine_count" --argjson memory "$app_memory" --argjson cpu "$app_cpu" '. + [{
-                "app": $app,
-                "machine_count": $count,
-                "total_memory_mb": $memory,
-                "total_cpu_cores": $cpu,
-                "machines": $machines
-              }]')
-            fi
-          done
+              if [ "$(echo "$service_detail" | jq -r '.id // empty')" != "" ]; then
+                service_name=$(echo "$service_detail" | jq -r '.name // "unknown"')
+                service_type=$(echo "$service_detail" | jq -r '.type // "unknown"')
+                
+                total_services=$((total_services + 1))
+                total_instances=$((total_instances + 1))  # Render services are typically single instance
+                
+                service_details=$(echo "$service_details" | jq --argjson service "$service_detail" '. + [$service]')
+              fi
+            done
+          fi
           
-          # Create cost summary
-          cost_summary=$(cat <<EOF
+          # Create resource summary
+          resource_summary=$(cat <<EOF
           {
             "timestamp": "$COST_TIMESTAMP",
             "date": "$COST_DATE",
-            "organization": "$FLY_ORG",
+            "platform": "render",
             "totals": {
-              "apps": $(echo "$apps_list" | jq 'length'),
-              "machines": $total_machines,
-              "total_memory_mb": $total_memory_mb,
-              "total_cpu_cores": $total_cpu_cores
+              "services": $total_services,
+              "instances": $total_instances
             },
-            "apps": $app_details
+            "services": $service_details
           }
           EOF
           )
           
-          echo "$cost_summary" | jq . > "proofs/cost/$COST_DATE/usage_$COST_DATE.json"
+          echo "$resource_summary" | jq . > "proofs/cost/$COST_DATE/usage_$COST_DATE.json"
           
           echo "📊 Resource summary:"
-          echo "  Apps: $(echo "$apps_list" | jq 'length')"
-          echo "  Machines: $total_machines"
-          echo "  Memory: ${total_memory_mb}MB"
-          echo "  CPU: ${total_cpu_cores} cores"
+          echo "  Services: $total_services"
+          echo "  Instances: $total_instances"
           
-          echo "RESOURCE_MACHINE_COUNT=$total_machines" >> $GITHUB_ENV
-          echo "RESOURCE_MEMORY_MB=$total_memory_mb" >> $GITHUB_ENV
+          echo "RESOURCE_SERVICE_COUNT=$total_services" >> $GITHUB_ENV
+          echo "RESOURCE_INSTANCE_COUNT=$total_instances" >> $GITHUB_ENV
 
       - name: Historical trend analysis
         run: |
@@ -282,7 +278,7 @@ jobs:
                 "type": "section",
                 "text": {
                   "type": "mrkdwn",
-                  "text": "*Sophia AI Health Alert*\n\n⚠️ Service degradation detected during nightly health check\n\n*Timestamp:* $(date -u)\n*Reliability:* ${RELIABILITY_PERCENTAGE:-"N/A"}%\n*Total Machines:* ${RESOURCE_MACHINE_COUNT:-"N/A"}"
+                  "text": "*Sophia AI Health Alert*\n\n⚠️ Service degradation detected during nightly health check\n\n*Timestamp:* $(date -u)\n*Reliability:* ${RELIABILITY_PERCENTAGE:-"N/A"}%\n*Total Services:* ${RESOURCE_SERVICE_COUNT:-"N/A"}"
                 }
               },
               {
@@ -346,8 +342,8 @@ jobs:
           echo "**7-Day Reliability:** ${RELIABILITY_PERCENTAGE:-"N/A"}%" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## 📊 Resource Usage" >> $GITHUB_STEP_SUMMARY
-          echo "- **Total Machines:** ${RESOURCE_MACHINE_COUNT:-"N/A"}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Total Memory:** ${RESOURCE_MEMORY_MB:-"N/A"}MB" >> $GITHUB_STEP_SUMMARY
+          echo "- **Total Services:** ${RESOURCE_SERVICE_COUNT:-"N/A"}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Total Instances:** ${RESOURCE_INSTANCE_COUNT:-"N/A"}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## 📁 Proof Artifacts" >> $GITHUB_STEP_SUMMARY
           echo "- Health proofs: \`proofs/nightly/health/$(date +%Y-%m-%d)/\`" >> $GITHUB_STEP_SUMMARY
