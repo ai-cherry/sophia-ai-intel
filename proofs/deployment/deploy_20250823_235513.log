@@ -586,3 +586,45 @@ Updating existing machines in 'sophiaai-mcp-repo-v2' with rolling strategy
 ✔ [1/2] Machine 6e827d10f35387 is now in a good state
 > [2/2] Updating machine config for 1781711dcd0489
 > [2/2] Updating 1781711dcd0489 [app]
+✖ [2/2] failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout
+> [1/2] Updating machine config for 6e827d10f35387
+> [1/2] Updating 6e827d10f35387 [app]
+> [1/2] Updated machine config for 6e827d10f35387
+✔ [1/2] Machine 6e827d10f35387 is now in a good state
+> [2/2] Updating machine config for 1781711dcd0489
+> [2/2] Updating 1781711dcd0489 [app]
+✖ [2/2] failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout
+Failed to update machines: failed to update machine 1781711dcd0489: failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout Retrying...
+> [1/2] Updating machine config for 1781711dcd0489
+> [1/2] Updating 1781711dcd0489 [app]
+✖ [1/2] failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout
+✖ [2/2] skipping machine update due to earlier failure
+Failed to update machines: failed to update machine 1781711dcd0489: failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout Retrying...
+> [1/2] Updating machine config for 1781711dcd0489
+> [1/2] Updating 1781711dcd0489 [app]
+✖ [1/2] failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout
+✖ [2/2] skipping machine update due to earlier failure
+Failed to update machines: failed to update machine 1781711dcd0489: failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout Retrying...
+> [1/2] Updating machine config for 1781711dcd0489
+> [1/2] Updating 1781711dcd0489 [app]
+✖ [1/2] failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout
+✖ [2/2] skipping machine update due to earlier failure
+Failed to update machines: failed to update machine 1781711dcd0489: failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout Retrying...
+> [1/2] Updating machine config for 1781711dcd0489
+> [1/2] Updating 1781711dcd0489 [app]
+✖ [1/2] failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout
+✖ [2/2] skipping machine update due to earlier failure
+Failed to update machines: failed to update machine 1781711dcd0489: failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout Retrying...
+> [1/2] Updating machine config for 1781711dcd0489
+> [1/2] Updating 1781711dcd0489 [app]
+✖ [1/2] failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout
+✖ [2/2] skipping machine update due to earlier failure
+Failed to update machines: failed to update machine 1781711dcd0489: failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout Retrying...
+Failed to update machines: failed to update machine 1781711dcd0489: failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout
+> [2/2] Clearing lease for 1781711dcd0489
+> [1/2] Clearing lease for 6e827d10f35387
+✔ [2/2] Cleared lease for 1781711dcd0489
+✔ [1/2] Cleared lease for 6e827d10f35387
+Error: failed to update machine 1781711dcd0489: failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout (Request ID: 01K3CPWBBRE5SPKTQ8MKPFVGN1-lax) (Trace ID: e565bf8935fd7c2ba9dccb5f4af4745d)
+[1;33m[WARN][0m sophiaai-mcp-repo-v2: Deployment attempt 3 failed (exit code: 1)
+[0;32m[INFO][0m sophiaai-mcp-repo-v2: Waiting 240s before retry...

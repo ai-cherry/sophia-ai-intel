@@ -1,6 +1,6 @@
 {
-  "execution_id": "env_audit_1755994267",
-  "timestamp": "2025-08-24T00:11:07.077082+00:00",
+  "execution_id": "env_audit_1756001350",
+  "timestamp": "2025-08-24T02:09:10.595597+00:00",
   "audit_results": {
     "total_secrets": 121,
     "found_count": 38,
@@ -283,7 +283,7 @@
       "JWT_SECRET",
       "API_SECRET_KEY"
     ],
-    "audit_timestamp": "2025-08-24T00:11:03.023368+00:00"
+    "audit_timestamp": "2025-08-24T02:09:06.153717+00:00"
   },
   "connectivity_tests": {
     "qdrant": "\u2705 Connected (11 collections)",

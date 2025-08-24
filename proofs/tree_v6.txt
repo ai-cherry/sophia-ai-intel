@@ -1,0 +1,848 @@
+.
+├── .env
+├── .env.example
+├── .git
+│   ├── COMMIT_EDITMSG
+│   ├── FETCH_HEAD
+│   ├── HEAD
+│   ├── ORIG_HEAD
+│   ├── config
+│   ├── description
+│   ├── hooks
+│   │   ├── applypatch-msg.sample
+│   │   ├── commit-msg.sample
+│   │   ├── fsmonitor-watchman.sample
+│   │   ├── post-checkout
+│   │   ├── post-commit
+│   │   ├── post-merge
+│   │   ├── post-update.sample
+│   │   ├── pre-applypatch.sample
+│   │   ├── pre-commit.sample
+│   │   ├── pre-merge-commit.sample
+│   │   ├── pre-push
+│   │   ├── pre-push.sample
+│   │   ├── pre-rebase.sample
+│   │   ├── pre-receive.sample
+│   │   ├── prepare-commit-msg.sample
+│   │   ├── push-to-checkout.sample
+│   │   ├── sendemail-validate.sample
+│   │   └── update.sample
+│   ├── index
+│   ├── info
+│   │   └── exclude
+│   ├── lfs
+│   │   ├── cache
+│   │   │   └── locks
+│   │   │       └── refs
+│   │   │           └── heads
+│   │   │               └── main
+│   │   │                   └── verifiable
+│   │   └── tmp
+│   ├── logs
+│   │   ├── HEAD
+│   │   └── refs
+│   │       ├── heads
+│   │       │   └── main
+│   │       └── remotes
+│   │           └── origin
+│   │               ├── HEAD
+│   │               └── main
+│   ├── objects
+│   │   ├── 01
+│   │   │   └── d37dd272636c43a7122879d4c7d48e6b3c6695
+│   │   ├── 02
+│   │   │   └── 9ff13a3392a6cc3c3ed5b30874406574c2fe6a
+│   │   ├── 03
+│   │   │   └── eec4b8a3b7592f3ddfa07d7c3005d79b5859f3
+│   │   ├── 05
+│   │   │   └── 0025f9f7a82a665d299f42f1ccc59d87d54ed0
+│   │   ├── 06
+│   │   │   └── cb8d6bbfc5f3df9bb0b3fe87fb21b669482ca9
+│   │   ├── 07
+│   │   │   └── 680ba87fd74f7f94301a407096e6db55f5fac5
+│   │   ├── 09
+│   │   │   ├── 7eda53d87d2f9c745d8a52940d1277c8c1c0e9
+│   │   │   ├── b8a019ff68efc12f8cd8ceb409b07eaf1f6ed7
+│   │   │   └── bc0f745eb7db6f18354a6d27ad3a6a9d6426b7
+│   │   ├── 0c
+│   │   │   └── be65d03d4f3257d0ccd7febbd8c8bc3dcf44e2
+│   │   ├── 0f
+│   │   │   └── dfafff2d1906c3541fc0da766b08c46aff4de3
+│   │   ├── 10
+│   │   │   ├── 0cbab2b7fe4e45e8b2441aafa780c10de38018
+│   │   │   └── 109be8271eaae206f15625d8ad98d7c164d396
+│   │   ├── 11
+│   │   │   └── 8df051abf39c56766358079b6522e9485d73c7
+│   │   ├── 12
+│   │   │   └── d154c5d15618cd31b84228bed3f44048a73add
+│   │   ├── 15
+│   │   │   ├── 5d81889c184f42098f2fd1db26b0a98733aa72
+│   │   │   └── a71b16fc3e4e213c9ea1048d8c8e3b513d6bdf
+│   │   ├── 18
+│   │   │   └── 4d210d35d8e6deb71544d9bcc9804c4eaec8f3
+│   │   ├── 1c
+│   │   │   └── dde5236c773663cde4a78ededab3ec26cb6ac3
+│   │   ├── 1e
+│   │   │   └── 4aafd57f99aac4318d2a4e9f6882d859847dd3
+│   │   ├── 20
+│   │   │   └── ad37648829261666165f38dbca6021ba57c8db
+│   │   ├── 26
+│   │   │   └── 89546c21b90279ba2cc31bead7a040f96932f3
+│   │   ├── 27
+│   │   │   └── 4bc16b1ecb35d59a7c1fad71c05957bab26c57
+│   │   ├── 2a
+│   │   │   ├── 1890a7af51f0059e4ec7d0b8d5e12d104454fe
+│   │   │   ├── 4c264cab99b51735c723f1e569535acae90cdb
+│   │   │   └── df2ba9efdbc1d62e28f2b8a86ddf1485c25876
+│   │   ├── 2c
+│   │   │   └── da8d0d1128d8ee8383f6becbe93cc394d57ff5
+│   │   ├── 2d
+│   │   │   ├── 3d4f720f1f66a412da2dc319802da6f782575e
+│   │   │   └── 9be43937e243b8840c694fad119acd4693758d
+│   │   ├── 2f
+│   │   │   └── 7d92910e3519b5f17173f331b630aff7940508
+│   │   ├── 30
+│   │   │   └── 08eeed739eb890416a664ccedef8d3c6a5f211
+│   │   ├── 31
+│   │   │   └── a23a2536681300a4ed7e53276f89bdb86e93e0
+│   │   ├── 33
+│   │   │   └── edc01ae527823fb051b1f73919c39ce6cca4f7
+│   │   ├── 35
+│   │   │   └── 0dcdbc18ece6804ba7495bc743021435dabc6e
+│   │   ├── 37
+│   │   │   ├── 1b6f392417e5f346fba3249765e1bb8c29a122
+│   │   │   └── caf677cf461f43ba5188df0e19c776efdeb5a3
+│   │   ├── 38
+│   │   │   └── 72b3b5023b86f802c64f79e0a856358e3ea37f
+│   │   ├── 3a
+│   │   │   ├── 3b75ed9682ce05c8b47991d5f82b67d1cf179a
+│   │   │   ├── 62cc9dc83ccbd952e82652ac3c66392b666951
+│   │   │   └── 936d43173cf9910dc13cf728d12975226d55ae
+│   │   ├── 3b
+│   │   │   ├── 33cbe581c417cedf14436a6ffd2eb7992dead3
+│   │   │   └── dfca7bc39f78a94e081a2a099c3bac120b15af
+│   │   ├── 3e
+│   │   │   └── 8b57d58ab398509e990fc109bb6666fd4bce48
+│   │   ├── 40
+│   │   │   └── ae5decdfecc8a6066fd82979eb3e831d839b98
+│   │   ├── 42
+│   │   │   ├── 060214679257853b5b5b64d59477d5f4bb1aec
+│   │   │   └── 430a84bee8de92130b29f63f071c5120db17ec
+│   │   ├── 43
+│   │   │   └── a16db1729137f885a61ba274e97674f61b02be
+│   │   ├── 46
+│   │   │   ├── bd85af44fa041b0ea842c2db3899a0c6de15a3
+│   │   │   ├── cdeb92397a240c074245788eed59aed859714f
+│   │   │   └── d6d480c2ddb922bcb670c5fa8c3892b9f252d5
+│   │   ├── 49
+│   │   │   └── ed9df5e4719d45cc4b815fa395a0d4aaf80cda
+│   │   ├── 52
+│   │   │   ├── 03c90d2300cdad71cfab2fd9c1edb783d8415a
+│   │   │   └── 89f4b1f47e815d7769c3779ec1e6f9adc203af
+│   │   ├── 53
+│   │   │   └── ba0f994e2a0bd453039003de077c47c6718ef1
+│   │   ├── 56
+│   │   │   └── 9a3af3aa120455ab1df7e6a76a58cd70102ab4
+│   │   ├── 59
+│   │   │   └── cee9fd24ac53eb6befecc94394b014abf9af88
+│   │   ├── 5b
+│   │   │   └── c07a7d6056758c755a0d8001a0dea160331e1b
+│   │   ├── 60
+│   │   │   ├── 84970f988e4ce8e696575e474ea09e4788fc2a
+│   │   │   ├── cccd4bf9b28167c19c019bff960f7ff4cb76c3
+│   │   │   └── fdc2a976e79382ce9f2a94f3229f425ddc848e
+│   │   ├── 61
+│   │   │   └── c3c57decf9188e842a5e36313f9ee4b2e57ad3
+│   │   ├── 62
+│   │   │   └── 341150caea89366107bdfea204066e3e3eb740
+│   │   ├── 65
+│   │   │   └── 305b1903098e95f778cc1e39915da5692512ba
+│   │   ├── 68
+│   │   │   └── 8dc45cfd00f17496e679368fd850a61eb2dadc
+│   │   ├── 69
+│   │   │   ├── 0b25f4c310e5910a9b0636ba987f0230b567db
+│   │   │   └── b2944ca0af3c7ef44be9555892d461555eeac4
+│   │   ├── 6a
+│   │   │   └── de8b848201899aa2ca2fc8b06eb7371b4ad103
+│   │   ├── 6c
+│   │   │   └── 02c887dcf8bf9c42e1cbeedc965994312786fb
+│   │   ├── 6e
+│   │   │   └── cc2162cfeb5ad3ae30ac9c281120b677321f5b
+│   │   ├── 70
+│   │   │   └── d64e112fd71536d68d83ccee633bd759c6cb55
+│   │   ├── 71
+│   │   │   └── 34de72eeeea04d721400a06f342c54820de67e
+│   │   ├── 72
+│   │   │   ├── 978bf58d794b7a95f1ad377c774eb911cd7cbe
+│   │   │   └── c2f44b1ea1a7b0eeb7a09f1ef9a97ef1017d20
+│   │   ├── 75
+│   │   │   └── 6c61363060ae593ce46ca9552eb911616adcd3
+│   │   ├── 77
+│   │   │   └── de579f416b3128ffe18f416d49ffa0332acee0
+│   │   ├── 7c
+│   │   │   └── 766f358b91e8c9e6d91d171cfaac0d9b857308
+│   │   ├── 85
+│   │   │   ├── 9a3fb3ee3a945baa187d7fd634a4dce8d4e250
+│   │   │   └── a90cfeddaa7cd877def3f19bc6e5ab85e41af6
+│   │   ├── 87
+│   │   │   ├── bb598d0ce349076309965f7986897d3782865d
+│   │   │   └── f60851534a2df0cc7778bf9f0ed2d329ed5b2b
+│   │   ├── 89
+│   │   │   └── 225c1039a23312d4452ddce7260215c485c2f6
+│   │   ├── 8b
+│   │   │   ├── 7423a24ea435b094f4d622c5d7ed54888d2960
+│   │   │   └── 7a6dc9e5b15f365dcb8492cb6931986ab6ddfe
+│   │   ├── 8c
+│   │   │   └── 7256a7020289b53d54ed4862056fb2c5848d7b
+│   │   ├── 8e
+│   │   │   └── 9c71b997cd6a95399114aedd7b263968423aeb
+│   │   ├── 8f
+│   │   │   └── 3923c2645fe61945e30e9a45f96404597b65e7
+│   │   ├── 90
+│   │   │   └── 46f7c68e6bcf11a2781e9c522c31a96bfa9c77
+│   │   ├── 92
+│   │   │   └── 745eb161e274957a1c02bac74b6cdb30185615
+│   │   ├── 94
+│   │   │   └── 12c94a4081b3c2dfd0133a26a52ee42cf8d9bd
+│   │   ├── 95
+│   │   │   └── 2b29b2ab2d22f84babaeaa8898bdc9b5c55603
+│   │   ├── 98
+│   │   │   └── ff9375001d9f637fd1f45493de184d82950943
+│   │   ├── 9b
+│   │   │   ├── 70d2206594e3adc613040b623178ac01324201
+│   │   │   └── 7466415f7de0dda70661a95cc485c461cea212
+│   │   ├── 9d
+│   │   │   ├── 3843b668745d5d9da90a1ca6d84d75562bedb9
+│   │   │   └── e2cc07187f0c1298a2f58735db529d6ecd6198
+│   │   ├── 9e
+│   │   │   ├── a62f56e0563cf76fcf0ec0e2f1443ef8e23a21
+│   │   │   └── f84d4e6572f83f7222b8edeb07a2f58af893cd
+│   │   ├── a3
+│   │   │   └── 81f74741831fcdcf6f432096599ca6e93f775a
+│   │   ├── a4
+│   │   │   └── 49b673f729e7a942613ff599cb9bf9cfb8b24a
+│   │   ├── a5
+│   │   │   └── b70c64a3aa09cb6fca128a9d7eea157df63445
+│   │   ├── a6
+│   │   │   ├── caba28aa3d24931029fe6702445d6aedd9e726
+│   │   │   └── dbbe6167f38e8a713747277c3d86e18f536cc3
+│   │   ├── a7
+│   │   │   ├── de0660455da628220abc5c9dff041760a47d6a
+│   │   │   └── e10b9ae932ea8df3d60ed984a5fb35460531b5
+│   │   ├── a9
+│   │   │   └── c9b62f016094d02ca7bfe9b3edc9bec94bb7ea
+│   │   ├── aa
+│   │   │   └── 644abd328cde5e52525dfa9da9c4e5d44f8a08
+│   │   ├── ab
+│   │   │   └── 4263775450a84ee3ee9f4cdcd3e1313cae1720
+│   │   ├── ac
+│   │   │   └── 9cb42591c174e9d1f15ac10b447d6f5da8df36
+│   │   ├── ad
+│   │   │   └── 2bbea96d21c70054182767c74c9327646e054b
+│   │   ├── b7
+│   │   │   └── a5ccd37e1e7482b9bf36bd50cb4844a07f4494
+│   │   ├── b8
+│   │   │   ├── 1834d634ada14e5594b69ebfb1377835f2365e
+│   │   │   └── 967395aa43aa82581cb69cef95adaee9456e7b
+│   │   ├── bc
+│   │   │   └── 8a8309e8848926136dcaf67d7c270a945cc5a6
+│   │   ├── c0
+│   │   │   └── 80cf42a052a934256f1936b9ae783760b65143
+│   │   ├── c1
+│   │   │   └── 8ed5c9e3f1ff3fc01c0b5c3dc2dcf7b1f27301
+│   │   ├── c4
+│   │   │   └── 67d648bc68d1e654cb1ae21aef43618bb43580
+│   │   ├── c5
+│   │   │   └── ebaa7faa50bd6989d9c05a23cdd2333efb00d2
+│   │   ├── c7
+│   │   │   └── 90738a70076890b98678bc35092c8b176ffd12
+│   │   ├── ca
+│   │   │   └── f7a116daefd9bfb0df16b70dc38b5afba1cc86
+│   │   ├── cd
+│   │   │   └── f43970395090c4550d8757c6499d06c9596b27
+│   │   ├── cf
+│   │   │   ├── 014ff9c76df426972a2bd58017b7a3454ca267
+│   │   │   └── 9b70d8d310124d9601b3a65598ee3a3abd1f8c
+│   │   ├── d5
+│   │   │   └── daf006cdfa748631c8389ffcb899c631565a72
+│   │   ├── d8
+│   │   │   └── ad6ea5bbaa495def13e021659932ac4d17134e
+│   │   ├── dc
+│   │   │   └── b252d9b8052a30ad1ee8af5f00277a043f8e81
+│   │   ├── de
+│   │   │   └── 261f92ba04dae1aa65c0fa5f4fd35083efd813
+│   │   ├── e1
+│   │   │   └── 3e3af7f4f91e2dc6ca0cb0910990da3cf1ada0
+│   │   ├── e4
+│   │   │   └── 40cbced9c82e1fdacc168c64f6d822c53f642d
+│   │   ├── e5
+│   │   │   ├── 066c852392be9712f73a1cc80dce3861b396a6
+│   │   │   └── c3986c644b1b9d24f39827662e03bfff6db222
+│   │   ├── e6
+│   │   │   └── 1b1d1e2a32a8308814632ed16e725526efc317
+│   │   ├── e8
+│   │   │   └── 710608ba15c58aed6e6421ea5e8cbfabd7fa64
+│   │   ├── e9
+│   │   │   └── 2722e8be7ef4f97a84a74e65837a9876cadbc1
+│   │   ├── ea
+│   │   │   └── 886bde07e52ef97543c6c6b8e2c17bb1e42674
+│   │   ├── eb
+│   │   │   └── b47c142e41a168807b3a18877250d8468efbb2
+│   │   ├── ec
+│   │   │   └── f64e43e704509f4b6089bbd21738bfd95594ae
+│   │   ├── ee
+│   │   │   └── 6fadf9c9905a15f6ec54652327ee4b38719ddc
+│   │   ├── f3
+│   │   │   └── 1ce7f7af43be5696b373437fa6fa296d968c45
+│   │   ├── f9
+│   │   │   └── 73d163d0ec76327d05c6a28eeb62e7eac168f6
+│   │   ├── fc
+│   │   │   └── dbc674c268c7b2cfba51ebfc16246bb673ca12
+│   │   ├── info
+│   │   └── pack
+│   │       ├── pack-6d767249277810fb961074e3a21a565be7f9821a.idx
+│   │       ├── pack-6d767249277810fb961074e3a21a565be7f9821a.pack
+│   │       ├── pack-6d767249277810fb961074e3a21a565be7f9821a.rev
+│   │       ├── pack-f79c9c7d307cc9cf0a3c486e49e93bb08f2bddbc.idx
+│   │       ├── pack-f79c9c7d307cc9cf0a3c486e49e93bb08f2bddbc.pack
+│   │       └── pack-f79c9c7d307cc9cf0a3c486e49e93bb08f2bddbc.rev
+│   ├── packed-refs
+│   └── refs
+│       ├── heads
+│       │   └── main
+│       ├── remotes
+│       │   └── origin
+│       │       ├── HEAD
+│       │       └── main
+│       └── tags
+├── .github
+│   ├── CODEOWNERS
+│   ├── dependabot.yml
+│   ├── scripts
+│   │   └── fly-ensure-app.sh
+│   └── workflows
+│       ├── builder.yml
+│       ├── ci.yml
+│       ├── cleanup_personal_org.yml
+│       ├── context_index.yml
+│       ├── deploy_all.yml
+│       ├── deploy_prove.yml
+│       ├── disaster_recovery_drill.yml
+│       ├── docs_guard.yml
+│       ├── index_on_merge.yml
+│       ├── nightly_health_proofs.yml
+│       ├── nightly_smoke.yml
+│       ├── notion_sync.yml
+│       ├── providers
+│       │   ├── biz_ops.yml
+│       │   ├── context_db_ops.yml
+│       │   ├── fly_ops.yml
+│       │   ├── github_ops.yml
+│       │   ├── gong_ops.yml
+│       │   ├── lambda_ops.yml
+│       │   ├── mem0_ops.yml
+│       │   ├── qdrant_ops.yml
+│       │   ├── redis_ops.yml
+│       │   ├── research_ops.yml
+│       │   ├── router_ops.yml
+│       │   └── slack_ops.yml
+│       ├── reset_deploy.yml
+│       ├── secrets_sync.yml
+│       ├── sophia-builder.yml
+│       ├── sophia_infra.yml
+│       └── swarm_lint.yml
+├── .gitignore
+├── .infra
+│   └── secrets_map.json
+├── .vscode
+│   └── settings.json
+├── CODEOWNERS
+├── README.md
+├── SETUP_COMPLETION_REPORT.md
+├── __pycache__
+│   └── set_secrets.cpython-312.pyc
+├── apps
+│   └── dashboard
+│       ├── Dockerfile.static
+│       ├── build-production.sh
+│       ├── fly.toml
+│       ├── fly.toml.backup
+│       ├── index.html
+│       ├── nginx.conf
+│       ├── package-lock.json
+│       ├── package.json
+│       ├── src
+│       │   ├── App.tsx
+│       │   ├── components
+│       │   │   ├── ChatInterface.tsx
+│       │   │   ├── Footer.tsx
+│       │   │   ├── JobsPanel.tsx
+│       │   │   └── PersonaControls.tsx
+│       │   ├── lib
+│       │   │   ├── buildInfo.ts
+│       │   │   └── chatApi.ts
+│       │   ├── main.tsx
+│       │   └── persona
+│       │       ├── personaConfig.ts
+│       │       └── toneMiddleware.ts
+│       ├── tsconfig.json
+│       ├── tsconfig.node.json
+│       └── vite.config.ts
+├── docs
+│   ├── BUSINESS_MCP.md
+│   ├── CLOUD_CONTROL_USAGE.md
+│   ├── CODEBASE_AUDIT.md
+│   ├── DEPLOYMENT_PHASE1_REPORT.md
+│   ├── DEPLOYMENT_PREFLIGHT_CHECKLIST.md
+│   ├── DEPLOYMENT_STATUS.md
+│   ├── DEPLOY_FIX_SUMMARY_1_9_4.md
+│   ├── EVAL_CANARY_ROLLBACK_ARCHITECTURE.md
+│   ├── FLY_AUTH_RESOLUTION_PLAN.md
+│   ├── FLY_TOKEN_ACTION_REQUIRED.md
+│   ├── INFRA_OPERATIONS.md
+│   ├── KNOWLEDGE_SYNC.md
+│   ├── MEMORY_ARCHITECTURE.md
+│   ├── PERSONA_V1.md
+│   ├── PHASE2_ROADMAP.md
+│   ├── PHASE_1_7_SUMMARY.md
+│   ├── PHASE_BC_ARCHITECTURE_PLAN.md
+│   ├── PHASE_BC_COMPLETION.md
+│   ├── PRODUCTION_ENVIRONMENT_SETUP.md
+│   ├── PRODUCTION_RUNBOOK.md
+│   ├── PRODUCTION_SLO_MONITORING.md
+│   ├── PROMPT_PIPELINE.md
+│   ├── PROVIDER_SECRETS_SETUP.md
+│   ├── RESEARCH_MCP.md
+│   ├── RESET_DEPLOY_EXECUTION_GUIDE.md
+│   ├── RESET_DEPLOY_SECRETS_SETUP.md
+│   ├── ROO_AUTO_EXECUTION_CONFIG.md
+│   ├── ROO_EXTERNAL_SERVICES_CONFIG.md
+│   ├── SECRETS.md
+│   ├── STABILITY_READINESS.md
+│   └── SWARM_CHARTER.md
+├── eslint.config.js
+├── github_app_manifest.json
+├── jobs
+│   ├── Dockerfile
+│   ├── fly.toml
+│   ├── reindex.py
+│   └── requirements.txt
+├── libs
+│   ├── auth
+│   │   ├── mcp_tokens.py
+│   │   └── requirements.txt
+│   ├── builder
+│   │   ├── builderService.ts
+│   │   └── commandParser.ts
+│   ├── connections.py
+│   ├── contracts
+│   │   ├── package.json
+│   │   ├── src
+│   │   │   ├── builder.ts
+│   │   │   ├── common.ts
+│   │   │   ├── context.ts
+│   │   │   ├── github.ts
+│   │   │   ├── index.ts
+│   │   │   ├── llm.ts
+│   │   │   └── research.ts
+│   │   └── tsconfig.json
+│   ├── execution
+│   │   └── safeExecutor.ts
+│   ├── llm-router
+│   │   ├── package.json
+│   │   ├── src
+│   │   │   ├── config.ts
+│   │   │   ├── defaults.ts
+│   │   │   ├── index.ts
+│   │   │   ├── router.ts
+│   │   │   └── types.ts
+│   │   └── tsconfig.json
+│   ├── memory
+│   │   ├── layers.json
+│   │   └── schema.sql
+│   ├── orchestrator
+│   │   └── safeExecutor.ts
+│   ├── persona
+│   │   ├── clarify.ts
+│   │   ├── contextEnforcer.ts
+│   │   └── rules.md
+│   ├── prompt
+│   │   ├── __tests__
+│   │   │   └── prompt_enhancer.test.ts
+│   │   └── prompt_enhancer.ts
+│   ├── retrieval
+│   │   └── retrievalRouter.ts
+│   ├── router
+│   │   ├── roleMixer.ts
+│   │   └── roles.json
+│   ├── routing
+│   │   └── personaRouter.ts
+│   └── validation
+│       └── toolSchemas.ts
+├── ops
+│   ├── infra
+│   │   ├── fly-dashboard.toml
+│   │   ├── fly-mcp-context.toml
+│   │   ├── fly-mcp-github.toml
+│   │   └── fly-mcp-research.toml
+│   └── pulumi
+│       ├── Pulumi.yaml
+│       ├── __main__.py
+│       └── requirements.txt
+├── package.json
+├── proofs
+│   ├── api_key_hell_solution.txt
+│   ├── assessment
+│   │   ├── docker_build_summary.json
+│   │   ├── docker_builds.txt
+│   │   ├── docker_dashboard_error.json
+│   │   ├── docker_mcp-research_error.json
+│   │   ├── dockerfiles.json
+│   │   ├── env.txt
+│   │   ├── env_required.json
+│   │   ├── eslint.txt
+│   │   ├── fly_tomls.json
+│   │   ├── mcp_health
+│   │   │   ├── mcp-context_error.json
+│   │   │   ├── mcp-context_local.txt
+│   │   │   ├── mcp-github_error.json
+│   │   │   ├── mcp-github_local.txt
+│   │   │   ├── mcp-research_error.json
+│   │   │   └── mcp-research_local.txt
+│   │   ├── nginx_endpoints.txt
+│   │   ├── npm_build_error.json
+│   │   ├── npm_dashboard_build.txt
+│   │   ├── npm_install_error.json
+│   │   ├── packages.json
+│   │   ├── pip_mcp-context.txt
+│   │   ├── pip_mcp-github.txt
+│   │   ├── pip_mcp-research.txt
+│   │   ├── pip_mcp-research_error.json
+│   │   ├── python_packages.json
+│   │   ├── railway_scan.txt
+│   │   ├── tree.txt
+│   │   ├── tsc.txt
+│   │   ├── vite_base.txt
+│   │   └── workflows.json
+│   ├── audit_full_nuke.txt
+│   ├── audit_phase.txt
+│   ├── audit_round2.txt
+│   ├── audit_round3.txt
+│   ├── biz
+│   │   ├── db_migration.txt
+│   │   ├── digest_1724356985.json
+│   │   ├── healthz.txt
+│   │   ├── providers.json
+│   │   ├── search_1724356980.json
+│   │   ├── secrets_matrix.json
+│   │   ├── telegram_integration_complete.json
+│   │   └── telegram_secrets_matrix.json
+│   ├── build
+│   │   ├── dashboard_asset_head.txt
+│   │   ├── dashboard_build.txt
+│   │   ├── dashboard_build_guards.json
+│   │   ├── dashboard_deployment_blocked.json
+│   │   ├── dashboard_failure_phase17.json
+│   │   ├── dashboard_gtm_patch.txt
+│   │   └── dashboard_gtm_telegram.txt
+│   ├── builder
+│   │   ├── ceo_gated_builder_complete.json
+│   │   └── workflow_analysis.json
+│   ├── chat
+│   │   ├── demo_1_normal_humor_enabled.json
+│   │   ├── demo_2_context_enforcement.json
+│   │   ├── demo_3_full_pipeline_orchestration.json
+│   │   └── pipeline_integration.json
+│   ├── ci
+│   │   ├── prompt_enhancer_tests.json
+│   │   └── summary.json
+│   ├── context
+│   │   ├── index_run.json
+│   │   ├── index_workflows.json
+│   │   └── search_smoke.json
+│   ├── deploy
+│   │   └── matrix.json
+│   ├── deployment
+│   │   ├── FINAL_DEPLOYMENT_STATUS_2025_08_23_2200.json
+│   │   ├── INFRASTRUCTURE_ANALYSIS_AND_RECOMMENDATIONS.md
+│   │   ├── PRODUCTION_READY_MCP_PLATFORM_REPORT.md
+│   │   ├── SOPHIA_AI_DEPLOYMENT_MONITORING_SUMMARY_2025_08_23.md
+│   │   ├── SOPHIA_AI_FINAL_DEPLOYMENT_STATUS_2025_08_23.json
+│   │   ├── cli_deployment_blocked_${{ date +%s }}.json
+│   │   ├── current_status.json
+│   │   ├── deploy_20250823_224548.log
+│   │   ├── deploy_20250823_235513.log
+│   │   ├── deploy_all_blocked.json
+│   │   ├── deploy_all_phase_1_9_4.json
+│   │   ├── deploy_all_workflow_dispatch_blocked.json
+│   │   ├── deployment_auth_fix_status_1724702741.json
+│   │   ├── deployment_execution_blocked_$(date +%s).json
+│   │   ├── deployment_failure_analysis_2025_08_23T14_12.json
+│   │   ├── deployment_fix_status_$(date +%s).json
+│   │   ├── final_deployment_attempt_2025_08_23.json
+│   │   ├── final_deployment_execution_status.json
+│   │   ├── fly_org_key_setup_required.json
+│   │   ├── interim_status_report.json
+│   │   ├── live_deployment_monitoring_2025_08_23T14_11.json
+│   │   ├── mcp_services_status.json
+│   │   ├── normalized_errors.json
+│   │   ├── phase1_final.json
+│   │   ├── phase1_summary.json
+│   │   ├── post_deploy_progress_monitoring.json
+│   │   ├── post_deploy_status_2025_08_22.json
+│   │   ├── service_status.md
+│   │   ├── sophia_ai_deployment_initiated_$(date +%s).json
+│   │   ├── status_17158741440.json
+│   │   ├── status_17159386511.json
+│   │   ├── token_auth_failure.json
+│   │   ├── workflow_dispatch_blocked.json
+│   │   ├── workflow_failure_analysis.json
+│   │   ├── workflow_status.json
+│   │   └── workflow_triggered_phase17.json
+│   ├── env_audit.json
+│   ├── fly
+│   │   ├── app_setup.log
+│   │   ├── apps.json
+│   │   ├── apps__personal_blocked.json
+│   │   ├── apps_created.json
+│   │   ├── apps_created.txt
+│   │   ├── apps_ensure_blocked.json
+│   │   ├── apps_personal_access_blocked.json
+│   │   ├── auth_diagnostic.txt
+│   │   ├── auth_diagnostic_v2.txt
+│   │   ├── auth_failure_analysis.json
+│   │   ├── auth_failure_graphql.json
+│   │   ├── flyctl_install.log
+│   │   ├── graphql_auth_failed.json
+│   │   ├── machines_list_blocked.json
+│   │   ├── naming_fixes_complete.json
+│   │   ├── personal_purge_plan.json
+│   │   ├── phase_1_9_3_summary.json
+│   │   ├── purge_confirmation_missing.json
+│   │   ├── renames.txt
+│   │   ├── secrets_access_blocked.json
+│   │   ├── sophiaai-dashboard-v2_health_error.json
+│   │   ├── sophiaai-mcp-business-v2_health_error.json
+│   │   ├── sophiaai-mcp-context-v2_health_error.json
+│   │   ├── sophiaai-mcp-repo-v2_ewr_start.json
+│   │   ├── sophiaai-mcp-repo-v2_machines.json
+│   │   ├── sophiaai-mcp-repo-v2_machines_before.json
+│   │   ├── sophiaai-mcp-repo-v2_machines_ord.json
+│   │   ├── sophiaai-mcp-repo-v2_sjc_start.json
+│   │   ├── sophiaai-mcp-repo_logs.txt
+│   │   ├── sophiaai-mcp-repo_machines.json
+│   │   ├── sophiaai-mcp-research-v2_health_error.json
+│   │   ├── tokens_index.json
+│   │   ├── toml_checks.json
+│   │   ├── viewer.json
+│   │   ├── viewer__pay_ready.json
+│   │   ├── viewer__pay_ready_v2.json
+│   │   └── viewer_token_access_blocked.json
+│   ├── github
+│   │   ├── app_creation_status.md
+│   │   └── app_details.md
+│   ├── github_app
+│   │   ├── app_creation.json
+│   │   ├── created.json
+│   │   ├── installation.json
+│   │   └── installations.json
+│   ├── healthz
+│   │   ├── dashboard_persona_integration.txt
+│   │   ├── orchestrator_persona_integration.txt
+│   │   ├── services_status_pre_deploy.json
+│   │   ├── sophiaai-dashboard-v2.txt
+│   │   ├── sophiaai-dashboard-v2_fresh.txt
+│   │   ├── sophiaai-dashboard.txt
+│   │   ├── sophiaai-mcp-business-v2.txt
+│   │   ├── sophiaai-mcp-context-v2.txt
+│   │   ├── sophiaai-mcp-context.txt
+│   │   ├── sophiaai-mcp-repo-v2.txt
+│   │   ├── sophiaai-mcp-repo-v2_fresh.txt
+│   │   ├── sophiaai-mcp-repo.txt
+│   │   ├── sophiaai-mcp-research-v2.txt
+│   │   └── sophiaai-mcp-research.txt
+│   ├── healthz_final
+│   │   ├── business.txt
+│   │   ├── context.txt
+│   │   ├── dashboard.txt
+│   │   ├── jobs.txt
+│   │   ├── repo.txt
+│   │   └── research.txt
+│   ├── infra
+│   │   └── ceo_gated_verification.json
+│   ├── infrastructure
+│   │   ├── final_infrastructure_status.json
+│   │   ├── nightly_smoke_enabled.json
+│   │   ├── preflight_envmap.json
+│   │   ├── ready_for_deployment.json
+│   │   └── tech_debt_cleanup_plan.json
+│   ├── knowledge
+│   │   ├── foundational_knowledge_implementation.json
+│   │   └── notion_sync_scaffold.json
+│   ├── lambda
+│   │   ├── instances_status.txt
+│   │   └── lambda_integration_success.json
+│   ├── llm
+│   │   └── router_allowlist.json
+│   ├── mcp_context
+│   │   ├── index.json
+│   │   └── search.json
+│   ├── mcp_repo
+│   │   ├── file_vite_config.json
+│   │   ├── tools_list_fresh.json
+│   │   └── tree_dashboard.json
+│   ├── neon
+│   │   ├── configuration.json
+│   │   ├── project_creation.json
+│   │   ├── projects.json
+│   │   └── smoke.txt
+│   ├── persona
+│   │   ├── clarify_cases.json
+│   │   ├── deployment_status_post_commit.json
+│   │   ├── knobs.json
+│   │   ├── sophia_persona_v1_complete.json
+│   │   └── ui_integration.json
+│   ├── phase1.5_completion.json
+│   ├── phase1.6_completion.json
+│   ├── phase15_complete.json
+│   ├── phase15_knowledge_stack.json
+│   ├── phase15_retrieval.txt
+│   ├── phase1_complete.txt
+│   ├── phase1_final_audit.txt
+│   ├── phase1_nuke_v2_success.txt
+│   ├── phase2_final.txt
+│   ├── phase3_blast.txt
+│   ├── phase3_deploy_complete.txt
+│   ├── phase3_key_nuke.txt
+│   ├── phase_bc_completion_proof.json
+│   ├── pipeline
+│   │   └── eight_step_demo_execution.json
+│   ├── providers
+│   │   ├── infrastructure_complete.json
+│   │   ├── qdrant_provided.json
+│   │   ├── secrets_provided.json
+│   │   └── validation_summary.json
+│   ├── qdrant
+│   │   ├── collections_after_deploy.json
+│   │   └── create_biz_prospects_skipped.json
+│   ├── redis
+│   │   └── ttl_probe.json
+│   ├── repo
+│   │   └── branch_protection.json
+│   ├── research
+│   │   ├── providers.json
+│   │   └── secrets_matrix.json
+│   ├── router
+│   │   └── roles.json
+│   ├── screens
+│   │   ├── dashboard_factory.png.json
+│   │   └── dashboard_gtm.png.json
+│   ├── secrets
+│   │   ├── deployment_status.txt
+│   │   ├── gh_actions_secrets.json
+│   │   ├── github_api_blocked.json
+│   │   ├── matrix.json
+│   │   ├── public_key.json
+│   │   ├── schema_map.json
+│   │   ├── sophiaai-dashboard_secrets.txt
+│   │   ├── sophiaai-mcp-context_secrets.txt
+│   │   ├── sophiaai-mcp-repo_secrets.txt
+│   │   └── sophiaai-mcp-research_secrets.txt
+│   ├── sophia_readiness_summary.json
+│   ├── swarm
+│   │   └── docs_index.json
+│   ├── tree.txt
+│   ├── tree_nuke.txt
+│   ├── tree_round2.txt
+│   ├── tree_round3.txt
+│   ├── tree_v6.txt
+│   └── validation
+│       └── acceptance_criteria_summary.json
+├── scripts
+│   ├── __pycache__
+│   │   └── mcp_runner.cpython-312.pyc
+│   ├── add_github_secrets.sh
+│   ├── agent_infrastructure.py
+│   ├── auto_recovery.sh
+│   ├── create_biz_tables.sql
+│   ├── demo_mcp_tokens.py
+│   ├── deploy_now.sh
+│   ├── env_check.py
+│   ├── health_monitor.sh
+│   ├── load_credentials.sh
+│   ├── mcp_runner.py
+│   ├── post_deploy_verify.sh
+│   ├── production_deploy.sh
+│   ├── production_smoke_test.sh
+│   ├── real_assess.sh
+│   ├── scale_mcp_platform.sh
+│   ├── seed_knowledge_stack.py
+│   ├── setup_external_services.sh
+│   ├── setup_fly_apps.sh
+│   ├── setup_github_secrets.sh
+│   ├── test_fly_token.sh
+│   └── update_fly_token.sh
+├── services
+│   ├── mcp-business
+│   │   ├── Dockerfile
+│   │   ├── app.py
+│   │   ├── fly.toml
+│   │   ├── fly.toml.backup
+│   │   ├── mcp_auth.py
+│   │   └── requirements.txt
+│   ├── mcp-context
+│   │   ├── Dockerfile
+│   │   ├── __pycache__
+│   │   │   ├── app.cpython-312.pyc
+│   │   │   └── symbol_indexer.cpython-312.pyc
+│   │   ├── app.py
+│   │   ├── enhanced_app.py
+│   │   ├── fly.toml
+│   │   ├── fly.toml.backup
+│   │   ├── requirements.txt
+│   │   ├── requirements_enhanced.txt
+│   │   └── symbol_indexer.py
+│   ├── mcp-github
+│   │   ├── Dockerfile
+│   │   ├── __pycache__
+│   │   │   ├── app.cpython-312.pyc
+│   │   │   └── github_app.cpython-312.pyc
+│   │   ├── app.py
+│   │   ├── fly.toml
+│   │   ├── fly.toml.backup
+│   │   ├── github_app.py
+│   │   └── requirements.txt
+│   ├── mcp-hubspot
+│   │   ├── Dockerfile
+│   │   ├── app.py
+│   │   ├── fly.toml
+│   │   └── requirements.txt
+│   ├── mcp-lambda
+│   │   ├── Dockerfile
+│   │   ├── app.py
+│   │   ├── fly.toml
+│   │   └── requirements.txt
+│   ├── mcp-research
+│   │   ├── Dockerfile
+│   │   ├── __pycache__
+│   │   │   └── app.cpython-312.pyc
+│   │   ├── app.py
+│   │   ├── fly.toml
+│   │   ├── fly.toml.backup
+│   │   └── requirements.txt
+│   └── orchestrator
+│       └── orchestrator.ts
+├── set_secrets.py
+├── tests
+│   ├── continuity_scan
+│   │   ├── __pycache__
+│   │   │   └── test_continuity_scan.cpython-312-pytest-8.4.1.pyc
+│   │   └── test_continuity_scan.py
+│   └── integration
+│       ├── __pycache__
+│       │   └── test_mcp_services.cpython-312.pyc
+│       └── test_mcp_services.py
+├── todo.md
+└── tsconfig.json
+
+223 directories, 623 files

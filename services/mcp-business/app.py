@@ -202,14 +202,6 @@ class ProspectsEnrichRequest(BaseModel):
     domains: List[str] = Field(default=[], description="Company domains to enrich")
     provider: str = Field(default="apollo", description="Enrichment provider")
 
-    @validator("emails", "domains")
-    def validate_input(cls, v, values, field):
-        if not v and not values.get(
-            "emails" if field.name == "domains" else "domains", []
-        ):
-            raise ValueError("Must provide either emails or domains")
-        return v
-
 
 class ProspectsSyncRequest(BaseModel):
     list: str = Field(..., description="Prospect list name")
