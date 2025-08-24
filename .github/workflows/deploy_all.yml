@@ -51,7 +51,7 @@ jobs:
     name: Preflight (repo & secrets)
     runs-on: ubuntu-latest
     env:
-      FLY_API_TOKEN: ${{ secrets.FLY_TOKEN_PAY_READY }}
+      FLY_API_TOKEN: ${{ secrets.FLY_ORG_API }}
     steps:
       - uses: actions/checkout@v4
 
@@ -71,7 +71,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: preflight
     env:
-      FLY_API_TOKEN: ${{ secrets.FLY_TOKEN_PAY_READY }}
+      FLY_API_TOKEN: ${{ secrets.FLY_ORG_API }}
       FLY_ORG: pay-ready
       APP: sophiaai-dashboard-v2
       URL: https://sophiaai-dashboard-v2.fly.dev
@@ -191,7 +191,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: preflight
     env:
-      FLY_API_TOKEN: ${{ secrets.FLY_TOKEN_PAY_READY }}
+      FLY_API_TOKEN: ${{ secrets.FLY_ORG_API }}
       FLY_ORG: pay-ready
     strategy:
       matrix:
@@ -216,6 +216,11 @@ jobs:
             url:  https://sophiaai-mcp-business-v2.fly.dev
             path: services/mcp-business
             set_secrets: "true"
+          - name: mcp-lambda
+            app:  sophiaai-mcp-lambda-v2
+            url:  https://sophiaai-mcp-lambda-v2.fly.dev
+            path: services/mcp-lambda
+            set_secrets: "true"
     steps:
       - uses: actions/checkout@v4
 
@@ -234,6 +239,21 @@ jobs:
         run: |
           flyctl apps show ${{ matrix.app }} --access-token "$FLY_API_TOKEN" >/dev/null 2>&1 || flyctl apps create ${{ matrix.app }} --machines --org "$FLY_ORG" --access-token "$FLY_API_TOKEN" --yes
 
+      - name: Construct Redis URL from components
+        if: ${{ matrix.set_secrets == 'true' }}
+        env:
+          REDIS_API_KEY: ${{ secrets.REDIS_API_KEY }}
+          REDIS_DATABASE_ENDPOINT: ${{ secrets.REDIS_DATABASE_ENDPOINT }}
+        run: |
+          if [ -n "${REDIS_API_KEY}" ] && [ -n "${REDIS_DATABASE_ENDPOINT}" ]; then
+            REDIS_URL="redis://:${REDIS_API_KEY}@${REDIS_DATABASE_ENDPOINT}:6379"
+            echo "REDIS_URL=${REDIS_URL}" >> $GITHUB_ENV
+            echo "::add-mask::${REDIS_URL}"
+            echo "✅ Redis URL constructed from components"
+          else
+            echo "⚠️ Redis components missing, skipping Redis URL construction"
+          fi
+
       - name: Set Fly secrets (names only)
         if: ${{ matrix.set_secrets == 'true' }}
         env:
@@ -247,7 +267,10 @@ jobs:
           BRIGHTDATA_API_KEY: ${{ secrets.BRIGHTDATA_API_KEY }}
           PORTKEY_API_KEY: ${{ secrets.PORTKEY_API_KEY }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          REDIS_URL: ${{ secrets.REDIS_URL }}
+          # Lambda Labs secrets
+          LAMBDA_API_KEY: ${{ secrets.LAMBDA_API_KEY }}
+          LAMBDA_PRIVATE_SSH_KEY: ${{ secrets.LAMBDA_PRIVATE_SSH_KEY }}
+          LAMBDA_PUBLIC_SSH_KEY: ${{ secrets.LAMBDA_PUBLIC_SSH_KEY }}
           # Business providers
           APOLLO_API_KEY: ${{ secrets.APOLLO_API_KEY }}
           USERGEMS_API_KEY: ${{ secrets.USERGEMS_API_KEY }}
@@ -320,6 +343,16 @@ jobs:
           if [ "${{ matrix.name }}" = "mcp-context" ] && [ "${NEON_DATABASE_URL}" != "" ]; then
             flyctl secrets set NEON_DATABASE_URL="${NEON_DATABASE_URL}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN"
           fi
+          
+          # Lambda Labs GPU compute (for lambda service)
+          if [ "${{ matrix.name }}" = "mcp-lambda" ]; then
+            [ "${LAMBDA_API_KEY}" != "" ] && flyctl secrets set LAMBDA_API_KEY="${LAMBDA_API_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            [ "${LAMBDA_PRIVATE_SSH_KEY}" != "" ] && flyctl secrets set LAMBDA_PRIVATE_SSH_KEY="${LAMBDA_PRIVATE_SSH_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            [ "${LAMBDA_PUBLIC_SSH_KEY}" != "" ] && flyctl secrets set LAMBDA_PUBLIC_SSH_KEY="${LAMBDA_PUBLIC_SSH_KEY}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            [ "${NEON_DATABASE_URL}" != "" ] && flyctl secrets set NEON_DATABASE_URL="${NEON_DATABASE_URL}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            [ "${REDIS_URL}" != "" ] && flyctl secrets set REDIS_URL="${REDIS_URL}" -a ${{ matrix.app }} --access-token "$FLY_API_TOKEN" || true
+            echo "✅ Lambda Labs service secrets configured"
+          fi
 
       - name: Deploy service (Dockerfile)
         working-directory: ${{ matrix.path }}
@@ -373,7 +406,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: preflight
     env:
-      FLY_API_TOKEN: ${{ secrets.FLY_TOKEN_PAY_READY }}
+      FLY_API_TOKEN: ${{ secrets.FLY_ORG_API }}
       FLY_ORG: pay-ready
       APP: sophiaai-jobs-v2
       URL: https://sophiaai-jobs-v2.fly.dev
