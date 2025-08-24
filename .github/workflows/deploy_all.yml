@@ -1,25 +1,22 @@
 name: Deploy All (Dashboard + MCPs) — Fly (Docker-only, Proof-first)
 
 on:
+  # COMPLETELY DISABLED - MIGRATED TO RENDER
+  # Use .github/workflows/deploy_now.yml instead
   workflow_dispatch:
     inputs:
       deploy_dashboard:
-        description: "Deploy dashboard"
+        description: "DEPRECATED: Use deploy_now.yml instead"
         required: false
-        default: "true"
+        default: "false"
       deploy_services:
-        description: "Deploy MCP services (repo, research, context, business)"
+        description: "DEPRECATED: Use deploy_now.yml instead"
         required: false
-        default: "true"
+        default: "false"
       deploy_jobs:
-        description: "Deploy jobs service (scheduled agents)"
+        description: "DEPRECATED: Use deploy_now.yml instead"
         required: false
-        default: "true"
-  # DISABLED: Migrated to Render - use deploy_now.yml instead
-  # push:
-  #   branches: [ main ]
-  #   paths:
-  #     - 'DEPLOY_NOW'
+        default: "false"
 
 permissions:
   contents: write
