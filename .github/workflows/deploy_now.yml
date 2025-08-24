@@ -52,13 +52,21 @@ jobs:
         with:
           python-version: '3.11'
           
-      - name: Validate Environment
+      - name: Debug GitHub Actions Environment
         run: |
-          echo "🔍 Validating deployment environment..."
-          echo "RENDER_API_KEY: $([ -n "$RENDER_API_KEY" ] && echo "✅ Available" || echo "❌ Missing")"
-          echo "NEON_PROJECT_ID: $([ -n "$NEON_PROJECT_ID" ] && echo "✅ Available" || echo "❌ Missing")"
-          echo "QDRANT_API_KEY: $([ -n "$QDRANT_API_KEY" ] && echo "✅ Available" || echo "❌ Missing")"
-          echo "REDIS_HOST: $([ -n "$REDIS_HOST" ] && echo "✅ Available" || echo "❌ Missing")"
+          echo "🔍 Debugging GitHub Actions secret availability..."
+          echo "Available environment variables:"
+          printenv | grep -E "(RENDER|QDRANT|NEON|MEM0|LAMBDA)" | sed 's/=.*/=***REDACTED***/' || echo "No matching variables found"
+          echo ""
+          echo "Testing specific secrets:"
+          echo "RENDER_API_KEY: $([ -n "$RENDER_API_KEY" ] && echo "✅ Available (${#RENDER_API_KEY} chars)" || echo "❌ Missing")"
+          echo "NEON_PROJECT_ID: $([ -n "$NEON_PROJECT_ID" ] && echo "✅ Available (${#NEON_PROJECT_ID} chars)" || echo "❌ Missing")"
+          echo "QDRANT_API_KEY: $([ -n "$QDRANT_API_KEY" ] && echo "✅ Available (${#QDRANT_API_KEY} chars)" || echo "❌ Missing")"
+          echo ""
+          echo "Organization secrets context (should be populated):"
+          echo "secrets.RENDER_API_KEY length: ${{ length(secrets.RENDER_API_KEY) || 0 }}"
+          echo "secrets.QDRANT_API_KEY length: ${{ length(secrets.QDRANT_API_KEY) || 0 }}"
+          echo "secrets.NEON_PROJECT_ID length: ${{ length(secrets.NEON_PROJECT_ID) || 0 }}"
           
       - name: Deploy to Render
         run: |
