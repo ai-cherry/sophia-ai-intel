@@ -1,13 +1,13 @@
 # Sophia AI Intel - Stability Readiness Report
-**Phase 1.9.4 Final Status**
+**Phase 1.9.4 Final Status: PARTIAL DEPLOYMENT – INFRASTRUCTURE ISSUES BLOCKING FULL PRODUCTION**
 
 ## Executive Summary
 
-**Infrastructure Status**: ✅ **DEPLOYMENT READY** - All services configured, normalized error proofs generated, deployment workflow validated.
+**Infrastructure Status**: ⚠️ **PARTIAL DEPLOYMENT** - Only 2/6 services operational as of 2025-08-23. See [`proofs/deployment/FINAL_DEPLOYMENT_STATUS_2025_08_23_2200.json`](../proofs/deployment/FINAL_DEPLOYMENT_STATUS_2025_08_23_2200.json) for full details. Infrastructure and build issues are blocking full production.
 
-**Critical Action Required**: CEO manual deployment trigger via GitHub Actions UI.
+**Critical Action Required**: Infrastructure and build issues must be resolved before full production. See recommendations below.
 
-**Post-Deployment Verification**: Systematic proof generation sequence documented and ready for execution.
+**Post-Deployment Verification**: Systematic proof generation sequence is blocked for most services. Only jobs-v2 and mcp-repo-v2 are operational.
 
 ---
 
@@ -27,11 +27,11 @@
   "fly": "✅ Ready - FLY_TOKEN_PAY_READY configured",
   "github_app": "✅ Ready - Token and secrets configured", 
   "router": "✅ Ready - OpenRouter + Portkey configured",
-  "research": "✅ Ready - All secrets provided",
-  "context_db": "✅ Ready - Neon + Qdrant configured",
+  "research": "✅ Ready - All secrets provided (service crashed on deploy)",
+  "context_db": "✅ Ready - Neon + Qdrant configured (service timeout)",
   "qdrant": "✅ Ready - QDRANT_URL mapped",
   "redis": "✅ Ready - REDIS_URL mapped", 
-  "biz": "⚠️ Ready - Secrets configured, deployment pending"
+  "biz": "⚠️ Ready - Secrets configured, deployment pending (service still deploying)"
 }
 ```
 
@@ -54,20 +54,42 @@
 
 ## Proof Artifacts Index
 
+### Deployment Status (Latest)
+- **Final Deployment Status**: [`FINAL_DEPLOYMENT_STATUS_2025_08_23_2200.json`](../proofs/deployment/FINAL_DEPLOYMENT_STATUS_2025_08_23_2200.json) — Only 2/6 services operational, see file for detailed errors and recommendations.
+
 ### Infrastructure Connectivity (Post-Deployment)
-- **Qdrant Collections**: [`collections_after_deploy.json`](proofs/qdrant/collections_after_deploy.json) - Blocked pending deployment
-- **Redis TTL Probe**: [`ttl_probe.json`](proofs/redis/ttl_probe.json) - Blocked pending deployment  
-- **Neon Smoke Test**: [`smoke.txt`](proofs/neon/smoke.txt) - Blocked pending deployment
+- **Qdrant Collections**: [`collections_after_deploy.json`](../proofs/qdrant/collections_after_deploy.json) - Blocked pending full deployment
+- **Redis TTL Probe**: [`ttl_probe.json`](../proofs/redis/ttl_probe.json) - Blocked pending full deployment
+- **Neon Smoke Test**: [`smoke.txt`](../proofs/neon/smoke.txt) - Blocked pending full deployment
 
 ### MCP Provider Verification (Post-Deployment)
-- **Research Providers**: [`providers.json`](proofs/research/providers.json) - Blocked pending deployment
-- **Business Providers**: [`providers.json`](proofs/biz/providers.json) - Blocked pending deployment
-- **Context Indexing**: [`index_run.json`](proofs/context/index_run.json) - Blocked pending deployment
-- **Context Search**: [`search_smoke.json`](proofs/context/search_smoke.json) - Blocked pending deployment
+- **Research Providers**: [`providers.json`](../proofs/research/providers.json) - Blocked pending deployment
+- **Business Providers**: [`providers.json`](../proofs/biz/providers.json) - Blocked pending deployment
+- **Context Indexing**: [`index_run.json`](../proofs/context/index_run.json) - Blocked pending deployment
+- **Context Search**: [`search_smoke.json`](../proofs/context/search_smoke.json) - Blocked pending deployment
 
 ### Service Health Monitoring
-- **Deployment Status**: [`deploy_all_phase_1_9_4.json`](proofs/deployment/deploy_all_phase_1_9_4.json) - Ready for execution
-- **Nightly Smoke**: [`nightly_smoke_enabled.json`](proofs/infrastructure/nightly_smoke_enabled.json) - Automated health monitoring configured
+- **Nightly Smoke**: [`nightly_smoke_enabled.json`](../proofs/infrastructure/nightly_smoke_enabled.json) - Automated health monitoring configured
+
+---
+
+## Known Issues (as of 2025-08-23)
+- **Dashboard**: Build failed (missing dist/ directory, workspace dependency issue)
+- **MCP-Research**: Crashing on startup (smoke check failure)
+- **MCP-Context**: Platform timeouts (504 upstream request timeout)
+- **MCP-Business**: Still deploying (machine launching)
+- **Jobs**: Running with health warning
+- **Platform**: Fly.io experiencing capacity issues in ORD/IAD regions
+
+## Next Steps & Recommendations
+- Fix dashboard npm workspace configuration
+- Investigate MCP service startup failures (check logs)
+- Retry deployment during off-peak hours
+- Consider regional distribution (deploy to multiple regions)
+- Implement health check tolerance for startup delays
+- Add retry logic for platform timeouts
+- Create deployment monitoring dashboard
+- Setup alerting for service failures
 
 ---
 

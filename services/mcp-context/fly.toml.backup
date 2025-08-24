@@ -1,0 +1,41 @@
+app = "sophiaai-mcp-context-v2"
+primary_region = "ord"
+
+[vm]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1
+
+[env]
+  PORT = "8080"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_start_machines = true
+  auto_stop_machines = "stop"
+  min_machines_running = 1
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 50
+    hard_limit = 75
+
+  [[http_service.checks]]
+    method = "GET"
+    path = "/healthz"
+    interval = "15s"
+    timeout = "2s"
+    grace_period = "30s"
+
+  [[http_service.checks]]
+    method = "GET"
+    path = "/context/stats"
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "60s"
+
+[experimental]
+  auto_rollback = true
+

@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-This document outlines the comprehensive architecture and implementation plan for Phase B/C deployment of the Sophia AI Intelligence System. The deployment includes 5 microservices, jobs management, CEO-gated builder loops, foundational knowledge sync, evaluation systems, and comprehensive proof collection.
+This document outlines the comprehensive architecture and implementation plan for Phase B/C deployment of the Sophia AI Intelligence System. **As of 2025-08-23, deployment is only partially successful: 2/6 services are operational.** See [`proofs/deployment/FINAL_DEPLOYMENT_STATUS_2025_08_23_2200.json`](../proofs/deployment/FINAL_DEPLOYMENT_STATUS_2025_08_23_2200.json) for the latest status, errors, and recommendations. The following sections describe the intended architecture; current production does not yet meet these criteria.
 
 ## System Architecture Overview
 
