@@ -1,0 +1,32 @@
+{
+  "timestamp": "2025-08-24T06:23:41Z",
+  "agent": "cline", 
+  "verification_type": "live_health_check",
+  "overall_status": "PARTIAL_DEPLOYMENT",
+  "services_count": 7,
+  "healthy_services": 2,
+  "unhealthy_services": 1,
+  "pending_checks": 4,
+  "deployment_method": "push_triggered",
+  "secrets_management": "github_actions_unified",
+  "services_health_check": {
+    "sophiaai-dashboard-v2": {
+      "url": "https://sophiaai-dashboard-v2.fly.dev/healthz",
+      "status": "HEALTHY",
+      "http_code": 200
+    },
+    "sophiaai-mcp-repo-v2": {
+      "url": "https://sophiaai-mcp-repo-v2.fly.dev/healthz", 
+      "status": "HEALTHY",
+      "http_code": 200
+    },
+    "sophiaai-mcp-research-v2": {
+      "url": "https://sophiaai-mcp-research-v2.fly.dev/healthz",
+      "status": "UNHEALTHY",
+      "http_code": 503,
+      "issue": "Service Unavailable"
+    }
+  },
+  "action_required": "Investigate and fix mcp-research-v2 service",
+  "proof_methodology": "live_curl_verification"
+}

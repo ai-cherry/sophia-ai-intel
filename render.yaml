@@ -1,0 +1,416 @@
+# Sophia AI Intel Platform - Render Configuration
+# Migration from Fly.io to Render with full automation
+# Supports all 9 services + external integrations
+
+services:
+  # =============================================================================
+  # FRONTEND - STATIC SITE
+  # =============================================================================
+  - type: static_site
+    name: sophia-dashboard
+    repo: https://github.com/ai-cherry/sophia-ai-intel
+    branch: main
+    rootDir: apps/dashboard
+    buildCommand: npm ci && npm run build
+    publishPath: ./dist
+    pullRequestPreviewsEnabled: true
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+    domains:
+      - sophia-ai-intel.onrender.com
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: VITE_BUILD_ID
+        generateValue: true
+      - key: VITE_GIT_COMMIT
+        fromDatabase: false
+
+  # =============================================================================
+  # CORE MCP SERVICES - WEB SERVICES
+  # =============================================================================
+  
+  # Research & Web Search Service
+  - type: web_service
+    name: sophia-research
+    repo: https://github.com/ai-cherry/sophia-ai-intel
+    branch: main
+    rootDir: services/mcp-research
+    runtime: python
+    buildCommand: pip install --no-cache-dir -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT --workers 2
+    plan: standard
+    region: oregon
+    healthCheckPath: /healthz
+    pullRequestPreviewsEnabled: true
+    scaling:
+      minInstances: 1
+      maxInstances: 3
+      targetCPUPercent: 75
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: PYTHONUNBUFFERED
+        value: 1
+      - key: DEFAULT_LLM_MODEL
+        value: gpt-5
+      # Research API Keys
+      - key: SERPAPI_API_KEY
+        sync: false  # Mapped from TAVILY_API_KEY in secrets
+      - key: PERPLEXITY_API_KEY
+        sync: false
+      - key: TOGETHER_API_KEY
+        sync: false  # Mapped from OPENROUTER_API_KEY
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: VOYAGE_API_KEY
+        sync: false
+      - key: COHERE_API_KEY
+        sync: false
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: PORTKEY_API_KEY
+        sync: false
+      # Storage
+      - key: REDIS_URL
+        sync: false  # Constructed from components
+      - key: NEON_DATABASE_URL
+        sync: false
+      - key: QDRANT_URL
+        sync: false
+      - key: QDRANT_API_KEY
+        sync: false
+      - key: TENANT
+        value: pay-ready
+
+  # Context & Database Service  
+  - type: web_service
+    name: sophia-context
+    repo: https://github.com/ai-cherry/sophia-ai-intel
+    branch: main
+    rootDir: services/mcp-context
+    runtime: python
+    buildCommand: pip install --no-cache-dir -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT --workers 2
+    plan: standard
+    region: oregon
+    healthCheckPath: /healthz
+    pullRequestPreviewsEnabled: true
+    scaling:
+      minInstances: 1
+      maxInstances: 2
+      targetCPUPercent: 80
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: PYTHONUNBUFFERED
+        value: 1
+      - key: NEON_DATABASE_URL
+        sync: false
+      - key: QDRANT_URL
+        sync: false
+      - key: QDRANT_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: TENANT
+        value: pay-ready
+
+  # GitHub Integration Service
+  - type: web_service
+    name: sophia-github
+    repo: https://github.com/ai-cherry/sophia-ai-intel
+    branch: main
+    rootDir: services/mcp-github
+    runtime: python
+    buildCommand: pip install --no-cache-dir -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT --workers 1
+    plan: starter
+    region: oregon
+    healthCheckPath: /healthz
+    pullRequestPreviewsEnabled: true
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: PYTHONUNBUFFERED
+        value: 1
+      - key: GITHUB_APP_ID
+        sync: false
+      - key: GITHUB_INSTALLATION_ID
+        sync: false
+      - key: GITHUB_PRIVATE_KEY
+        sync: false
+      - key: GITHUB_REPO
+        value: ai-cherry/sophia-ai-intel
+      - key: DASHBOARD_ORIGIN
+        value: https://sophia-ai-intel.onrender.com
+      - key: TENANT
+        value: pay-ready
+
+  # Business Integrations Service
+  - type: web_service
+    name: sophia-business
+    repo: https://github.com/ai-cherry/sophia-ai-intel
+    branch: main
+    rootDir: services/mcp-business
+    runtime: python
+    buildCommand: pip install --no-cache-dir -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT --workers 2
+    plan: standard
+    region: oregon
+    healthCheckPath: /healthz
+    pullRequestPreviewsEnabled: true
+    scaling:
+      minInstances: 1
+      maxInstances: 3
+      targetCPUPercent: 70
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: PYTHONUNBUFFERED
+        value: 1
+      # CRM Providers
+      - key: APOLLO_API_KEY
+        sync: false
+      - key: USERGEMS_API_KEY
+        sync: false
+      - key: HUBSPOT_ACCESS_TOKEN
+        sync: false
+      # Salesforce OAuth
+      - key: SALESFORCE_CLIENT_ID
+        sync: false
+      - key: SALESFORCE_CLIENT_SECRET
+        sync: false
+      - key: SALESFORCE_USERNAME
+        sync: false
+      - key: SALESFORCE_PASSWORD
+        sync: false
+      - key: SALESFORCE_SECURITY_TOKEN
+        sync: false
+      - key: SALESFORCE_DOMAIN
+        sync: false
+      # Revenue Intelligence
+      - key: GONG_BASE_URL
+        sync: false
+      - key: GONG_ACCESS_KEY
+        sync: false
+      - key: GONG_ACCESS_KEY_SECRET
+        sync: false
+      - key: GONG_CLIENT_ACCESS_KEY
+        sync: false
+      - key: GONG_CLIENT_SECRET
+        sync: false
+      # Communication
+      - key: SLACK_BOT_TOKEN
+        sync: false
+      - key: SLACK_SIGNING_SECRET
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        sync: false
+      # Optional providers
+      - key: ZILLOW_API_KEY
+        sync: false
+      # Storage & Routing
+      - key: NEON_DATABASE_URL
+        sync: false
+      - key: QDRANT_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: PORTKEY_API_KEY
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: TENANT
+        value: pay-ready
+
+  # Lambda Labs GPU Compute Service
+  - type: web_service
+    name: sophia-lambda
+    repo: https://github.com/ai-cherry/sophia-ai-intel
+    branch: main
+    rootDir: services/mcp-lambda
+    runtime: python
+    buildCommand: pip install --no-cache-dir -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT --workers 1
+    plan: pro  # Higher tier for GPU coordination
+    region: oregon
+    healthCheckPath: /healthz
+    pullRequestPreviewsEnabled: true
+    scaling:
+      minInstances: 1
+      maxInstances: 2
+      targetCPUPercent: 85
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: PYTHONUNBUFFERED
+        value: 1
+      - key: LAMBDA_API_KEY
+        sync: false
+      - key: LAMBDA_PRIVATE_SSH_KEY
+        sync: false
+      - key: LAMBDA_PUBLIC_SSH_KEY
+        sync: false
+      - key: LAMBDA_API_ENDPOINT
+        value: https://cloud.lambdalabs.com/api/v1
+      - key: DATABASE_URL
+        sync: false  # Mapped from NEON_DATABASE_URL
+      - key: REDIS_URL
+        sync: false
+      - key: TENANT
+        value: pay-ready
+
+  # HubSpot Integration Service
+  - type: web_service
+    name: sophia-hubspot
+    repo: https://github.com/ai-cherry/sophia-ai-intel
+    branch: main
+    rootDir: services/mcp-hubspot
+    runtime: python
+    buildCommand: pip install --no-cache-dir -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT --workers 1
+    plan: starter
+    region: oregon
+    healthCheckPath: /healthz
+    pullRequestPreviewsEnabled: true
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: PYTHONUNBUFFERED
+        value: 1
+      - key: HUBSPOT_ACCESS_TOKEN
+        sync: false
+      - key: HUBSPOT_CLIENT_SECRET
+        sync: false
+      - key: TENANT
+        value: pay-ready
+
+  # Service Orchestrator
+  - type: web_service
+    name: sophia-orchestrator
+    repo: https://github.com/ai-cherry/sophia-ai-intel
+    branch: main
+    rootDir: services/orchestrator
+    runtime: python
+    buildCommand: pip install --no-cache-dir -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT --workers 2
+    plan: standard
+    region: oregon
+    healthCheckPath: /healthz
+    pullRequestPreviewsEnabled: true
+    scaling:
+      minInstances: 1
+      maxInstances: 2
+      targetCPUPercent: 75
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: PYTHONUNBUFFERED
+        value: 1
+      - key: REDIS_URL
+        sync: false
+      - key: NEON_DATABASE_URL
+        sync: false
+      - key: TENANT
+        value: pay-ready
+
+  # =============================================================================
+  # BACKGROUND SERVICES - WORKERS & CRON JOBS
+  # =============================================================================
+  
+  # Scheduled Jobs Worker
+  - type: background_worker
+    name: sophia-jobs
+    repo: https://github.com/ai-cherry/sophia-ai-intel
+    branch: main
+    rootDir: jobs
+    runtime: python
+    buildCommand: pip install --no-cache-dir -r requirements.txt
+    startCommand: python reindex.py
+    plan: starter
+    region: oregon
+    scaling:
+      minInstances: 0  # Can scale to zero when idle
+      maxInstances: 1
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: 1
+      - key: NEON_DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: TENANT
+        value: pay-ready
+
+  # n8n Workflow Automation (Self-hosted)
+  - type: web_service
+    name: sophia-n8n
+    repo: https://github.com/ai-cherry/sophia-ai-intel
+    branch: main
+    rootDir: ops/n8n  # To be created
+    runtime: docker
+    dockerfilePath: ./ops/n8n/Dockerfile
+    plan: standard
+    region: oregon
+    healthCheckPath: /healthz
+    envVars:
+      - key: N8N_HOST
+        value: 0.0.0.0
+      - key: N8N_PORT
+        value: 10000
+      - key: N8N_PROTOCOL
+        value: https
+      - key: DB_TYPE
+        value: postgresdb
+      - key: DB_POSTGRESDB_HOST
+        sync: false  # Extracted from NEON_DATABASE_URL
+      - key: DB_POSTGRESDB_DATABASE
+        sync: false
+      - key: DB_POSTGRESDB_USER
+        sync: false
+      - key: DB_POSTGRESDB_PASSWORD
+        sync: false
+      - key: N8N_ENCRYPTION_KEY
+        generateValue: true
+      - key: N8N_USER_MANAGEMENT_JWT_SECRET
+        generateValue: true
+
+# =============================================================================
+# DATABASES & EXTERNAL SERVICES
+# =============================================================================
+databases:
+  # Note: Using external Neon PostgreSQL - no database creation needed
+  # Note: Using external Redis Cloud - no database creation needed
+  # Note: Using external Qdrant Cloud - configured via API
+  # Note: Using external Mem0 - configured via API
+  # Note: Using external Lambda Labs - configured via existing MCP service
+
+# =============================================================================
+# ENVIRONMENT VARIABLES MAPPING
+# =============================================================================
+# The following environment variables will be set via GitHub Actions:
+#
+# Core Infrastructure:
+# - RENDER_API_TOKEN (for deployment)
+# - PULUMI_ACCESS_TOKEN (for infrastructure provisioning)
+#
+# Existing GitHub Secrets (used as-is):
+# - NEON_DATABASE_URL, NEON_API_TOKEN
+# - REDIS_API_KEY, REDIS_DATABASE_ENDPOINT, REDIS_ACCOUNT_KEY
+# - LAMBDA_API_KEY, LAMBDA_PRIVATE_SSH_KEY, LAMBDA_PUBLIC_SSH_KEY
+# - GITHUB_PAT, GITHUB_APP_*, etc.
+# - All research, business, and LLM provider keys
+#
+# New Secrets Required:
+# - QDRANT_URL, QDRANT_API_KEY
+# - MEM0_API_KEY
+# - N8N_API_KEY (if using n8n Cloud instead of self-hosted)
+# - AIRBYTE_API_TOKEN (for Airbyte Cloud)
