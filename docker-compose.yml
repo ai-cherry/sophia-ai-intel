@@ -1,0 +1,387 @@
+# Sophia AI Intel Platform - Pure Pulumi Cloud Deployment
+# Complete containerized microservices stack
+version: '3.8'
+
+networks:
+  sophia-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  postgres-data:
+  redis-data:
+
+services:
+  # =============================================================================
+  # FRONTEND - DASHBOARD
+  # =============================================================================
+  
+  sophia-dashboard:
+    build:
+      context: ./apps/dashboard
+      dockerfile: Dockerfile
+    container_name: sophia-dashboard
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - VITE_API_BASE_URL=http://sophia-orchestrator:8080
+      - VITE_BUILD_ID=${BUILD_ID:-local}
+      - TENANT=pay-ready
+    networks:
+      sophia-network:
+        ipv4_address: 172.20.0.10
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # =============================================================================
+  # CORE MCP SERVICES
+  # =============================================================================
+
+  sophia-research:
+    build:
+      context: ./services/mcp-research
+      dockerfile: Dockerfile
+    container_name: sophia-research
+    ports:
+      - "8081:8080"
+    environment:
+      - PORT=8080
+      - PYTHONUNBUFFERED=1
+      - DEFAULT_LLM_MODEL=gpt-4
+      - SERPAPI_API_KEY=${TAVILY_API_KEY}
+      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
+      - TOGETHER_API_KEY=${OPENROUTER_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - VOYAGE_API_KEY=${VOYAGE_API_KEY}
+      - COHERE_API_KEY=${COHERE_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - PORTKEY_API_KEY=${PORTKEY_API_KEY}
+      - REDIS_URL=${REDIS_URL}
+      - NEON_DATABASE_URL=${NEON_DATABASE_URL}
+      - QDRANT_URL=${QDRANT_URL}
+      - QDRANT_API_KEY=${QDRANT_API_KEY}
+      - TENANT=pay-ready
+    networks:
+      sophia-network:
+        ipv4_address: 172.20.0.20
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  sophia-context:
+    build:
+      context: ./services/mcp-context
+      dockerfile: Dockerfile
+    container_name: sophia-context
+    ports:
+      - "8082:8080"
+    environment:
+      - PORT=8080
+      - PYTHONUNBUFFERED=1
+      - NEON_DATABASE_URL=${NEON_DATABASE_URL}
+      - QDRANT_URL=${QDRANT_URL}
+      - QDRANT_API_KEY=${QDRANT_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - REDIS_URL=${REDIS_URL}
+      - TENANT=pay-ready
+    networks:
+      sophia-network:
+        ipv4_address: 172.20.0.21
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  sophia-github:
+    build:
+      context: ./services/mcp-github
+      dockerfile: Dockerfile
+    container_name: sophia-github
+    ports:
+      - "8083:8080"
+    environment:
+      - PORT=8080
+      - PYTHONUNBUFFERED=1
+      - GITHUB_APP_ID=${GITHUB_APP_ID}
+      - GITHUB_INSTALLATION_ID=${GITHUB_INSTALLATION_ID}
+      - GITHUB_PRIVATE_KEY=${GITHUB_PRIVATE_KEY}
+      - GITHUB_REPO=ai-cherry/sophia-ai-intel
+      - DASHBOARD_ORIGIN=http://sophia-dashboard:3000
+      - NEON_DATABASE_URL=${NEON_DATABASE_URL}
+      - TENANT=pay-ready
+    networks:
+      sophia-network:
+        ipv4_address: 172.20.0.22
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  sophia-business:
+    build:
+      context: ./services/mcp-business
+      dockerfile: Dockerfile
+    container_name: sophia-business
+    ports:
+      - "8084:8080"
+    environment:
+      - PORT=8080
+      - PYTHONUNBUFFERED=1
+      - APOLLO_API_KEY=${APOLLO_API_KEY}
+      - USERGEMS_API_KEY=${USERGEMS_API_KEY}
+      - HUBSPOT_ACCESS_TOKEN=${HUBSPOT_ACCESS_TOKEN}
+      - SALESFORCE_CLIENT_ID=${SALESFORCE_CLIENT_ID}
+      - SALESFORCE_CLIENT_SECRET=${SALESFORCE_CLIENT_SECRET}
+      - SALESFORCE_USERNAME=${SALESFORCE_USERNAME}
+      - SALESFORCE_PASSWORD=${SALESFORCE_PASSWORD}
+      - SALESFORCE_SECURITY_TOKEN=${SALESFORCE_SECURITY_TOKEN}
+      - SALESFORCE_DOMAIN=${SALESFORCE_DOMAIN}
+      - GONG_BASE_URL=${GONG_BASE_URL}
+      - GONG_ACCESS_KEY=${GONG_ACCESS_KEY}
+      - GONG_ACCESS_KEY_SECRET=${GONG_ACCESS_KEY_SECRET}
+      - GONG_CLIENT_ACCESS_KEY=${GONG_CLIENT_ACCESS_KEY}
+      - GONG_CLIENT_SECRET=${GONG_CLIENT_SECRET}
+      - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}
+      - SLACK_SIGNING_SECRET=${SLACK_SIGNING_SECRET}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+      - ZILLOW_API_KEY=${ZILLOW_API_KEY}
+      - NEON_DATABASE_URL=${NEON_DATABASE_URL}
+      - QDRANT_URL=${QDRANT_URL}
+      - REDIS_URL=${REDIS_URL}
+      - PORTKEY_API_KEY=${PORTKEY_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - TENANT=pay-ready
+    networks:
+      sophia-network:
+        ipv4_address: 172.20.0.23
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  sophia-lambda:
+    build:
+      context: ./services/mcp-lambda
+      dockerfile: Dockerfile
+    container_name: sophia-lambda
+    ports:
+      - "8085:8080"
+    environment:
+      - PORT=8080
+      - PYTHONUNBUFFERED=1
+      - LAMBDA_API_KEY=${LAMBDA_API_KEY}
+      - LAMBDA_PRIVATE_SSH_KEY=${LAMBDA_PRIVATE_SSH_KEY}
+      - LAMBDA_PUBLIC_SSH_KEY=${LAMBDA_PUBLIC_SSH_KEY}
+      - LAMBDA_API_ENDPOINT=https://cloud.lambdalabs.com/api/v1
+      - DATABASE_URL=${NEON_DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - TENANT=pay-ready
+    networks:
+      sophia-network:
+        ipv4_address: 172.20.0.24
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  sophia-hubspot:
+    build:
+      context: ./services/mcp-hubspot
+      dockerfile: Dockerfile
+    container_name: sophia-hubspot
+    ports:
+      - "8086:8080"
+    environment:
+      - PORT=8080
+      - PYTHONUNBUFFERED=1
+      - HUBSPOT_ACCESS_TOKEN=${HUBSPOT_ACCESS_TOKEN}
+      - HUBSPOT_CLIENT_SECRET=${HUBSPOT_CLIENT_SECRET}
+      - TENANT=pay-ready
+    networks:
+      sophia-network:
+        ipv4_address: 172.20.0.25
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  sophia-orchestrator:
+    build:
+      context: ./services/orchestrator
+      dockerfile: Dockerfile
+    container_name: sophia-orchestrator
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - PYTHONUNBUFFERED=1
+      - REDIS_URL=${REDIS_URL}
+      - NEON_DATABASE_URL=${NEON_DATABASE_URL}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - MISTRAL_API_KEY=${MISTRAL_API_KEY}
+      - XAI_API_KEY=${XAI_API_KEY}
+      - PORTKEY_API_KEY=${PORTKEY_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - QDRANT_API_KEY=${QDRANT_API_KEY}
+      - QDRANT_URL=${QDRANT_URL}
+      - TENANT=pay-ready
+    networks:
+      sophia-network:
+        ipv4_address: 172.20.0.26
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - sophia-research
+      - sophia-context
+      - sophia-github
+      - sophia-business
+      - sophia-lambda
+      - sophia-hubspot
+
+  # =============================================================================
+  # BACKGROUND SERVICES
+  # =============================================================================
+
+  sophia-jobs:
+    build:
+      context: ./jobs
+      dockerfile: Dockerfile
+    container_name: sophia-jobs
+    environment:
+      - PYTHONUNBUFFERED=1
+      - NEON_DATABASE_URL=${NEON_DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - TENANT=pay-ready
+    networks:
+      sophia-network:
+        ipv4_address: 172.20.0.30
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 60s
+      timeout: 30s
+      retries: 3
+
+  # =============================================================================
+  # REVERSE PROXY & LOAD BALANCER
+  # =============================================================================
+
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    networks:
+      sophia-network:
+        ipv4_address: 172.20.0.5
+    restart: unless-stopped
+    depends_on:
+      - sophia-dashboard
+      - sophia-orchestrator
+      - sophia-research
+      - sophia-context
+      - sophia-github
+      - sophia-business
+      - sophia-lambda
+      - sophia-hubspot
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # =============================================================================
+  # MONITORING & OBSERVABILITY
+  # =============================================================================
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      sophia-network:
+        ipv4_address: 172.20.0.40
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+    volumes:
+      - ./monitoring/grafana:/etc/grafana/provisioning:ro
+    networks:
+      sophia-network:
+        ipv4_address: 172.20.0.41
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+# =============================================================================
+# HEALTH CHECK ENDPOINT
+# =============================================================================
+
+  health-check:
+    image: curlimages/curl:latest
+    container_name: health-check
+    networks:
+      - sophia-network
+    restart: "no"
+    command: |
+      sh -c "
+        echo 'Waiting for services to start...'
+        sleep 30
+        echo 'Running health checks...'
+        curl -f http://sophia-dashboard:3000/healthz && echo 'Dashboard: OK' || echo 'Dashboard: FAIL'
+        curl -f http://sophia-orchestrator:8080/healthz && echo 'Orchestrator: OK' || echo 'Orchestrator: FAIL'
+        curl -f http://sophia-research:8080/healthz && echo 'Research: OK' || echo 'Research: FAIL'
+        curl -f http://sophia-context:8080/healthz && echo 'Context: OK' || echo 'Context: FAIL'
+        curl -f http://sophia-github:8080/healthz && echo 'GitHub: OK' || echo 'GitHub: FAIL'
+        curl -f http://sophia-business:8080/healthz && echo 'Business: OK' || echo 'Business: FAIL'
+        curl -f http://sophia-lambda:8080/healthz && echo 'Lambda: OK' || echo 'Lambda: FAIL'
+        curl -f http://sophia-hubspot:8080/healthz && echo 'HubSpot: OK' || echo 'HubSpot: FAIL'
+        echo 'Health check complete!'
+      "
