@@ -11,7 +11,7 @@ services:
     repo: https://github.com/ai-cherry/sophia-ai-intel
     branch: main
     rootDir: apps/dashboard
-    buildCommand: npm ci && npm run build
+    buildCommand: npm install && npm run build
     publishPath: ./dist
     pullRequestPreviewsEnabled: true
     headers:

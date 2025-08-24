@@ -70,9 +70,9 @@ jobs:
           echo "QDRANT_API_KEY: $([ -n "$QDRANT_API_KEY" ] && echo "✅ Available (${#QDRANT_API_KEY} chars)" || echo "❌ Missing")"
           echo ""
           echo "Organization secrets context (should be populated):"
-          echo "secrets.RENDER_API_KEY length: ${{ length(secrets.RENDER_API_KEY) || 0 }}"
-          echo "secrets.QDRANT_API_KEY length: ${{ length(secrets.QDRANT_API_KEY) || 0 }}"
-          echo "secrets.NEON_PROJECT_ID length: ${{ length(secrets.NEON_PROJECT_ID) || 0 }}"
+          echo "secrets.RENDER_API_KEY available: ${{ secrets.RENDER_API_KEY != '' }}"
+          echo "secrets.QDRANT_API_KEY available: ${{ secrets.QDRANT_API_KEY != '' }}"
+          echo "secrets.NEON_PROJECT_ID available: ${{ secrets.NEON_PROJECT_ID != '' }}"
           
       - name: Deploy to Render
         env:
