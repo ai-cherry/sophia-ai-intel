@@ -1,3 +1,5 @@
 pulumi>=3.0.0,<4.0.0
-pulumi-fly>=0.1.0
+pulumi-esc>=0.8.0
 requests>=2.31.0
+cryptography>=41.0.0
+hashicorp-vault>=0.11.0

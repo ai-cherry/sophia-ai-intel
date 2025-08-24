@@ -4,6 +4,8 @@ runtime:
   options:
     virtualenv: venv
 description: Sophia AI comprehensive infrastructure with automated secrets management
+environment:
+  - mcp-platform-production
 template:
   config:
     org:

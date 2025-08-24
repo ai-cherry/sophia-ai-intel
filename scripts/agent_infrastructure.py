@@ -141,20 +141,47 @@ class AgentInfraManager:
         }
     
     def _ensure_pulumi_initialized(self):
-        """Ensure Pulumi project is initialized"""
+        """Ensure Pulumi project is initialized with non-interactive auth"""
         
-        if not (self.pulumi_dir / "Pulumi.dev.yaml").exists():
+        # Set environment for non-interactive auth
+        env = os.environ.copy()
+        env["PULUMI_ACCESS_TOKEN"] = os.getenv("PULUMI_ACCESS_TOKEN")
+        
+        if not env["PULUMI_ACCESS_TOKEN"]:
+            raise ValueError("Missing PULUMI_ACCESS_TOKEN environment variable")
+        
+        # Login non-interactively
+        login_result = self._run_command(
+            ["pulumi", "login", "--non-interactive"],
+            cwd=self.pulumi_dir,
+            description="Logging in to Pulumi",
+            env=env
+        )
+        
+        if not login_result["success"]:
+            print(f"⚠️ Pulumi login issue: {login_result['error']}")
+        
+        # Initialize or select stack
+        if not (self.pulumi_dir / "Pulumi.sophia-production.yaml").exists():
             print("🔧 Initializing Pulumi stack...")
             
-            # Initialize stack
             init_result = self._run_command(
                 ["pulumi", "stack", "init", "sophia-production"],
                 cwd=self.pulumi_dir,
-                description="Initializing Pulumi stack"
+                description="Initializing Pulumi stack",
+                env=env
             )
             
             if not init_result["success"]:
                 print(f"⚠️ Stack may already exist: {init_result['error']}")
+        else:
+            # Select existing stack
+            select_result = self._run_command(
+                ["pulumi", "stack", "select", "sophia-production"],
+                cwd=self.pulumi_dir,
+                description="Selecting Pulumi stack", 
+                env=env
+            )
     
     def _run_pulumi_up(self) -> Dict[str, Any]:
         """Run Pulumi deployment"""
@@ -187,7 +214,7 @@ class AgentInfraManager:
         return result
     
     def _run_command(self, cmd: list, cwd: Optional[Path] = None, 
-                    description: str = "", timeout: int = 300) -> Dict[str, Any]:
+                    description: str = "", timeout: int = 300, env: Optional[Dict] = None) -> Dict[str, Any]:
         """Run command with comprehensive error handling"""
         
         if description:
@@ -199,7 +226,8 @@ class AgentInfraManager:
                 cwd=cwd or self.project_root,
                 capture_output=True,
                 text=True,
-                timeout=timeout
+                timeout=timeout,
+                env=env or os.environ
             )
             
             return {
