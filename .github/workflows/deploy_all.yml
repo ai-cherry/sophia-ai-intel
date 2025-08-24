@@ -15,6 +15,10 @@ on:
         description: "Deploy jobs service (scheduled agents)"
         required: false
         default: "true"
+  push:
+    branches: [ main ]
+    paths:
+      - 'DEPLOY_NOW'
 
 permissions:
   contents: write
