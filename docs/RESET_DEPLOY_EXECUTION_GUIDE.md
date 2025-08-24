@@ -4,6 +4,8 @@
 
 **OBJECTIVE:** Execute the complete cloud deployment workflow for all Sophia AI Intel services
 
+**NOTE:** As of 2025-08-23, full deployment is not achieved. Only 2/6 services are operational due to infrastructure and build issues. See [`proofs/deployment/FINAL_DEPLOYMENT_STATUS_2025_08_23_2200.json`](../proofs/deployment/FINAL_DEPLOYMENT_STATUS_2025_08_23_2200.json) for current status and recommendations.
+
 **PREREQUISITES:** 
 - [GitHub Secrets configured](./RESET_DEPLOY_SECRETS_SETUP.md) (`FLY_API_TOKEN` and `FLY_APP_SECRETS_JSON`)
 - Access to repository: `https://github.com/ai-cherry/sophia-ai-intel`

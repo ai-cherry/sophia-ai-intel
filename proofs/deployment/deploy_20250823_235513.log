@@ -1,0 +1,588 @@
+=== PRODUCTION DEPLOYMENT: deploy_20250823_235513 ===
+Started: 2025-08-23T23:55:13Z
+Commit: 72978bf58d794b7a95f1ad377c774eb911cd7cbe
+
+[0;32m[INFO][0m Starting production deployment pipeline...
+[0;34m[STEP][0m Checking prerequisites...
+[0;32m[SUCCESS][0m Prerequisites check passed
+[0;34m[STEP][0m Enhancing Fly.io configurations for production...
+[0;32m[INFO][0m sophiaai-mcp-research-v2: Enhanced configuration applied
+[0;32m[INFO][0m sophiaai-dashboard-v2: Enhanced configuration applied
+[0;32m[INFO][0m sophiaai-mcp-context-v2: Enhanced configuration applied
+[0;32m[INFO][0m sophiaai-mcp-repo-v2: Enhanced configuration applied
+[0;32m[INFO][0m sophiaai-mcp-business-v2: Enhanced configuration applied
+[0;32m[SUCCESS][0m Fly.io configurations enhanced
+[0;34m[STEP][0m Setting up monitoring and alerting...
+[0;32m[SUCCESS][0m Monitoring scripts created
+[0;34m[STEP][0m Setting up automated recovery...
+[0;32m[SUCCESS][0m Auto-recovery scripts created
+[0;34m[STEP][0m Creating scaling automation...
+[0;32m[SUCCESS][0m Scaling automation created
+[0;34m[STEP][0m Starting production deployment of all services...
+[0;34m[STEP][0m Validating sophiaai-mcp-repo-v2 configuration...
+[0;32m[INFO][0m sophiaai-mcp-repo-v2: Dockerfile found
+[0;32m[INFO][0m sophiaai-mcp-repo-v2: Python service - validating requirements
+[0;32m[SUCCESS][0m sophiaai-mcp-repo-v2: Configuration valid
+[0;34m[STEP][0m Building sophiaai-mcp-repo-v2...
+[0;32m[INFO][0m sophiaai-mcp-repo-v2: Ready for deployment
+[0;34m[STEP][0m Deploying sophiaai-mcp-repo-v2 to regions: ord,iad...
+[0;32m[INFO][0m sophiaai-mcp-repo-v2: Deployment attempt 1/5
+==> Verifying app config
+Validating /workspaces/sophia-ai-intel/services/mcp-github/fly.toml
+[32m✓[0m Configuration is valid
+--> Verified app config
+==> Building image
+Waiting for depot builder...
+
+==> Building image with Depot
+--> build:  (​)
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 372B 0.2s done
+#1 DONE 0.2s
+
+#2 [internal] load metadata for docker.io/library/python:3.11-slim
+#2 DONE 0.4s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B 0.1s done
+#3 DONE 0.1s
+
+#4 [1/6] FROM docker.io/library/python:3.11-slim@sha256:1d6131b5d479888b43200645e03a78443c7157efbdb730e6b48129740727c312
+#4 resolve docker.io/library/python:3.11-slim@sha256:1d6131b5d479888b43200645e03a78443c7157efbdb730e6b48129740727c312 done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 20.54kB 0.3s done
+#5 DONE 0.3s
+
+#6 [2/6] WORKDIR /app
+#6 CACHED
+
+#7 [3/6] COPY requirements.txt .
+#7 DONE 0.0s
+
+#8 [4/6] RUN apt-get update && apt-get install -y --no-install-recommends libssl-dev && rm -rf /var/lib/apt/lists/*
+#8 0.241 Hit:1 http://deb.debian.org/debian trixie InRelease
+#8 0.247 Get:2 http://deb.debian.org/debian trixie-updates InRelease [47.1 kB]
+#8 0.259 Get:3 http://deb.debian.org/debian-security trixie-security InRelease [43.4 kB]
+#8 0.282 Get:4 http://deb.debian.org/debian trixie/main amd64 Packages [9668 kB]
+#8 0.373 Get:5 http://deb.debian.org/debian trixie-updates/main amd64 Packages [2432 B]
+#8 0.374 Get:6 http://deb.debian.org/debian-security trixie-security/main amd64 Packages [23.9 kB]
+#8 1.128 Fetched 9784 kB in 1s (10.3 MB/s)
+#8 1.128 Reading package lists...
+#8 1.759 Reading package lists...
+#8 2.398 Building dependency tree...
+#8 2.533 Reading state information...
+#8 2.689 Suggested packages:
+#8 2.689   libssl-doc
+#8 2.721 The following NEW packages will be installed:
+#8 2.721   libssl-dev
+#8 2.759 0 upgraded, 1 newly installed, 0 to remove and 0 not upgraded.
+#8 2.759 Need to get 2954 kB of archives.
+#8 2.759 After this operation, 16.5 MB of additional disk space will be used.
+#8 2.759 Get:1 http://deb.debian.org/debian trixie/main amd64 libssl-dev amd64 3.5.1-1 [2954 kB]
+#8 3.009 debconf: unable to initialize frontend: Dialog
+#8 3.009 debconf: (TERM is not set, so the dialog frontend is not usable.)
+#8 3.009 debconf: falling back to frontend: Readline
+#8 3.009 debconf: unable to initialize frontend: Readline
+#8 3.009 debconf: (Can't locate Term/ReadLine.pm in @INC (you may need to install the Term::ReadLine module) (@INC entries checked: /etc/perl /usr/local/lib/x86_64-linux-gnu/perl/5.40.1 /usr/local/share/perl/5.40.1 /usr/lib/x86_64-linux-gnu/perl5/5.40 /usr/share/perl5 /usr/lib/x86_64-linux-gnu/perl-base /usr/lib/x86_64-linux-gnu/perl/5.40 /usr/share/perl/5.40 /usr/local/lib/site_perl) at /usr/share/perl5/Debconf/FrontEnd/Readline.pm line 8, <STDIN> line 1.)
+#8 3.009 debconf: falling back to frontend: Teletype
+#8 3.015 debconf: unable to initialize frontend: Teletype
+#8 3.015 debconf: (This frontend requires a controlling tty.)
+#8 3.015 debconf: falling back to frontend: Noninteractive
+#8 3.694 Fetched 2954 kB in 0s (35.5 MB/s)
+#8 3.720 Selecting previously unselected package libssl-dev:amd64.
+#8 3.720 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 5643 files and directories currently installed.)
+#8 3.746 Preparing to unpack .../libssl-dev_3.5.1-1_amd64.deb ...
+#8 3.747 Unpacking libssl-dev:amd64 (3.5.1-1) ...
+#8 3.920 Setting up libssl-dev:amd64 (3.5.1-1) ...
+#8 DONE 4.0s
+
+#9 [5/6] RUN pip install --no-cache-dir -r requirements.txt
+#9 2.637 Collecting fastapi==0.111.0 (from -r requirements.txt (line 1))
+#9 3.096   Downloading fastapi-0.111.0-py3-none-any.whl.metadata (25 kB)
+#9 3.333 Collecting uvicorn==0.30.1 (from uvicorn[standard]==0.30.1->-r requirements.txt (line 2))
+#9 3.475   Downloading uvicorn-0.30.1-py3-none-any.whl.metadata (6.3 kB)
+#9 3.667 Collecting httpx==0.27.2 (from -r requirements.txt (line 3))
+#9 3.811   Downloading httpx-0.27.2-py3-none-any.whl.metadata (7.1 kB)
+#9 4.318 Collecting pydantic==2.8.2 (from -r requirements.txt (line 4))
+#9 4.460   Downloading pydantic-2.8.2-py3-none-any.whl.metadata (125 kB)
+#9 4.659      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 125.2/125.2 kB 626.8 kB/s eta 0:00:00
+#9 4.835 Collecting python-dotenv==1.0.1 (from -r requirements.txt (line 5))
+#9 4.975   Downloading python_dotenv-1.0.1-py3-none-any.whl.metadata (23 kB)
+#9 5.156 Collecting PyJWT>=2.4.0 (from PyJWT[crypto]>=2.4.0->-r requirements.txt (line 6))
+#9 5.297   Downloading PyJWT-2.10.1-py3-none-any.whl.metadata (4.0 kB)
+#9 5.885 Collecting cryptography>=3.4.8 (from -r requirements.txt (line 7))
+#9 6.027   Downloading cryptography-45.0.6-cp311-abi3-manylinux_2_34_x86_64.whl.metadata (5.7 kB)
+#9 6.246 Collecting starlette<0.38.0,>=0.37.2 (from fastapi==0.111.0->-r requirements.txt (line 1))
+#9 6.389   Downloading starlette-0.37.2-py3-none-any.whl.metadata (5.9 kB)
+#9 6.614 Collecting typing-extensions>=4.8.0 (from fastapi==0.111.0->-r requirements.txt (line 1))
+#9 6.756   Downloading typing_extensions-4.14.1-py3-none-any.whl.metadata (3.0 kB)
+#9 6.912 Collecting fastapi-cli>=0.0.2 (from fastapi==0.111.0->-r requirements.txt (line 1))
+#9 7.054   Downloading fastapi_cli-0.0.8-py3-none-any.whl.metadata (6.3 kB)
+#9 7.230 Collecting jinja2>=2.11.2 (from fastapi==0.111.0->-r requirements.txt (line 1))
+#9 7.372   Downloading jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+#9 7.532 Collecting python-multipart>=0.0.7 (from fastapi==0.111.0->-r requirements.txt (line 1))
+#9 7.674   Downloading python_multipart-0.0.20-py3-none-any.whl.metadata (1.8 kB)
+#9 7.918 Collecting ujson!=4.0.2,!=4.1.0,!=4.2.0,!=4.3.0,!=5.0.0,!=5.1.0,>=4.0.1 (from fastapi==0.111.0->-r requirements.txt (line 1))
+#9 8.060   Downloading ujson-5.11.0-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (9.4 kB)
+#9 8.621 Collecting orjson>=3.2.1 (from fastapi==0.111.0->-r requirements.txt (line 1))
+#9 8.762   Downloading orjson-3.11.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (1.2 kB)
+#9 8.926 Collecting email_validator>=2.0.0 (from fastapi==0.111.0->-r requirements.txt (line 1))
+#9 9.067   Downloading email_validator-2.2.0-py3-none-any.whl.metadata (25 kB)
+#9 9.300 Collecting click>=7.0 (from uvicorn==0.30.1->uvicorn[standard]==0.30.1->-r requirements.txt (line 2))
+#9 9.441   Downloading click-8.2.1-py3-none-any.whl.metadata (2.5 kB)
+#9 9.598 Collecting h11>=0.8 (from uvicorn==0.30.1->uvicorn[standard]==0.30.1->-r requirements.txt (line 2))
+#9 9.740   Downloading h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+#9 9.931 Collecting anyio (from httpx==0.27.2->-r requirements.txt (line 3))
+#9 10.07   Downloading anyio-4.10.0-py3-none-any.whl.metadata (4.0 kB)
+#9 10.24 Collecting certifi (from httpx==0.27.2->-r requirements.txt (line 3))
+#9 10.38   Downloading certifi-2025.8.3-py3-none-any.whl.metadata (2.4 kB)
+#9 10.56 Collecting httpcore==1.* (from httpx==0.27.2->-r requirements.txt (line 3))
+#9 10.70   Downloading httpcore-1.0.9-py3-none-any.whl.metadata (21 kB)
+#9 10.86 Collecting idna (from httpx==0.27.2->-r requirements.txt (line 3))
+#9 11.01   Downloading idna-3.10-py3-none-any.whl.metadata (10 kB)
+#9 11.17 Collecting sniffio (from httpx==0.27.2->-r requirements.txt (line 3))
+#9 11.31   Downloading sniffio-1.3.1-py3-none-any.whl.metadata (3.9 kB)
+#9 11.47 Collecting annotated-types>=0.4.0 (from pydantic==2.8.2->-r requirements.txt (line 4))
+#9 11.61   Downloading annotated_types-0.7.0-py3-none-any.whl.metadata (15 kB)
+#9 12.88 Collecting pydantic-core==2.20.1 (from pydantic==2.8.2->-r requirements.txt (line 4))
+#9 13.02   Downloading pydantic_core-2.20.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.6 kB)
+#9 13.23 Collecting httptools>=0.5.0 (from uvicorn[standard]==0.30.1->-r requirements.txt (line 2))
+#9 13.38   Downloading httptools-0.6.4-cp311-cp311-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (3.6 kB)
+#9 13.57 Collecting pyyaml>=5.1 (from uvicorn[standard]==0.30.1->-r requirements.txt (line 2))
+#9 13.71   Downloading PyYAML-6.0.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (2.1 kB)
+#9 13.97 Collecting uvloop!=0.15.0,!=0.15.1,>=0.14.0 (from uvicorn[standard]==0.30.1->-r requirements.txt (line 2))
+#9 14.11   Downloading uvloop-0.21.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.9 kB)
+#9 14.35 Collecting watchfiles>=0.13 (from uvicorn[standard]==0.30.1->-r requirements.txt (line 2))
+#9 14.49   Downloading watchfiles-1.1.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.9 kB)
+#9 14.76 Collecting websockets>=10.4 (from uvicorn[standard]==0.30.1->-r requirements.txt (line 2))
+#9 14.91   Downloading websockets-15.0.1-cp311-cp311-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.8 kB)
+#9 15.25 Collecting cffi>=1.14 (from cryptography>=3.4.8->-r requirements.txt (line 7))
+#9 15.39   Downloading cffi-1.17.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (1.5 kB)
+#9 15.60 Collecting pycparser (from cffi>=1.14->cryptography>=3.4.8->-r requirements.txt (line 7))
+#9 15.74   Downloading pycparser-2.22-py3-none-any.whl.metadata (943 bytes)
+#9 15.91 Collecting dnspython>=2.0.0 (from email_validator>=2.0.0->fastapi==0.111.0->-r requirements.txt (line 1))
+#9 16.05   Downloading dnspython-2.7.0-py3-none-any.whl.metadata (5.8 kB)
+#9 16.25 Collecting typer>=0.15.1 (from fastapi-cli>=0.0.2->fastapi==0.111.0->-r requirements.txt (line 1))
+#9 16.40   Downloading typer-0.16.1-py3-none-any.whl.metadata (15 kB)
+#9 16.58 Collecting rich-toolkit>=0.14.8 (from fastapi-cli>=0.0.2->fastapi==0.111.0->-r requirements.txt (line 1))
+#9 16.72   Downloading rich_toolkit-0.15.0-py3-none-any.whl.metadata (1.0 kB)
+#9 16.95 Collecting MarkupSafe>=2.0 (from jinja2>=2.11.2->fastapi==0.111.0->-r requirements.txt (line 1))
+#9 17.09   Downloading MarkupSafe-3.0.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.0 kB)
+#9 17.48 Collecting rich>=13.7.1 (from rich-toolkit>=0.14.8->fastapi-cli>=0.0.2->fastapi==0.111.0->-r requirements.txt (line 1))
+#9 17.62   Downloading rich-14.1.0-py3-none-any.whl.metadata (18 kB)
+#9 17.82 Collecting shellingham>=1.3.0 (from typer>=0.15.1->fastapi-cli>=0.0.2->fastapi==0.111.0->-r requirements.txt (line 1))
+#9 17.97   Downloading shellingham-1.5.4-py2.py3-none-any.whl.metadata (3.5 kB)
+#9 18.18 Collecting markdown-it-py>=2.2.0 (from rich>=13.7.1->rich-toolkit>=0.14.8->fastapi-cli>=0.0.2->fastapi==0.111.0->-r requirements.txt (line 1))
+#9 18.32   Downloading markdown_it_py-4.0.0-py3-none-any.whl.metadata (7.3 kB)
+#9 18.50 Collecting pygments<3.0.0,>=2.13.0 (from rich>=13.7.1->rich-toolkit>=0.14.8->fastapi-cli>=0.0.2->fastapi==0.111.0->-r requirements.txt (line 1))
+#9 18.65   Downloading pygments-2.19.2-py3-none-any.whl.metadata (2.5 kB)
+#9 18.84 Collecting mdurl~=0.1 (from markdown-it-py>=2.2.0->rich>=13.7.1->rich-toolkit>=0.14.8->fastapi-cli>=0.0.2->fastapi==0.111.0->-r requirements.txt (line 1))
+#9 18.98   Downloading mdurl-0.1.2-py3-none-any.whl.metadata (1.6 kB)
+#9 19.15 Downloading fastapi-0.111.0-py3-none-any.whl (91 kB)
+#9 19.18    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 92.0/92.0 kB 2.9 MB/s eta 0:00:00
+#9 19.33 Downloading uvicorn-0.30.1-py3-none-any.whl (62 kB)
+#9 19.35    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 62.4/62.4 kB 3.1 MB/s eta 0:00:00
+#9 19.49 Downloading httpx-0.27.2-py3-none-any.whl (76 kB)
+#9 19.52    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 76.4/76.4 kB 3.1 MB/s eta 0:00:00
+#9 19.66 Downloading pydantic-2.8.2-py3-none-any.whl (423 kB)
+#9 19.86    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 423.9/423.9 kB 2.1 MB/s eta 0:00:00
+#9 20.00 Downloading python_dotenv-1.0.1-py3-none-any.whl (19 kB)
+#9 20.15 Downloading httpcore-1.0.9-py3-none-any.whl (78 kB)
+#9 20.15    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 78.8/78.8 kB 10.7 MB/s eta 0:00:00
+#9 20.30 Downloading pydantic_core-2.20.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.1 MB)
+#9 20.59    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.1/2.1 MB 7.2 MB/s eta 0:00:00
+#9 20.73 Downloading PyJWT-2.10.1-py3-none-any.whl (22 kB)
+#9 20.87 Downloading cryptography-45.0.6-cp311-abi3-manylinux_2_34_x86_64.whl (4.5 MB)
+#9 21.05    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.5/4.5 MB 25.6 MB/s eta 0:00:00
+#9 21.19 Downloading annotated_types-0.7.0-py3-none-any.whl (13 kB)
+#9 21.34 Downloading cffi-1.17.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (467 kB)
+#9 21.35    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 467.2/467.2 kB 96.6 MB/s eta 0:00:00
+#9 21.49 Downloading click-8.2.1-py3-none-any.whl (102 kB)
+#9 21.49    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 102.2/102.2 kB 231.6 MB/s eta 0:00:00
+#9 21.64 Downloading email_validator-2.2.0-py3-none-any.whl (33 kB)
+#9 21.78 Downloading fastapi_cli-0.0.8-py3-none-any.whl (10 kB)
+#9 21.92 Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+#9 22.07 Downloading httptools-0.6.4-cp311-cp311-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl (459 kB)
+#9 22.07    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 459.8/459.8 kB 183.4 MB/s eta 0:00:00
+#9 22.21 Downloading idna-3.10-py3-none-any.whl (70 kB)
+#9 22.22    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 70.4/70.4 kB 242.8 MB/s eta 0:00:00
+#9 22.36 Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)
+#9 22.36    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 134.9/134.9 kB 253.4 MB/s eta 0:00:00
+#9 22.50 Downloading orjson-3.11.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (121 kB)
+#9 22.51    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 121.1/121.1 kB 265.4 MB/s eta 0:00:00
+#9 22.65 Downloading python_multipart-0.0.20-py3-none-any.whl (24 kB)
+#9 22.79 Downloading PyYAML-6.0.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (762 kB)
+#9 22.80    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 763.0/763.0 kB 141.8 MB/s eta 0:00:00
+#9 22.94 Downloading starlette-0.37.2-py3-none-any.whl (71 kB)
+#9 22.95    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 71.9/71.9 kB 238.8 MB/s eta 0:00:00
+#9 23.09 Downloading anyio-4.10.0-py3-none-any.whl (107 kB)
+#9 23.09    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 107.2/107.2 kB 235.1 MB/s eta 0:00:00
+#9 23.23 Downloading sniffio-1.3.1-py3-none-any.whl (10 kB)
+#9 23.37 Downloading typing_extensions-4.14.1-py3-none-any.whl (43 kB)
+#9 23.38    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 43.9/43.9 kB 213.5 MB/s eta 0:00:00
+#9 23.52 Downloading ujson-5.11.0-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (57 kB)
+#9 23.52    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 57.3/57.3 kB 126.3 MB/s eta 0:00:00
+#9 23.67 Downloading uvloop-0.21.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (4.0 MB)
+#9 23.81    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.0/4.0 MB 28.3 MB/s eta 0:00:00
+#9 23.95 Downloading watchfiles-1.1.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (453 kB)
+#9 23.95    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 453.1/453.1 kB 224.9 MB/s eta 0:00:00
+#9 24.10 Downloading websockets-15.0.1-cp311-cp311-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl (182 kB)
+#9 24.10    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 182.3/182.3 kB 282.8 MB/s eta 0:00:00
+#9 24.24 Downloading certifi-2025.8.3-py3-none-any.whl (161 kB)
+#9 24.24    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 161.2/161.2 kB 255.9 MB/s eta 0:00:00
+#9 24.39 Downloading dnspython-2.7.0-py3-none-any.whl (313 kB)
+#9 24.39    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 313.6/313.6 kB 259.2 MB/s eta 0:00:00
+#9 24.53 Downloading MarkupSafe-3.0.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (23 kB)
+#9 24.67 Downloading rich_toolkit-0.15.0-py3-none-any.whl (29 kB)
+#9 24.82 Downloading typer-0.16.1-py3-none-any.whl (46 kB)
+#9 24.82    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 46.4/46.4 kB 217.8 MB/s eta 0:00:00
+#9 24.96 Downloading pycparser-2.22-py3-none-any.whl (117 kB)
+#9 24.96    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 117.6/117.6 kB 222.8 MB/s eta 0:00:00
+#9 25.11 Downloading rich-14.1.0-py3-none-any.whl (243 kB)
+#9 25.11    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 243.4/243.4 kB 208.1 MB/s eta 0:00:00
+#9 25.25 Downloading shellingham-1.5.4-py2.py3-none-any.whl (9.8 kB)
+#9 25.39 Downloading markdown_it_py-4.0.0-py3-none-any.whl (87 kB)
+#9 25.40    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 87.3/87.3 kB 201.5 MB/s eta 0:00:00
+#9 25.54 Downloading pygments-2.19.2-py3-none-any.whl (1.2 MB)
+#9 25.55    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 113.6 MB/s eta 0:00:00
+#9 25.69 Downloading mdurl-0.1.2-py3-none-any.whl (10.0 kB)
+#9 25.98 Installing collected packages: websockets, uvloop, ujson, typing-extensions, sniffio, shellingham, pyyaml, python-multipart, python-dotenv, PyJWT, pygments, pycparser, orjson, mdurl, MarkupSafe, idna, httptools, h11, dnspython, click, certifi, annotated-types, uvicorn, pydantic-core, markdown-it-py, jinja2, httpcore, email_validator, cffi, anyio, watchfiles, starlette, rich, pydantic, httpx, cryptography, typer, rich-toolkit, fastapi-cli, fastapi
+#9 29.53 Successfully installed MarkupSafe-3.0.2 PyJWT-2.10.1 annotated-types-0.7.0 anyio-4.10.0 certifi-2025.8.3 cffi-1.17.1 click-8.2.1 cryptography-45.0.6 dnspython-2.7.0 email_validator-2.2.0 fastapi-0.111.0 fastapi-cli-0.0.8 h11-0.16.0 httpcore-1.0.9 httptools-0.6.4 httpx-0.27.2 idna-3.10 jinja2-3.1.6 markdown-it-py-4.0.0 mdurl-0.1.2 orjson-3.11.2 pycparser-2.22 pydantic-2.8.2 pydantic-core-2.20.1 pygments-2.19.2 python-dotenv-1.0.1 python-multipart-0.0.20 pyyaml-6.0.2 rich-14.1.0 rich-toolkit-0.15.0 shellingham-1.5.4 sniffio-1.3.1 starlette-0.37.2 typer-0.16.1 typing-extensions-4.14.1 ujson-5.11.0 uvicorn-0.30.1 uvloop-0.21.0 watchfiles-1.1.0 websockets-15.0.1
+#9 29.53 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+#9 30.10 
+#9 30.10 [notice] A new release of pip is available: 24.0 -> 25.2
+#9 30.10 [notice] To update, run: pip install --upgrade pip
+#9 DONE 30.9s
+
+#10 [6/6] COPY . .
+#10 DONE 0.0s
+
+#11 exporting to image
+#11 exporting layers
+#11 exporting layers 0.5s done
+#11 exporting manifest sha256:a339f6e313f07ff25df14cc6f5c5ae33088eb472a3bb6b7b365a6a4cb3c67b5e done
+#11 exporting config sha256:79e1608008ae8b69e95ca4f635669b85a107a83f1052f781a2db3d25dedb0b61 done
+#11 pushing layers for registry.fly.io/sophiaai-mcp-repo-v2:deployment-01K3CNQ5S0PJDSX21DCQW4ZG3K@sha256:a339f6e313f07ff25df14cc6f5c5ae33088eb472a3bb6b7b365a6a4cb3c67b5e
+#11 pushing layer sha256:4f4dc4a959bac6f7fad2209cde977be1ff802556f282967926458da668e35271
+#11 pushing layer sha256:1961ca026b04e3e3720545ee5a8e05e60692056663c685c5d2437bf3ad9e6e08
+#11 pushing layer sha256:396b1da7636e2dcd10565cb4f2f952cbb4a8a38b58d3b86a2cacb172fb70117c
+#11 pushing layer sha256:79e1608008ae8b69e95ca4f635669b85a107a83f1052f781a2db3d25dedb0b61
+#11 pushing layer sha256:8ddcf6d60f734691e031ddda65fd1fa048f4b8473d18968bc6da398155d6af07
+#11 pushing layer sha256:8f3393f914ef080231b623da0bce724e28f721f6c1de3c547791540390da4269
+#11 pushing layer sha256:af5ba7e0f60d6b4a1aab5376e463612ff53bae903e40225171eb64a048dae2ba
+#11 pushing layer sha256:fcec5a125fd8f69ba9d5c3fd9ecf3810f95775d4d5694ed731adcdeae1cff909
+#11 pushing layer sha256:36bd708816b75821f0adb15c685ac88a684824b283f274156cb33dab5cc3bc88
+#11 pushing layer sha256:a27cb4be70170df84ec3045fb7d33b3eb7018cb39fc029037429d9f06362737f
+#11 pushing layer sha256:1961ca026b04e3e3720545ee5a8e05e60692056663c685c5d2437bf3ad9e6e08 0.9s done
+#11 pushing layer sha256:fcec5a125fd8f69ba9d5c3fd9ecf3810f95775d4d5694ed731adcdeae1cff909 1.1s done
+#11 pushing layer sha256:396b1da7636e2dcd10565cb4f2f952cbb4a8a38b58d3b86a2cacb172fb70117c 1.3s done
+#11 pushing layer sha256:af5ba7e0f60d6b4a1aab5376e463612ff53bae903e40225171eb64a048dae2ba 1.1s done
+#11 pushing layer sha256:a27cb4be70170df84ec3045fb7d33b3eb7018cb39fc029037429d9f06362737f 1.2s done
+#11 pushing layer sha256:36bd708816b75821f0adb15c685ac88a684824b283f274156cb33dab5cc3bc88 2.2s done
+#11 pushing layer sha256:4f4dc4a959bac6f7fad2209cde977be1ff802556f282967926458da668e35271 2.3s done
+#11 pushing layer sha256:8f3393f914ef080231b623da0bce724e28f721f6c1de3c547791540390da4269 2.5s done
+#11 pushing layer sha256:79e1608008ae8b69e95ca4f635669b85a107a83f1052f781a2db3d25dedb0b61 3.0s done
+#11 pushing layers for registry.fly.io/sophiaai-mcp-repo-v2:deployment-01K3CNQ5S0PJDSX21DCQW4ZG3K@sha256:a339f6e313f07ff25df14cc6f5c5ae33088eb472a3bb6b7b365a6a4cb3c67b5e 5.7s done
+#11 pushing layer sha256:8ddcf6d60f734691e031ddda65fd1fa048f4b8473d18968bc6da398155d6af07 5.7s done
+#11 pushing manifest for registry.fly.io/sophiaai-mcp-repo-v2:deployment-01K3CNQ5S0PJDSX21DCQW4ZG3K@sha256:a339f6e313f07ff25df14cc6f5c5ae33088eb472a3bb6b7b365a6a4cb3c67b5e
+#11 pushing manifest for registry.fly.io/sophiaai-mcp-repo-v2:deployment-01K3CNQ5S0PJDSX21DCQW4ZG3K@sha256:a339f6e313f07ff25df14cc6f5c5ae33088eb472a3bb6b7b365a6a4cb3c67b5e 1.6s done
+#11 DONE 7.8s
+--> Build Summary:  (​)
+[38;5;252m--> Building image done[0m
+image: registry.fly.io/sophiaai-mcp-repo-v2:deployment-01K3CNQ5S0PJDSX21DCQW4ZG3K
+image size: 78 MB
+
+Watch your deployment at https://fly.io/apps/sophiaai-mcp-repo-v2/monitoring
+
+[2mINFO[0m Using wait timeout: 10m0s lease timeout: 13s delay between lease refreshes: 4s
+
+Updating existing machines in 'sophiaai-mcp-repo-v2' with rolling strategy
+> [1/2] Acquiring lease for 6e827d10f35387
+> [1/2] Acquired lease for 6e827d10f35387
+> [2/2] Acquiring lease for 1781711dcd0489
+> [2/2] Acquired lease for 1781711dcd0489
+> [1/2] Updating machine config for 6e827d10f35387
+> [1/2] Updating 6e827d10f35387 [app]
+> [1/2] Updated machine config for 6e827d10f35387
+> [1/2] Waiting for machine 6e827d10f35387 to reach a good state
+> [1/2] Machine 6e827d10f35387 reached started state
+> [1/2] Running smoke checks on machine 6e827d10f35387
+> [1/2] Running machine checks on machine 6e827d10f35387
+> [1/2] Checking health of machine 6e827d10f35387
+✔ [1/2] Machine 6e827d10f35387 is now in a good state
+> [2/2] Updating machine config for 1781711dcd0489
+> [2/2] Updating 1781711dcd0489 [app]
+✖ [2/2] failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout
+> [1/2] Updating machine config for 6e827d10f35387
+> [1/2] Updating 6e827d10f35387 [app]
+> [1/2] Updated machine config for 6e827d10f35387
+✔ [1/2] Machine 6e827d10f35387 is now in a good state
+> [2/2] Updating machine config for 1781711dcd0489
+> [2/2] Updating 1781711dcd0489 [app]
+✖ [2/2] failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout
+Failed to update machines: failed to update machine 1781711dcd0489: failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout Retrying...
+> [1/2] Updating machine config for 1781711dcd0489
+> [1/2] Updating 1781711dcd0489 [app]
+✖ [1/2] failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout
+✖ [2/2] skipping machine update due to earlier failure
+Failed to update machines: failed to update machine 1781711dcd0489: failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout Retrying...
+> [1/2] Updating machine config for 1781711dcd0489
+> [1/2] Updating 1781711dcd0489 [app]
+✖ [1/2] failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout
+✖ [2/2] skipping machine update due to earlier failure
+Failed to update machines: failed to update machine 1781711dcd0489: failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout Retrying...
+> [1/2] Updating machine config for 1781711dcd0489
+> [1/2] Updating 1781711dcd0489 [app]
+✖ [1/2] failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout
+✖ [2/2] skipping machine update due to earlier failure
+Failed to update machines: failed to update machine 1781711dcd0489: failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout Retrying...
+> [1/2] Updating machine config for 6e827d10f35387
+> [1/2] Updating 6e827d10f35387 [app]
+> [1/2] Updated machine config for 6e827d10f35387
+✔ [1/2] Machine 6e827d10f35387 is now in a good state
+> [2/2] Updating machine config for 1781711dcd0489
+> [2/2] Updating 1781711dcd0489 [app]
+✖ [2/2] failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout
+Failed to update machines: failed to update machine 1781711dcd0489: failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout Retrying...
+> [1/2] Updating machine config for 1781711dcd0489
+> [1/2] Updating 1781711dcd0489 [app]
+✖ [1/2] failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout
+✖ [2/2] skipping machine update due to earlier failure
+Failed to update machines: failed to update machine 1781711dcd0489: failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout Retrying...
+Failed to update machines: failed to update machine 1781711dcd0489: failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout
+> [2/2] Clearing lease for 1781711dcd0489
+> [1/2] Clearing lease for 6e827d10f35387
+✔ [2/2] Cleared lease for 1781711dcd0489
+✔ [1/2] Cleared lease for 6e827d10f35387
+Error: failed to update machine 1781711dcd0489: failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout (Request ID: 01K3CNT4GZ9JST55712K4HB3YM-lax) (Trace ID: 8ccf68a5c585bf19791724a6b021f180)
+[1;33m[WARN][0m sophiaai-mcp-repo-v2: Deployment attempt 1 failed (exit code: 1)
+[0;32m[INFO][0m sophiaai-mcp-repo-v2: Waiting 60s before retry...
+[0;32m[INFO][0m sophiaai-mcp-repo-v2: Deployment attempt 2/5
+==> Verifying app config
+Validating /workspaces/sophia-ai-intel/services/mcp-github/fly.toml
+[32m✓[0m Configuration is valid
+--> Verified app config
+==> Building image
+Waiting for depot builder...
+
+==> Building image with Depot
+--> build:  (​)
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 372B 0.2s done
+#1 DONE 0.2s
+
+#2 [internal] load metadata for docker.io/library/python:3.11-slim
+#2 DONE 0.4s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B 0.1s done
+#3 DONE 0.1s
+
+#4 [1/6] FROM docker.io/library/python:3.11-slim@sha256:1d6131b5d479888b43200645e03a78443c7157efbdb730e6b48129740727c312
+#4 resolve docker.io/library/python:3.11-slim@sha256:1d6131b5d479888b43200645e03a78443c7157efbdb730e6b48129740727c312 done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 388B 0.2s done
+#5 DONE 0.2s
+
+#6 [2/6] WORKDIR /app
+#6 CACHED
+
+#7 [3/6] COPY requirements.txt .
+#7 CACHED
+
+#8 [4/6] RUN apt-get update && apt-get install -y --no-install-recommends libssl-dev && rm -rf /var/lib/apt/lists/*
+#8 CACHED
+
+#9 [5/6] RUN pip install --no-cache-dir -r requirements.txt
+#9 CACHED
+
+#10 [6/6] COPY . .
+#10 CACHED
+
+#11 exporting to image
+#11 exporting layers done
+#11 exporting manifest sha256:a339f6e313f07ff25df14cc6f5c5ae33088eb472a3bb6b7b365a6a4cb3c67b5e done
+#11 exporting config sha256:79e1608008ae8b69e95ca4f635669b85a107a83f1052f781a2db3d25dedb0b61 done
+#11 pushing layers for registry.fly.io/sophiaai-mcp-repo-v2:deployment-01K3CP9ARMDY94QYS4DWVH7NHG@sha256:a339f6e313f07ff25df14cc6f5c5ae33088eb472a3bb6b7b365a6a4cb3c67b5e
+#11 pushing layer sha256:4f4dc4a959bac6f7fad2209cde977be1ff802556f282967926458da668e35271
+#11 pushing layer sha256:1961ca026b04e3e3720545ee5a8e05e60692056663c685c5d2437bf3ad9e6e08
+#11 pushing layer sha256:8ddcf6d60f734691e031ddda65fd1fa048f4b8473d18968bc6da398155d6af07
+#11 pushing layer sha256:8f3393f914ef080231b623da0bce724e28f721f6c1de3c547791540390da4269
+#11 pushing layer sha256:af5ba7e0f60d6b4a1aab5376e463612ff53bae903e40225171eb64a048dae2ba
+#11 pushing layer sha256:a27cb4be70170df84ec3045fb7d33b3eb7018cb39fc029037429d9f06362737f
+#11 pushing layer sha256:fcec5a125fd8f69ba9d5c3fd9ecf3810f95775d4d5694ed731adcdeae1cff909
+#11 pushing layer sha256:79e1608008ae8b69e95ca4f635669b85a107a83f1052f781a2db3d25dedb0b61
+#11 pushing layer sha256:36bd708816b75821f0adb15c685ac88a684824b283f274156cb33dab5cc3bc88
+#11 pushing layer sha256:396b1da7636e2dcd10565cb4f2f952cbb4a8a38b58d3b86a2cacb172fb70117c
+#11 pushing layer sha256:36bd708816b75821f0adb15c685ac88a684824b283f274156cb33dab5cc3bc88 0.6s done
+#11 pushing layer sha256:4f4dc4a959bac6f7fad2209cde977be1ff802556f282967926458da668e35271 0.6s done
+#11 pushing layer sha256:8ddcf6d60f734691e031ddda65fd1fa048f4b8473d18968bc6da398155d6af07 0.7s done
+#11 pushing layer sha256:1961ca026b04e3e3720545ee5a8e05e60692056663c685c5d2437bf3ad9e6e08 0.8s done
+#11 pushing layer sha256:fcec5a125fd8f69ba9d5c3fd9ecf3810f95775d4d5694ed731adcdeae1cff909 0.8s done
+#11 pushing layer sha256:af5ba7e0f60d6b4a1aab5376e463612ff53bae903e40225171eb64a048dae2ba 1.0s done
+#11 pushing layer sha256:a27cb4be70170df84ec3045fb7d33b3eb7018cb39fc029037429d9f06362737f 1.0s done
+#11 pushing layer sha256:396b1da7636e2dcd10565cb4f2f952cbb4a8a38b58d3b86a2cacb172fb70117c 1.1s done
+#11 pushing layers for registry.fly.io/sophiaai-mcp-repo-v2:deployment-01K3CP9ARMDY94QYS4DWVH7NHG@sha256:a339f6e313f07ff25df14cc6f5c5ae33088eb472a3bb6b7b365a6a4cb3c67b5e 1.3s done
+#11 pushing layer sha256:8f3393f914ef080231b623da0bce724e28f721f6c1de3c547791540390da4269 1.2s done
+#11 pushing layer sha256:79e1608008ae8b69e95ca4f635669b85a107a83f1052f781a2db3d25dedb0b61 1.3s done
+#11 pushing manifest for registry.fly.io/sophiaai-mcp-repo-v2:deployment-01K3CP9ARMDY94QYS4DWVH7NHG@sha256:a339f6e313f07ff25df14cc6f5c5ae33088eb472a3bb6b7b365a6a4cb3c67b5e
+#11 pushing manifest for registry.fly.io/sophiaai-mcp-repo-v2:deployment-01K3CP9ARMDY94QYS4DWVH7NHG@sha256:a339f6e313f07ff25df14cc6f5c5ae33088eb472a3bb6b7b365a6a4cb3c67b5e 1.4s done
+#11 DONE 2.6s
+--> Build Summary:  (​)
+[38;5;252m--> Building image done[0m
+image: registry.fly.io/sophiaai-mcp-repo-v2:deployment-01K3CP9ARMDY94QYS4DWVH7NHG
+image size: 78 MB
+
+Watch your deployment at https://fly.io/apps/sophiaai-mcp-repo-v2/monitoring
+
+[2mINFO[0m Using wait timeout: 10m0s lease timeout: 13s delay between lease refreshes: 4s
+
+Updating existing machines in 'sophiaai-mcp-repo-v2' with rolling strategy
+> [1/2] Acquiring lease for 1781711dcd0489
+> [1/2] Acquired lease for 1781711dcd0489
+> [2/2] Acquiring lease for 6e827d10f35387
+> [2/2] Acquired lease for 6e827d10f35387
+> [1/2] Updating machine config for 1781711dcd0489
+> [1/2] Updating 1781711dcd0489 [app]
+✖ [1/2] failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout
+✖ [2/2] skipping machine update due to earlier failure
+> [1/2] Updating machine config for 1781711dcd0489
+> [1/2] Updating 1781711dcd0489 [app]
+✖ [1/2] failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout
+✖ [2/2] skipping machine update due to earlier failure
+Failed to update machines: failed to update machine 1781711dcd0489: failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout Retrying...
+> [1/2] Updating machine config for 1781711dcd0489
+> [1/2] Updating 1781711dcd0489 [app]
+✖ [1/2] failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout
+✖ [2/2] skipping machine update due to earlier failure
+Failed to update machines: failed to update machine 1781711dcd0489: failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout Retrying...
+> [1/2] Updating machine config for 1781711dcd0489
+> [1/2] Updating 1781711dcd0489 [app]
+✖ [1/2] failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout
+✖ [2/2] skipping machine update due to earlier failure
+Failed to update machines: failed to update machine 1781711dcd0489: failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout Retrying...
+> [1/2] Updating machine config for 1781711dcd0489
+> [1/2] Updating 1781711dcd0489 [app]
+✖ [1/2] failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout
+✖ [2/2] skipping machine update due to earlier failure
+Failed to update machines: failed to update machine 1781711dcd0489: failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout Retrying...
+> [1/2] Updating machine config for 1781711dcd0489
+> [1/2] Updating 1781711dcd0489 [app]
+✖ [1/2] failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout
+✖ [2/2] skipping machine update due to earlier failure
+Failed to update machines: failed to update machine 1781711dcd0489: failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout Retrying...
+> [1/2] Updating machine config for 1781711dcd0489
+> [1/2] Updating 1781711dcd0489 [app]
+✖ [1/2] failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout
+✖ [2/2] skipping machine update due to earlier failure
+Failed to update machines: failed to update machine 1781711dcd0489: failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout Retrying...
+Failed to update machines: failed to update machine 1781711dcd0489: failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout
+> [2/2] Clearing lease for 6e827d10f35387
+> [1/2] Clearing lease for 1781711dcd0489
+✔ [2/2] Cleared lease for 6e827d10f35387
+✔ [1/2] Cleared lease for 1781711dcd0489
+Error: failed to update machine 1781711dcd0489: failed to update VM 1781711dcd0489: request returned non-2xx status: 504: upstream request timeout (Request ID: 01K3CPA29VX01EB7RD7B3VVBDG-lax) (Trace ID: b21cd64be1d0779e86d0f9dd5d06c3cc)
+[1;33m[WARN][0m sophiaai-mcp-repo-v2: Deployment attempt 2 failed (exit code: 1)
+[0;32m[INFO][0m sophiaai-mcp-repo-v2: Waiting 120s before retry...
+[0;32m[INFO][0m sophiaai-mcp-repo-v2: Deployment attempt 3/5
+==> Verifying app config
+Validating /workspaces/sophia-ai-intel/services/mcp-github/fly.toml
+[32m✓[0m Configuration is valid
+--> Verified app config
+==> Building image
+Waiting for depot builder...
+
+==> Building image with Depot
+--> build:  (​)
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 372B 0.2s done
+#1 DONE 0.2s
+
+#2 [internal] load metadata for docker.io/library/python:3.11-slim
+#2 DONE 0.5s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B 0.1s done
+#3 DONE 0.1s
+
+#4 [1/6] FROM docker.io/library/python:3.11-slim@sha256:1d6131b5d479888b43200645e03a78443c7157efbdb730e6b48129740727c312
+#4 resolve docker.io/library/python:3.11-slim@sha256:1d6131b5d479888b43200645e03a78443c7157efbdb730e6b48129740727c312 done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 388B 0.1s done
+#5 DONE 0.2s
+
+#6 [2/6] WORKDIR /app
+#6 CACHED
+
+#7 [3/6] COPY requirements.txt .
+#7 CACHED
+
+#8 [4/6] RUN apt-get update && apt-get install -y --no-install-recommends libssl-dev && rm -rf /var/lib/apt/lists/*
+#8 CACHED
+
+#9 [5/6] RUN pip install --no-cache-dir -r requirements.txt
+#9 CACHED
+
+#10 [6/6] COPY . .
+#10 CACHED
+
+#11 exporting to image
+#11 exporting layers done
+#11 exporting manifest sha256:a339f6e313f07ff25df14cc6f5c5ae33088eb472a3bb6b7b365a6a4cb3c67b5e done
+#11 exporting config sha256:79e1608008ae8b69e95ca4f635669b85a107a83f1052f781a2db3d25dedb0b61 done
+#11 pushing layers for registry.fly.io/sophiaai-mcp-repo-v2:deployment-01K3CPV08F1V0PDZCW32AAQYW7@sha256:a339f6e313f07ff25df14cc6f5c5ae33088eb472a3bb6b7b365a6a4cb3c67b5e
+#11 pushing layer sha256:4f4dc4a959bac6f7fad2209cde977be1ff802556f282967926458da668e35271
+#11 pushing layer sha256:36bd708816b75821f0adb15c685ac88a684824b283f274156cb33dab5cc3bc88
+#11 pushing layer sha256:fcec5a125fd8f69ba9d5c3fd9ecf3810f95775d4d5694ed731adcdeae1cff909
+#11 pushing layer sha256:af5ba7e0f60d6b4a1aab5376e463612ff53bae903e40225171eb64a048dae2ba
+#11 pushing layer sha256:8ddcf6d60f734691e031ddda65fd1fa048f4b8473d18968bc6da398155d6af07
+#11 pushing layer sha256:79e1608008ae8b69e95ca4f635669b85a107a83f1052f781a2db3d25dedb0b61
+#11 pushing layer sha256:a27cb4be70170df84ec3045fb7d33b3eb7018cb39fc029037429d9f06362737f
+#11 pushing layer sha256:396b1da7636e2dcd10565cb4f2f952cbb4a8a38b58d3b86a2cacb172fb70117c
+#11 pushing layer sha256:8f3393f914ef080231b623da0bce724e28f721f6c1de3c547791540390da4269
+#11 pushing layer sha256:1961ca026b04e3e3720545ee5a8e05e60692056663c685c5d2437bf3ad9e6e08
+#11 pushing layer sha256:8f3393f914ef080231b623da0bce724e28f721f6c1de3c547791540390da4269 0.5s done
+#11 pushing layer sha256:4f4dc4a959bac6f7fad2209cde977be1ff802556f282967926458da668e35271 0.6s done
+#11 pushing layer sha256:79e1608008ae8b69e95ca4f635669b85a107a83f1052f781a2db3d25dedb0b61 0.8s done
+#11 pushing layer sha256:a27cb4be70170df84ec3045fb7d33b3eb7018cb39fc029037429d9f06362737f 0.8s done
+#11 pushing layer sha256:1961ca026b04e3e3720545ee5a8e05e60692056663c685c5d2437bf3ad9e6e08 1.0s done
+#11 pushing layer sha256:36bd708816b75821f0adb15c685ac88a684824b283f274156cb33dab5cc3bc88 1.0s done
+#11 pushing layer sha256:af5ba7e0f60d6b4a1aab5376e463612ff53bae903e40225171eb64a048dae2ba 1.1s done
+#11 pushing layer sha256:8ddcf6d60f734691e031ddda65fd1fa048f4b8473d18968bc6da398155d6af07 1.0s done
+#11 pushing layers for registry.fly.io/sophiaai-mcp-repo-v2:deployment-01K3CPV08F1V0PDZCW32AAQYW7@sha256:a339f6e313f07ff25df14cc6f5c5ae33088eb472a3bb6b7b365a6a4cb3c67b5e 1.2s done
+#11 pushing layer sha256:fcec5a125fd8f69ba9d5c3fd9ecf3810f95775d4d5694ed731adcdeae1cff909 1.1s done
+#11 pushing layer sha256:396b1da7636e2dcd10565cb4f2f952cbb4a8a38b58d3b86a2cacb172fb70117c 1.2s done
+#11 pushing manifest for registry.fly.io/sophiaai-mcp-repo-v2:deployment-01K3CPV08F1V0PDZCW32AAQYW7@sha256:a339f6e313f07ff25df14cc6f5c5ae33088eb472a3bb6b7b365a6a4cb3c67b5e
+#11 pushing manifest for registry.fly.io/sophiaai-mcp-repo-v2:deployment-01K3CPV08F1V0PDZCW32AAQYW7@sha256:a339f6e313f07ff25df14cc6f5c5ae33088eb472a3bb6b7b365a6a4cb3c67b5e 1.6s done
+#11 DONE 2.8s
+--> Build Summary:  (​)
+[38;5;252m--> Building image done[0m
+image: registry.fly.io/sophiaai-mcp-repo-v2:deployment-01K3CPV08F1V0PDZCW32AAQYW7
+image size: 78 MB
+
+Watch your deployment at https://fly.io/apps/sophiaai-mcp-repo-v2/monitoring
+
+[2mINFO[0m Using wait timeout: 10m0s lease timeout: 13s delay between lease refreshes: 4s
+
+Updating existing machines in 'sophiaai-mcp-repo-v2' with rolling strategy
+> [1/2] Acquiring lease for 6e827d10f35387
+> [1/2] Acquired lease for 6e827d10f35387
+> [2/2] Acquiring lease for 1781711dcd0489
+> [2/2] Acquired lease for 1781711dcd0489
+> [1/2] Updating machine config for 6e827d10f35387
+> [1/2] Updating 6e827d10f35387 [app]
+> [1/2] Updated machine config for 6e827d10f35387
+> [1/2] Waiting for machine 6e827d10f35387 to reach a good state
+> [1/2] Machine 6e827d10f35387 reached started state
+> [1/2] Running smoke checks on machine 6e827d10f35387
+> [1/2] Running machine checks on machine 6e827d10f35387
+> [1/2] Checking health of machine 6e827d10f35387
+✔ [1/2] Machine 6e827d10f35387 is now in a good state
+> [2/2] Updating machine config for 1781711dcd0489
+> [2/2] Updating 1781711dcd0489 [app]

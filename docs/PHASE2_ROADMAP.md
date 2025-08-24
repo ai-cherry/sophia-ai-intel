@@ -1,9 +1,9 @@
 # 🚀 Phase 2 Roadmap - Post-Deployment Implementation
 
 ## Prerequisites
-- ✅ Phase 1 Complete: All services deployed to Fly.io
-- ✅ All healthz endpoints returning 200
-- ✅ Proof artifacts committed to `proofs/`
+- ⚠️ Phase 1 Status: PARTIAL DEPLOYMENT — Only 2/6 services operational as of 2025-08-23. See [`proofs/deployment/FINAL_DEPLOYMENT_STATUS_2025_08_23_2200.json`](../proofs/deployment/FINAL_DEPLOYMENT_STATUS_2025_08_23_2200.json) for details.
+- ⚠️ Not all healthz endpoints are healthy. See known issues in deployment proof.
+- ✅ Proof artifacts committed to `proofs/` (partial, pending full deployment)
 
 ---
 
