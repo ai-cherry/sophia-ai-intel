@@ -1,22 +1,9 @@
 name: Deploy All (Dashboard + MCPs) — Fly (Docker-only, Proof-first)
 
-on:
-  # COMPLETELY DISABLED - MIGRATED TO RENDER
-  # Use .github/workflows/deploy_now.yml instead
-  workflow_dispatch:
-    inputs:
-      deploy_dashboard:
-        description: "DEPRECATED: Use deploy_now.yml instead"
-        required: false
-        default: "false"
-      deploy_services:
-        description: "DEPRECATED: Use deploy_now.yml instead"
-        required: false
-        default: "false"
-      deploy_jobs:
-        description: "DEPRECATED: Use deploy_now.yml instead"
-        required: false
-        default: "false"
+# COMPLETELY DISABLED - REPLACED BY container-deploy.yml for Render migration
+# This workflow has been migrated to containerized deployment on Render
+on: {}
+# No triggers - workflow disabled
 
 permissions:
   contents: write
