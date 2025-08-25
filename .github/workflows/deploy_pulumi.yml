@@ -36,8 +36,17 @@ jobs:
         run: |
           cd ops/pulumi
           pulumi stack select production || pulumi stack init production
+
+      - name: Set Pulumi config values
+        working-directory: ops/pulumi
+        run: |
+          pulumi config set lambda-api-key "${{ secrets.LAMBDA_API_KEY }}" --secret
+          pulumi config set lambda-private-ssh-key "${{ secrets.LAMBDA_PRIVATE_SSH_KEY }}" --secret
+          pulumi config set lambda-public-ssh-key "${{ secrets.LAMBDA_PUBLIC_SSH_KEY }}"
+          pulumi config set neon-database-url "${{ secrets.NEON_DATABASE_URL }}" --secret
+          pulumi config set redis-url "${{ secrets.REDIS_URL }}" --secret
+          pulumi config set openai-api-key "${{ secrets.OPENAI_API_KEY }}" --secret
           
       - name: Pulumi up (deploy)
-        run: |
-          cd ops/pulumi
-          pulumi up --yes
+        working-directory: ops/pulumi
+        run: pulumi up --yes
