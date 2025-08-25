@@ -1,0 +1,278 @@
+# Sophia AI Agent Swarm - GPU-Accelerated Kubernetes Deployment
+# Lambda Labs Managed Kubernetes with NVIDIA A100/H100 GPU support
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sophia-agents
+  namespace: sophia-ai
+  labels:
+    app: sophia-agents
+    component: ai-orchestration
+    tier: gpu-accelerated
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: sophia-agents
+  template:
+    metadata:
+      labels:
+        app: sophia-agents
+        component: ai-orchestration
+        tier: gpu-accelerated
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8087"
+        prometheus.io/path: "/metrics"
+    spec:
+      # GPU node scheduling
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
+      nodeSelector:
+        accelerator: nvidia-gpu
+      
+      # Service account for agent operations
+      serviceAccountName: sophia-agents-sa
+      
+      # Security context
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      
+      containers:
+      - name: sophia-agents
+        image: lambdalabs.azurecr.io/sophia-ai/agents:latest
+        imagePullPolicy: Always
+        
+        ports:
+        - name: http
+          containerPort: 8087
+          protocol: TCP
+        - name: metrics
+          containerPort: 9090
+          protocol: TCP
+        - name: websocket
+          containerPort: 8088
+          protocol: TCP
+        
+        # GPU and compute resources
+        resources:
+          requests:
+            nvidia.com/gpu: 1
+            cpu: 2000m
+            memory: 8Gi
+            ephemeral-storage: 10Gi
+          limits:
+            nvidia.com/gpu: 1
+            cpu: 4000m
+            memory: 16Gi
+            ephemeral-storage: 20Gi
+        
+        # Environment configuration
+        env:
+        - name: PORT
+          value: "8087"
+        - name: GPU_ENABLED
+          value: "true"
+        - name: AGENT_SWARM_MODE
+          value: "production"
+        - name: LOG_LEVEL
+          value: "INFO"
+        
+        # Secrets and config from ConfigMap/Secret
+        envFrom:
+        - configMapRef:
+            name: sophia-agents-config
+        - secretRef:
+            name: sophia-agents-secrets
+        
+        # Health checks
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8087
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+        
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8087
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
+        
+        # Startup probe for ML model loading
+        startupProbe:
+          httpGet:
+            path: /healthz
+            port: 8087
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 30  # 5 minutes for model loading
+        
+        # Volume mounts
+        volumeMounts:
+        - name: model-cache
+          mountPath: /app/models
+        - name: agent-logs
+          mountPath: /app/logs
+        - name: tmp-volume
+          mountPath: /tmp
+      
+      # Volumes
+      volumes:
+      - name: model-cache
+        persistentVolumeClaim:
+          claimName: sophia-agents-model-cache
+      - name: agent-logs
+        emptyDir:
+          sizeLimit: 1Gi
+      - name: tmp-volume
+        emptyDir:
+          sizeLimit: 2Gi
+
+---
+# Agent Swarm Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: sophia-agents
+  namespace: sophia-ai
+  labels:
+    app: sophia-agents
+    component: ai-orchestration
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 8087
+    targetPort: 8087
+    protocol: TCP
+  - name: websocket
+    port: 8088
+    targetPort: 8088
+    protocol: TCP
+  - name: metrics
+    port: 9090
+    targetPort: 9090
+    protocol: TCP
+  selector:
+    app: sophia-agents
+
+---
+# Agent Swarm Horizontal Pod Autoscaler
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: sophia-agents-hpa
+  namespace: sophia-ai
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: sophia-agents
+  minReplicas: 2
+  maxReplicas: 8
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  # Custom metric for GPU utilization
+  - type: Pods
+    pods:
+      metric:
+        name: nvidia_gpu_utilization
+      target:
+        type: AverageValue
+        averageValue: "0.8"  # 80% GPU utilization
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 25
+        periodSeconds: 60
+
+---
+# Model Cache Persistent Volume Claim
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sophia-agents-model-cache
+  namespace: sophia-ai
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: sophia-gpu-nvme
+  resources:
+    requests:
+      storage: 100Gi
+
+---
+# Service Account for Agent Operations
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sophia-agents-sa
+  namespace: sophia-ai
+
+---
+# RBAC for Agent Service Account
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: sophia-agents-role
+  namespace: sophia-ai
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services", "configmaps"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["create", "patch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: sophia-agents-rolebinding
+  namespace: sophia-ai
+subjects:
+- kind: ServiceAccount
+  name: sophia-agents-sa
+  namespace: sophia-ai
+roleRef:
+  kind: Role
+  name: sophia-agents-role
+  apiGroup: rbac.authorization.k8s.io

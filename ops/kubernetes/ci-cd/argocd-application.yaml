@@ -1,0 +1,309 @@
+# Sophia AI Intel ArgoCD Application Configuration
+# GitOps deployment to Lambda Labs Managed Kubernetes
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sophia-ai-intel
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: sophia-ai-intel
+    app.kubernetes.io/instance: production
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: sophia-ai-project
+  
+  # Source repository
+  source:
+    repoURL: https://github.com/ai-cherry/sophia-ai-intel
+    targetRevision: main
+    path: ops/kubernetes/manifests
+    
+    # Kustomize configuration
+    kustomize:
+      images:
+      - lambdalabs.azurecr.io/sophia-ai/agents:latest
+      - lambdalabs.azurecr.io/sophia-ai/context:latest
+      - lambdalabs.azurecr.io/sophia-ai/research:latest
+      - lambdalabs.azurecr.io/sophia-ai/dashboard:latest
+      - lambdalabs.azurecr.io/sophia-ai/business:latest
+      - lambdalabs.azurecr.io/sophia-ai/github:latest
+  
+  # Target Kubernetes cluster
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: sophia-ai
+  
+  # Sync policy
+  syncPolicy:
+    # Automated sync for production
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    
+    syncOptions:
+    - CreateNamespace=true
+    - PrunePropagationPolicy=foreground
+    - PruneLast=true
+    - ApplyOutOfSyncOnly=true
+    - RespectIgnoreDifferences=true
+    
+    # Retry configuration
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  
+  # Health configuration
+  ignoreDifferences:
+  - group: apps
+    kind: Deployment
+    jsonPointers:
+    - /spec/replicas  # Ignore replica changes from HPA
+  
+  - group: autoscaling
+    kind: HorizontalPodAutoscaler
+    jsonPointers:
+    - /spec/metrics  # Allow custom metrics changes
+
+---
+# ArgoCD Project for Sophia AI
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: sophia-ai-project
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: sophia-ai-project
+spec:
+  description: "Sophia AI Intel Platform Project"
+  
+  # Source repositories
+  sourceRepos:
+  - https://github.com/ai-cherry/sophia-ai-intel
+  - https://charts.bitnami.com/bitnami  # For Redis, monitoring charts
+  
+  # Target clusters and namespaces
+  destinations:
+  - namespace: sophia-ai
+    server: https://kubernetes.default.svc
+  - namespace: sophia-ai-monitoring
+    server: https://kubernetes.default.svc
+  - namespace: sophia-ai-system
+    server: https://kubernetes.default.svc
+  
+  # RBAC policies
+  roles:
+  - name: sophia-admin
+    description: "Full admin access to Sophia AI resources"
+    policies:
+    - p, proj:sophia-ai-project:sophia-admin, applications, *, sophia-ai-project/*, allow
+    - p, proj:sophia-ai-project:sophia-admin, repositories, *, *, allow
+    - p, proj:sophia-ai-project:sophia-admin, clusters, *, *, allow
+    groups:
+    - sophia-ai:admin
+  
+  - name: sophia-developer
+    description: "Developer access to Sophia AI resources"
+    policies:
+    - p, proj:sophia-ai-project:sophia-developer, applications, get, sophia-ai-project/*, allow
+    - p, proj:sophia-ai-project:sophia-developer, applications, sync, sophia-ai-project/*, allow
+    - p, proj:sophia-ai-project:sophia-developer, repositories, get, *, allow
+    groups:
+    - sophia-ai:developer
+  
+  # Cluster resource whitelist
+  clusterResourceWhitelist:
+  - group: ""
+    kind: Namespace
+  - group: storage.k8s.io
+    kind: StorageClass
+  - group: scheduling.k8s.io
+    kind: PriorityClass
+  - group: rbac.authorization.k8s.io
+    kind: ClusterRole
+  - group: rbac.authorization.k8s.io
+    kind: ClusterRoleBinding
+
+---
+# ArgoCD Repository Configuration
+apiVersion: v1
+kind: Secret
+metadata:
+  name: sophia-ai-repo
+  namespace: argocd
+  labels:
+    argocd.argoproj.io/secret-type: repository
+type: Opaque
+stringData:
+  type: git
+  url: https://github.com/ai-cherry/sophia-ai-intel
+  password: YOUR_GITHUB_TOKEN
+  username: YOUR_GITHUB_USERNAME
+
+---
+# ArgoCD ApplicationSet for multi-environment deployment
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: sophia-ai-environments
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - cluster: lambda-labs-prod
+        url: https://kubernetes.default.svc
+        environment: production
+        namespace: sophia-ai
+        replicas: "3"
+        gpu_enabled: "true"
+      - cluster: lambda-labs-staging
+        url: https://staging-cluster.lambda-labs.com
+        environment: staging  
+        namespace: sophia-ai-staging
+        replicas: "1"
+        gpu_enabled: "false"
+  
+  template:
+    metadata:
+      name: 'sophia-ai-{{environment}}'
+      labels:
+        environment: '{{environment}}'
+    spec:
+      project: sophia-ai-project
+      
+      source:
+        repoURL: https://github.com/ai-cherry/sophia-ai-intel
+        targetRevision: main
+        path: ops/kubernetes/manifests
+        
+        kustomize:
+          commonLabels:
+            environment: '{{environment}}'
+          replicas:
+          - name: sophia-agents
+            count: '{{replicas}}'
+          - name: sophia-context
+            count: '{{replicas}}'
+          - name: sophia-dashboard
+            count: '{{replicas}}'
+      
+      destination:
+        server: '{{url}}'
+        namespace: '{{namespace}}'
+      
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true
+
+---
+# ArgoCD Rollout for Canary Deployments
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: sophia-agents-rollout
+  namespace: sophia-ai
+spec:
+  replicas: 4
+  strategy:
+    canary:
+      # Canary deployment strategy for agent swarm
+      steps:
+      - setWeight: 25    # 25% traffic to canary
+      - pause:
+          duration: 2m   # Wait 2 minutes
+      - setWeight: 50    # 50% traffic to canary
+      - pause:
+          duration: 5m   # Wait 5 minutes
+      - setWeight: 75    # 75% traffic to canary  
+      - pause:
+          duration: 5m   # Wait 5 minutes
+      
+      # Traffic routing
+      trafficRouting:
+        nginx:
+          stableIngress: sophia-ai-ingress
+          annotationPrefix: nginx.ingress.kubernetes.io
+          additionalIngressAnnotations:
+            canary-by-header: X-Canary
+      
+      # Analysis and metrics
+      analysis:
+        templates:
+        - templateName: sophia-agent-success-rate
+        args:
+        - name: service-name
+          value: sophia-agents
+        
+        # Automatic rollback triggers
+        successCondition: result[0] >= 0.95  # 95% success rate required
+        failureCondition: result[0] < 0.9    # Rollback if below 90%
+        interval: 30s
+        count: 10
+  
+  selector:
+    matchLabels:
+      app: sophia-agents
+  
+  template:
+    metadata:
+      labels:
+        app: sophia-agents
+    spec:
+      containers:
+      - name: sophia-agents
+        image: lambdalabs.azurecr.io/sophia-ai/agents:latest
+        ports:
+        - containerPort: 8087
+        resources:
+          requests:
+            nvidia.com/gpu: 1
+            cpu: 2000m
+            memory: 8Gi
+
+---
+# Analysis Template for Canary Validation
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: sophia-agent-success-rate
+  namespace: sophia-ai
+spec:
+  args:
+  - name: service-name
+  
+  metrics:
+  - name: success-rate
+    interval: 30s
+    successCondition: result[0] >= 0.95
+    failureCondition: result[0] < 0.9
+    provider:
+      prometheus:
+        address: http://prometheus.sophia-ai-monitoring.svc.cluster.local:9090
+        query: |
+          sum(rate(http_requests_total{service="{{args.service-name}}",code!~"5.."}[5m])) / 
+          sum(rate(http_requests_total{service="{{args.service-name}}"}[5m]))
+  
+  - name: response-time
+    interval: 30s 
+    successCondition: result[0] < 1000  # Less than 1 second
+    provider:
+      prometheus:
+        address: http://prometheus.sophia-ai-monitoring.svc.cluster.local:9090
+        query: |
+          histogram_quantile(0.95, 
+            sum(rate(http_request_duration_seconds_bucket{service="{{args.service-name}}"}[5m])) by (le)
+          ) * 1000
+
+---
+# Notification Configuration

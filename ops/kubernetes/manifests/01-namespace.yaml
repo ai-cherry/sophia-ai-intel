@@ -1,0 +1,32 @@
+# Sophia AI Intel Kubernetes Namespaces
+# Lambda Labs Managed Kubernetes deployment
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sophia-ai
+  labels:
+    app.kubernetes.io/name: sophia-ai-intel
+    app.kubernetes.io/version: "2.0.0"
+    app.kubernetes.io/managed-by: kubernetes
+    environment: production
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sophia-ai-monitoring
+  labels:
+    app.kubernetes.io/name: sophia-ai-monitoring
+    app.kubernetes.io/version: "2.0.0"
+    app.kubernetes.io/managed-by: kubernetes
+    environment: production
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sophia-ai-system
+  labels:
+    app.kubernetes.io/name: sophia-ai-system
+    app.kubernetes.io/version: "2.0.0"
+    app.kubernetes.io/managed-by: kubernetes
+    environment: production

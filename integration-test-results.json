@@ -1,0 +1,143 @@
+{
+  "test_summary": {
+    "total_tests": 10,
+    "passed": 0,
+    "failed": 9,
+    "skipped": 1,
+    "pass_rate": 0.0,
+    "overall_status": "FAILED"
+  },
+  "performance": {
+    "total_execution_time_ms": 240193,
+    "average_response_time_ms": 24019.3,
+    "fastest_test": "service_health_checks",
+    "slowest_test": "agent_swarm_initialization"
+  },
+  "detailed_results": [
+    {
+      "test": "service_health_checks",
+      "status": "failed",
+      "response_time_ms": 0,
+      "details": {
+        "healthy_services": 0,
+        "total_services": 8,
+        "health_ratio": 0.0,
+        "service_details": {
+          "dashboard": {
+            "status": "error",
+            "response_time_ms": 146,
+            "error": "All connection attempts failed"
+          },
+          "research": {
+            "status": "error",
+            "response_time_ms": 30020,
+            "error": ""
+          },
+          "context": {
+            "status": "error",
+            "response_time_ms": 30023,
+            "error": ""
+          },
+          "github": {
+            "status": "error",
+            "response_time_ms": 30030,
+            "error": ""
+          },
+          "business": {
+            "status": "error",
+            "response_time_ms": 30023,
+            "error": ""
+          },
+          "lambda_api": {
+            "status": "error",
+            "response_time_ms": 30029,
+            "error": ""
+          },
+          "hubspot": {
+            "status": "error",
+            "response_time_ms": 30024,
+            "error": ""
+          },
+          "agents": {
+            "status": "error",
+            "response_time_ms": 30023,
+            "error": ""
+          }
+        }
+      },
+      "error": null
+    },
+    {
+      "test": "agent_swarm_initialization",
+      "status": "failed",
+      "response_time_ms": 30031,
+      "details": {},
+      "error": ""
+    },
+    {
+      "test": "real_embeddings_functionality",
+      "status": "failed",
+      "response_time_ms": 30025,
+      "details": {},
+      "error": ""
+    },
+    {
+      "test": "redis_caching_performance",
+      "status": "failed",
+      "response_time_ms": 30002,
+      "details": {},
+      "error": ""
+    },
+    {
+      "test": "repository_access_and_analysis",
+      "status": "failed",
+      "response_time_ms": 30021,
+      "details": {},
+      "error": ""
+    },
+    {
+      "test": "research_capabilities",
+      "status": "failed",
+      "response_time_ms": 30030,
+      "details": {},
+      "error": ""
+    },
+    {
+      "test": "business_intelligence_integration",
+      "status": "failed",
+      "response_time_ms": 30027,
+      "details": {},
+      "error": ""
+    },
+    {
+      "test": "cross_service_communication",
+      "status": "skipped",
+      "response_time_ms": 0,
+      "details": {
+        "reason": "Placeholder - would test service-to-service calls"
+      },
+      "error": null
+    },
+    {
+      "test": "chat_agent_swarm_integration",
+      "status": "failed",
+      "response_time_ms": 30026,
+      "details": {},
+      "error": ""
+    },
+    {
+      "test": "semantic_search_accuracy",
+      "status": "failed",
+      "response_time_ms": 30031,
+      "details": {},
+      "error": ""
+    }
+  ],
+  "recommendations": [
+    "Address 9 failed test(s)",
+    "Check agent swarm service deployment and initialization",
+    "Check OpenAI API key configuration and Qdrant connectivity",
+    "Verify Redis configuration and connectivity",
+    "Check agent swarm service deployment and initialization"
+  ]
+}
