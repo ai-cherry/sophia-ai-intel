@@ -14,16 +14,21 @@ sophia-ai-intel/
 │   ├── mcp-research/              # Web research meta-aggregator
 │   ├── mcp-context/               # Neon-backed index registry
 │   ├── mcp-github/                # GitHub App integration (READ-ONLY)
-│   ├── mcp-slack/                 # Slack integration
-│   ├── mcp-salesforce/            # Salesforce integration
-│   └── mcp-hub/                   # Centralized auth/rate limits
+│   ├── mcp-business/              # Business intelligence & CRM integrations
+│   ├── mcp-lambda/                # Lambda Labs infrastructure management
+│   ├── mcp-hubspot/               # HubSpot CRM integration
+│   ├── mcp-agents/                # AI Agent Swarm orchestration
+│   └── orchestrator/              # Cross-service coordination
+├── jobs/                          # Background processing tasks
 ├── libs/
 │   ├── contracts/                 # Zod/JSON Schema definitions
 │   ├── clients/                   # TypeScript clients
-│   └── ui/                        # Shared UI components
+│   ├── agents/                    # AI agent implementations
+│   └── memory/                    # Memory architecture components
 ├── ops/
 │   ├── workflows/                 # GitHub Actions
-│   ├── infra/                     # Fly.io manifests + Pulumi
+│   ├── infra/                     # Infrastructure manifests
+│   ├── pulumi/                    # Pulumi Infrastructure as Code
 │   └── playbooks/                 # Runbooks and guides
 └── proofs/                        # CI/Actions proof artifacts
 ```
@@ -184,4 +189,3 @@ For questions or issues, please:
 ---
 
 Built with ❤️ by the AI Cherry team
-
