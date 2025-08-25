@@ -252,7 +252,7 @@ class EnvironmentAuditor:
             try:
                 import asyncpg
                 conn = await asyncpg.connect(os.getenv("DATABASE_URL"))
-                version = await conn.fetchval("SELECT version()")
+                await conn.fetchval("SELECT version()")
                 await conn.close()
                 self.connectivity_results["neon"] = "✅ Connected (PostgreSQL)"
             except Exception as e:

@@ -177,8 +177,8 @@ async def get_pipeline():
             if amount:
                 try:
                     pipeline_summary["total_value"] += float(amount)
-                except:
-                    pass
+                except (ValueError, TypeError) as e:
+                    logger.warning(f"Failed to parse deal amount {amount}: {e}")
         
         return {
             "pipeline": pipeline_summary,

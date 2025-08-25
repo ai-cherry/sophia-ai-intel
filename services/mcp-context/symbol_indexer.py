@@ -1,8 +1,12 @@
-from typing import List, Dict  # Removed 'os' and 'logging'
+import os
+import uuid
+from typing import List, Dict
 import asyncpg
 from qdrant_client import QdrantClient, models
-from openai import OpenAI  # Updated from Import
-import os  # For os.getenv
+from openai import OpenAI
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field
 
 # Set up logging
 import logging
@@ -18,6 +22,13 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")  # Consistent with other MCPs
 
 # Initialize OpenAI client only if API key is set
 client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
+
+# Initialize FastAPI app
+app = FastAPI(
+    title="Sophia AI Symbol Indexer MCP",
+    description="Code symbol indexing and semantic search service",
+    version="1.0.0"
+)
 
 # Database connection pool
 db_pool = None

@@ -16,20 +16,16 @@ Version: 2.0.0
 Author: Sophia AI Intelligence Team
 """
 
-import asyncio
-import json
 import logging
 import re
-import ast
-from typing import Dict, List, Optional, Any, Set, Tuple
-from datetime import datetime, timedelta
+from typing import Dict, List, Optional, Any
+from datetime import datetime
 from dataclasses import dataclass, asdict
 from pathlib import Path
 
-from .base_agent import SophiaAgent, AgentRole, AgentTask, TaskPriority, TaskStatus
+from .base_agent import SophiaAgent, AgentRole, AgentTask
 from .embedding.embedding_engine import EmbeddingEngine, CodeChunk, ChunkType
-from .embedding.rag_pipeline import RAGPipeline, RetrievalQuery, ContextType, RetrievalStrategy
-from .communication import message_bus
+from .embedding.rag_pipeline import RAGPipeline
 
 logger = logging.getLogger(__name__)
 

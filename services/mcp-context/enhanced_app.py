@@ -611,8 +611,8 @@ async def upload_document(file: UploadFile = File(...), metadata: str = Form(...
                         upload_id,
                         json.dumps({"error": str(e)}),
                     )
-            except:
-                pass
+            except Exception as e:
+                logger.error(f"Failed to update upload record: {e}")
 
         raise HTTPException(
             status_code=500,

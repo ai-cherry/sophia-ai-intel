@@ -15,20 +15,17 @@ Version: 1.0.0
 Author: Sophia AI Intelligence Team
 """
 
-import asyncio
 import hashlib
 import json
 import logging
 import os
 import time
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 
 import openai
-import redis
 from qdrant_client import QdrantClient, models
 from qdrant_client.models import PointStruct, Distance, VectorParams
-import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -473,14 +470,16 @@ class RealEmbeddingEngine:
             if self.redis_client:
                 self.redis_client.ping()
                 status["redis_connected"] = True
-        except:
+        except Exception as e:
+            logger.warning(f"Redis connection test failed: {e}")
             status["redis_connected"] = False
         
         try:
             if self.qdrant_client:
                 health = self.qdrant_client.health_check()
                 status["qdrant_connected"] = health.status == "ok"
-        except:
+        except Exception as e:
+            logger.warning(f"Qdrant connection test failed: {e}")
             status["qdrant_connected"] = False
         
         return status

@@ -40,6 +40,7 @@ from typing import List, Dict, Any, Optional
 import httpx
 import asyncpg
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, HttpUrl, Field
 from enum import Enum
@@ -594,7 +595,7 @@ async def web_scrape(request: WebScrapeRequest):
     """
     Scrapes content from a given URL. (Placeholder for full implementation)
     """
-    start_time = time.time()
+    time.time()
 
     try:
         async with httpx.AsyncClient(timeout=30) as client:

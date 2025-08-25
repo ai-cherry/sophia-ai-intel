@@ -1,0 +1,101 @@
+{
+  "dashboard": {
+    "title": "Sophia AI Logs",
+    "tags": ["sophia", "logs", "loki"],
+    "timezone": "UTC",
+    "panels": [
+      {
+        "title": "Log Volume by Service",
+        "type": "bargauge",
+        "targets": [
+          {
+            "expr": "sum(rate({service=~\"sophia-.+\"}[5m])) by (service)",
+            "legendFormat": "{{service}}",
+            "datasource": "Loki"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+      },
+      {
+        "title": "Error Rate by Service",
+        "type": "bargauge",
+        "targets": [
+          {
+            "expr": "sum(rate({service=~\"sophia-.+\", level=~\"error|ERROR\"}[5m])) by (service)",
+            "legendFormat": "{{service}}",
+            "datasource": "Loki"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+      },
+      {
+        "title": "Recent Error Logs",
+        "type": "logs",
+        "targets": [
+          {
+            "expr": "{service=~\"sophia-.+\", level=~\"error|ERROR\"} | json | line_format \"{{.timestamp}} {{.service}} {{.level}}: {{.message}}\"",
+            "datasource": "Loki"
+          }
+        ],
+        "gridPos": {"h": 12, "w": 24, "x": 0, "y": 8}
+      },
+      {
+        "title": "Service Logs - Dashboard",
+        "type": "logs",
+        "targets": [
+          {
+            "expr": "{service=\"sophia-dashboard\"} | json | line_format \"{{.timestamp}} {{.level}}: {{.message}}\"",
+            "datasource": "Loki"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 20}
+      },
+      {
+        "title": "Service Logs - Research",
+        "type": "logs",
+        "targets": [
+          {
+            "expr": "{service=\"sophia-research\"} | json | line_format \"{{.timestamp}} {{.level}}: {{.message}}\"",
+            "datasource": "Loki"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 20}
+      },
+      {
+        "title": "Service Logs - Context",
+        "type": "logs",
+        "targets": [
+          {
+            "expr": "{service=\"sophia-context\"} | json | line_format \"{{.timestamp}} {{.level}}: {{.message}}\"",
+            "datasource": "Loki"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 28}
+      },
+      {
+        "title": "Service Logs - GitHub",
+        "type": "logs",
+        "targets": [
+          {
+            "expr": "{service=\"sophia-github\"} | json | line_format \"{{.timestamp}} {{.level}}: {{.message}}\"",
+            "datasource": "Loki"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 28}
+      },
+      {
+        "title": "System Logs",
+        "type": "logs",
+        "targets": [
+          {
+            "expr": "{job=\"system-logs\"} | line_format \"{{.timestamp}} {{.hostname}} {{.service}}: {{.message}}\"",
+            "datasource": "Loki"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 36}
+      }
+    ],
+    "time": {"from": "now-1h", "to": "now"},
+    "refresh": "30s"
+  }
+}

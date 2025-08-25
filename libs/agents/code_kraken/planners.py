@@ -17,16 +17,14 @@ Version: 1.0.0
 Author: Sophia AI Intelligence Team
 """
 
-import asyncio
-import json
 import logging
-from typing import Dict, List, Optional, Any, Tuple
-from datetime import datetime, timedelta
+from typing import Dict, List, Optional, Any
+from datetime import datetime
 from dataclasses import dataclass, asdict
 from enum import Enum
 from abc import ABC, abstractmethod
 
-from ..base_agent import SophiaAgent, AgentRole, AgentTask, TaskPriority, TaskStatus
+from ..base_agent import SophiaAgent, AgentRole, AgentTask
 from ..embedding.rag_pipeline import RAGPipeline, RetrievalQuery, ContextType, RetrievalStrategy
 
 logger = logging.getLogger(__name__)

@@ -1,0 +1,161 @@
+{
+  "dashboard": {
+    "title": "Sophia AI Services",
+    "tags": ["sophia", "services", "microservices"],
+    "timezone": "UTC",
+    "panels": [
+      {
+        "title": "Service Health Overview",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "up{service_name=~\"sophia-.+\"}",
+            "legendFormat": "{{service_name}}",
+            "datasource": "Prometheus"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 24, "x": 0, "y": 0}
+      },
+      {
+        "title": "Dashboard Service Metrics",
+        "type": "row",
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 4}
+      },
+      {
+        "title": "Dashboard CPU Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(container_cpu_usage_seconds_total{service_name=\"sophia-dashboard\"}[5m]) * 100",
+            "legendFormat": "CPU %",
+            "datasource": "Prometheus"
+          }
+        ],
+        "gridPos": {"h": 6, "w": 8, "x": 0, "y": 5}
+      },
+      {
+        "title": "Dashboard Memory Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "container_memory_usage_bytes{service_name=\"sophia-dashboard\"}",
+            "legendFormat": "Memory Bytes",
+            "datasource": "Prometheus"
+          }
+        ],
+        "gridPos": {"h": 6, "w": 8, "x": 8, "y": 5}
+      },
+      {
+        "title": "Dashboard Network I/O",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(container_network_receive_bytes_total{service_name=\"sophia-dashboard\"}[5m])",
+            "legendFormat": "RX Bytes/s",
+            "datasource": "Prometheus"
+          },
+          {
+            "expr": "rate(container_network_transmit_bytes_total{service_name=\"sophia-dashboard\"}[5m])",
+            "legendFormat": "TX Bytes/s",
+            "datasource": "Prometheus"
+          }
+        ],
+        "gridPos": {"h": 6, "w": 8, "x": 16, "y": 5}
+      },
+      {
+        "title": "Research Service Metrics",
+        "type": "row",
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 11}
+      },
+      {
+        "title": "Research CPU Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(container_cpu_usage_seconds_total{service_name=\"sophia-research\"}[5m]) * 100",
+            "legendFormat": "CPU %",
+            "datasource": "Prometheus"
+          }
+        ],
+        "gridPos": {"h": 6, "w": 8, "x": 0, "y": 12}
+      },
+      {
+        "title": "Research Memory Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "container_memory_usage_bytes{service_name=\"sophia-research\"}",
+            "legendFormat": "Memory Bytes",
+            "datasource": "Prometheus"
+          }
+        ],
+        "gridPos": {"h": 6, "w": 8, "x": 8, "y": 12}
+      },
+      {
+        "title": "Research Network I/O",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(container_network_receive_bytes_total{service_name=\"sophia-research\"}[5m])",
+            "legendFormat": "RX Bytes/s",
+            "datasource": "Prometheus"
+          },
+          {
+            "expr": "rate(container_network_transmit_bytes_total{service_name=\"sophia-research\"}[5m])",
+            "legendFormat": "TX Bytes/s",
+            "datasource": "Prometheus"
+          }
+        ],
+        "gridPos": {"h": 6, "w": 8, "x": 16, "y": 12}
+      },
+      {
+        "title": "Context Service Metrics",
+        "type": "row",
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 18}
+      },
+      {
+        "title": "Context CPU Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(container_cpu_usage_seconds_total{service_name=\"sophia-context\"}[5m]) * 100",
+            "legendFormat": "CPU %",
+            "datasource": "Prometheus"
+          }
+        ],
+        "gridPos": {"h": 6, "w": 8, "x": 0, "y": 19}
+      },
+      {
+        "title": "Context Memory Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "container_memory_usage_bytes{service_name=\"sophia-context\"}",
+            "legendFormat": "Memory Bytes",
+            "datasource": "Prometheus"
+          }
+        ],
+        "gridPos": {"h": 6, "w": 8, "x": 8, "y": 19}
+      },
+      {
+        "title": "Context Network I/O",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(container_network_receive_bytes_total{service_name=\"sophia-context\"}[5m])",
+            "legendFormat": "RX Bytes/s",
+            "datasource": "Prometheus"
+          },
+          {
+            "expr": "rate(container_network_transmit_bytes_total{service_name=\"sophia-context\"}[5m])",
+            "legendFormat": "TX Bytes/s",
+            "datasource": "Prometheus"
+          }
+        ],
+        "gridPos": {"h": 6, "w": 8, "x": 16, "y": 19}
+      }
+    ],
+    "time": {"from": "now-1h", "to": "now"},
+    "refresh": "30s"
+  }
+}

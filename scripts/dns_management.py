@@ -18,9 +18,8 @@ Author: Sophia AI Infrastructure Team
 import os
 import asyncio
 import logging
-from typing import Dict, List, Optional, Any, Tuple
-from datetime import datetime, timedelta
-import json
+from typing import Dict, List, Optional, Any
+from datetime import datetime
 
 import httpx
 import time
@@ -456,12 +455,12 @@ class SophiaInfrastructureManager:
             f"Generated: {datetime.now().isoformat()}",
             "",
             "## DNS Management",
-            f"**Cleanup Status:**",
+            "**Cleanup Status:**",
             f"- Conflicts found: {dns_cleanup.get('conflicts_found', 0)}",
             f"- Conflicts removed: {dns_cleanup.get('conflicts_removed', 0)}",
             f"- Verification passed: {dns_cleanup.get('verification_passed', False)}",
             "",
-            f"**DNS Setup Status:**",
+            "**DNS Setup Status:**",
             f"- Records created: {dns_setup.get('records_created', 0)}",
             f"- Records updated: {dns_setup.get('records_updated', 0)}",
             f"- Services configured: {len(dns_setup.get('services_configured', []))}",
@@ -590,7 +589,7 @@ async def full_infrastructure_setup():
     health_success = await health_check()
     
     # Summary
-    print(f"\n📋 Setup Summary:")
+    print("\n📋 Setup Summary:")
     print(f"   DNS Cleanup: {'✅ Success' if cleanup_success else '❌ Failed'}")
     print(f"   Agent DNS Setup: {'✅ Success' if dns_setup_success else '❌ Failed'}")
     print(f"   Health Check: {'✅ Success' if health_success else '❌ Failed'}")

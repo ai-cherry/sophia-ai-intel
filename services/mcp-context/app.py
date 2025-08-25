@@ -37,12 +37,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 import uuid
-from qdrant_client import QdrantClient, models
+from qdrant_client import QdrantClient
 
 # Import real embeddings engine
 from real_embeddings import (
     embedding_engine, 
-    generate_real_embedding,
     store_with_real_embedding,
     semantic_search_documents
 )

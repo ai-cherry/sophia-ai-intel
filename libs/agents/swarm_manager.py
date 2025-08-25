@@ -17,7 +17,6 @@ Author: Sophia AI Intelligence Team
 """
 
 import asyncio
-import json
 import logging
 import uuid
 from typing import Dict, List, Optional, Any
@@ -26,7 +25,7 @@ from dataclasses import dataclass, asdict
 
 from .base_agent import SophiaAgent, AgentTask, TaskStatus, TaskPriority, AgentRole
 from .communication import message_bus
-from .code_kraken.orchestrator import CodeKrakenOrchestrator, CodeKrakenState, WorkflowResult
+from .code_kraken.orchestrator import CodeKrakenOrchestrator
 from .code_kraken.planners import (
     create_cutting_edge_planner, 
     create_conservative_planner, 
@@ -634,7 +633,7 @@ class SophiaAgentSwarmManager:
             # Structure info
             if 'structure' in analysis:
                 struct = analysis['structure']
-                message_parts.append(f"**Structure Overview:**")
+                message_parts.append("**Structure Overview:**")
                 message_parts.append(f"• {struct.get('total_files', 0)} files analyzed")
                 message_parts.append(f"• {struct.get('total_lines', 0):,} lines of code")
                 message_parts.append(f"• Primary language: {struct.get('primary_language', 'unknown')}")

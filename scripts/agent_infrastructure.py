@@ -11,9 +11,14 @@ import os
 import subprocess
 import sys
 import json
+import logging
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Dict, Any, Optional
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
 
 class AgentInfraManager:
     """Infrastructure management for AI agents - no manual key handling"""
@@ -176,10 +181,10 @@ class AgentInfraManager:
                 print(f"⚠️ Stack may already exist: {init_result['error']}")
         else:
             # Select existing stack
-            select_result = self._run_command(
+            self._run_command(
                 ["pulumi", "stack", "select", "sophia-production"],
                 cwd=self.pulumi_dir,
-                description="Selecting Pulumi stack", 
+                description="Selecting Pulumi stack",
                 env=env
             )
     
@@ -208,7 +213,8 @@ class AgentInfraManager:
                     outputs = json.loads(outputs_result["output"])
                     result["outputs"] = outputs
                     result["services"] = outputs.get("services-deployed", [])
-                except:
+                except Exception as e:
+                    logger.warning(f"Failed to parse outputs: {e}")
                     result["outputs"] = {}
         
         return result

@@ -1,0 +1,97 @@
+groups:
+  - name: sophia_service_alerts
+    rules:
+      # Service health alerts
+      - alert: ServiceDown
+        expr: up == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.service_name }} is down"
+          description: "Service {{ $labels.service_name }} has been down for more than 2 minutes."
+
+      - alert: ServiceUnhealthy
+        expr: probe_success == 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Service {{ $labels.service_name }} is unhealthy"
+          description: "Service {{ $labels.service_name }} health check is failing."
+
+      # Resource usage alerts
+      - alert: HighCPUUsage
+        expr: rate(container_cpu_usage_seconds_total[5m]) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.container_name }}"
+          description: "Container {{ $labels.container_name }} is using more than 85% CPU."
+
+      - alert: HighMemoryUsage
+        expr: (container_memory_usage_bytes / container_spec_memory_limit_bytes) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on {{ $labels.container_name }}"
+          description: "Container {{ $labels.container_name }} is using more than 85% of its memory limit."
+
+      - alert: CriticalMemoryUsage
+        expr: (container_memory_usage_bytes / container_spec_memory_limit_bytes) * 100 > 95
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical memory usage on {{ $labels.container_name }}"
+          description: "Container {{ $labels.container_name }} is using more than 95% of its memory limit."
+
+      # Network alerts
+      - alert: HighNetworkErrors
+        expr: rate(container_network_errors_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High network errors on {{ $labels.container_name }}"
+          description: "Container {{ $labels.container_name }} has high network error rate."
+
+      # Disk space alerts
+      - alert: LowDiskSpace
+        expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) * 100 < 15
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low disk space on {{ $labels.instance }}"
+          description: "Disk space is below 15% on {{ $labels.instance }}."
+
+      - alert: CriticalDiskSpace
+        expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) * 100 < 5
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical disk space on {{ $labels.instance }}"
+          description: "Disk space is below 5% on {{ $labels.instance }}."
+
+      # Prometheus alerts
+      - alert: PrometheusTargetMissing
+        expr: up == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Prometheus target missing"
+          description: "A Prometheus target has disappeared. An exporter might be crashed."
+
+      - alert: PrometheusError
+        expr: rate(prometheus_target_scrapes_exceeded_sample_limit_total[10m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Prometheus is dropping targets"
+          description: "Prometheus is dropping targets due to sample limit."

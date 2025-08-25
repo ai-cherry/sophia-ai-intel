@@ -1,0 +1,59 @@
+{
+  "dashboard": {
+    "title": "Sophia AI System Overview",
+    "tags": ["sophia", "system"],
+    "timezone": "UTC",
+    "panels": [
+      {
+        "title": "CPU Usage by Service",
+        "type": "bargauge",
+        "targets": [
+          {
+            "expr": "rate(container_cpu_usage_seconds_total[5m]) * 100",
+            "legendFormat": "{{name}}",
+            "datasource": "Prometheus"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+      },
+      {
+        "title": "Memory Usage by Service",
+        "type": "bargauge",
+        "targets": [
+          {
+            "expr": "container_memory_usage_bytes / container_memory_max_usage_bytes * 100",
+            "legendFormat": "{{name}}",
+            "datasource": "Prometheus"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+      },
+      {
+        "title": "Service Health Status",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "up",
+            "legendFormat": "{{job}}",
+            "datasource": "Prometheus"
+          }
+        ],
+        "gridPos": {"h": 6, "w": 8, "x": 0, "y": 8}
+      },
+      {
+        "title": "Request Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(http_requests_total[5m])",
+            "legendFormat": "{{service}}",
+            "datasource": "Prometheus"
+          }
+        ],
+        "gridPos": {"h": 6, "w": 16, "x": 8, "y": 8}
+      }
+    ],
+    "time": {"from": "now-1h", "to": "now"},
+    "refresh": "30s"
+  }
+}

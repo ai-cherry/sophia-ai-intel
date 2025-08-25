@@ -15,13 +15,12 @@ Version: 1.0.0
 Author: Sophia AI Intelligence Team
 """
 
-import asyncio
 import hashlib
 import json
 import logging
 import os
 import time
-from typing import Dict, List, Optional, Any, Union
+from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 from enum import Enum
 

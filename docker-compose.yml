@@ -1,6 +1,6 @@
 # Sophia AI Intel Platform - Pure Pulumi Cloud Deployment
 # Complete containerized microservices stack
-version: '3.8'
+
 
 networks:
   sophia-network:
@@ -8,10 +8,19 @@ networks:
     ipam:
       config:
         - subnet: 172.20.0.0/16
+  monitoring:
+    external: true
+    name: monitoring_monitoring
 
 volumes:
   postgres-data:
   redis-data:
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  loki_data:
+    driver: local
 
 services:
   # =============================================================================
@@ -31,8 +40,8 @@ services:
       - VITE_BUILD_ID=${BUILD_ID:-local}
       - TENANT=pay-ready
     networks:
-      sophia-network:
-        ipv4_address: 172.20.0.10
+      - sophia-network
+      - monitoring
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/healthz"]
@@ -47,6 +56,10 @@ services:
         reservations:
           cpus: '0.25'
           memory: 256M
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=3000"
+      - "prometheus.io/path=/metrics"
 
   # =============================================================================
   # CORE MCP SERVICES
@@ -77,8 +90,8 @@ services:
       - QDRANT_API_KEY=${QDRANT_API_KEY}
       - TENANT=pay-ready
     networks:
-      sophia-network:
-        ipv4_address: 172.20.0.20
+      - sophia-network
+      - monitoring
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
@@ -93,6 +106,10 @@ services:
         reservations:
           cpus: '0.5'
           memory: 512M
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=8080"
+      - "prometheus.io/path=/metrics"
 
   sophia-context:
     build:
@@ -111,8 +128,8 @@ services:
       - REDIS_URL=${REDIS_URL}
       - TENANT=pay-ready
     networks:
-      sophia-network:
-        ipv4_address: 172.20.0.21
+      - sophia-network
+      - monitoring
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
@@ -127,6 +144,10 @@ services:
         reservations:
           cpus: '0.5'
           memory: 512M
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=8080"
+      - "prometheus.io/path=/metrics"
 
   sophia-github:
     build:
@@ -146,8 +167,8 @@ services:
       - NEON_DATABASE_URL=${NEON_DATABASE_URL}
       - TENANT=pay-ready
     networks:
-      sophia-network:
-        ipv4_address: 172.20.0.22
+      - sophia-network
+      - monitoring
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
@@ -162,6 +183,10 @@ services:
         reservations:
           cpus: '0.5'
           memory: 512M
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=8080"
+      - "prometheus.io/path=/metrics"
 
   sophia-business:
     build:
@@ -199,8 +224,8 @@ services:
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - TENANT=pay-ready
     networks:
-      sophia-network:
-        ipv4_address: 172.20.0.23
+      - sophia-network
+      - monitoring
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
@@ -215,6 +240,10 @@ services:
         reservations:
           cpus: '0.5'
           memory: 512M
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=8080"
+      - "prometheus.io/path=/metrics"
 
   sophia-lambda:
     build:
@@ -234,8 +263,8 @@ services:
       - REDIS_URL=${REDIS_URL}
       - TENANT=pay-ready
     networks:
-      sophia-network:
-        ipv4_address: 172.20.0.24
+      - sophia-network
+      - monitoring
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
@@ -250,6 +279,10 @@ services:
         reservations:
           cpus: '0.5'
           memory: 512M
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=8080"
+      - "prometheus.io/path=/metrics"
 
   sophia-hubspot:
     build:
@@ -265,8 +298,8 @@ services:
       - HUBSPOT_CLIENT_SECRET=${HUBSPOT_CLIENT_SECRET}
       - TENANT=pay-ready
     networks:
-      sophia-network:
-        ipv4_address: 172.20.0.25
+      - sophia-network
+      - monitoring
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
@@ -281,6 +314,10 @@ services:
         reservations:
           cpus: '0.5'
           memory: 512M
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=8080"
+      - "prometheus.io/path=/metrics"
 
   sophia-agents:
     build:
@@ -310,8 +347,8 @@ services:
       - REDIS_URL=${REDIS_URL}
       - TENANT=pay-ready
     networks:
-      sophia-network:
-        ipv4_address: 172.20.0.27
+      - sophia-network
+      - monitoring
     restart: unless-stopped
     depends_on:
       - sophia-context
@@ -331,6 +368,10 @@ services:
         reservations:
           cpus: '0.5'
           memory: 512M
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=8000"
+      - "prometheus.io/path=/metrics"
 
   # sophia-orchestrator: TEMPORARILY DISABLED - TypeScript build issues
   # Will be re-enabled once dependencies are resolved
@@ -381,8 +422,8 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./ssl:/etc/nginx/ssl:ro
     networks:
-      sophia-network:
-        ipv4_address: 172.20.0.5
+      - sophia-network
+      - monitoring
     restart: unless-stopped
     depends_on:
       - sophia-dashboard
@@ -405,12 +446,140 @@ services:
         reservations:
           cpus: '0.1'
           memory: 128M
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=80"
+      - "prometheus.io/path=/metrics"
 
   # =============================================================================
-  # MONITORING & OBSERVABILITY - TEMPORARILY DISABLED
+  # MONITORING & OBSERVABILITY - ENABLED FOR PHASE 3
   # =============================================================================
-  # Prometheus and Grafana disabled due to config file permissions
-  # Will be re-enabled after deployment verification
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: sophia-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    networks:
+      - monitoring
+    depends_on:
+      - cadvisor
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=9090"
+      - "prometheus.io/path=/metrics"
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: sophia-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    restart: unless-stopped
+    networks:
+      - monitoring
+      - sophia-network
+    depends_on:
+      - prometheus
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=3000"
+      - "prometheus.io/path=/metrics"
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: sophia-cadvisor
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg
+    restart: unless-stopped
+    networks:
+      - monitoring
+    privileged: true
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=8080"
+      - "prometheus.io/path=/metrics"
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: sophia-node-exporter
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    restart: unless-stopped
+    networks:
+      - monitoring
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=9100"
+      - "prometheus.io/path=/metrics"
+
+  loki:
+    image: grafana/loki:latest
+    container_name: sophia-loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - loki_data:/loki
+      - ./monitoring/loki-config.yml:/etc/loki/local-config.yaml:ro
+    command: -config.file=/etc/loki/local-config.yaml
+    restart: unless-stopped
+    networks:
+      - monitoring
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=3100"
+      - "prometheus.io/path=/metrics"
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: sophia-promtail
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - ./monitoring/promtail-config.yml:/etc/promtail/config.yml:ro
+      - /var/log:/var/log:ro
+    command: -config.file=/etc/promtail/config.yml
+    restart: unless-stopped
+    networks:
+      - monitoring
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=9080"
+      - "prometheus.io/path=/metrics"
 
 # =============================================================================
 # HEALTH CHECK ENDPOINT

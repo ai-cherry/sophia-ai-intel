@@ -145,7 +145,7 @@ class TestSecurityAndCompliance:
         for service_url in services:
             if service_url.startswith("https://"):
                 try:
-                    response = requests.get(f"{service_url}/healthz", timeout=10)
+                    requests.get(f"{service_url}/healthz", timeout=10)
                     # If we get here, HTTPS is working
                     assert True
                 except requests.exceptions.RequestException:

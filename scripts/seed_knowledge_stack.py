@@ -372,7 +372,7 @@ class KnowledgeStack:
             await conn.execute(create_table_sql)
             logger.info("✅ Database tables created/verified")
     
-    async def store_document_chunks(self, chunks: List[Dict[str, Any]]) -> int:
+    async def store_document_chunks(self, chunks: List[Dict[str, Any]]) -> tuple[int, int]:
         """Store document chunks across all layers"""
         
         stored_count = 0
@@ -470,7 +470,7 @@ class KnowledgeStack:
                     continue
         
         logger.info(f"✅ Storage complete: {stored_count} chunks stored, {embeddings_created} embeddings created")
-        return stored_count
+        return stored_count, embeddings_created
     
     async def test_retrieval(self, query: str) -> Dict[str, Any]:
         """Test the complete retrieval pipeline"""
@@ -629,7 +629,7 @@ async def main():
     
     # Store all chunks in the knowledge stack
     if all_chunks:
-        stored_count = await knowledge_stack.store_document_chunks(all_chunks)
+        stored_count, embeddings_created = await knowledge_stack.store_document_chunks(all_chunks)
         
         # Test retrieval pipeline
         logger.info("🧪 Testing retrieval pipeline...")
