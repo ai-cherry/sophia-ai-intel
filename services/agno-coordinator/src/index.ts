@@ -49,11 +49,11 @@ class Server {
     this.app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
     // Request logging
-    this.app.use((req, res, next) => {
+    this.app.use((_req, res, next) => {
       const start = Date.now();
       res.on('finish', () => {
         const duration = Date.now() - start;
-        console.log(`${new Date().toISOString()} - ${req.method} ${req.path} - ${res.statusCode} - ${duration}ms`);
+        console.log(`${new Date().toISOString()} - ${_req.method} ${_req.path} - ${res.statusCode} - ${duration}ms`);
       });
       next();
     });
@@ -64,7 +64,7 @@ class Server {
    */
   private setupRoutes(): void {
     // Health check endpoint
-    this.app.get('/healthz', async (req, res) => {
+    this.app.get('/healthz', async (_req, res) => {
       try {
         const health = await healthChecker.getHealthStatus();
         const statusCode = health.status === 'healthy' ? 200 : 503;
@@ -80,7 +80,7 @@ class Server {
     });
 
     // Detailed health check
-    this.app.get('/health/detailed', async (req, res) => {
+    this.app.get('/health/detailed', async (_req, res) => {
       try {
         const report = await healthChecker.getDetailedHealthReport();
         const statusCode = report.status.status === 'healthy' ? 200 : 503;
@@ -121,7 +121,7 @@ class Server {
     });
 
     // Feature flag management endpoints
-    this.app.get('/flags', (req, res) => {
+    this.app.get('/flags', (_req, res) => {
       try {
         const flags = featureFlags.getAllFlags();
         res.json({
@@ -163,7 +163,7 @@ class Server {
     });
 
     // Configuration endpoint
-    this.app.get('/config', (req, res) => {
+    this.app.get('/config', (_req, res) => {
       try {
         const config = configManager.getConfigSummary();
         res.json({
@@ -179,7 +179,7 @@ class Server {
     });
 
     // Statistics endpoint
-    this.app.get('/stats', (req, res) => {
+    this.app.get('/stats', (_req, res) => {
       try {
         const stats = agnosticCoordinator.getStatistics();
         res.json({
@@ -196,7 +196,7 @@ class Server {
 
     // Debug endpoints (only in development)
     if (process.env.NODE_ENV !== 'production') {
-      this.app.get('/debug/config', (req, res) => {
+      this.app.get('/debug/config', (_req, res) => {
         res.json({
           config: configManager.getConfig(),
           featureFlags: featureFlags.getAllFlags(),
@@ -204,7 +204,7 @@ class Server {
         });
       });
 
-      this.app.post('/debug/test', async (req, res) => {
+      this.app.post('/debug/test', async (_req, res) => {
         try {
           const testRequest: PipelineRequest = {
             userPrompt: 'This is a test request for debugging',
@@ -229,10 +229,10 @@ class Server {
     }
 
     // 404 handler
-    this.app.use('*', (req, res) => {
+    this.app.use('*', (_req, res) => {
       res.status(404).json({
         error: 'Not found',
-        path: req.originalUrl,
+        path: _req.originalUrl,
         timestamp: new Date().toISOString()
       });
     });
@@ -243,7 +243,7 @@ class Server {
    */
   private setupErrorHandling(): void {
     // Global error handler
-    this.app.use((error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    this.app.use((error: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
       console.error('Unhandled error:', error);
 
       res.status(500).json({

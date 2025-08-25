@@ -253,14 +253,14 @@ export class AgnosticCoordinator extends EventEmitter {
    * Handle request with existing orchestrator
    */
   private async handleWithExisting(
-    request: PipelineRequest,
+    _request: PipelineRequest,
     routingDecision: RoutingDecision
   ): Promise<{ success: boolean; response: string; metadata: any }> {
     try {
       // This would make an HTTP call to the existing orchestrator
       // For now, return a mock response
 
-      const response = `Processed via existing orchestrator: ${request.userPrompt.substring(0, 50)}...`;
+      const response = `Processed via existing orchestrator: ${routingDecision.reasoning}`;
       const metadata = {
         handler: 'existing-orchestrator',
         routingReason: routingDecision.reasoning,

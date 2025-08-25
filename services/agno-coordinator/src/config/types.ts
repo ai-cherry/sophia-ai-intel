@@ -31,7 +31,7 @@ export interface RoutingDecision {
   confidence: number;
   reasoning: string;
   estimatedComplexity: 'low' | 'medium' | 'high';
-  recommendedModel?: string;
+  recommendedModel?: string | undefined;
   fallbackEnabled: boolean;
 }
 
