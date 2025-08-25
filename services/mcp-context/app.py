@@ -1,4 +1,4 @@
-"""
+com"""
 Sophia AI Context Abstraction Layer MCP Service
 
 This module provides a unified context abstraction layer that integrates document storage,
@@ -38,6 +38,14 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 import uuid
 from qdrant_client import QdrantClient, models
+
+# Import real embeddings engine
+from real_embeddings import (
+    embedding_engine, 
+    generate_real_embedding,
+    store_with_real_embedding,
+    semantic_search_documents
+)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -290,37 +298,25 @@ async def create_document(request: DocumentCreateRequest):
             detail=normalized_error("storage", "database-error", str(e)),
         )
 
-    # Store in Qdrant
+    # Store in Qdrant with real embeddings
     if QDRANT_URL and QDRANT_API_KEY:
         try:
-            # Recreate collection for simplicity, in production would check existence
-            qdrant_client.recreate_collection(
-                collection_name="sophia_documents",
-                vectors_config=models.VectorParams(
-                    size=1536, distance=models.Distance.COSINE
-                ),
+            # Use real embedding engine to store document
+            success = await store_with_real_embedding(
+                doc_id=doc_id,
+                content=request.content,
+                source=request.source,
+                metadata=request.metadata
             )
-
-            # Create embedding (placeholder for actual embedding model)
-            embedding_vector = [0.0] * 1536  # Replace with actual embedding generation
-
-            qdrant_client.upsert(
-                collection_name="sophia_documents",
-                wait=True,
-                points=[
-                    models.PointStruct(
-                        id=doc_id,
-                        vector=embedding_vector,
-                        payload={
-                            "source": request.source,
-                            "metadata": request.metadata,
-                            "created_at": created_at,
-                        },
-                    )
-                ],
-            )
+            
+            if not success:
+                raise HTTPException(
+                    status_code=500,
+                    detail=normalized_error("qdrant", "embedding-failed", "Failed to generate or store embedding")
+                )
+                
         except Exception as e:
-            logger.error(f"Qdrant storage failed: {e}")
+            logger.error(f"Real embedding storage failed: {e}")
             raise HTTPException(
                 status_code=500,
                 detail=normalized_error("qdrant", "qdrant-error", str(e)),
@@ -343,7 +339,7 @@ async def create_document(request: DocumentCreateRequest):
 @app.post("/documents/search", response_model=DocumentSearchResponse)
 async def search_documents(request: DocumentSearchRequest):
     """
-    Searches for relevant documents in the vector store and database.
+    Searches for relevant documents using real semantic search.
     """
     start_time = time.time()
 
@@ -355,61 +351,51 @@ async def search_documents(request: DocumentSearchRequest):
             ),
         )
 
-    # Create search embedding (placeholder for actual embedding model)
-    search_vector = [0.0] * 1536  # Replace with actual embedding generation
-
-    search_result = qdrant_client.search(
-        collection_name="sophia_documents",
-        query_vector=search_vector,
-        limit=request.k,
-        query_params=models.QueryParams(hnsw_ef=128, exact=False),
-    )
-
-    # Retrieve full documents from Postgres based on Qdrant results
-    documents = []
-    if NEON_DATABASE_URL and search_result:
-        try:
-            pool = await get_db_pool()
-            if pool:
-                async with pool.acquire() as conn:
-                    for hit in search_result:
-                        row = await conn.fetchrow(
-                            """SELECT id, content, source, metadata, created_at
-                               FROM documents WHERE id = $1""",
-                            hit.id,
-                        )
-                        if row:
-                            documents.append(
-                                Document(
-                                    id=row["id"],
-                                    content=row["content"],
-                                    source=row["source"],
-                                    metadata=json.loads(row["metadata"]),
-                                    created_at=row["created_at"],
-                                )
-                            )
-        except Exception as e:
-            logger.error(f"Database retrieval failed: {e}")
-            raise HTTPException(
-                status_code=500,
-                detail=normalized_error("storage", "database-error", str(e)),
-            )
-
-    return DocumentSearchResponse(
-        status="success",
-        query=request.query,
-        results=documents,
-        summary={
-            "text": f"Found {len(documents)} documents for '{request.query}'",
-            "confidence": 0.8,
-            "model": "context_search_v1",
-            "sources": ["qdrant", "storage"] if NEON_DATABASE_URL else ["qdrant"],
-        },
-        providers_used=["qdrant", "storage"] if NEON_DATABASE_URL else ["qdrant"],
-        providers_failed=[],
-        execution_time_ms=int((time.time() - start_time) * 1000),
-        timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-    )
+    try:
+        # Use real semantic search with embeddings
+        search_results = await semantic_search_documents(
+            query=request.query,
+            limit=request.k
+        )
+        
+        # Convert search results to Document objects
+        documents = []
+        for result in search_results:
+            documents.append(Document(
+                id=result.id,
+                content=result.content,
+                source=result.source,
+                metadata=result.metadata,
+                created_at=result.metadata.get('created_at', time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
+            ))
+        
+        # Get cache statistics for summary
+        cache_stats = await embedding_engine.get_cache_stats()
+        
+        return DocumentSearchResponse(
+            status="success",
+            query=request.query,
+            results=documents,
+            summary={
+                "text": f"Found {len(documents)} semantically relevant documents for '{request.query}'",
+                "confidence": sum(r.similarity_score for r in search_results) / len(search_results) if search_results else 0,
+                "model": "real_embeddings_v2",
+                "sources": ["qdrant_real_embeddings", "storage"],
+                "cache_hit_ratio": cache_stats.get("cache_hit_ratio", "N/A"),
+                "embedding_model": "text-embedding-3-large"
+            },
+            providers_used=["qdrant_real_embeddings", "storage"],
+            providers_failed=[],
+            execution_time_ms=int((time.time() - start_time) * 1000),
+            timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        )
+        
+    except Exception as e:
+        logger.error(f"Semantic search failed: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=normalized_error("qdrant", "search-failed", str(e)),
+        )
 
 
 @app.on_event("startup")
