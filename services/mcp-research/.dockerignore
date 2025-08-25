@@ -1,0 +1,27 @@
+# Ignore Python cache and build artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+*.tmp
+*.cache
+*.zip
+
+# Ignore virtual environments
+venv/
+.env/
+
+# Ignore test and docs
+/tests/
+/docs/
+/archive/
+
+# Ignore local config
+.env
+.env.*
+
+# Ignore Docker and build files
+Dockerfile*
+.dockerignore
+*.sh
