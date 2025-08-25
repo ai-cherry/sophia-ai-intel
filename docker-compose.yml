@@ -226,45 +226,8 @@ services:
       timeout: 10s
       retries: 3
 
-  sophia-orchestrator:
-    build:
-      context: ./services/orchestrator
-      dockerfile: Dockerfile
-    container_name: sophia-orchestrator
-    ports:
-      - "8080:8080"
-    environment:
-      - PORT=8080
-      - PYTHONUNBUFFERED=1
-      - REDIS_URL=${REDIS_URL}
-      - NEON_DATABASE_URL=${NEON_DATABASE_URL}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
-      - GROQ_API_KEY=${GROQ_API_KEY}
-      - MISTRAL_API_KEY=${MISTRAL_API_KEY}
-      - XAI_API_KEY=${XAI_API_KEY}
-      - PORTKEY_API_KEY=${PORTKEY_API_KEY}
-      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
-      - QDRANT_API_KEY=${QDRANT_API_KEY}
-      - QDRANT_URL=${QDRANT_URL}
-      - TENANT=pay-ready
-    networks:
-      sophia-network:
-        ipv4_address: 172.20.0.26
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    depends_on:
-      - sophia-research
-      - sophia-context
-      - sophia-github
-      - sophia-business
-      - sophia-lambda
-      - sophia-hubspot
+  # sophia-orchestrator: TEMPORARILY DISABLED - TypeScript build issues
+  # Will be re-enabled once dependencies are resolved
 
   # =============================================================================
   # BACKGROUND SERVICES
@@ -309,7 +272,6 @@ services:
     restart: unless-stopped
     depends_on:
       - sophia-dashboard
-      - sophia-orchestrator
       - sophia-research
       - sophia-context
       - sophia-github
@@ -323,42 +285,10 @@ services:
       retries: 3
 
   # =============================================================================
-  # MONITORING & OBSERVABILITY
+  # MONITORING & OBSERVABILITY - TEMPORARILY DISABLED
   # =============================================================================
-
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-    networks:
-      sophia-network:
-        ipv4_address: 172.20.0.40
-    restart: unless-stopped
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/etc/prometheus/console_libraries'
-      - '--web.console.templates=/etc/prometheus/consoles'
-      - '--web.enable-lifecycle'
-
-  grafana:
-    image: grafana/grafana:latest
-    container_name: grafana
-    ports:
-      - "3001:3000"
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
-    volumes:
-      - ./monitoring/grafana:/etc/grafana/provisioning:ro
-    networks:
-      sophia-network:
-        ipv4_address: 172.20.0.41
-    restart: unless-stopped
-    depends_on:
-      - prometheus
+  # Prometheus and Grafana disabled due to config file permissions
+  # Will be re-enabled after deployment verification
 
 # =============================================================================
 # HEALTH CHECK ENDPOINT
