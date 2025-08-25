@@ -1,4 +1,4 @@
-com"""
+"""
 Sophia AI Context Abstraction Layer MCP Service
 
 This module provides a unified context abstraction layer that integrates document storage,
