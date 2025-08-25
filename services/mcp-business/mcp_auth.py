@@ -5,10 +5,9 @@ MCP Authentication Module
 Provides token validation and authorization functions for MCP services.
 """
 
-import os
 import time
 from typing import Dict, Any, Optional
-from fastapi import HTTPException, Depends, Request
+from fastapi import HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import logging
 

@@ -11,7 +11,6 @@ import json
 import requests
 import subprocess
 import time
-from datetime import datetime
 
 def get_github_token():
     """Get GitHub token from environment or gh CLI"""
@@ -47,7 +46,7 @@ def trigger_deployment(token, repo="ai-cherry/sophia-ai-intel"):
     
     url = f"https://api.github.com/repos/{repo}/actions/workflows/deploy_all.yml/dispatches"
     
-    print(f"🚀 Triggering deployment workflow...")
+    print("🚀 Triggering deployment workflow...")
     print(f"📍 URL: {url}")
     print(f"📋 Payload: {json.dumps(payload, indent=2)}")
     

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import Footer from './components/Footer'
 import ChatInterface from './components/ChatInterface'
 import JobsPanel from './components/JobsPanel'
+import AgentSwarmPanel from './components/AgentSwarmPanel'
 import { buildGuard } from './lib/buildInfo'
 import { personaConfigManager } from './persona/personaConfig'
 
@@ -13,6 +14,7 @@ function App() {
 
   const tabs = [
     { id: 'chat', label: 'Chat' },
+    { id: 'swarm', label: 'Agent Swarm' },
     { id: 'jobs', label: 'Jobs' },
     { id: 'gtm', label: 'GTM' },
     { id: 'status', label: 'System Status' },
@@ -492,6 +494,10 @@ function App() {
           </div>
         )}
 
+        {activeTab === 'swarm' && (
+          <AgentSwarmPanel />
+        )}
+
         {activeTab === 'jobs' && (
           <div style={{
             background: '#fff',
@@ -568,4 +574,3 @@ function App() {
 }
 
 export default App
-

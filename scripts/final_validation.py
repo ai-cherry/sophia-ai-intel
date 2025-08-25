@@ -8,7 +8,7 @@ import requests
 import time
 import json
 import sys
-from typing import Dict, List, Optional
+from typing import Dict, List
 import yaml
 
 class FinalValidator:
@@ -94,12 +94,12 @@ class FinalValidator:
                         print(f"  ✅ Healthy at {endpoint} ({response_time:.0f}ms)")
                         break
                         
-                except Exception as e:
+                except Exception:
                     continue
                     
             if not result['healthy']:
-                result['error'] = f"All health endpoints failed"
-                print(f"  ❌ All health checks failed")
+                result['error'] = "All health endpoints failed"
+                print("  ❌ All health checks failed")
                 
         return result
         
@@ -263,7 +263,7 @@ class FinalValidator:
         print(f"Migration Status: {summary['migration_status']}")
         
         # Service details
-        print(f"\n📊 Service Status:")
+        print("\n📊 Service Status:")
         for service in service_results:
             status_icon = "✅" if service['healthy'] else "❌"
             response_info = f" ({service['response_time']}ms)" if service['response_time'] else ""
@@ -271,7 +271,7 @@ class FinalValidator:
             
         # DNS details
         if dns_results:
-            print(f"\n🌐 DNS Status:")
+            print("\n🌐 DNS Status:")
             for domain, result in dns_results.items():
                 status_icon = "✅" if result.get('reachable', False) else "❌"
                 print(f"  {status_icon} {domain}")
@@ -279,13 +279,13 @@ class FinalValidator:
         success = summary['migration_status'] == 'SUCCESS'
         
         if success:
-            print(f"\n🎉 MIGRATION COMPLETED SUCCESSFULLY!")
-            print(f"All services are healthy and DNS has propagated.")
+            print("\n🎉 MIGRATION COMPLETED SUCCESSFULLY!")
+            print("All services are healthy and DNS has propagated.")
         else:
-            print(f"\n⚠️  MIGRATION PARTIALLY COMPLETE")
-            print(f"Some services need attention. Check validation_report.json for details.")
+            print("\n⚠️  MIGRATION PARTIALLY COMPLETE")
+            print("Some services need attention. Check validation_report.json for details.")
             
-        print(f"\n📋 Full report saved to: validation_report.json")
+        print("\n📋 Full report saved to: validation_report.json")
         
         return success
 

@@ -226,6 +226,48 @@ services:
       timeout: 10s
       retries: 3
 
+  sophia-agents:
+    build:
+      context: .
+      dockerfile: ./services/mcp-agents/Dockerfile
+    container_name: sophia-agents
+    ports:
+      - "8087:8000"
+    environment:
+      - PORT=8000
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app/libs:/app
+      - DASHBOARD_ORIGIN=http://sophia-dashboard:3000
+      - GITHUB_MCP_URL=http://sophia-github:8080
+      - CONTEXT_MCP_URL=http://sophia-context:8080
+      - RESEARCH_MCP_URL=http://sophia-research:8080
+      - BUSINESS_MCP_URL=http://sophia-business:8080
+      - GITHUB_APP_ID=${GITHUB_APP_ID}
+      - GITHUB_INSTALLATION_ID=${GITHUB_INSTALLATION_ID}
+      - GITHUB_PRIVATE_KEY=${GITHUB_PRIVATE_KEY}
+      - NEON_DATABASE_URL=${NEON_DATABASE_URL}
+      - PORTKEY_API_KEY=${PORTKEY_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - QDRANT_URL=${QDRANT_URL}
+      - QDRANT_API_KEY=${QDRANT_API_KEY}
+      - REDIS_URL=${REDIS_URL}
+      - TENANT=pay-ready
+    networks:
+      sophia-network:
+        ipv4_address: 172.20.0.27
+    restart: unless-stopped
+    depends_on:
+      - sophia-context
+      - sophia-github
+      - sophia-research
+      - sophia-business
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   # sophia-orchestrator: TEMPORARILY DISABLED - TypeScript build issues
   # Will be re-enabled once dependencies are resolved
 
@@ -306,13 +348,13 @@ services:
         sleep 30
         echo 'Running health checks...'
         curl -f http://sophia-dashboard:3000/healthz && echo 'Dashboard: OK' || echo 'Dashboard: FAIL'
-        curl -f http://sophia-orchestrator:8080/healthz && echo 'Orchestrator: OK' || echo 'Orchestrator: FAIL'
         curl -f http://sophia-research:8080/healthz && echo 'Research: OK' || echo 'Research: FAIL'
         curl -f http://sophia-context:8080/healthz && echo 'Context: OK' || echo 'Context: FAIL'
         curl -f http://sophia-github:8080/healthz && echo 'GitHub: OK' || echo 'GitHub: FAIL'
         curl -f http://sophia-business:8080/healthz && echo 'Business: OK' || echo 'Business: FAIL'
         curl -f http://sophia-lambda:8080/healthz && echo 'Lambda: OK' || echo 'Lambda: FAIL'
         curl -f http://sophia-hubspot:8080/healthz && echo 'HubSpot: OK' || echo 'HubSpot: FAIL'
+        curl -f http://sophia-agents:8000/healthz && echo 'Agents: OK' || echo 'Agents: FAIL'
         echo 'Health check complete!'
       "
 # Simple trigger - Mon Aug 25 10:24:55 UTC 2025

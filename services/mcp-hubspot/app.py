@@ -8,16 +8,13 @@ Provides access to contacts, deals, companies, and sales pipeline data.
 """
 
 import os
-import sys
 import logging
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import aiohttp
-import asyncio
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 import uvicorn
 
 # Configure logging

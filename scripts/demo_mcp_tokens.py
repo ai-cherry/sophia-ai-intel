@@ -11,9 +11,7 @@ Demonstrates the MCP capability token system:
 """
 
 import json
-import os
 import sys
-import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -354,10 +352,10 @@ def main():
         )
         print(f"  • Rejections working: {proof['summary']['rejections_working']}")
 
-        print(f"\n🔐 Public key available for verification:")
+        print("\n🔐 Public key available for verification:")
         print("  (See proofs/mcp/capability_token_demo.json)")
 
-        print(f"\n✅ MCP Capability Token System demonstration complete!")
+        print("\n✅ MCP Capability Token System demonstration complete!")
         print("   Proof artifacts generated in proofs/mcp/")
 
         return 0

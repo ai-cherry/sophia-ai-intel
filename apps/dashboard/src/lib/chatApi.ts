@@ -8,6 +8,9 @@ interface ChatMessage {
     processing_time?: number
     prompt_enhanced?: boolean
     enhancement_profile?: string
+    swarm_task_id?: string
+    swarm_type?: string
+    agent_swarm_used?: boolean
   }
 }
 
@@ -40,7 +43,8 @@ interface ChatResponse {
 }
 
 class ChatAPI {
-  private baseUrl = 'https://sophiaai-mcp-context-v2.fly.dev'
+  private baseUrl = 'http://192.222.51.223:8082'  // Lambda Labs Context service
+  private agentSwarmUrl = 'http://192.222.51.223:8087'  // Lambda Labs Agent Swarm
 
   async enhancePrompt(prompt: string, settings: ChatSettings): Promise<EnhancementResult | null> {
     try {
@@ -90,6 +94,13 @@ class ChatAPI {
 
   async sendMessage(prompt: string, settings: ChatSettings, conversationHistory: ChatMessage[]): Promise<ChatResponse> {
     try {
+      // Check if this should be handled by agent swarm
+      const shouldUseSwarm = this.shouldUseAgentSwarm(prompt)
+      
+      if (shouldUseSwarm) {
+        return await this.processWithAgentSwarm(prompt, settings, conversationHistory)
+      }
+
       // Step 1: Enhance the prompt if enabled
       const enhancement = settings.enableEnhancement 
         ? await this.enhancePrompt(prompt, settings)
@@ -107,7 +118,7 @@ class ChatAPI {
           messages: [
             {
               role: 'system',
-              content: 'You are Sophia, an AI intelligence system. Use your knowledge base and reasoning capabilities to provide helpful responses.'
+              content: 'You are Sophia, an AI intelligence system with access to advanced agent swarm capabilities. Use your knowledge base and reasoning capabilities to provide helpful responses.'
             },
             ...conversationHistory.slice(-10).map(msg => ({
               role: msg.role,
@@ -149,6 +160,142 @@ class ChatAPI {
     } catch (error) {
       console.error('Chat API error:', error)
       return this.fallbackResponse(prompt, settings)
+    }
+  }
+
+  private shouldUseAgentSwarm(prompt: string): boolean {
+    /**
+     * Determine if a prompt should be handled by the agent swarm
+     */
+    const swarmKeywords = [
+      'analyze repository', 'code analysis', 'repository analysis',
+      'examine codebase', 'review code', 'analyze code',
+      'code patterns', 'architecture analysis', 'code quality',
+      'implement feature', 'generate code', 'write code',
+      'plan implementation', 'design solution', 'create plan',
+      'refactor', 'optimize', 'improve code'
+    ]
+
+    const promptLower = prompt.toLowerCase()
+    return swarmKeywords.some(keyword => promptLower.includes(keyword))
+  }
+
+  private async processWithAgentSwarm(
+    prompt: string, 
+    settings: ChatSettings, 
+    conversationHistory: ChatMessage[]
+  ): Promise<ChatResponse> {
+    /**
+     * Process the prompt using the agent swarm system
+     */
+    try {
+      // Call agent swarm API endpoint
+      const swarmResponse = await fetch(`${this.agentSwarmUrl}/agent-swarm/process`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: prompt,
+          session_id: `chat_${Date.now()}`,
+          user_context: {
+            settings: settings,
+            conversation_history: conversationHistory.slice(-5) // Last 5 messages for context
+          }
+        })
+      })
+
+      if (swarmResponse.ok) {
+        const swarmResult = await swarmResponse.json()
+        
+        const assistantMessage: ChatMessage = {
+          id: Date.now().toString(),
+          role: 'assistant',
+          content: swarmResult.message || 'Agent swarm processing completed.',
+          timestamp: new Date(),
+          metadata: {
+            model: 'agent-swarm',
+            processing_time: swarmResult.processing_time_ms || 0,
+            prompt_enhanced: true,
+            enhancement_profile: 'agent_swarm',
+            swarm_task_id: swarmResult.task_id,
+            swarm_type: swarmResult.type
+          }
+        }
+
+        return { message: assistantMessage }
+      } else {
+        // Fallback to regular processing if swarm unavailable
+        console.warn('Agent swarm unavailable, falling back to standard processing')
+        return await this.standardProcessing(prompt, settings, conversationHistory)
+      }
+    } catch (error) {
+      console.error('Agent swarm processing error:', error)
+      // Fallback to regular processing
+      return await this.standardProcessing(prompt, settings, conversationHistory)
+    }
+  }
+
+  private async standardProcessing(
+    prompt: string,
+    settings: ChatSettings,
+    conversationHistory: ChatMessage[]
+  ): Promise<ChatResponse> {
+    /**
+     * Standard chat processing without agent swarm
+     */
+    const enhancement = settings.enableEnhancement 
+      ? await this.enhancePrompt(prompt, settings)
+      : null
+
+    const finalPrompt = enhancement ? enhancement.enhanced_prompt : prompt
+
+    const response = await fetch(`${this.baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        messages: [
+          {
+            role: 'system',
+            content: 'You are Sophia, an AI intelligence system. Use your knowledge base and reasoning capabilities to provide helpful responses.'
+          },
+          ...conversationHistory.slice(-10).map(msg => ({
+            role: msg.role,
+            content: msg.content
+          })),
+          {
+            role: 'user',
+            content: finalPrompt
+          }
+        ],
+        model: this.getModelMapping(settings.model),
+        temperature: settings.riskStance === 'conservative' ? 0.3 : 
+                    settings.riskStance === 'balanced' ? 0.7 : 0.9,
+        max_tokens: settings.verbosity === 'minimal' ? 150 :
+                   settings.verbosity === 'standard' ? 500 : 1000
+      })
+    })
+
+    if (response.ok) {
+      const result = await response.json()
+      const assistantMessage: ChatMessage = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: result.choices[0].message.content,
+        timestamp: new Date(),
+        metadata: {
+          model: settings.model,
+          processing_time: enhancement?.execution_time_ms || 0,
+          prompt_enhanced: !!enhancement,
+          enhancement_profile: enhancement ? settings.verbosity : undefined
+        }
+      }
+
+      return { message: assistantMessage }
+    } else {
+      return this.fallbackResponse(prompt, settings, enhancement)
     }
   }
 

@@ -3,25 +3,20 @@ import time
 import json
 import logging
 import uuid
-import asyncio
 from datetime import datetime, timezone
-from typing import List, Optional, Dict, Any, Union
+from typing import List, Optional, Dict, Any
 import asyncpg
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 import io
 
 # LlamaIndex imports
-from llama_index.core import Document, VectorStoreIndex, ServiceContext, StorageContext
-from llama_index.core.node_parser import SemanticSplitterNodeParser, SimpleNodeParser
+from llama_index.core.node_parser import SemanticSplitterNodeParser
 from llama_index.core.extractors import KeywordExtractor, SummaryExtractor
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.llms.openai import OpenAI
 from llama_index.readers.file import PDFReader, DocxReader, UnstructuredReader
-from llama_index.vector_stores.qdrant import QdrantVectorStore
-from qdrant_client import QdrantClient, models
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

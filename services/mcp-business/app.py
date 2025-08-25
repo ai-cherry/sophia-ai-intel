@@ -48,17 +48,16 @@ from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any
 import asyncpg
 import httpx
-from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Depends
+from fastapi import FastAPI, UploadFile, File, Form, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field
 import uuid
 
 # Import MCP token validation
 from mcp_auth import (
     require_business_auth,
     require_admin_auth,
-    create_demo_error_response,
 )
 
 # Configure logging
