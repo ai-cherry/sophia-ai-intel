@@ -32,6 +32,11 @@ jobs:
           cd ops/pulumi
           pip install -r requirements.txt
 
+      - name: Select or create Pulumi stack
+        run: |
+          cd ops/pulumi
+          pulumi stack select production || pulumi stack init production
+          
       - name: Pulumi up (deploy)
         run: |
           cd ops/pulumi
