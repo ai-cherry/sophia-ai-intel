@@ -628,10 +628,13 @@ async def web_scrape(request: WebScrapeRequest):
 @app.on_event("startup")
 async def startup_event():
     """Initialize all services and connections"""
-    # Initialize database pool
+    # Initialize database pool with defensive error handling
     if NEON_DATABASE_URL:
-        await get_db_pool()
-        logger.info("Research MCP v2 started with database connectivity")
+        try:
+            await get_db_pool()
+            logger.info("Research MCP v2 started with database connectivity")
+        except Exception as e:
+            logger.warning(f"Database connection failed at startup: {e}. Service will start without initial DB connection.")
     else:
         logger.warning("Research MCP v2 started without database - storage disabled")
     

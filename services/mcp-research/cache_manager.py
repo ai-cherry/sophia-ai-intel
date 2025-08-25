@@ -26,7 +26,13 @@ from dataclasses import dataclass
 from enum import Enum
 
 import redis
-import aioredis
+try:
+    import aioredis
+    AIOREDIS_AVAILABLE = True
+except ImportError:
+    aioredis = None
+    AIOREDIS_AVAILABLE = False
+    logging.warning("aioredis not available - falling back to synchronous Redis")
 
 logger = logging.getLogger(__name__)
 
@@ -107,9 +113,13 @@ class AggressiveCacheManager:
             self.redis_client = redis.from_url(self.redis_url, decode_responses=True)
             self.redis_client.ping()
             
-            # Async client for high-performance operations
-            self.aioredis_client = await aioredis.from_url(self.redis_url, decode_responses=True)
-            await self.aioredis_client.ping()
+            # Async client for high-performance operations (if available)
+            if AIOREDIS_AVAILABLE:
+                self.aioredis_client = await aioredis.from_url(self.redis_url, decode_responses=True)
+                await self.aioredis_client.ping()
+            else:
+                self.aioredis_client = None
+                logger.warning("aioredis not available - using synchronous Redis only")
             
             logger.info("Redis cache manager initialized successfully")
             return True
