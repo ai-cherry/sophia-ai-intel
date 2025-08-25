@@ -29,57 +29,13 @@ openai_key = config.require_secret("openai-api-key")
 
 pulumi.log.info("🔐 Lambda Labs + Pulumi Cloud deployment starting")
 
-def create_lambda_labs_instance():
-    """Create Lambda Labs instance using API"""
-    
-    def _create_instance(api_key):
-        headers = {
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json"
-        }
-        
-        payload = {
-            "region_name": "us-west-1",
-            "instance_type_name": "gpu_1x_a100_sxm4",
-            "ssh_key_names": ["sophia-deploy-key"],
-            "quantity": 1,
-            "name": "sophia-ai-production"
-        }
-        
-        response = requests.post(
-            "https://cloud.lambdalabs.com/api/v1/instance-operations/launch",
-            json=payload,
-            headers=headers,
-            timeout=30
-        )
-        
-        if response.status_code in [200, 201]:
-            data = response.json()
-            instance_id = data.get("data", {}).get("instance_ids", [None])[0]
-            
-            # Wait for instance to be ready and get IP
-            for i in range(30):  # Wait up to 5 minutes
-                time.sleep(10)
-                
-                ip_response = requests.get(
-                    f"https://cloud.lambdalabs.com/api/v1/instances/{instance_id}",
-                    headers=headers
-                )
-                
-                if ip_response.status_code == 200:
-                    instance_data = ip_response.json()
-                    ip = instance_data.get("data", {}).get("ip")
-                    if ip:
-                        return {"instance_id": instance_id, "ip": ip}
-            
-            raise Exception("Instance created but IP not available")
-        else:
-            raise Exception(f"Failed to create instance: {response.text}")
-    
-    return lambda_api_key.apply(_create_instance)
-
-# Create Lambda Labs instance using API
-instance_info = create_lambda_labs_instance()
+# Use existing Lambda Labs instance - no need to create new one
+# Instance ID: 07c099ae5ceb48ffaccd5c91b0560c0e  
+# IP: 192.222.51.223
+instance_info = pulumi.Output.from_input({
+    "instance_id": "07c099ae5ceb48ffaccd5c91b0560c0e",
+    "ip": "192.222.51.223"
+})
 
 # 2. Install Docker via remote command
 install_docker = remote.Command(
