@@ -315,3 +315,4 @@ services:
         curl -f http://sophia-hubspot:8080/healthz && echo 'HubSpot: OK' || echo 'HubSpot: FAIL'
         echo 'Health check complete!'
       "
+# Simple trigger - Mon Aug 25 10:24:55 UTC 2025
