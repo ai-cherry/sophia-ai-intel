@@ -24,7 +24,13 @@ from enum import Enum
 
 from langgraph.graph import StateGraph, END
 from langgraph.checkpoint.memory import MemorySaver
-from langgraph.checkpoint.postgres import PostgresSaver
+try:
+    from langgraph.checkpoint.postgres import PostgresSaver
+    POSTGRES_CHECKPOINT_AVAILABLE = True
+except ImportError:
+    PostgresSaver = None
+    POSTGRES_CHECKPOINT_AVAILABLE = False
+    logging.warning("langgraph.checkpoint.postgres not available - using MemorySaver only")
 
 from ..base_agent import SophiaAgent, AgentTask, TaskStatus, TaskPriority
 
@@ -144,12 +150,14 @@ class CodeKrakenOrchestrator:
         self.node_executions: Dict[str, List[NodeExecution]] = {}
         
         # Checkpoint system for state persistence
-        if checkpoint_config and checkpoint_config.get('type') == 'postgres':
+        if checkpoint_config and checkpoint_config.get('type') == 'postgres' and POSTGRES_CHECKPOINT_AVAILABLE:
             self.checkpointer = PostgresSaver.from_conn_string(
                 checkpoint_config['connection_string']
             )
         else:
             self.checkpointer = MemorySaver()
+            if checkpoint_config and checkpoint_config.get('type') == 'postgres':
+                logger.warning("PostgreSQL checkpoint requested but not available - using MemorySaver")
         
         # Initialize workflow graph
         self.workflow_graph = self._build_workflow_graph()
