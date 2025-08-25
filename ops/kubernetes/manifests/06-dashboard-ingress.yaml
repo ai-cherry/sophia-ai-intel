@@ -1,0 +1,399 @@
+# Sophia AI Dashboard & Ingress - Enterprise Frontend
+# React dashboard with NGINX Ingress and SSL/TLS termination
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sophia-dashboard
+  namespace: sophia-ai
+  labels:
+    app: sophia-dashboard
+    component: frontend
+    tier: presentation
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 2
+  selector:
+    matchLabels:
+      app: sophia-dashboard
+  template:
+    metadata:
+      labels:
+        app: sophia-dashboard
+        component: frontend
+        tier: presentation
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/metrics"
+    spec:
+      # Security context
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      
+      containers:
+      - name: sophia-dashboard
+        image: lambdalabs.azurecr.io/sophia-ai/dashboard:latest
+        imagePullPolicy: Always
+        
+        ports:
+        - name: http
+          containerPort: 3000
+          protocol: TCP
+        - name: metrics
+          containerPort: 9095
+          protocol: TCP
+        
+        # Resources for React frontend
+        resources:
+          requests:
+            cpu: 200m
+            memory: 512Mi
+          limits:
+            cpu: 500m
+            memory: 1Gi
+        
+        # Environment configuration
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "3000"
+        - name: VITE_API_BASE_URL
+          value: "https://www.sophia-intel.ai/api"
+        - name: VITE_WS_URL
+          value: "wss://www.sophia-intel.ai/ws"
+        
+        # Dashboard configuration
+        envFrom:
+        - configMapRef:
+            name: sophia-dashboard-config
+        - secretRef:
+            name: sophia-dashboard-secrets
+        
+        # Health checks
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 3
+        
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+        
+        # Volume mounts for static assets and logs
+        volumeMounts:
+        - name: dashboard-assets
+          mountPath: /app/dist
+        - name: logs
+          mountPath: /app/logs
+      
+      # Volumes
+      volumes:
+      - name: dashboard-assets
+        emptyDir:
+          sizeLimit: 1Gi
+      - name: logs
+        emptyDir:
+          sizeLimit: 500Mi
+
+---
+# Dashboard Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: sophia-dashboard
+  namespace: sophia-ai
+  labels:
+    app: sophia-dashboard
+    component: frontend
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 3000
+    targetPort: 3000
+    protocol: TCP
+  - name: metrics
+    port: 9095
+    targetPort: 9095
+    protocol: TCP
+  selector:
+    app: sophia-dashboard
+
+---
+# Dashboard Horizontal Pod Autoscaler
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: sophia-dashboard-hpa
+  namespace: sophia-ai
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: sophia-dashboard
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 60
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 30
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 30
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+
+---
+# NGINX Ingress Controller
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sophia-ai-ingress
+  namespace: sophia-ai
+  annotations:
+    # NGINX Ingress annotations
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    
+    # Rate limiting
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    
+    # Load balancing
+    nginx.ingress.kubernetes.io/load-balance: "round_robin"
+    nginx.ingress.kubernetes.io/upstream-hash-by: "$remote_addr"
+    
+    # Security headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      add_header X-Content-Type-Options nosniff;
+      add_header X-Frame-Options DENY;
+      add_header X-XSS-Protection "1; mode=block";
+      add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    
+    # WebSocket support for agent updates
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    
+    # SSL/TLS configuration
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    
+spec:
+  tls:
+  - hosts:
+    - www.sophia-intel.ai
+    - sophia-intel.ai
+    secretName: sophia-ai-tls
+  
+  rules:
+  # Primary domain
+  - host: www.sophia-intel.ai
+    http:
+      paths:
+      # Dashboard frontend
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-dashboard
+            port:
+              number: 3000
+      
+      # Agent Swarm API
+      - path: /api/agents
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-agents
+            port:
+              number: 8087
+      
+      # Context & Memory API
+      - path: /api/context
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-context
+            port:
+              number: 8082
+      
+      # Research API
+      - path: /api/research
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-research
+            port:
+              number: 8081
+      
+      # Business Intelligence API
+      - path: /api/business
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-business
+            port:
+              number: 8084
+      
+      # GitHub Repository API
+      - path: /api/github
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-github
+            port:
+              number: 8083
+      
+      # WebSocket endpoints for real-time updates
+      - path: /ws
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-agents
+            port:
+              number: 8088
+
+  # Apex domain redirect
+  - host: sophia-intel.ai
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-dashboard
+            port:
+              number: 3000
+
+---
+# Dashboard Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sophia-dashboard-config
+  namespace: sophia-ai
+data:
+  # React app configuration
+  VITE_APP_TITLE: "Sophia AI Intel"
+  VITE_APP_VERSION: "2.0.0"
+  VITE_ENVIRONMENT: "production"
+  
+  # API endpoints (internal cluster URLs)
+  VITE_AGENTS_API_URL: "http://sophia-agents.sophia-ai.svc.cluster.local:8087"
+  VITE_CONTEXT_API_URL: "http://sophia-context.sophia-ai.svc.cluster.local:8082"
+  VITE_RESEARCH_API_URL: "http://sophia-research.sophia-ai.svc.cluster.local:8081"
+  VITE_BUSINESS_API_URL: "http://sophia-business.sophia-ai.svc.cluster.local:8084"
+  VITE_GITHUB_API_URL: "http://sophia-github.sophia-ai.svc.cluster.local:8083"
+  
+  # Feature flags
+  VITE_AGENT_SWARM_ENABLED: "true"
+  VITE_REAL_TIME_UPDATES: "true"
+  VITE_GPU_ACCELERATION: "true"
+  VITE_ADVANCED_CACHING: "true"
+  
+  # UI configuration
+  VITE_THEME: "default"
+  VITE_PERSONA_CONTROLS: "true"
+  VITE_AGENT_MONITORING: "true"
+  
+  # Performance settings
+  VITE_CACHE_STATIC_ASSETS: "true"
+  VITE_ENABLE_SERVICE_WORKER: "true"
+  VITE_LAZY_LOADING: "true"
+
+---
+# Let's Encrypt ClusterIssuer for SSL/TLS
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: admin@sophia-intel.ai
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+
+---
+# Network Policy for Security
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: sophia-ai-network-policy
+  namespace: sophia-ai
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  
+  # Ingress rules
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: sophia-ai-system  # Allow ingress controller
+  - from:
+    - podSelector:
+        matchLabels:
+          tier: presentation  # Allow dashboard to backend
+  - from:
+    - podSelector:
+        matchLabels:
+          tier: intelligence  # Allow intelligence services to data
+  
+  # Egress rules
+  egress:
+  - to: []  # Allow all egress for external API calls
+    ports:
+    - protocol: TCP
+      port: 80
+    - protocol: TCP
+      port: 443
+  - to:
+    - podSelector: {}  # Allow internal communication
+    ports:
+    - protocol: TCP
+      port: 6379  # Redis
+    - protocol: TCP
+      port: 6333  # Qdrant

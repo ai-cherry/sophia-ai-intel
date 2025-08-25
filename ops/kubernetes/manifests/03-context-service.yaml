@@ -1,0 +1,327 @@
+# Sophia AI Context Service - Memory & Embeddings
+# High-performance semantic search with real OpenAI embeddings
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sophia-context
+  namespace: sophia-ai
+  labels:
+    app: sophia-context
+    component: memory-embeddings
+    tier: high-performance
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 2
+  selector:
+    matchLabels:
+      app: sophia-context
+  template:
+    metadata:
+      labels:
+        app: sophia-context
+        component: memory-embeddings
+        tier: high-performance
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8082"
+        prometheus.io/path: "/metrics"
+    spec:
+      # Prefer CPU-optimized nodes for embedding processing
+      nodeSelector:
+        node-type: cpu-optimized
+      
+      # Security context
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      
+      containers:
+      - name: sophia-context
+        image: lambdalabs.azurecr.io/sophia-ai/context:latest
+        imagePullPolicy: Always
+        
+        ports:
+        - name: http
+          containerPort: 8082
+          protocol: TCP
+        - name: metrics
+          containerPort: 9091
+          protocol: TCP
+        
+        # Resources optimized for embedding processing
+        resources:
+          requests:
+            cpu: 1000m
+            memory: 4Gi
+            ephemeral-storage: 5Gi
+          limits:
+            cpu: 2000m
+            memory: 8Gi
+            ephemeral-storage: 10Gi
+        
+        # Environment configuration
+        env:
+        - name: PORT
+          value: "8082"
+        - name: SERVICE_NAME
+          value: "sophia-context"
+        - name: EMBEDDING_MODEL
+          value: "text-embedding-3-large"
+        - name: CACHE_TTL_HOURS
+          value: "24"
+        - name: REDIS_URL
+          value: "redis://redis.sophia-ai.svc.cluster.local:6379"
+        - name: QDRANT_URL
+          value: "http://qdrant.sophia-ai.svc.cluster.local:6333"
+        
+        # Secrets for external APIs
+        envFrom:
+        - configMapRef:
+            name: sophia-context-config
+        - secretRef:
+            name: sophia-context-secrets
+        
+        # Health checks
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8082
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+        
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8082
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
+        
+        # Startup probe for service initialization
+        startupProbe:
+          httpGet:
+            path: /healthz
+            port: 8082
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 20  # 100 seconds for startup
+        
+        # Volume mounts
+        volumeMounts:
+        - name: context-cache
+          mountPath: /app/cache
+        - name: logs
+          mountPath: /app/logs
+      
+      # Volumes
+      volumes:
+      - name: context-cache
+        persistentVolumeClaim:
+          claimName: sophia-context-cache
+      - name: logs
+        emptyDir:
+          sizeLimit: 500Mi
+
+---
+# Context Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: sophia-context
+  namespace: sophia-ai
+  labels:
+    app: sophia-context
+    component: memory-embeddings
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 8082
+    targetPort: 8082
+    protocol: TCP
+  - name: metrics
+    port: 9091
+    targetPort: 9091
+    protocol: TCP
+  selector:
+    app: sophia-context
+
+---
+# Context Service Horizontal Pod Autoscaler
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: sophia-context-hpa
+  namespace: sophia-ai
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: sophia-context
+  minReplicas: 3
+  maxReplicas: 12
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 60
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 70
+  # Custom metric for embedding request rate
+  - type: Pods
+    pods:
+      metric:
+        name: embedding_requests_per_second
+      target:
+        type: AverageValue
+        averageValue: "10"
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 30
+      policies:
+      - type: Percent
+        value: 100  # Aggressive scaling for embedding demand
+        periodSeconds: 30
+    scaleDown:
+      stabilizationWindowSeconds: 180
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+
+---
+# Context Cache Persistent Volume Claim
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sophia-context-cache
+  namespace: sophia-ai
+spec:
+  accessModes:
+    - ReadWriteMany  # Multiple pods can share embedding cache
+  storageClassName: sophia-distributed
+  resources:
+    requests:
+      storage: 50Gi
+
+---
+# Qdrant Vector Database Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qdrant
+  namespace: sophia-ai
+  labels:
+    app: qdrant
+    component: vector-database
+spec:
+  replicas: 1  # Single instance for now, can be scaled later
+  selector:
+    matchLabels:
+      app: qdrant
+  template:
+    metadata:
+      labels:
+        app: qdrant
+        component: vector-database
+    spec:
+      containers:
+      - name: qdrant
+        image: qdrant/qdrant:v1.7.4
+        ports:
+        - name: http
+          containerPort: 6333
+        - name: grpc
+          containerPort: 6334
+        
+        resources:
+          requests:
+            cpu: 500m
+            memory: 2Gi
+          limits:
+            cpu: 2000m
+            memory: 8Gi
+        
+        env:
+        - name: QDRANT__SERVICE__HTTP_PORT
+          value: "6333"
+        - name: QDRANT__SERVICE__GRPC_PORT
+          value: "6334"
+        
+        volumeMounts:
+        - name: qdrant-data
+          mountPath: /qdrant/storage
+        
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 6333
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 6333
+          initialDelaySeconds: 30
+          periodSeconds: 30
+      
+      volumes:
+      - name: qdrant-data
+        persistentVolumeClaim:
+          claimName: qdrant-data
+
+---
+# Qdrant Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: qdrant
+  namespace: sophia-ai
+  labels:
+    app: qdrant
+    component: vector-database
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 6333
+    targetPort: 6333
+  - name: grpc
+    port: 6334
+    targetPort: 6334
+  selector:
+    app: qdrant
+
+---
+# Qdrant Persistent Volume Claim
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: qdrant-data
+  namespace: sophia-ai
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: sophia-gpu-nvme  # High-performance NVMe for vector operations
+  resources:
+    requests:
+      storage: 200Gi

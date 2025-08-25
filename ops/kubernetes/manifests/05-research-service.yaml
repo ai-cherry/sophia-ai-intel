@@ -1,0 +1,461 @@
+# Sophia AI Research Service - Web Intelligence & Caching
+# Multi-provider research with aggressive Redis caching
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sophia-research
+  namespace: sophia-ai
+  labels:
+    app: sophia-research
+    component: web-research
+    tier: intelligence
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: sophia-research
+  template:
+    metadata:
+      labels:
+        app: sophia-research
+        component: web-research
+        tier: intelligence
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8081"
+        prometheus.io/path: "/metrics"
+    spec:
+      # Security context
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      
+      containers:
+      - name: sophia-research
+        image: lambdalabs.azurecr.io/sophia-ai/research:latest
+        imagePullPolicy: Always
+        
+        ports:
+        - name: http
+          containerPort: 8081
+          protocol: TCP
+        - name: metrics
+          containerPort: 9092
+          protocol: TCP
+        
+        # Resources for research API processing
+        resources:
+          requests:
+            cpu: 800m
+            memory: 2Gi
+            ephemeral-storage: 3Gi
+          limits:
+            cpu: 1500m
+            memory: 4Gi
+            ephemeral-storage: 6Gi
+        
+        # Environment configuration
+        env:
+        - name: PORT
+          value: "8081"
+        - name: SERVICE_NAME
+          value: "sophia-research"
+        - name: CACHE_ENABLED
+          value: "true"
+        - name: CACHE_DEFAULT_TTL
+          value: "3600"  # 1 hour
+        - name: CACHE_LONG_TTL
+          value: "86400"  # 24 hours
+        - name: REDIS_URL
+          value: "redis://redis.sophia-ai.svc.cluster.local:6379"
+        
+        # Multi-provider research configuration
+        envFrom:
+        - configMapRef:
+            name: sophia-research-config
+        - secretRef:
+            name: sophia-research-secrets
+        
+        # Health checks
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+        
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
+        
+        # Volume mounts
+        volumeMounts:
+        - name: research-cache
+          mountPath: /app/cache
+        - name: logs
+          mountPath: /app/logs
+      
+      # Volumes
+      volumes:
+      - name: research-cache
+        emptyDir:
+          sizeLimit: 2Gi
+      - name: logs
+        emptyDir:
+          sizeLimit: 500Mi
+
+---
+# Research Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: sophia-research
+  namespace: sophia-ai
+  labels:
+    app: sophia-research
+    component: web-research
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 8081
+    targetPort: 8081
+    protocol: TCP
+  - name: metrics
+    port: 9092
+    targetPort: 9092
+    protocol: TCP
+  selector:
+    app: sophia-research
+
+---
+# Research Service Horizontal Pod Autoscaler
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: sophia-research-hpa
+  namespace: sophia-ai
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: sophia-research
+  minReplicas: 2
+  maxReplicas: 8
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 75
+  # Custom metric for research request rate
+  - type: Pods
+    pods:
+      metric:
+        name: research_requests_per_second
+      target:
+        type: AverageValue
+        averageValue: "5"
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 45
+      policies:
+      - type: Percent
+        value: 75
+        periodSeconds: 45
+    scaleDown:
+      stabilizationWindowSeconds: 180
+      policies:
+      - type: Percent
+        value: 25
+        periodSeconds: 90
+
+---
+# Research Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sophia-research-config
+  namespace: sophia-ai
+data:
+  # Research service configuration
+  DEFAULT_LLM_MODEL: "gpt-4"
+  MAX_RESULTS_PER_QUERY: "20"
+  RESEARCH_TIMEOUT_SECONDS: "300"
+  CACHE_WARMING_ENABLED: "true"
+  
+  # Provider configuration
+  SERPAPI_ENABLED: "true"
+  PERPLEXITY_ENABLED: "true" 
+  TOGETHER_ENABLED: "true"
+  ANTHROPIC_ENABLED: "true"
+  
+  # Cache optimization settings
+  CACHE_HOT_TTL: "86400"    # 24 hours
+  CACHE_WARM_TTL: "3600"    # 1 hour
+  CACHE_COLD_TTL: "300"     # 5 minutes
+  CACHE_OPTIMIZATION_INTERVAL: "3600"  # 1 hour
+  
+  # Performance settings
+  CONCURRENT_REQUESTS: "10"
+  BATCH_SIZE: "5"
+  RATE_LIMIT_PER_MINUTE: "100"
+
+---
+# Business Intelligence Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sophia-business
+  namespace: sophia-ai
+  labels:
+    app: sophia-business
+    component: business-intelligence
+    tier: integration
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: sophia-business
+  template:
+    metadata:
+      labels:
+        app: sophia-business
+        component: business-intelligence
+        tier: integration
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8084"
+    spec:
+      # Security context
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      
+      containers:
+      - name: sophia-business
+        image: lambdalabs.azurecr.io/sophia-ai/business:latest
+        imagePullPolicy: Always
+        
+        ports:
+        - name: http
+          containerPort: 8084
+          protocol: TCP
+        - name: metrics
+          containerPort: 9093
+          protocol: TCP
+        
+        # Resources for business data processing
+        resources:
+          requests:
+            cpu: 600m
+            memory: 2Gi
+          limits:
+            cpu: 1200m
+            memory: 4Gi
+        
+        # Environment configuration
+        env:
+        - name: PORT
+          value: "8084"
+        - name: SERVICE_NAME
+          value: "sophia-business"
+        - name: REDIS_URL
+          value: "redis://redis.sophia-ai.svc.cluster.local:6379"
+        
+        # Business service secrets and config
+        envFrom:
+        - configMapRef:
+            name: sophia-business-config
+        - secretRef:
+            name: sophia-business-secrets
+        
+        # Health checks
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8084
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 5
+        
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8084
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+        
+        # Volume mounts
+        volumeMounts:
+        - name: business-logs
+          mountPath: /app/logs
+      
+      # Volumes
+      volumes:
+      - name: business-logs
+        emptyDir:
+          sizeLimit: 1Gi
+
+---
+# Business Intelligence Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: sophia-business
+  namespace: sophia-ai
+  labels:
+    app: sophia-business
+    component: business-intelligence
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 8084
+    targetPort: 8084
+    protocol: TCP
+  - name: metrics
+    port: 9093
+    targetPort: 9093
+    protocol: TCP
+  selector:
+    app: sophia-business
+
+---
+# GitHub Integration Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sophia-github
+  namespace: sophia-ai
+  labels:
+    app: sophia-github
+    component: repository-analysis
+    tier: integration
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: sophia-github
+  template:
+    metadata:
+      labels:
+        app: sophia-github
+        component: repository-analysis
+        tier: integration
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8083"
+    spec:
+      # Security context
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      
+      containers:
+      - name: sophia-github
+        image: lambdalabs.azurecr.io/sophia-ai/github:latest
+        imagePullPolicy: Always
+        
+        ports:
+        - name: http
+          containerPort: 8083
+          protocol: TCP
+        - name: metrics
+          containerPort: 9094
+          protocol: TCP
+        
+        # Resources for repository analysis
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 1000m
+            memory: 2Gi
+        
+        # Environment configuration
+        env:
+        - name: PORT
+          value: "8083"
+        - name: SERVICE_NAME
+          value: "sophia-github"
+        - name: GITHUB_REPO
+          value: "ai-cherry/sophia-ai-intel"
+        
+        # GitHub App secrets
+        envFrom:
+        - configMapRef:
+            name: sophia-github-config
+        - secretRef:
+            name: sophia-github-secrets
+        
+        # Health checks
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8083
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8083
+          initialDelaySeconds: 20
+          periodSeconds: 30
+
+---
+# GitHub Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: sophia-github
+  namespace: sophia-ai
+  labels:
+    app: sophia-github
+    component: repository-analysis
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 8083
+    targetPort: 8083
+    protocol: TCP
+  - name: metrics
+    port: 9094
+    targetPort: 9094
+    protocol: TCP
+  selector:
+    app: sophia-github

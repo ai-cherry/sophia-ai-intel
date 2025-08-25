@@ -1,0 +1,316 @@
+# Sophia AI Redis Cluster - High-Performance Caching
+# Enterprise-grade Redis deployment with persistence and clustering
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-cluster
+  namespace: sophia-ai
+  labels:
+    app: redis
+    component: cache-cluster
+    tier: data
+spec:
+  serviceName: redis-cluster
+  replicas: 6  # 3 master + 3 replica for high availability
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+        component: cache-cluster
+        tier: data
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "6379"
+    spec:
+      # Prefer memory-optimized nodes for Redis
+      nodeSelector:
+        node-type: memory-optimized
+      
+      # Pod anti-affinity for high availability
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values: ["redis"]
+              topologyKey: kubernetes.io/hostname
+      
+      containers:
+      - name: redis
+        image: redis:7.2-alpine
+        ports:
+        - name: redis
+          containerPort: 6379
+        - name: cluster
+          containerPort: 16379
+        
+        # Optimized resources for caching workload
+        resources:
+          requests:
+            cpu: 500m
+            memory: 2Gi
+          limits:
+            cpu: 1000m
+            memory: 4Gi
+        
+        # Redis configuration
+        env:
+        - name: REDIS_PORT
+          value: "6379"
+        - name: REDIS_CLUSTER_ENABLED
+          value: "yes"
+        - name: REDIS_MAXMEMORY
+          value: "3gb"
+        - name: REDIS_MAXMEMORY_POLICY
+          value: "allkeys-lru"
+        
+        # Redis configuration file
+        command:
+          - redis-server
+          - /etc/redis/redis.conf
+        
+        # Volume mounts
+        volumeMounts:
+        - name: redis-data
+          mountPath: /data
+        - name: redis-config
+          mountPath: /etc/redis
+        
+        # Health checks
+        readinessProbe:
+          exec:
+            command:
+            - redis-cli
+            - ping
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+        
+        livenessProbe:
+          exec:
+            command:
+            - redis-cli
+            - ping
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+      
+      # Configuration volume
+      volumes:
+      - name: redis-config
+        configMap:
+          name: redis-config
+  
+  # Persistent volume claim template
+  volumeClaimTemplates:
+  - metadata:
+      name: redis-data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      storageClassName: sophia-distributed
+      resources:
+        requests:
+          storage: 20Gi
+
+---
+# Redis Cluster Service (Headless for StatefulSet)
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-cluster
+  namespace: sophia-ai
+  labels:
+    app: redis
+    component: cache-cluster
+spec:
+  type: ClusterIP
+  clusterIP: None  # Headless service for StatefulSet
+  ports:
+  - name: redis
+    port: 6379
+    targetPort: 6379
+  - name: cluster
+    port: 16379
+    targetPort: 16379
+  selector:
+    app: redis
+
+---
+# Redis Service for Application Access
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: sophia-ai
+  labels:
+    app: redis
+    component: cache-service
+spec:
+  type: ClusterIP
+  ports:
+  - name: redis
+    port: 6379
+    targetPort: 6379
+  selector:
+    app: redis
+
+---
+# Redis Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-config
+  namespace: sophia-ai
+data:
+  redis.conf: |
+    # Sophia AI Redis Configuration - Optimized for AI Workloads
+    
+    # Basic Configuration
+    port 6379
+    bind 0.0.0.0
+    protected-mode yes
+    
+    # Memory Management
+    maxmemory 3gb
+    maxmemory-policy allkeys-lru
+    
+    # Persistence Configuration
+    save 900 1
+    save 300 10
+    save 60 10000
+    
+    # Performance Optimization
+    tcp-keepalive 300
+    timeout 0
+    tcp-backlog 511
+    
+    # Cluster Configuration
+    cluster-enabled yes
+    cluster-config-file nodes.conf
+    cluster-node-timeout 15000
+    cluster-announce-hostname yes
+    
+    # Logging
+    loglevel notice
+    logfile /data/redis.log
+    
+    # Security
+    requirepass ${REDIS_PASSWORD}
+    
+    # AI Workload Optimizations
+    hash-max-ziplist-entries 512
+    hash-max-ziplist-value 64
+    list-max-ziplist-size -2
+    set-max-intset-entries 512
+    zset-max-ziplist-entries 128
+    zset-max-ziplist-value 64
+    
+    # Memory optimization for embeddings
+    activerehashing yes
+    client-output-buffer-limit normal 0 0 0
+    client-output-buffer-limit replica 256mb 64mb 60
+    client-output-buffer-limit pubsub 32mb 8mb 60
+
+---
+# Redis Sentinel for High Availability (Optional)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-sentinel
+  namespace: sophia-ai
+  labels:
+    app: redis-sentinel
+    component: cache-sentinel
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: redis-sentinel
+  template:
+    metadata:
+      labels:
+        app: redis-sentinel
+        component: cache-sentinel
+    spec:
+      containers:
+      - name: sentinel
+        image: redis:7.2-alpine
+        ports:
+        - containerPort: 26379
+        
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 200m
+            memory: 512Mi
+        
+        command:
+          - redis-sentinel
+          - /etc/redis/sentinel.conf
+        
+        volumeMounts:
+        - name: sentinel-config
+          mountPath: /etc/redis
+      
+      volumes:
+      - name: sentinel-config
+        configMap:
+          name: redis-sentinel-config
+
+---
+# Redis Sentinel Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-sentinel
+  namespace: sophia-ai
+  labels:
+    app: redis-sentinel
+    component: cache-sentinel
+spec:
+  type: ClusterIP
+  ports:
+  - name: sentinel
+    port: 26379
+    targetPort: 26379
+  selector:
+    app: redis-sentinel
+
+---
+# Redis Sentinel Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-sentinel-config
+  namespace: sophia-ai
+data:
+  sentinel.conf: |
+    # Sophia AI Redis Sentinel Configuration
+    
+    port 26379
+    bind 0.0.0.0
+    
+    # Sentinel monitoring
+    sentinel monitor sophia-redis redis-cluster-0.redis-cluster.sophia-ai.svc.cluster.local 6379 2
+    sentinel auth-pass sophia-redis ${REDIS_PASSWORD}
+    sentinel down-after-milliseconds sophia-redis 10000
+    sentinel parallel-syncs sophia-redis 1
+    sentinel failover-timeout sophia-redis 180000
+    
+    # Security
+    requirepass ${REDIS_SENTINEL_PASSWORD}
+    
+    # Logging
+    loglevel notice
+    logfile /var/log/sentinel.log

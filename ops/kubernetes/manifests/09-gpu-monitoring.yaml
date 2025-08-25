@@ -1,0 +1,487 @@
+# Sophia AI Intel GPU Monitoring & NVIDIA DCGM Integration
+# Lambda Labs Kubernetes GPU monitoring and alerting
+
+# NVIDIA DCGM Exporter DaemonSet for GPU metrics
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: dcgm-exporter
+  namespace: sophia-ai-system
+  labels:
+    app: dcgm-exporter
+    component: gpu-monitoring
+spec:
+  selector:
+    matchLabels:
+      app: dcgm-exporter
+  template:
+    metadata:
+      labels:
+        app: dcgm-exporter
+        component: gpu-monitoring
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9400"
+    spec:
+      # Only schedule on GPU nodes
+      nodeSelector:
+        accelerator: nvidia-gpu
+      
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
+      
+      hostPID: true
+      hostIPC: true
+      
+      containers:
+      - name: dcgm-exporter
+        image: nvcr.io/nvidia/k8s/dcgm-exporter:3.2.5-3.1.8-ubuntu20.04
+        
+        ports:
+        - name: metrics
+          containerPort: 9400
+        
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 200m
+            memory: 512Mi
+        
+        securityContext:
+          privileged: true
+        
+        volumeMounts:
+        - name: proc
+          mountPath: /host/proc
+          readOnly: true
+        - name: sys
+          mountPath: /host/sys
+          readOnly: true
+        
+        env:
+        - name: DCGM_EXPORTER_LISTEN
+          value: ":9400"
+        - name: DCGM_EXPORTER_KUBERNETES
+          value: "true"
+        
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 9400
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 9400
+          initialDelaySeconds: 10
+          periodSeconds: 30
+      
+      volumes:
+      - name: proc
+        hostPath:
+          path: /proc
+      - name: sys
+        hostPath:
+          path: /sys
+
+---
+# DCGM Exporter Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: dcgm-exporter
+  namespace: sophia-ai-system
+  labels:
+    app: dcgm-exporter
+    component: gpu-monitoring
+spec:
+  type: ClusterIP
+  ports:
+  - name: metrics
+    port: 9400
+    targetPort: 9400
+  selector:
+    app: dcgm-exporter
+
+---
+# GPU Utilization Alert Rules
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: sophia-gpu-alerts
+  namespace: sophia-ai-monitoring
+  labels:
+    app: sophia-ai-intel
+    component: alerting
+spec:
+  groups:
+  - name: sophia-gpu-alerts
+    rules:
+    # Critical GPU alerts
+    - alert: GPUNodeDown
+      expr: up{job="dcgm-exporter"} == 0
+      for: 5m
+      labels:
+        severity: critical
+        component: gpu-infrastructure
+      annotations:
+        summary: "GPU node is down"
+        description: "GPU node {{ $labels.instance }} has been down for more than 5 minutes"
+    
+    - alert: GPUHighTemperature
+      expr: DCGM_FI_DEV_GPU_TEMP > 85
+      for: 2m
+      labels:
+        severity: critical
+        component: gpu-hardware
+      annotations:
+        summary: "GPU temperature is critically high"
+        description: "GPU {{ $labels.gpu }} temperature is {{ $value }}°C, above safe operating temperature"
+    
+    - alert: GPUMemoryHigh
+      expr: DCGM_FI_DEV_FB_USED / DCGM_FI_DEV_FB_TOTAL > 0.9
+      for: 10m
+      labels:
+        severity: warning
+        component: gpu-memory
+      annotations:
+        summary: "GPU memory usage is high"
+        description: "GPU {{ $labels.gpu }} memory usage is {{ $value | humanizePercentage }}"
+    
+    # Agent swarm specific alerts
+    - alert: AgentSwarmServiceDown
+      expr: up{job="sophia-agents"} == 0
+      for: 3m
+      labels:
+        severity: critical
+        component: agent-swarm
+      annotations:
+        summary: "Agent swarm service is down"
+        description: "Sophia AI agent swarm service has been down for more than 3 minutes"
+    
+    - alert: AgentTaskQueueBacklog
+      expr: sophia_agents_pending_tasks > 10
+      for: 5m
+      labels:
+        severity: warning
+        component: agent-performance
+      annotations:
+        summary: "Agent task queue has backlog"
+        description: "{{ $value }} agent tasks are pending execution for more than 5 minutes"
+    
+    # Context service alerts
+    - alert: EmbeddingCacheHitRateLow
+      expr: sophia_context_cache_hit_ratio < 0.7
+      for: 10m
+      labels:
+        severity: warning
+        component: embedding-performance
+      annotations:
+        summary: "Embedding cache hit ratio is low"
+        description: "Cache hit ratio is {{ $value | humanizePercentage }}, below optimal threshold"
+    
+    - alert: ContextServiceHighLatency
+      expr: histogram_quantile(0.95, sophia_context_request_duration_seconds) > 1.0
+      for: 5m
+      labels:
+        severity: warning
+        component: context-performance
+      annotations:
+        summary: "Context service has high latency"
+        description: "95th percentile response time is {{ $value }}s"
+
+---
+# Node Exporter for system metrics
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-exporter
+  namespace: sophia-ai-monitoring
+  labels:
+    app: node-exporter
+    component: system-monitoring
+spec:
+  selector:
+    matchLabels:
+      app: node-exporter
+  template:
+    metadata:
+      labels:
+        app: node-exporter
+        component: system-monitoring
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9100"
+    spec:
+      hostNetwork: true
+      hostPID: true
+      
+      containers:
+      - name: node-exporter
+        image: prom/node-exporter:v1.6.1
+        
+        ports:
+        - name: metrics
+          containerPort: 9100
+          hostPort: 9100
+        
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+        
+        args:
+        - --path.procfs=/host/proc
+        - --path.sysfs=/host/sys
+        - --path.rootfs=/host/root
+        - --collector.filesystem.mount-points-exclude
+        - "^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)"
+        
+        volumeMounts:
+        - name: proc
+          mountPath: /host/proc
+          readOnly: true
+        - name: sys
+          mountPath: /host/sys
+          readOnly: true
+        - name: root
+          mountPath: /host/root
+          readOnly: true
+        
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65534
+      
+      volumes:
+      - name: proc
+        hostPath:
+          path: /proc
+      - name: sys
+        hostPath:
+          path: /sys
+      - name: root
+        hostPath:
+          path: /
+
+---
+# Node Exporter Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-exporter
+  namespace: sophia-ai-monitoring
+  labels:
+    app: node-exporter
+spec:
+  type: ClusterIP
+  ports:
+  - name: metrics
+    port: 9100
+    targetPort: 9100
+  selector:
+    app: node-exporter
+
+---
+# Alertmanager for notification routing
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alertmanager
+  namespace: sophia-ai-monitoring
+  labels:
+    app: alertmanager
+    component: alerting
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: alertmanager
+  template:
+    metadata:
+      labels:
+        app: alertmanager
+        component: alerting
+    spec:
+      containers:
+      - name: alertmanager
+        image: prom/alertmanager:v0.26.0
+        
+        ports:
+        - name: alertmanager
+          containerPort: 9093
+        
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 200m
+            memory: 512Mi
+        
+        args:
+        - --config.file=/etc/alertmanager/alertmanager.yml
+        - --storage.path=/alertmanager/data
+        - --web.external-url=https://www.sophia-intel.ai/admin/alertmanager
+        - --web.route-prefix=/
+        
+        volumeMounts:
+        - name: alertmanager-config
+          mountPath: /etc/alertmanager
+        - name: alertmanager-data
+          mountPath: /alertmanager/data
+        
+        readinessProbe:
+          httpGet:
+            path: /-/ready
+            port: 9093
+          initialDelaySeconds: 10
+        
+        livenessProbe:
+          httpGet:
+            path: /-/healthy
+            port: 9093
+          initialDelaySeconds: 30
+      
+      volumes:
+      - name: alertmanager-config
+        configMap:
+          name: alertmanager-config
+      - name: alertmanager-data
+        persistentVolumeClaim:
+          claimName: alertmanager-data
+
+---
+# Alertmanager Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: alertmanager
+  namespace: sophia-ai-monitoring
+  labels:
+    app: alertmanager
+spec:
+  type: ClusterIP
+  ports:
+  - name: alertmanager
+    port: 9093
+    targetPort: 9093
+  selector:
+    app: alertmanager
+
+---
+# Alertmanager Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-config
+  namespace: sophia-ai-monitoring
+data:
+  alertmanager.yml: |
+    global:
+      smtp_smarthost: 'localhost:587'
+      smtp_from: 'alerts@sophia-intel.ai'
+      
+    route:
+      group_by: ['alertname']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 12h
+      receiver: 'sophia-ai-alerts'
+      
+      # Route critical GPU alerts immediately
+      routes:
+      - match:
+          severity: critical
+          component: gpu-infrastructure
+        receiver: 'gpu-critical-alerts'
+        group_wait: 10s
+        repeat_interval: 5m
+    
+    receivers:
+    - name: 'sophia-ai-alerts'
+      slack_configs:
+      - api_url: '${SLACK_WEBHOOK_URL}'
+        channel: '#sophia-ai-alerts'
+        title: 'Sophia AI Alert'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+    
+    - name: 'gpu-critical-alerts'
+      slack_configs:
+      - api_url: '${SLACK_WEBHOOK_URL}'
+        channel: '#sophia-ai-critical'
+        title: 'CRITICAL GPU Alert'
+        text: '{{ range .Alerts }}🚨 {{ .Annotations.description }}{{ end }}'
+      
+      # Additional notification channels for critical alerts
+      email_configs:
+      - to: 'ops@sophia-intel.ai'
+        subject: 'CRITICAL GPU Alert - Sophia AI'
+        body: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+
+---
+# Alertmanager PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: alertmanager-data
+  namespace: sophia-ai-monitoring
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: sophia-distributed
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+# ServiceMonitor for GPU metrics
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: gpu-metrics
+  namespace: sophia-ai-monitoring
+  labels:
+    app: sophia-ai-gpu-monitoring
+spec:
+  namespaceSelector:
+    matchNames:
+    - sophia-ai-system
+  selector:
+    matchLabels:
+      app: dcgm-exporter
+  endpoints:
+  - port: metrics
+    path: /metrics
+    interval: 15s
+    scrapeTimeout: 10s
+
+---
+# ServiceMonitor for Sophia AI services
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: sophia-ai-services
+  namespace: sophia-ai-monitoring
+  labels:
+    app: sophia-ai-services-monitoring
+spec:
+  namespaceSelector:
+    matchNames:
+    - sophia-ai
+  selector:
+    matchLabels:
+      component: ai-orchestration
+  endpoints:
+  - port: metrics
+    path: /metrics
+    interval: 30s
+    scrapeTimeout: 10s
