@@ -11,14 +11,14 @@
 
 ### **✅ Core Achievements:**
 - **GitHub Secret Scanning**: Permanently resolved with clean git history
-- **Lambda Labs Deployment**: Operational on GH200 (192.222.51.223) 
+- **Lambda Labs Deployment**: Operational with containerized microservices
 - **AI Agent Swarm**: Complete system with LangGraph orchestration
 - **Memory Architecture**: Advanced analysis with enhancement roadmap
 - **Business Integrations**: HubSpot, Salesforce, Apollo, Slack, Gong operational
 
 ### **🏗️ Current Lambda Labs Stack:**
 ```yaml
-192.222.51.223 (Lambda Labs GH200)
+Lambda Labs GPU Instance (${LAMBDA_INSTANCE_IP})
 ├── sophia-dashboard:3000      # React UI with agent integration
 ├── sophia-research:8081       # SerpAPI, Perplexity, web research
 ├── sophia-context:8082        # Memory, embeddings, context management  
@@ -60,8 +60,8 @@ sophia-agents:
 ```typescript
 // apps/dashboard/src/lib/chatApi.ts
 class ChatAPI {
-  private baseUrl = 'http://192.222.51.223:8082'  // Lambda Labs Context
-  private agentSwarmUrl = 'http://192.222.51.223:8087'  // Lambda Labs Agents
+  private baseUrl = process.env.CONTEXT_SERVICE_URL || 'http://sophia-context:8082'
+  private agentSwarmUrl = process.env.AGENT_SWARM_URL || 'http://sophia-agents:8087'
 
   private shouldUseAgentSwarm(prompt: string): boolean {
     const swarmKeywords = [
@@ -442,11 +442,12 @@ export const IntelligenceDashboard: React.FC = () => {
   
   // Real-time updates from all Lambda Labs services
   useEffect(() => {
+    const baseUrl = process.env.LAMBDA_INSTANCE_IP || 'localhost'
     const wsConnections = [
-      new WebSocket(`ws://192.222.51.223:8087/realtime/agent-status`),
-      new WebSocket(`ws://192.222.51.223:8084/realtime/business-updates`),
-      new WebSocket(`ws://192.222.51.223:8083/realtime/repo-changes`),
-      new WebSocket(`ws://192.222.51.223:8081/realtime/research-updates`)
+      new WebSocket(`ws://${baseUrl}:8087/realtime/agent-status`),
+      new WebSocket(`ws://${baseUrl}:8084/realtime/business-updates`),
+      new WebSocket(`ws://${baseUrl}:8083/realtime/repo-changes`),
+      new WebSocket(`ws://${baseUrl}:8081/realtime/research-updates`)
     ]
     
     wsConnections.forEach((ws, index) => {
@@ -615,17 +616,17 @@ docker-compose exec health-check /bin/sh -c "curl -f http://sophia-agents:8000/h
 
 # 5. Test agent swarm integration
 echo "🤖 Testing agent swarm..."
-curl -X POST http://192.222.51.223:8087/debug/test-swarm
+curl -X POST http://${LAMBDA_INSTANCE_IP}:8087/debug/test-swarm
 
 # 6. Verify chat integration
 echo "💬 Testing chat integration..."
-curl -X POST http://192.222.51.223:8082/chat/completions \
+curl -X POST http://${LAMBDA_INSTANCE_IP}:8082/chat/completions \
   -H "Content-Type: application/json" \
   -d '{"messages":[{"role":"user","content":"analyze repository"}]}'
 
 echo "✅ Unified Sophia AI deployment complete!"
-echo "🌐 Access at: http://www.sophia-intel.ai"
-echo "🔧 Agents API: http://192.222.51.223:8087"
+echo "🌐 Access at: http://${LAMBDA_INSTANCE_IP}:3000"
+echo "🔧 Agents API: http://${LAMBDA_INSTANCE_IP}:8087"
 ```
 
 ### **B. Complete System Integration Test**
