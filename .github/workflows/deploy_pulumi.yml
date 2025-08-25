@@ -1,0 +1,38 @@
+name: Deploy to Lambda Labs (Pulumi)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+      LAMBDA_API_KEY: ${{ secrets.LAMBDA_API_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+      REDIS_URL: ${{ secrets.REDIS_URL }}
+      # Add any other secrets you need here
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Pulumi CLI
+        uses: pulumi/setup-pulumi@v3
+
+      - name: Install Python dependencies
+        run: |
+          cd ops/pulumi
+          pip install -r requirements.txt
+
+      - name: Pulumi up (deploy)
+        run: |
+          cd ops/pulumi
+          pulumi up --yes
