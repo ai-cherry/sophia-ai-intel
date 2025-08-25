@@ -401,8 +401,11 @@ async def search_documents(request: DocumentSearchRequest):
 @app.on_event("startup")
 async def startup_event():
     if NEON_DATABASE_URL:
-        await get_db_pool()
-        logger.info("Context MCP v1 started with database connectivity")
+        try:
+            await get_db_pool()
+            logger.info("Context MCP v1 started with database connectivity")
+        except Exception as e:
+            logger.warning(f"Database connection failed at startup: {e}. Service will start without initial DB connection.")
     else:
         logger.warning("Context MCP v1 started without database - storage disabled")
 

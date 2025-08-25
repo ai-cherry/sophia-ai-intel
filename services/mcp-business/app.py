@@ -1094,8 +1094,11 @@ async def get_providers():
 async def startup():
     """Initialize database pool on startup"""
     if NEON_DATABASE_URL:
-        await get_db_pool()
-        logger.info("Business MCP v1 started with database connectivity")
+        try:
+            await get_db_pool()
+            logger.info("Business MCP v1 started with database connectivity")
+        except Exception as e:
+            logger.warning(f"Database connection failed at startup: {e}. Service will start without initial DB connection.")
     else:
         logger.warning("Business MCP v1 started without database - storage disabled")
 

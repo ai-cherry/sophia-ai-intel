@@ -72,7 +72,10 @@ class RealEmbeddingEngine:
     
     def __init__(self):
         self.openai_client = openai.AsyncOpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
-        self.redis_client = redis.Redis.from_url(REDIS_URL) if REDIS_URL else None
+        # Temporarily disable Redis to get service running
+        # TODO: Fix Redis URL configuration once service is stable
+        self.redis_client = None
+        logger.info("Redis temporarily disabled - running without cache")
         self.qdrant_client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY) if QDRANT_URL else None
         
         # Validation
