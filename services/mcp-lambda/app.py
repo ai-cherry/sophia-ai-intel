@@ -7,18 +7,15 @@ High-performance GPU compute orchestration service for Sophia AI platform.
 Provides Lambda Labs integration for AI training, inference, and batch processing.
 """
 
-import asyncio
-import json
 import logging
 import os
-import sys
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 import aiohttp
 import asyncpg
 import redis.asyncio as redis
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import uvicorn

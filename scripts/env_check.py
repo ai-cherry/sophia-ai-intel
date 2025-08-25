@@ -11,7 +11,7 @@ import os
 import sys
 import json
 from datetime import datetime, timezone
-from typing import Dict, List, Tuple, Any
+from typing import Dict, Any
 import asyncio
 import aiohttp
 
@@ -221,7 +221,7 @@ class EnvironmentAuditor:
     
     async def test_connectivity(self) -> Dict[str, Any]:
         """Test connectivity to all configured services"""
-        print(f"\n🧪 Testing connectivity to configured services...")
+        print("\n🧪 Testing connectivity to configured services...")
         
         # Test Redis if configured
         if "REDIS_URL" in self.found_secrets:
@@ -299,7 +299,7 @@ class EnvironmentAuditor:
             except Exception as e:
                 self.connectivity_results["lambda"] = f"❌ Failed: {e}"
         
-        print(f"\n🔗 CONNECTIVITY RESULTS:")
+        print("\n🔗 CONNECTIVITY RESULTS:")
         for service, status in self.connectivity_results.items():
             print(f"  {service}: {status}")
         
@@ -307,7 +307,7 @@ class EnvironmentAuditor:
 
 def generate_env_file():
     """Generate .env file from all available secrets"""
-    print(f"\n📝 Generating comprehensive .env file...")
+    print("\n📝 Generating comprehensive .env file...")
     
     env_content = "# Sophia AI Comprehensive Environment Configuration\n"
     env_content += f"# Generated: {datetime.now(timezone.utc).isoformat()}\n\n"
@@ -364,21 +364,21 @@ async def main():
     with open("proofs/env_audit.json", "w") as f:
         json.dump(report, f, indent=2, default=str)
     
-    print(f"\n📋 Environment audit saved to proofs/env_audit.json")
+    print("\n📋 Environment audit saved to proofs/env_audit.json")
     
     # Final summary
-    print(f"\n🎯 ENVIRONMENT AUDIT SUMMARY:")
+    print("\n🎯 ENVIRONMENT AUDIT SUMMARY:")
     print(f"  📊 Secrets Found: {audit_results['found_count']}/{audit_results['total_secrets']}")
     print(f"  📈 Coverage: {audit_results['coverage_percentage']:.1f}%")
     print(f"  🔗 Connectivity Tests: {len(connectivity_results)}")
     print(f"  ✅ Services Working: {len([r for r in connectivity_results.values() if '✅' in r])}")
     
     if audit_results['coverage_percentage'] >= 80:
-        print(f"  🎉 ENVIRONMENT READY FOR PHASE 1 BLITZ!")
+        print("  🎉 ENVIRONMENT READY FOR PHASE 1 BLITZ!")
     elif audit_results['coverage_percentage'] >= 50:
-        print(f"  ⚠️ PARTIAL READINESS - Some integrations will be limited")
+        print("  ⚠️ PARTIAL READINESS - Some integrations will be limited")
     else:
-        print(f"  🚨 CRITICAL - Insufficient secrets for comprehensive setup")
+        print("  🚨 CRITICAL - Insufficient secrets for comprehensive setup")
     
     return audit_results['coverage_percentage'] >= 50
 

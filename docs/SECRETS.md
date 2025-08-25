@@ -185,7 +185,11 @@ Based on [`proofs/secrets/matrix.json`](../proofs/secrets/matrix.json) and [`.in
 - `GONG_CLIENT_ACCESS_KEY` → null ❌ Missing
 - `GONG_CLIENT_SECRET` → null ❌ Missing
 
-#### Lambda Labs Compute (Paused)
+#### DNS Management (Infrastructure)
+- `DNSIMPLE_TOKEN` → null ❌ Missing
+- `DNSIMPLE_ACCOUNT_ID` → "162809" (hardcoded)
+
+#### Lambda Labs Compute (Paused)  
 - `LAMBDA_LABS_API_KEY` → null ❌ Missing
 - `LAMBDA_API_CLOUD_ENDPOINT` → null ❌ Missing
 - `LAMBDA_SSH_PRIVATE_KEY` → null ❌ Missing

@@ -1,8 +1,5 @@
-import time
-from datetime import datetime, timedelta
-from typing import List, Optional, Dict, Any  # Removed 'os' and 'logging'
+from typing import List, Dict  # Removed 'os' and 'logging'
 import asyncpg
-import httpx
 from qdrant_client import QdrantClient, models
 from openai import OpenAI  # Updated from Import
 import os  # For os.getenv

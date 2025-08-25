@@ -17,16 +17,11 @@ import json
 import logging
 import os
 import sys
-import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
 import aiohttp
-import requests
-from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.primitives.serialization import pkcs12
 
 # Configure logging
 logging.basicConfig(
@@ -184,7 +179,7 @@ class ReindexAgent:
                     }
 
                     if status in [200, 201, 202]:
-                        logger.info(f"✅ Symbol indexing triggered successfully")
+                        logger.info("✅ Symbol indexing triggered successfully")
 
                         # Record MCP call
                         self.results["mcp_calls"].append(

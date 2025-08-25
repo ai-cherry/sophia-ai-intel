@@ -5,7 +5,7 @@ Supports both containerized and native builds
 
 import pulumi
 import pulumi_render as render
-from typing import Dict, Optional, List
+from typing import Dict, Optional
 import os
 
 class RenderService(pulumi.ComponentResource):

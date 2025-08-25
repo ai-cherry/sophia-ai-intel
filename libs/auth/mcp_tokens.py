@@ -14,12 +14,9 @@ Features:
 - Proof-first architecture compliance
 """
 
-import json
 import logging
-import os
-import time
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any, Dict, Optional, Set
 
 import jwt
 from cryptography.hazmat.primitives import serialization
@@ -567,5 +564,5 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"    ❌ Invalid: {e}")
 
-    print(f"\n🔐 Public key (for verification):")
+    print("\n🔐 Public key (for verification):")
     print(manager.export_public_key_pem().decode("utf-8"))

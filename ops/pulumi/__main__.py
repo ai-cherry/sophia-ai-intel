@@ -8,9 +8,6 @@ Uses Pulumi Cloud for state management and Lambda Labs API for compute.
 """
 
 import pulumi
-import requests
-import json
-import time
 from pulumi import ResourceOptions
 from pulumi_command import remote
 

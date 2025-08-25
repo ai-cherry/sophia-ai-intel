@@ -287,19 +287,19 @@ if __name__ == "__main__":
     
     if command == "provision":
         result = agent_provision()
-        print(f"\n🎯 PROVISIONING RESULT:")
+        print("\n🎯 PROVISIONING RESULT:")
         print(f"   Success: {result['provision_success']}")
         print(f"   Secrets Managed: {result['secrets_managed']}")
         print(f"   Services: {result['services_deployed']}")
         
     elif command == "update":
         result = agent_update()
-        print(f"\n🔄 UPDATE RESULT:")
+        print("\n🔄 UPDATE RESULT:")
         print(f"   Success: {result['update_success']}")
         
     elif command == "status":
         result = agent_status()
-        print(f"\n📊 INFRASTRUCTURE STATUS:")
+        print("\n📊 INFRASTRUCTURE STATUS:")
         if "error" not in result:
             print(f"   Services: {result.get('services_managed', [])}")
             print(f"   Regions: {result.get('regions_active', [])}")
@@ -314,7 +314,7 @@ if __name__ == "__main__":
         
         service_name = sys.argv[2]
         result = agent_add_service(service_name, [])
-        print(f"\n➕ ADD SERVICE RESULT:")
+        print("\n➕ ADD SERVICE RESULT:")
         print(f"   Service: {result['service_name']}")
         print(f"   App Name: {result['app_name']}")
         print(f"   Agent Accessible: {result['agent_accessible']}")

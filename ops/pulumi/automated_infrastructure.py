@@ -6,9 +6,7 @@ Enterprise-grade IaC with containerization and staging/production support
 
 import os
 import pulumi
-import pulumi_render as render
 from components.render_service import ServiceStack
-from typing import Dict, Any, Optional
 
 def get_stack_name() -> str:
     """Get current stack name from Pulumi context"""
