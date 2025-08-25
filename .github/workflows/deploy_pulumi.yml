@@ -31,6 +31,12 @@ jobs:
         run: |
           cd ops/pulumi
           pip install -r requirements.txt
+          
+      - name: Set Python Path for Pulumi
+        run: |
+          cd ops/pulumi
+          export PULUMI_PYTHON_CMD=$(which python3)
+          echo "PULUMI_PYTHON_CMD=$PULUMI_PYTHON_CMD" >> $GITHUB_ENV
 
       - name: Pulumi Login
         run: pulumi login
