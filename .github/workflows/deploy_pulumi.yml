@@ -32,10 +32,16 @@ jobs:
           cd ops/pulumi
           pip install -r requirements.txt
 
+      - name: Pulumi Login
+        run: pulumi login
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+
       - name: Select or create Pulumi stack
-        run: |
-          cd ops/pulumi
-          pulumi stack select production || pulumi stack init production
+        working-directory: ops/pulumi
+        run: pulumi stack select production || pulumi stack init production
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
 
       - name: Set Pulumi config values
         working-directory: ops/pulumi
@@ -46,7 +52,11 @@ jobs:
           pulumi config set neon-database-url "${{ secrets.NEON_DATABASE_URL }}" --secret
           pulumi config set redis-url "${{ secrets.REDIS_URL }}" --secret
           pulumi config set openai-api-key "${{ secrets.OPENAI_API_KEY }}" --secret
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           
       - name: Pulumi up (deploy)
         working-directory: ops/pulumi
         run: pulumi up --yes
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
