@@ -44,6 +44,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, HttpUrl, Field
 from enum import Enum
 
+# Import aggressive cache manager
+from cache_manager import cache_manager, cached_research_query, CacheLevel
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -423,12 +426,26 @@ async def healthz():
 
 
 @app.post("/research/query", response_model=ResearchResult)
+@cached_research_query(ttl=3600, level=CacheLevel.WARM)
 async def research_query(request: ResearchQuery):
     """
-    Performs a research query across multiple providers, aggregates results,
-    and returns a summarized response.
+    Performs a cached research query across multiple providers, aggregates results,
+    and returns a summarized response with intelligent caching.
     """
     start_time = time.time()
+    
+    # Check cache first (handled by decorator)
+    cached_result = await cache_manager.get_cached_research_query(
+        request.query, 
+        request.providers,
+        depth=request.depth,
+        max_results=request.max_results,
+        time_range=request.time_range
+    )
+    
+    if cached_result:
+        logger.info(f"Returning cached result for query: {request.query[:50]}...")
+        return ResearchResult(**cached_result)
 
     results = []
     providers_used = []
@@ -610,18 +627,115 @@ async def web_scrape(request: WebScrapeRequest):
 
 @app.on_event("startup")
 async def startup_event():
+    """Initialize all services and connections"""
+    # Initialize database pool
     if NEON_DATABASE_URL:
         await get_db_pool()
-        logger.info("Research MCP v1 started with database connectivity")
+        logger.info("Research MCP v2 started with database connectivity")
     else:
-        logger.warning("Research MCP v1 started without database - storage disabled")
+        logger.warning("Research MCP v2 started without database - storage disabled")
+    
+    # Initialize aggressive cache manager
+    cache_initialized = await cache_manager.initialize()
+    if cache_initialized:
+        logger.info("Aggressive cache manager initialized successfully")
+        
+        # Warm cache with common research queries
+        common_queries = [
+            "artificial intelligence trends 2025",
+            "microservices architecture best practices", 
+            "API security vulnerabilities",
+            "database performance optimization",
+            "cloud computing cost optimization"
+        ]
+        await cache_manager.warm_cache_for_common_queries(common_queries)
+        
+    else:
+        logger.warning("Cache manager initialization failed - caching disabled")
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
+    """Clean shutdown of all connections"""
+    # Close database pool
     if db_pool:
         await db_pool.close()
         logger.info("Database pool closed")
+    
+    # Close cache manager connections
+    await cache_manager.close()
+    logger.info("Cache manager closed")
+
+
+# Add cache monitoring endpoints
+@app.get("/cache/stats")
+async def get_cache_stats():
+    """Get comprehensive cache performance statistics"""
+    try:
+        stats = await cache_manager.get_cache_performance_stats()
+        return {
+            "status": "success",
+            "cache_stats": {
+                "total_requests": stats.total_requests,
+                "cache_hits": stats.cache_hits, 
+                "cache_misses": stats.cache_misses,
+                "hit_ratio": stats.hit_ratio,
+                "average_response_time_ms": stats.average_response_time_ms,
+                "total_keys": stats.total_keys,
+                "memory_usage_bytes": stats.memory_usage_bytes
+            },
+            "cache_health": cache_manager.get_cache_health(),
+            "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        }
+    except Exception as e:
+        logger.error(f"Failed to get cache stats: {e}")
+        return {"status": "error", "error": str(e)}
+
+
+@app.get("/cache/hot-queries")
+async def get_hot_queries():
+    """Get most frequently accessed queries"""
+    try:
+        hot_queries = await cache_manager.get_hot_queries(20)
+        return {
+            "status": "success",
+            "hot_queries": hot_queries,
+            "total_tracked": len(hot_queries),
+            "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        }
+    except Exception as e:
+        logger.error(f"Failed to get hot queries: {e}")
+        return {"status": "error", "error": str(e)}
+
+
+@app.post("/cache/cleanup")
+async def cleanup_cache():
+    """Clean up expired and low-value cache entries"""
+    try:
+        cleaned_count = await cache_manager.cleanup_expired_entries()
+        return {
+            "status": "success",
+            "entries_cleaned": cleaned_count,
+            "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        }
+    except Exception as e:
+        logger.error(f"Cache cleanup failed: {e}")
+        return {"status": "error", "error": str(e)}
+
+
+@app.post("/cache/optimize")
+async def optimize_cache():
+    """Optimize cache levels based on access patterns"""
+    try:
+        await cache_manager.optimize_cache_levels()
+        return {
+            "status": "success", 
+            "message": "Cache optimization completed",
+            "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        }
+    except Exception as e:
+        logger.error(f"Cache optimization failed: {e}")
+        return {"status": "error", "error": str(e)}
 
 
 if __name__ == "__main__":
