@@ -4,12 +4,14 @@ Sophia AI Intel - Pulumi + Lambda Labs Deployment
 =================================================
 
 Complete containerized microservices platform deployed to Lambda Labs GPU instances.
-Uses Pulumi Cloud for state management and Lambda Labs for compute.
+Uses Pulumi Cloud for state management and Lambda Labs API for compute.
 """
 
 import pulumi
+import requests
+import json
+import time
 from pulumi import ResourceOptions
-from pulumi_lambdalabs import Instance
 from pulumi_command import remote
 
 # Get Pulumi configuration
@@ -27,20 +29,63 @@ openai_key = config.require_secret("openai-api-key")
 
 pulumi.log.info("🔐 Lambda Labs + Pulumi Cloud deployment starting")
 
-# 1. Provision a new Lambda Labs instance
-instance = Instance(
-    "sophia-gpu-node",
-    hostname="sophia-gpu",
-    instance_type="gpu_1x_a100_sxm4",  # A100 GPU instance
-    region="us-west-1",
-    ssh_public_key=public_key,
-)
+def create_lambda_labs_instance():
+    """Create Lambda Labs instance using API"""
+    
+    def _create_instance(api_key):
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "region_name": "us-west-1",
+            "instance_type_name": "gpu_1x_a100_sxm4",
+            "ssh_key_names": ["sophia-deploy-key"],
+            "quantity": 1,
+            "name": "sophia-ai-production"
+        }
+        
+        response = requests.post(
+            "https://cloud.lambdalabs.com/api/v1/instance-operations/launch",
+            json=payload,
+            headers=headers,
+            timeout=30
+        )
+        
+        if response.status_code in [200, 201]:
+            data = response.json()
+            instance_id = data.get("data", {}).get("instance_ids", [None])[0]
+            
+            # Wait for instance to be ready and get IP
+            for i in range(30):  # Wait up to 5 minutes
+                time.sleep(10)
+                
+                ip_response = requests.get(
+                    f"https://cloud.lambdalabs.com/api/v1/instances/{instance_id}",
+                    headers=headers
+                )
+                
+                if ip_response.status_code == 200:
+                    instance_data = ip_response.json()
+                    ip = instance_data.get("data", {}).get("ip")
+                    if ip:
+                        return {"instance_id": instance_id, "ip": ip}
+            
+            raise Exception("Instance created but IP not available")
+        else:
+            raise Exception(f"Failed to create instance: {response.text}")
+    
+    return lambda_api_key.apply(_create_instance)
+
+# Create Lambda Labs instance using API
+instance_info = create_lambda_labs_instance()
 
 # 2. Install Docker via remote command
 install_docker = remote.Command(
     "install-docker",
     connection=remote.Connection(
-        host=instance.public_ip,
+        host=instance_info.apply(lambda info: info["ip"]),
         user="ubuntu",
         private_key=private_key,
     ),
@@ -68,7 +113,7 @@ install_docker = remote.Command(
 clone_repo = remote.Command(
     "clone-repo",
     connection=remote.Connection(
-        host=instance.public_ip,
+        host=instance_info.apply(lambda info: info["ip"]),
         user="ubuntu",
         private_key=private_key,
     ),
@@ -90,11 +135,11 @@ clone_repo = remote.Command(
 create_env = remote.Command(
     "create-env",
     connection=remote.Connection(
-        host=instance.public_ip,
+        host=instance_info.apply(lambda info: info["ip"]),
         user="ubuntu",
         private_key=private_key,
     ),
-    create=pulumi.Output.all(neon_url, redis_url, openai_key).apply(
+    create=pulumi.Output.all(neon_url, redis_url, openai_key, lambda_api_key).apply(
         lambda args: f"""
         set -e
         echo "🔐 Creating environment configuration..."
@@ -114,7 +159,7 @@ REDIS_URL={args[1]}
 OPENAI_API_KEY={args[2]}
 
 # Lambda Labs API (for self-management)
-LAMBDA_API_KEY=$LAMBDA_API_KEY
+LAMBDA_API_KEY={args[3]}
 LAMBDA_API_ENDPOINT=https://cloud.lambdalabs.com/api/v1
 
 # Qdrant Vector Database (optional)
@@ -145,7 +190,7 @@ ENV_EOF
 deploy_services = remote.Command(
     "deploy-services",
     connection=remote.Connection(
-        host=instance.public_ip,
+        host=instance_info.apply(lambda info: info["ip"]),
         user="ubuntu",
         private_key=private_key,
     ),
@@ -182,24 +227,24 @@ deploy_services = remote.Command(
 )
 
 # Export outputs
-pulumi.export("instance_id", instance.id)
-pulumi.export("instance_ip", instance.public_ip)
+pulumi.export("instance_id", instance_info.apply(lambda info: info["instance_id"]))
+pulumi.export("instance_ip", instance_info.apply(lambda info: info["ip"]))
 pulumi.export("instance_type", "gpu_1x_a100_sxm4")
 pulumi.export("region", "us-west-1")
 
 # Service URLs
-pulumi.export("dashboard_url", instance.public_ip.apply(lambda ip: f"http://{ip}:3000"))
-pulumi.export("api_gateway_url", instance.public_ip.apply(lambda ip: f"http://{ip}"))
-pulumi.export("research_api_url", instance.public_ip.apply(lambda ip: f"http://{ip}:8081"))
-pulumi.export("context_api_url", instance.public_ip.apply(lambda ip: f"http://{ip}:8082"))
-pulumi.export("github_api_url", instance.public_ip.apply(lambda ip: f"http://{ip}:8083"))
-pulumi.export("business_api_url", instance.public_ip.apply(lambda ip: f"http://{ip}:8084"))
-pulumi.export("lambda_api_url", instance.public_ip.apply(lambda ip: f"http://{ip}:8085"))
-pulumi.export("hubspot_api_url", instance.public_ip.apply(lambda ip: f"http://{ip}:8086"))
+pulumi.export("dashboard_url", instance_info.apply(lambda info: f"http://{info['ip']}:3000"))
+pulumi.export("api_gateway_url", instance_info.apply(lambda info: f"http://{info['ip']}"))
+pulumi.export("research_api_url", instance_info.apply(lambda info: f"http://{info['ip']}:8081"))
+pulumi.export("context_api_url", instance_info.apply(lambda info: f"http://{info['ip']}:8082"))
+pulumi.export("github_api_url", instance_info.apply(lambda info: f"http://{info['ip']}:8083"))
+pulumi.export("business_api_url", instance_info.apply(lambda info: f"http://{info['ip']}:8084"))
+pulumi.export("lambda_api_url", instance_info.apply(lambda info: f"http://{info['ip']}:8085"))
+pulumi.export("hubspot_api_url", instance_info.apply(lambda info: f"http://{info['ip']}:8086"))
 
 # Management info
-pulumi.export("ssh_command", instance.public_ip.apply(lambda ip: f"ssh ubuntu@{ip}"))
-pulumi.export("deployment_method", "pulumi-lambdalabs-providers")
+pulumi.export("ssh_command", instance_info.apply(lambda info: f"ssh ubuntu@{info['ip']}"))
+pulumi.export("deployment_method", "pulumi-lambda-labs-api")
 pulumi.export("services_deployed", [
     "sophia-dashboard",
     "sophia-research", 
