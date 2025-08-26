@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-github
+  namespace: sophia
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-github
+  template:
+    metadata:
+      labels:
+        app: mcp-github
+    spec:
+      containers:
+      - name: mcp-github
+        image: ghcr.io/ai-cherry/sophia-mcp-github:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8005
+        env:
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: sophia-secrets
+              key: GITHUB_TOKEN
+        - name: OPENROUTER_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: sophia-secrets
+              key: OPENROUTER_API_KEY
+        - name: REDIS_URL
+          value: "redis://redis-service:6379"
+        resources:
+          requests:
+            cpu: 500m
+            memory: "1Gi"
+          limits:
+            cpu: 1
+            memory: "2Gi"
+      imagePullSecrets:
+      - name: github-registry
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-github
+  namespace: sophia
+spec:
+  selector:
+    app: mcp-github
+  ports:
+    - port: 8005
+      targetPort: 8005
+  type: ClusterIP

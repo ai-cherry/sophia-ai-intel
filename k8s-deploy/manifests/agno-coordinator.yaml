@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agno-coordinator
+  namespace: sophia
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agno-coordinator
+  template:
+    metadata:
+      labels:
+        app: agno-coordinator
+    spec:
+      containers:
+      - name: agno-coordinator
+        image: ghcr.io/ai-cherry/sophia-agno-coordinator:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3002
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: REDIS_URL
+          value: "redis://redis-service:6379"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: sophia-secrets
+              key: DATABASE_URL
+        - name: OPENROUTER_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: sophia-secrets
+              key: OPENROUTER_API_KEY
+        - name: MCP_RESEARCH_URL
+          value: "http://mcp-research:8000"
+        - name: MCP_CONTEXT_URL
+          value: "http://mcp-context:8001"
+        - name: MCP_AGENTS_URL
+          value: "http://mcp-agents:8002"
+        - name: MCP_BUSINESS_URL
+          value: "http://mcp-business:8003"
+        - name: MCP_HUBSPOT_URL
+          value: "http://mcp-hubspot:8004"
+        - name: MCP_GITHUB_URL
+          value: "http://mcp-github:8005"
+        resources:
+          requests:
+            cpu: 2
+            memory: "4Gi"
+          limits:
+            cpu: 4
+            memory: "8Gi"
+      imagePullSecrets:
+      - name: github-registry
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agno-coordinator
+  namespace: sophia
+spec:
+  selector:
+    app: agno-coordinator
+  ports:
+    - port: 3002
+      targetPort: 3002
+  type: ClusterIP

@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-lambda
+  namespace: sophia
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-lambda
+  template:
+    metadata:
+      labels:
+        app: mcp-lambda
+    spec:
+      containers:
+      - name: mcp-lambda
+        image: ghcr.io/ai-cherry/sophia-mcp-lambda:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8006
+        env:
+        - name: LAMBDA_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: sophia-secrets
+              key: LAMBDA_API_KEY
+        - name: OPENROUTER_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: sophia-secrets
+              key: OPENROUTER_API_KEY
+        - name: REDIS_URL
+          value: "redis://redis-service:6379"
+        resources:
+          requests:
+            cpu: 500m
+            memory: "1Gi"
+          limits:
+            cpu: 1
+            memory: "2Gi"
+      imagePullSecrets:
+      - name: github-registry
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-lambda
+  namespace: sophia
+spec:
+  selector:
+    app: mcp-lambda
+  ports:
+    - port: 8006
+      targetPort: 8006
+  type: ClusterIP

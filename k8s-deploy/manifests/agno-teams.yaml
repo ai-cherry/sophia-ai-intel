@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agno-teams
+  namespace: sophia
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agno-teams
+  template:
+    metadata:
+      labels:
+        app: agno-teams
+    spec:
+      containers:
+      - name: agno-teams
+        image: ghcr.io/ai-cherry/sophia-agno-teams:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8008
+        env:
+        - name: OPENROUTER_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: sophia-secrets
+              key: OPENROUTER_API_KEY
+        - name: REDIS_URL
+          value: "redis://redis-service:6379"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: sophia-secrets
+              key: DATABASE_URL
+        - name: GONG_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: sophia-secrets
+              key: GONG_ACCESS_KEY
+        - name: GONG_ACCESS_KEY_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: sophia-secrets
+              key: GONG_ACCESS_KEY_SECRET
+        - name: SALESFORCE_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: sophia-secrets
+              key: SALESFORCE_CLIENT_ID
+        - name: HUBSPOT_ACCESS_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: sophia-secrets
+              key: HUBSPOT_ACCESS_TOKEN
+        - name: SLACK_BOT_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: sophia-secrets
+              key: SLACK_BOT_TOKEN
+        resources:
+          requests:
+            cpu: 2
+            memory: "4Gi"
+            nvidia.com/gpu: 1
+          limits:
+            cpu: 4
+            memory: "8Gi"
+            nvidia.com/gpu: 1
+      imagePullSecrets:
+      - name: github-registry
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agno-teams
+  namespace: sophia
+spec:
+  selector:
+    app: agno-teams
+  ports:
+    - port: 8008
+      targetPort: 8008
+  type: ClusterIP

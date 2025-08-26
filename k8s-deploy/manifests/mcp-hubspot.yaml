@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-hubspot
+  namespace: sophia
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-hubspot
+  template:
+    metadata:
+      labels:
+        app: mcp-hubspot
+    spec:
+      containers:
+      - name: mcp-hubspot
+        image: ghcr.io/ai-cherry/sophia-mcp-hubspot:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8004
+        env:
+        - name: HUBSPOT_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: sophia-secrets
+              key: HUBSPOT_API_KEY
+        - name: OPENROUTER_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: sophia-secrets
+              key: OPENROUTER_API_KEY
+        - name: REDIS_URL
+          value: "redis://redis-service:6379"
+        resources:
+          requests:
+            cpu: 500m
+            memory: "1Gi"
+          limits:
+            cpu: 1
+            memory: "2Gi"
+      imagePullSecrets:
+      - name: github-registry
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-hubspot
+  namespace: sophia
+spec:
+  selector:
+    app: mcp-hubspot
+  ports:
+    - port: 8004
+      targetPort: 8004
+  type: ClusterIP
