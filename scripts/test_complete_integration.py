@@ -70,18 +70,61 @@ class SophiaIntegrationTester:
             return False, f"Domain routing test failed: {str(e)}"
 
     def test_service_endpoints(self) -> Dict[str, Tuple[bool, str]]:
-        """Test all service endpoints"""
+        """Test all service endpoints with comprehensive validation"""
         results = {}
         for service_name, url in self.services.items():
             try:
+                start_time = time.time()
                 response = requests.get(url, timeout=10, verify=False)
+                response_time = time.time() - start_time
+
                 if response.status_code == 200:
-                    results[service_name] = (True, f"{service_name} endpoint is responding")
+                    # Additional validation for service health
+                    content_check = self._validate_service_content(service_name, response)
+                    health_check = self._check_service_health(service_name, response)
+
+                    if content_check and health_check:
+                        results[service_name] = (True, f"{service_name} endpoint is healthy (response: {response_time:.2f}s)")
+                    else:
+                        results[service_name] = (False, f"{service_name} endpoint responding but validation failed")
                 else:
                     results[service_name] = (False, f"{service_name} failed with status {response.status_code}")
             except Exception as e:
                 results[service_name] = (False, f"{service_name} test failed: {str(e)}")
         return results
+
+    def _validate_service_content(self, service_name: str, response) -> bool:
+        """Validate service-specific content"""
+        try:
+            if service_name == 'dashboard':
+                # Check for dashboard-specific content
+                return 'sophia' in response.text.lower() or 'dashboard' in response.text.lower()
+            elif service_name == 'research':
+                # Check for research interface
+                return 'research' in response.text.lower() or 'search' in response.text.lower()
+            elif service_name in ['context', 'github', 'business', 'lambda', 'hubspot', 'agents']:
+                # Check for API endpoints
+                return '/api/' in response.text.lower() or 'json' in response.headers.get('content-type', '').lower()
+            return True  # Default pass for unknown services
+        except:
+            return False
+
+    def _check_service_health(self, service_name: str, response) -> bool:
+        """Check service-specific health indicators"""
+        try:
+            # Check response headers for health indicators
+            server_header = response.headers.get('server', '').lower()
+            content_type = response.headers.get('content-type', '').lower()
+
+            if service_name in ['context', 'github', 'business', 'lambda', 'hubspot', 'agents']:
+                # API services should return JSON
+                return 'json' in content_type
+            else:
+                # Web services should return HTML or proper content
+                return 'html' in content_type or 'text' in content_type
+
+        except:
+            return False
 
     def test_monitoring_endpoints(self) -> Dict[str, Tuple[bool, str]]:
         """Test monitoring endpoints with authentication"""
@@ -174,10 +217,11 @@ class SophiaIntegrationTester:
         }
 
         print("\n" + "=" * 80)
-        print("📊 TEST SUMMARY"        print(f"Total Tests: {total_tests}")
+        print("📊 TEST SUMMARY")
+        print(f"Total Tests: {total_tests}")
         print(f"Passed: {passed_tests}")
         print(f"Failed: {total_tests - passed_tests}")
-        print(".1f")
+        print(f"Success Rate: {results['summary']['success_rate']:.1f}%")
         print("=" * 80)
 
         if results['summary']['success_rate'] >= 90:
