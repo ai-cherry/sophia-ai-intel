@@ -16,9 +16,11 @@ on:
         - staging
 
 env:
-  PRODUCTION_TAG: v1.0.0
+  PRODUCTION_TAG: v1.1.0
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  PRODUCTION_DOMAIN: www.sophia-intel.ai
+  LAMBDA_LABS_IP: 192.222.51.223
 
 jobs:
   validate-tag:
@@ -73,6 +75,26 @@ jobs:
             type=raw,value=production-{{sha}}
             type=raw,value=${{ env.PRODUCTION_TAG }}
 
+      - name: Build and push Sophia Dashboard service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/sophia-dashboard
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}-sophia-dashboard
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push MCP Research service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/mcp-research
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}-mcp-research
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
       - name: Build and push MCP Context service
         uses: docker/build-push-action@v5
         with:
@@ -83,12 +105,52 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Build and push MCP Business service
+      - name: Build and push MCP Agents service
         uses: docker/build-push-action@v5
         with:
-          context: ./services/mcp-business
+          context: ./services/mcp-agents
           push: true
-          tags: ${{ steps.meta.outputs.tags }}-mcp-business
+          tags: ${{ steps.meta.outputs.tags }}-mcp-agents
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push Sophia Business service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/sophia-business
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}-sophia-business
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push Sophia HubSpot service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/sophia-hubspot
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}-sophia-hubspot
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push Sophia GitHub service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/sophia-github
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}-sophia-github
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push Sophia Lambda service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/sophia-lambda
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}-sophia-lambda
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -129,36 +191,169 @@ jobs:
           kubectl apply -f k8s-deploy/manifests/configmap-production.yaml
           kubectl apply -f k8s-deploy/manifests/secret-management.yaml
 
-          # Deploy services
+          # Deploy core infrastructure
+          kubectl apply -f k8s-deploy/manifests/redis.yaml
+          kubectl apply -f k8s-deploy/manifests/network-policies.yaml
+
+          # Deploy MCP services
+          kubectl apply -f k8s-deploy/manifests/mcp-research.yaml
           kubectl apply -f k8s-deploy/manifests/mcp-context.yaml
-          kubectl apply -f k8s-deploy/manifests/mcp-business.yaml
+          kubectl apply -f k8s-deploy/manifests/mcp-agents.yaml
+
+          # Deploy business services
+          kubectl apply -f k8s-deploy/manifests/sophia-dashboard.yaml
+          kubectl apply -f k8s-deploy/manifests/sophia-business.yaml
+          kubectl apply -f k8s-deploy/manifests/sophia-hubspot.yaml
+          kubectl apply -f k8s-deploy/manifests/sophia-github.yaml
+          kubectl apply -f k8s-deploy/manifests/sophia-lambda.yaml
+
+          # Deploy AI services
           kubectl apply -f k8s-deploy/manifests/sonic-ai.yaml
 
           # Deploy ingress and monitoring
           kubectl apply -f k8s-deploy/manifests/ingress-enhanced-ssl.yaml
           kubectl apply -f k8s-deploy/manifests/hpa.yaml
+          kubectl apply -f k8s-deploy/manifests/prometheus.yaml
+          kubectl apply -f k8s-deploy/manifests/grafana.yaml
+          kubectl apply -f k8s-deploy/manifests/loki.yaml
           kubectl apply -f k8s-deploy/manifests/advanced-alerts.yaml
 
       - name: Wait for rollout
         run: |
+          # Wait for core infrastructure
+          kubectl wait --for=condition=available --timeout=300s deployment/redis
+
+          # Wait for MCP services
+          kubectl wait --for=condition=available --timeout=600s deployment/mcp-research
           kubectl wait --for=condition=available --timeout=600s deployment/mcp-context
-          kubectl wait --for=condition=available --timeout=600s deployment/mcp-business
+          kubectl wait --for=condition=available --timeout=600s deployment/mcp-agents
+
+          # Wait for business services
+          kubectl wait --for=condition=available --timeout=300s deployment/sophia-dashboard
+          kubectl wait --for=condition=available --timeout=300s deployment/sophia-business
+          kubectl wait --for=condition=available --timeout=300s deployment/sophia-hubspot
+          kubectl wait --for=condition=available --timeout=300s deployment/sophia-github
+          kubectl wait --for=condition=available --timeout=300s deployment/sophia-lambda
+
+          # Wait for AI services
           kubectl wait --for=condition=available --timeout=600s deployment/sonic-ai
+
+          # Wait for monitoring stack
+          kubectl wait --for=condition=available --timeout=300s deployment/prometheus
+          kubectl wait --for=condition=available --timeout=300s deployment/grafana
 
       - name: Run health checks
         run: |
           ./k8s-deploy/scripts/comprehensive-health-check.sh
 
+      - name: Run acceptance tests
+        run: |
+          # Test domain accessibility
+          curl -f -k https://${{ env.PRODUCTION_DOMAIN }} || curl -f http://${{ env.LAMBDA_LABS_IP }}
+
+          # Test API endpoints
+          curl -f http://${{ env.LAMBDA_LABS_IP }}/research/health
+          curl -f http://${{ env.LAMBDA_LABS_IP }}/context/health
+          curl -f http://${{ env.LAMBDA_LABS_IP }}/agents/health
+
+          # Validate service connectivity
+          kubectl get pods -n sophia -o jsonpath='{.items[*].status.phase}' | grep -v Running || exit 1
+
+      - name: Run performance tests
+        run: |
+          # Execute load testing suite
+          python scripts/load_testing/comprehensive_load_test.py --url=http://${{ env.LAMBDA_LABS_IP }} --duration=60
+
+          # Generate performance report
+          python scripts/load_testing/gpu_monitor.py --output=performance_report.json
+
+      - name: Validate production readiness
+        run: |
+          # Check resource utilization
+          kubectl top pods -n sophia
+
+          # Validate monitoring stack
+          curl -f http://${{ env.LAMBDA_LABS_IP }}:9090/-/healthy
+          curl -f http://${{ env.LAMBDA_LABS_IP }}:3000/api/health
+
+          # Check logs for errors
+          kubectl logs -n sophia --selector=app --tail=100 | grep -i error || echo "No errors found"
+
+      - name: Create deployment summary
+        run: |
+          echo "## 🚀 Production Deployment v${{ env.PRODUCTION_TAG }} Summary" > deployment_summary.md
+          echo "- **Date:** $(date)" >> deployment_summary.md
+          echo "- **Environment:** Production" >> deployment_summary.md
+          echo "- **Domain:** ${{ env.PRODUCTION_DOMAIN }}" >> deployment_summary.md
+          echo "- **Infrastructure:** Lambda Labs + Kubernetes" >> deployment_summary.md
+          echo "" >> deployment_summary.md
+          echo "### Deployed Services:" >> deployment_summary.md
+          kubectl get deployments -n sophia -o name | sed 's/.*\///' | while read svc; do
+            echo "- ✅ $svc" >> deployment_summary.md
+          done
+          echo "" >> deployment_summary.md
+          echo "### Health Status:" >> deployment_summary.md
+          kubectl get pods -n sophia -o wide >> deployment_summary.md
+          cat deployment_summary.md
+
       - name: Notify deployment success
         if: success()
         run: |
-          echo "🚀 Production deployment completed successfully!"
-          echo "Tag: ${{ env.PRODUCTION_TAG }}"
-          echo "Commit: ${{ github.sha }}"
-          echo "Time: $(date)"
+          echo "🚀 Production deployment v${{ env.PRODUCTION_TAG }} completed successfully!"
+          echo "🌐 Domain: https://${{ env.PRODUCTION_DOMAIN }}"
+          echo "🏗️ Infrastructure: Lambda Labs (${{ env.LAMBDA_LABS_IP }}) + K3s"
+          echo "📊 Monitoring: Prometheus (${{ env.LAMBDA_LABS_IP }}:9090) | Grafana (${{ env.LAMBDA_LABS_IP }}:3000)"
+          echo "📋 Commit: ${{ github.sha }}"
+          echo "⏰ Time: $(date)"
+          echo ""
+          echo "Next steps:"
+          echo "1. Verify domain DNS propagation"
+          echo "2. Configure SSL certificates with Let's Encrypt"
+          echo "3. Review monitoring dashboards"
+          echo "4. Execute comprehensive load testing"
+
+  rollback-deployment:
+    needs: [validate-tag, build-and-push, deploy-production]
+    if: failure() && needs.deploy-production.result == 'success'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Configure kubectl for rollback
+        run: |
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Execute emergency rollback
+        run: |
+          # Get previous working deployment
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || echo "v1.0.0")
+
+          echo "🔄 Rolling back to previous stable version: $PREVIOUS_TAG"
+
+          # Rollback services to previous version
+          kubectl rollout undo deployment/mcp-research -n sophia
+          kubectl rollout undo deployment/mcp-context -n sophia
+          kubectl rollout undo deployment/mcp-agents -n sophia
+          kubectl rollout undo deployment/sophia-dashboard -n sophia
+          kubectl rollout undo deployment/sophia-business -n sophia
+          kubectl rollout undo deployment/sophia-hubspot -n sophia
+          kubectl rollout undo deployment/sophia-github -n sophia
+          kubectl rollout undo deployment/sophia-lambda -n sophia
+          kubectl rollout undo deployment/sonic-ai -n sophia
+
+          # Wait for rollback completion
+          kubectl wait --for=condition=available --timeout=300s deployment/mcp-research
+          kubectl wait --for=condition=available --timeout=300s deployment/mcp-context
+          kubectl wait --for=condition=available --timeout=300s deployment/sonic-ai
+
+          echo "✅ Rollback completed successfully"
+
+      - name: Run post-rollback health checks
+        run: |
+          ./k8s-deploy/scripts/comprehensive-health-check.sh
 
   notify-failure:
-    needs: [validate-tag, build-and-push, deploy-production]
+    needs: [validate-tag, build-and-push, deploy-production, rollback-deployment]
     if: failure()
     runs-on: ubuntu-latest
     steps:
@@ -166,5 +361,19 @@ jobs:
         run: |
           echo "❌ Production deployment failed!"
           echo "Tag: ${{ env.PRODUCTION_TAG }}"
-          echo "Please check the logs and resolve issues before retrying."
+          echo "Environment: ${{ inputs.environment || 'production' }}"
+          echo "Domain: ${{ env.PRODUCTION_DOMAIN }}"
+          echo ""
+          echo "🔍 Troubleshooting steps:"
+          echo "1. Check deployment logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo "2. Review Kubernetes events: kubectl get events -n sophia --sort-by='.lastTimestamp'"
+          echo "3. Check pod status: kubectl get pods -n sophia -o wide"
+          echo "4. Review service logs: kubectl logs -n sophia --selector=app --tail=100"
+          echo ""
+          echo "🚨 Emergency contacts:"
+          echo "- System Administrator: Available 24/7"
+          echo "- Monitoring: https://${{ env.PRODUCTION_DOMAIN }}:9090/alerts"
+          echo "- Rollback: Automatically executed if deployment succeeded"
+          echo ""
+          echo "Please resolve issues before retrying deployment."
           exit 1

@@ -1,0 +1,349 @@
+name: Nightly Health Proofs & Validation
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+        - production
+        - staging
+      test_duration:
+        description: 'Load test duration in seconds'
+        required: false
+        default: '300'
+        type: string
+      skip_performance:
+        description: 'Skip performance testing'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  PRODUCTION_DOMAIN: www.sophia-intel.ai
+  LAMBDA_LABS_IP: 192.222.51.223
+  ENVIRONMENT: ${{ inputs.environment || 'production' }}
+  TEST_DURATION: ${{ inputs.test_duration || '300' }}
+  SKIP_PERFORMANCE: ${{ inputs.skip_performance || false }}
+
+jobs:
+  health-validation:
+    name: System Health Validation
+    runs-on: ubuntu-latest
+    environment: production
+    outputs:
+      health_status: ${{ steps.health-check.outputs.status }}
+      healthy_services: ${{ steps.health-check.outputs.healthy_services }}
+      total_services: ${{ steps.health-check.outputs.total_services }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Basic connectivity tests
+        id: connectivity
+        run: |
+          echo "Testing domain connectivity..."
+          if curl -f -k https://${{ env.PRODUCTION_DOMAIN }} --connect-timeout 10; then
+            echo "Domain reachable"
+          elif curl -f http://${{ env.LAMBDA_LABS_IP }} --connect-timeout 10; then
+            echo "IP reachable (domain may not be propagated)"
+          else
+            echo "Both domain and IP unreachable"
+            exit 1
+          fi
+
+      - name: Service health checks
+        id: health-check
+        run: |
+          echo "Running comprehensive health checks..."
+          kubectl get deployments -n sophia -o jsonpath='{.items[*].metadata.name}' | tr ' ' '\n' > deployments.txt
+          HEALTHY_SERVICES=0
+          TOTAL_SERVICES=0
+          while IFS= read -r deployment; do
+            TOTAL_SERVICES=$((TOTAL_SERVICES + 1))
+            if kubectl rollout status deployment/$deployment -n sophia --timeout=60s >/dev/null 2>&1; then
+              echo "$deployment: HEALTHY"
+              HEALTHY_SERVICES=$((HEALTHY_SERVICES + 1))
+            else
+              echo "$deployment: UNHEALTHY"
+            fi
+          done < deployments.txt
+          HEALTH_PERCENTAGE=$((HEALTHY_SERVICES * 100 / TOTAL_SERVICES))
+          echo "Health Status: $HEALTHY_SERVICES/$TOTAL_SERVICES services healthy ($HEALTH_PERCENTAGE%)"
+          if [ $HEALTH_PERCENTAGE -ge 95 ]; then
+            echo "status=healthy" >> $GITHUB_OUTPUT
+          elif [ $HEALTH_PERCENTAGE -ge 80 ]; then
+            echo "status=degraded" >> $GITHUB_OUTPUT
+          else
+            echo "status=critical" >> $GITHUB_OUTPUT
+          fi
+          echo "healthy_services=$HEALTHY_SERVICES" >> $GITHUB_OUTPUT
+          echo "total_services=$TOTAL_SERVICES" >> $GITHUB_OUTPUT
+
+  performance-testing:
+    name: Performance Testing
+    needs: health-validation
+    if: needs.health-validation.outputs.health_status != 'critical'
+    runs-on: ubuntu-latest
+    environment: production
+    outputs:
+      avg_response_time: ${{ steps.load-test.outputs.avg_response_time }}
+      requests_per_second: ${{ steps.load-test.outputs.requests_per_second }}
+      error_rate: ${{ steps.load-test.outputs.error_rate }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r scripts/load_testing/requirements.txt
+
+      - name: Run load tests
+        id: load-test
+        run: |
+          echo "Running load tests for ${{ env.TEST_DURATION }} seconds..."
+          cd scripts/load_testing
+          python comprehensive_load_test.py --url=http://${{ env.LAMBDA_LABS_IP }} --duration=${{ env.TEST_DURATION }} --output=load_test_results.json
+          if [ -f load_test_results.json ]; then
+            avg_response_time=$(cat load_test_results.json | jq '.avg_response_time // 0')
+            requests_per_second=$(cat load_test_results.json | jq '.requests_per_second // 0')
+            error_rate=$(cat load_test_results.json | jq '.error_rate // 0')
+            echo "Load Test Results:"
+            echo "  Average Response Time: ${avg_response_time}ms"
+            echo "  Requests/Second: ${requests_per_second}"
+            echo "  Error Rate: ${error_rate}%"
+            echo "avg_response_time=$avg_response_time" >> $GITHUB_OUTPUT
+            echo "requests_per_second=$requests_per_second" >> $GITHUB_OUTPUT
+            echo "error_rate=$error_rate" >> $GITHUB_OUTPUT
+          else
+            echo "Load test results file not found"
+            echo "avg_response_time=0" >> $GITHUB_OUTPUT
+            echo "requests_per_second=0" >> $GITHUB_OUTPUT
+            echo "error_rate=100" >> $GITHUB_OUTPUT
+          fi
+
+  acceptance-criteria:
+    name: Acceptance Criteria Validation
+    needs: [health-validation, performance-testing]
+    if: always()
+    runs-on: ubuntu-latest
+    environment: production
+    outputs:
+      status: ${{ steps.acceptance.outputs.status }}
+      passed_criteria: ${{ steps.acceptance.outputs.passed_criteria }}
+      total_criteria: ${{ steps.acceptance.outputs.total_criteria }}
+      acceptance_percentage: ${{ steps.acceptance.outputs.acceptance_percentage }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Validate acceptance criteria
+        id: acceptance
+        run: |
+          echo "Validating acceptance criteria..."
+          PASSED_CRITERIA=0
+          TOTAL_CRITERIA=0
+          TOTAL_CRITERIA=$((TOTAL_CRITERIA + 1))
+          if [ "${{ needs.health-validation.outputs.health_status }}" = "healthy" ]; then
+            echo "AC-1: All services healthy - PASSED"
+            PASSED_CRITERIA=$((PASSED_CRITERIA + 1))
+          else
+            echo "AC-1: All services healthy - FAILED (Status: ${{ needs.health-validation.outputs.health_status }})"
+          fi
+          TOTAL_CRITERIA=$((TOTAL_CRITERIA + 1))
+          if curl -f -k https://${{ env.PRODUCTION_DOMAIN }} --connect-timeout 5 >/dev/null 2>&1 || curl -f http://${{ env.LAMBDA_LABS_IP }} --connect-timeout 5 >/dev/null 2>&1; then
+            echo "AC-2: Domain/IP accessible - PASSED"
+            PASSED_CRITERIA=$((PASSED_CRITERIA + 1))
+          else
+            echo "AC-2: Domain/IP accessible - FAILED"
+          fi
+          TOTAL_CRITERIA=$((TOTAL_CRITERIA + 1))
+          monitoring_healthy=true
+          if ! curl -f http://${{ env.LAMBDA_LABS_IP }}:9090/-/healthy >/dev/null 2>&1; then
+            monitoring_healthy=false
+          fi
+          if ! curl -f http://${{ env.LAMBDA_LABS_IP }}:3000/api/health >/dev/null 2>&1; then
+            monitoring_healthy=false
+          fi
+          if $monitoring_healthy; then
+            echo "AC-3: Monitoring stack operational - PASSED"
+            PASSED_CRITERIA=$((PASSED_CRITERIA + 1))
+          else
+            echo "AC-3: Monitoring stack operational - FAILED"
+          fi
+          if [ "${{ env.SKIP_PERFORMANCE }}" != "true" ] && [ "${{ needs.performance-testing.result }}" = "success" ]; then
+            TOTAL_CRITERIA=$((TOTAL_CRITERIA + 1))
+            if (( $(echo "${{ needs.performance-testing.outputs.error_rate }} < 5" | bc -l) )) && (( $(echo "${{ needs.performance-testing.outputs.avg_response_time }} < 2000" | bc -l) )); then
+              echo "AC-4: Performance acceptable - PASSED"
+              PASSED_CRITERIA=$((PASSED_CRITERIA + 1))
+            else
+              echo "AC-4: Performance acceptable - FAILED (Error rate: ${{ needs.performance-testing.outputs.error_rate }}%, Avg response: ${{ needs.performance-testing.outputs.avg_response_time }}ms)"
+            fi
+          fi
+          TOTAL_CRITERIA=$((TOTAL_CRITERIA + 1))
+          if kubectl get networkpolicies -n sophia --no-headers | wc -l | grep -q "^[1-9]"; then
+            echo "AC-5: Security baseline met - PASSED"
+            PASSED_CRITERIA=$((PASSED_CRITERIA + 1))
+          else
+            echo "AC-5: Security baseline met - FAILED (No network policies)"
+          fi
+          ACCEPTANCE_PERCENTAGE=$((PASSED_CRITERIA * 100 / TOTAL_CRITERIA))
+          echo "Acceptance Criteria Summary: $PASSED_CRITERIA/$TOTAL_CRITERIA ($ACCEPTANCE_PERCENTAGE%)"
+          if [ $ACCEPTANCE_PERCENTAGE -ge 80 ]; then
+            echo "status=passed" >> $GITHUB_OUTPUT
+          else
+            echo "status=failed" >> $GITHUB_OUTPUT
+          fi
+          echo "passed_criteria=$PASSED_CRITERIA" >> $GITHUB_OUTPUT
+          echo "total_criteria=$TOTAL_CRITERIA" >> $GITHUB_OUTPUT
+          echo "acceptance_percentage=$ACCEPTANCE_PERCENTAGE" >> $GITHUB_OUTPUT
+
+  generate-report:
+    name: Generate Health Report
+    needs: [health-validation, performance-testing, acceptance-criteria]
+    if: always()
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Generate comprehensive health report
+        run: |
+          REPORT_DATE=$(date +"%Y-%m-%d %H:%M:%S UTC")
+          REPORT_FILE="nightly_health_report_$(date +"%Y%m%d").md"
+          {
+            echo "# Sophia AI - Nightly Health Report"
+            echo ""
+            echo "**Report Date:** $REPORT_DATE"
+            echo "**Environment:** ${{ env.ENVIRONMENT }}"
+            echo "**Domain:** ${{ env.PRODUCTION_DOMAIN }}"
+            echo "**Infrastructure:** Lambda Labs (${{ env.LAMBDA_LABS_IP }})"
+            echo ""
+            echo "## Executive Summary"
+            echo ""
+          } > "$REPORT_FILE"
+          if [ "${{ needs.health-validation.outputs.health_status }}" = "healthy" ]; then
+            echo "🟢 **System Status: HEALTHY**" >> "$REPORT_FILE"
+          elif [ "${{ needs.health-validation.outputs.health_status }}" = "degraded" ]; then
+            echo "🟡 **System Status: DEGRADED**" >> "$REPORT_FILE"
+          else
+            echo "🔴 **System Status: CRITICAL**" >> "$REPORT_FILE"
+          fi
+          {
+            echo ""
+            echo "## Service Health"
+            echo ""
+            echo "**Overall Health:** ${{ needs.health-validation.outputs.health_status }}"
+            echo "**Healthy Services:** ${{ needs.health-validation.outputs.healthy_services }}/${{ needs.health-validation.outputs.total_services }}"
+            echo ""
+          } >> "$REPORT_FILE"
+          if [ "${{ env.SKIP_PERFORMANCE }}" != "true" ] && [ "${{ needs.performance-testing.result }}" = "success" ]; then
+            {
+              echo "## Performance Results"
+              echo ""
+              echo "- **Average Response Time:** ${{ needs.performance-testing.outputs.avg_response_time }}ms"
+              echo "- **Requests/Second:** ${{ needs.performance-testing.outputs.requests_per_second }}"
+              echo "- **Error Rate:** ${{ needs.performance-testing.outputs.error_rate }}%"
+              echo ""
+            } >> "$REPORT_FILE"
+          fi
+          {
+            echo "## Acceptance Criteria"
+            echo ""
+            echo "**Status:** ${{ needs.acceptance-criteria.outputs.status }}"
+            echo "**Passed Criteria:** ${{ needs.acceptance-criteria.outputs.passed_criteria }}/${{ needs.acceptance-criteria.outputs.total_criteria }}"
+            echo "**Acceptance Rate:** ${{ needs.acceptance-criteria.outputs.acceptance_percentage }}%"
+            echo ""
+            echo "## Recommendations"
+            echo ""
+          } >> "$REPORT_FILE"
+          if [ "${{ needs.health-validation.outputs.health_status }}" != "healthy" ]; then
+            echo "- Investigate and resolve unhealthy services" >> "$REPORT_FILE"
+          fi
+          if [ "${{ needs.acceptance-criteria.outputs.acceptance_percentage }}" -lt 80 ]; then
+            echo "- Address failed acceptance criteria" >> "$REPORT_FILE"
+          fi
+          if [ "${{ env.SKIP_PERFORMANCE }}" != "true" ] && [ "${{ needs.performance-testing.result }}" = "success" ]; then
+            if (( $(echo "${{ needs.performance-testing.outputs.error_rate }} > 5" | bc -l) )); then
+              echo "- Investigate high error rates in performance tests" >> "$REPORT_FILE"
+            fi
+            if (( $(echo "${{ needs.performance-testing.outputs.avg_response_time }} > 2000" | bc -l) )); then
+              echo "- Optimize response times (currently ${{ needs.performance-testing.outputs.avg_response_time }}ms)" >> "$REPORT_FILE"
+            fi
+          fi
+          {
+            echo "- Regular monitoring of resource utilization"
+            echo "- Review and update security configurations"
+            echo "- Plan capacity upgrades based on usage patterns"
+            echo ""
+            echo "---"
+            echo "*This report was generated automatically by the Nightly Health Proofs workflow.*"
+          } >> "$REPORT_FILE"
+          echo "Health report generated: $REPORT_FILE"
+          cat "$REPORT_FILE"
+
+      - name: Upload health report
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-health-report
+          path: nightly_health_report_*.md
+          retention-days: 30
+
+  notifications:
+    name: Send Notifications
+    needs: [health-validation, performance-testing, acceptance-criteria]
+    if: always()
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Determine notification level
+        id: notification-level
+        run: |
+          if [ "${{ needs.health-validation.outputs.health_status }}" = "critical" ]; then
+            echo "level=critical" >> $GITHUB_OUTPUT
+            echo "message=🚨 CRITICAL: System health is critical! Immediate attention required." >> $GITHUB_OUTPUT
+          elif [ "${{ needs.health-validation.outputs.health_status }}" = "degraded" ]; then
+            echo "level=warning" >> $GITHUB_OUTPUT
+            echo "message=⚠️ WARNING: System health is degraded. Review required." >> $GITHUB_OUTPUT
+          elif [ "${{ needs.acceptance-criteria.outputs.acceptance_percentage }}" -lt 80 ]; then
+            echo "level=warning" >> $GITHUB_OUTPUT
+            echo "message=⚠️ WARNING: Acceptance criteria not met (${{ needs.acceptance-criteria.outputs.acceptance_percentage }}%)." >> $GITHUB_OUTPUT
+          else
+            echo "level=info" >> $GITHUB_OUTPUT
+            echo "message=✅ INFO: System health check completed successfully." >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send notification
+        run: |
+          echo "${{ steps.notification-level.outputs.message }}"
+          echo ""
+          echo "Health Summary:"
+          echo "- Services: ${{ needs.health-validation.outputs.healthy_services }}/${{ needs.health-validation.outputs.total_services }} healthy"
+          echo "- Acceptance Rate: ${{ needs.acceptance-criteria.outputs.acceptance_percentage }}%"
+          echo "- Status: ${{ needs.health-validation.outputs.health_status }}"
+          echo ""
+          echo "View full report: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
