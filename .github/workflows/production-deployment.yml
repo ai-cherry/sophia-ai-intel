@@ -155,12 +155,12 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Build and push Sonic AI service
+      - name: Build and push MCP Business service
         uses: docker/build-push-action@v5
         with:
-          context: ./services/sonic-ai
+          context: ./services/mcp-business
           push: true
-          tags: ${{ steps.meta.outputs.tags }}-sonic-ai
+          tags: ${{ steps.meta.outputs.tags }}-mcp-business
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -207,8 +207,8 @@ jobs:
           kubectl apply -f k8s-deploy/manifests/sophia-github.yaml
           kubectl apply -f k8s-deploy/manifests/sophia-lambda.yaml
 
-          # Deploy AI services
-          kubectl apply -f k8s-deploy/manifests/sonic-ai.yaml
+          # Deploy MCP Business service
+          kubectl apply -f k8s-deploy/manifests/mcp-business.yaml
 
           # Deploy ingress and monitoring
           kubectl apply -f k8s-deploy/manifests/ingress-enhanced-ssl.yaml
@@ -235,8 +235,8 @@ jobs:
           kubectl wait --for=condition=available --timeout=300s deployment/sophia-github
           kubectl wait --for=condition=available --timeout=300s deployment/sophia-lambda
 
-          # Wait for AI services
-          kubectl wait --for=condition=available --timeout=600s deployment/sonic-ai
+          # Wait for MCP Business service
+          kubectl wait --for=condition=available --timeout=300s deployment/mcp-business
 
           # Wait for monitoring stack
           kubectl wait --for=condition=available --timeout=300s deployment/prometheus
@@ -339,12 +339,12 @@ jobs:
           kubectl rollout undo deployment/sophia-hubspot -n sophia
           kubectl rollout undo deployment/sophia-github -n sophia
           kubectl rollout undo deployment/sophia-lambda -n sophia
-          kubectl rollout undo deployment/sonic-ai -n sophia
+          kubectl rollout undo deployment/mcp-business -n sophia
 
           # Wait for rollback completion
           kubectl wait --for=condition=available --timeout=300s deployment/mcp-research
           kubectl wait --for=condition=available --timeout=300s deployment/mcp-context
-          kubectl wait --for=condition=available --timeout=300s deployment/sonic-ai
+          kubectl wait --for=condition=available --timeout=300s deployment/mcp-business
 
           echo "✅ Rollback completed successfully"
 
