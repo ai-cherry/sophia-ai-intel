@@ -488,9 +488,168 @@ class ClientHealthTeam(Team):
                 # Simple mock prediction
                 return [50000]  # Mock LTV value
 
-        return MockLTVModel()
+                        return MockLTVModel()
 
-    async def get_client_health(self, client_id: str) -> Optional[ClientHealthScore]:
+    def _setup_agent_collaboration(self, agents: Dict[str, Agent]):</search>
+</search_and_replace>
+        """Set up collaboration framework between agents"""
+        # Set collaborators for Client Success Manager
+        if "client_success_manager" in agents:
+            usage_analyst = agents.get("usage_analyst")
+            support_analyst = agents.get("support_analyst")
+
+            if hasattr(agents["client_success_manager"], 'set_collaborators'):
+                agents["client_success_manager"].set_collaborators(
+                    usage_analyst=usage_analyst,
+                    support_analyst=support_analyst
+                )
+
+        # Initialize data sharing framework
+        self._initialize_data_sharing(agents)
+
+        logger.info("Agent collaboration framework initialized")
+
+    def _initialize_data_sharing(self, agents: Dict[str, Agent]):
+        """Initialize data sharing framework between agents"""
+        # Create shared data repository
+        self.shared_data = {
+            "client_insights": {},
+            "analysis_cache": {},
+            "communication_log": [],
+            "performance_metrics": {}
+        }
+
+        # Set up communication channels
+        self.communication_channels = {
+            "usage_to_support": [],
+            "support_to_usage": [],
+            "usage_to_success_manager": [],
+            "support_to_success_manager": [],
+            "success_manager_to_usage": [],
+            "success_manager_to_support": []
+        }
+
+        logger.info("Data sharing framework initialized")
+
+    async def _share_insights_between_agents(
+        self,
+        from_agent: str,
+        to_agent: str,
+        client_id: str,
+        insights: Dict[str, Any]
+    ):
+        """Share insights between agents"""
+        try:
+            # Store insights in shared repository
+            if client_id not in self.shared_data["client_insights"]:
+                self.shared_data["client_insights"][client_id] = {}
+
+            if from_agent not in self.shared_data["client_insights"][client_id]:
+                self.shared_data["client_insights"][client_id][from_agent] = []
+
+            self.shared_data["client_insights"][client_id][from_agent].append({
+                "timestamp": datetime.now().isoformat(),
+                "insights": insights,
+                "shared_with": to_agent
+            })
+
+            # Log communication
+            self.communication_channels[f"{from_agent}_to_{to_agent}"].append({
+                "timestamp": datetime.now().isoformat(),
+                "client_id": client_id,
+                "insights_type": list(insights.keys()),
+                "success": True
+            })
+
+            logger.info(f"Shared insights from {from_agent} to {to_agent} for client {client_id}")
+
+        except Exception as e:
+            logger.error(f"Error sharing insights between {from_agent} and {to_agent}: {e}")
+
+            # Log failed communication
+            self.communication_channels[f"{from_agent}_to_{to_agent}"].append({
+                "timestamp": datetime.now().isoformat(),
+                "client_id": client_id,
+                "error": str(e),
+                "success": False
+            })
+
+    async def _get_shared_insights(self, client_id: str, requesting_agent: str) -> Dict[str, Any]:
+        """Get shared insights for a client"""
+        try:
+            client_insights = self.shared_data["client_insights"].get(client_id, {})
+
+            # Return insights from all other agents except the requesting one
+            shared_insights = {}
+            for agent_name, insights_list in client_insights.items():
+                if agent_name != requesting_agent and insights_list:
+                    # Return the most recent insights from each agent
+                    shared_insights[agent_name] = insights_list[-1]["insights"]
+
+            return shared_insights
+
+        except Exception as e:
+            logger.error(f"Error getting shared insights for client {client_id}: {e}")
+            return {}
+
+    async def _broadcast_critical_insights(
+        self,
+        from_agent: str,
+        client_id: str,
+        critical_insights: Dict[str, Any]
+    ):
+        """Broadcast critical insights to all agents"""
+        try:
+            # Broadcast to all other agents
+            for agent_name in self.agents.keys():
+                if agent_name != from_agent:
+                    await self._share_insights_between_agents(
+                        from_agent, agent_name, client_id, critical_insights
+                    )
+
+            logger.info(f"Broadcasted critical insights from {from_agent} for client {client_id}")
+
+        except Exception as e:
+            logger.error(f"Error broadcasting critical insights: {e}")
+
+    def _get_agent_communication_stats(self) -> Dict[str, Any]:
+        """Get statistics about agent communication"""
+        try:
+            stats = {
+                "total_communications": 0,
+                "successful_communications": 0,
+                "failed_communications": 0,
+                "channel_usage": {},
+                "most_active_channel": None
+            }
+
+            # Calculate stats from communication channels
+            for channel_name, communications in self.communication_channels.items():
+                channel_count = len(communications)
+                stats["channel_usage"][channel_name] = channel_count
+                stats["total_communications"] += channel_count
+
+                successful = sum(1 for comm in communications if comm.get("success", False))
+                failed = channel_count - successful
+
+                stats["successful_communications"] += successful
+                stats["failed_communications"] += failed
+
+            # Find most active channel
+            if stats["channel_usage"]:
+                stats["most_active_channel"] = max(
+                    stats["channel_usage"].items(),
+                    key=lambda x: x[1]
+                )[0]
+
+            return stats
+
+        except Exception as e:
+            logger.error(f"Error getting agent communication stats: {e}")
+            return {"error": str(e)}
+
+    async def get_client_health(self, client_id: str) -> Optional[ClientHealthScore]:</search>
+</search_and_replace>
         """Get current health score for a specific client"""
         return self.health_scores.get(client_id)
 
