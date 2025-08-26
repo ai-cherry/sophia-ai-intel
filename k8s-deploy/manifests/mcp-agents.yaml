@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
       - name: mcp-agents
-        image: ghcr.io/ai-cherry/sophia-mcp-agents:latest
-        imagePullPolicy: Always
+        image: sophia-ai-intel-1-sophia-agents:latest
+        imagePullPolicy: Never
         ports:
         - containerPort: 8002
         env:
@@ -31,13 +31,11 @@ spec:
           value: "production"
         resources:
           requests:
-            cpu: 2
-            memory: "4Gi"
-            nvidia.com/gpu: 1
+            cpu: 500m
+            memory: "1Gi"
           limits:
-            cpu: 4
-            memory: "8Gi"
-            nvidia.com/gpu: 1
+            cpu: 1
+            memory: "2Gi"
         volumeMounts:
         - name: agents-storage
           mountPath: /data
@@ -45,8 +43,6 @@ spec:
       - name: agents-storage
         persistentVolumeClaim:
           claimName: mcp-agents-storage
-      imagePullSecrets:
-      - name: github-registry
 ---
 apiVersion: v1
 kind: Service

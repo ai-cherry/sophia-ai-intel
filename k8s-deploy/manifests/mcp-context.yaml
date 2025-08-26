@@ -21,7 +21,8 @@ spec:
     spec:
       containers:
       - name: mcp-context
-        image: sophia-ai-intel/mcp-context:latest
+        image: sophia-ai-intel-1-sophia-context:latest
+        imagePullPolicy: Never
         ports:
         - containerPort: 8080
           name: http
@@ -59,12 +60,11 @@ spec:
               key: REDIS_URL
         resources:
           limits:
-            cpu: 4
-            memory: 16Gi
-            nvidia.com/gpu: 1
+            cpu: 1
+            memory: "2Gi"
           requests:
-            cpu: 2
-            memory: 8Gi
+            cpu: 500m
+            memory: "1Gi"
         livenessProbe:
           httpGet:
             path: /healthz
