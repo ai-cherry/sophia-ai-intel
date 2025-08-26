@@ -1,0 +1,309 @@
+---
+# Traefik IngressRoute for www.sophia-intel.ai
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: sophia-main-ingress
+  namespace: sophia
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    # Root path - Dashboard
+    - match: Host(`www.sophia-intel.ai`) && PathPrefix(`/`)
+      kind: Rule
+      middlewares:
+        - name: sophia-security-headers
+        - name: sophia-rate-limit
+        - name: sophia-compression
+        - name: sophia-ssl-redirect
+      services:
+        - name: sophia-dashboard
+          port: 8080
+
+    # API routes
+    - match: Host(`www.sophia-intel.ai`) && PathPrefix(`/api/agents`)
+      kind: Rule
+      middlewares:
+        - name: sophia-security-headers
+        - name: sophia-rate-limit
+        - name: sophia-compression
+        - name: sophia-cors
+      services:
+        - name: mcp-agents
+          port: 8002
+
+    - match: Host(`www.sophia-intel.ai`) && PathPrefix(`/api/research`)
+      kind: Rule
+      middlewares:
+        - name: sophia-security-headers
+        - name: sophia-rate-limit
+        - name: sophia-compression
+        - name: sophia-cors
+      services:
+        - name: mcp-research
+          port: 8080
+
+    - match: Host(`www.sophia-intel.ai`) && PathPrefix(`/api/context`)
+      kind: Rule
+      middlewares:
+        - name: sophia-security-headers
+        - name: sophia-rate-limit
+        - name: sophia-compression
+        - name: sophia-cors
+      services:
+        - name: mcp-context
+          port: 8001
+
+    - match: Host(`www.sophia-intel.ai`) && PathPrefix(`/api/github`)
+      kind: Rule
+      middlewares:
+        - name: sophia-security-headers
+        - name: sophia-rate-limit
+        - name: sophia-compression
+        - name: sophia-cors
+      services:
+        - name: mcp-github
+          port: 8005
+
+    - match: Host(`www.sophia-intel.ai`) && PathPrefix(`/api/business`)
+      kind: Rule
+      middlewares:
+        - name: sophia-security-headers
+        - name: sophia-rate-limit
+        - name: sophia-compression
+        - name: sophia-cors
+      services:
+        - name: mcp-business
+          port: 8080
+
+    - match: Host(`www.sophia-intel.ai`) && PathPrefix(`/api/hubspot`)
+      kind: Rule
+      middlewares:
+        - name: sophia-security-headers
+        - name: sophia-rate-limit
+        - name: sophia-compression
+        - name: sophia-cors
+      services:
+        - name: mcp-hubspot
+          port: 8004
+
+    - match: Host(`www.sophia-intel.ai`) && PathPrefix(`/api/lambda`)
+      kind: Rule
+      middlewares:
+        - name: sophia-security-headers
+        - name: sophia-rate-limit
+        - name: sophia-compression
+        - name: sophia-cors
+      services:
+        - name: mcp-lambda
+          port: 8080
+
+    - match: Host(`www.sophia-intel.ai`) && PathPrefix(`/api/orchestrator`)
+      kind: Rule
+      middlewares:
+        - name: sophia-security-headers
+        - name: sophia-rate-limit
+        - name: sophia-compression
+        - name: sophia-cors
+      services:
+        - name: orchestrator
+          port: 3001
+
+    - match: Host(`www.sophia-intel.ai`) && PathPrefix(`/api/sonic`)
+      kind: Rule
+      middlewares:
+        - name: sophia-security-headers
+        - name: sophia-rate-limit
+        - name: sophia-compression
+        - name: sophia-cors
+      services:
+        - name: sonic-ai
+          port: 8080
+
+    # Health check endpoint
+    - match: Host(`www.sophia-intel.ai`) && Path(`/health`)
+      kind: Rule
+      services:
+        - name: sophia-dashboard
+          port: 8080
+
+    - match: Host(`www.sophia-intel.ai`) && Path(`/healthz`)
+      kind: Rule
+      services:
+        - name: sophia-dashboard
+          port: 8080
+
+    # Let's Encrypt ACME challenge
+    - match: Host(`www.sophia-intel.ai`) && PathPrefix(`/.well-known/acme-challenge/`)
+      kind: Rule
+      services:
+        - name: cert-manager-acme-challenge
+          port: 8089
+
+  tls:
+    secretName: sophia-tls-secret
+    certResolver: letsencrypt
+
+---
+# HTTP to HTTPS redirect
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: sophia-redirect-to-https
+  namespace: sophia
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`www.sophia-intel.ai`)
+      kind: Rule
+      middlewares:
+        - name: sophia-ssl-redirect
+      services:
+        - name: sophia-dashboard
+          port: 8080
+  tls: {}
+
+---
+# Security Headers Middleware
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: sophia-security-headers
+  namespace: sophia
+spec:
+  headers:
+    customRequestHeaders:
+      X-Forwarded-Proto: "https"
+      X-Real-IP: ""
+    customResponseHeaders:
+      X-Frame-Options: "DENY"
+      X-Content-Type-Options: "nosniff"
+      X-XSS-Protection: "1; mode=block"
+      Referrer-Policy: "strict-origin-when-cross-origin"
+      Permissions-Policy: "geolocation=(), microphone=(), camera=()"
+      Strict-Transport-Security: "max-age=31536000; includeSubDomains; preload"
+      Content-Security-Policy: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://api.sophia-intel.ai wss://api.sophia-intel.ai;"
+
+---
+# Rate Limiting Middleware
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: sophia-rate-limit
+  namespace: sophia
+spec:
+  rateLimit:
+    burst: 100
+    average: 50
+
+---
+# SSL Redirect Middleware
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: sophia-ssl-redirect
+  namespace: sophia
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true
+
+---
+# Compression Middleware
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: sophia-compression
+  namespace: sophia
+spec:
+  compress: {}
+
+---
+# CORS Middleware
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: sophia-cors
+  namespace: sophia
+spec:
+  headers:
+    accessControlAllowMethods:
+      - "GET"
+      - "POST"
+      - "PUT"
+      - "DELETE"
+      - "OPTIONS"
+    accessControlAllowOriginList:
+      - "https://www.sophia-intel.ai"
+    accessControlAllowHeaders:
+      - "Content-Type"
+      - "Authorization"
+      - "X-Requested-With"
+      - "Accept"
+      - "Origin"
+    accessControlMaxAge: 86400
+
+---
+# Certificate Resolver for Let's Encrypt
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: admin@sophia-intel.ai
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+      - http01:
+          ingress:
+            class: traefik
+
+---
+# Service for ACME challenges
+apiVersion: v1
+kind: Service
+metadata:
+  name: cert-manager-acme-challenge
+  namespace: sophia
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8089
+      targetPort: 8089
+      protocol: TCP
+  selector:
+    app: cert-manager-acme-challenge
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cert-manager-acme-challenge
+  namespace: sophia
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cert-manager-acme-challenge
+  template:
+    metadata:
+      labels:
+        app: cert-manager-acme-challenge
+    spec:
+      containers:
+        - name: acme-challenge
+          image: nginx:alpine
+          ports:
+            - containerPort: 8089
+          volumeMounts:
+            - name: challenge-data
+              mountPath: /usr/share/nginx/html
+      volumes:
+        - name: challenge-data
+          emptyDir: {}

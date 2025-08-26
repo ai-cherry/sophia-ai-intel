@@ -1,0 +1,154 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sophia-main-ingress
+  namespace: sophia
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    # Security headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      add_header X-Frame-Options "DENY" always;
+      add_header X-Content-Type-Options "nosniff" always;
+      add_header X-XSS-Protection "1; mode=block" always;
+      add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+      add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
+      add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.sophia-intel.ai wss://api.sophia-intel.ai;" always;
+    # Rate limiting
+    nginx.ingress.kubernetes.io/rate-limit: "10"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    # CORS Configuration
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://www.sophia-intel.ai"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - www.sophia-intel.ai
+    secretName: sophia-tls-secret
+  rules:
+  - host: www.sophia-intel.ai
+    http:
+      paths:
+      # Frontend routes - Dashboard
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-dashboard
+            port:
+              number: 8080
+
+      # API routes for all MCP services
+      - path: /api/research
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-research
+            port:
+              number: 8080
+
+      - path: /api/context
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-context-green
+            port:
+              number: 8081
+
+      - path: /api/github
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-github-green
+            port:
+              number: 8082
+
+      - path: /api/business
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-business-green
+            port:
+              number: 8083
+
+      - path: /api/lambda
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-lambda-green
+            port:
+              number: 8084
+
+      - path: /api/hubspot
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-hubspot-green
+            port:
+              number: 8085
+
+      - path: /api/agents
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-agents
+            port:
+              number: 8002
+
+      - path: /api/orchestrator
+        pathType: Prefix
+        backend:
+          service:
+            name: orchestrator-green
+            port:
+              number: 3001
+
+      - path: /api/sonic
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-research-green
+            port:
+              number: 8080
+
+      # Health check endpoints
+      - path: /health
+        pathType: Exact
+        backend:
+          service:
+            name: sophia-dashboard
+            port:
+              number: 8080
+
+      - path: /healthz
+        pathType: Exact
+        backend:
+          service:
+            name: sophia-dashboard
+            port:
+              number: 8080
+
+      - path: /api/health
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-research
+            port:
+              number: 8080
+
+      # Let's Encrypt ACME challenge
+      - path: /.well-known/acme-challenge/
+        pathType: Prefix
+        backend:
+          service:
+            name: cert-manager-acme-challenge
+            port:
+              number: 8089

@@ -1,0 +1,628 @@
+# Sophia AI Production Nginx Configuration with SSL
+# Unified reverse proxy for Lambda Labs + Kubernetes deployment
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    # Logging format
+    log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                    '$status $body_bytes_sent "$http_referer" '
+                    '"$http_user_agent" "$http_x_forwarded_for" '
+                    'rt=$request_time uct="$upstream_connect_time" '
+                    'uht="$upstream_header_time" urt="$upstream_response_time"';
+
+    access_log /var/log/nginx/access.log main;
+    error_log /var/log/nginx/error.log;
+
+    # Performance optimizations
+    sendfile        on;
+    tcp_nopush      on;
+    tcp_nodelay     on;
+    keepalive_timeout 65;
+    types_hash_max_size 2048;
+    client_max_body_size 100M;
+
+    # Gzip compression
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_types
+        text/plain
+        text/css
+        text/xml
+        text/javascript
+        application/javascript
+        application/xml+rss
+        application/json;
+
+    # Rate limiting
+    limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
+    limit_req_zone $binary_remote_addr zone=health:10m rate=1r/s;
+
+    # Upstream servers
+    upstream agno_coordinator {
+        server agno-coordinator:8080;
+        keepalive 32;
+    }
+
+    upstream mcp_agents {
+        server mcp-agents:8000;
+        keepalive 32;
+    }
+
+    upstream mcp_context {
+        server mcp-context:8080;
+        keepalive 32;
+    }
+
+    upstream mcp_github {
+        server mcp-github:8080;
+        keepalive 32;
+    }
+
+    upstream mcp_hubspot {
+        server mcp-hubspot:8080;
+        keepalive 32;
+    }
+
+    upstream mcp_lambda {
+        server mcp-lambda:8080;
+        keepalive 32;
+    }
+
+    upstream mcp_research {
+        server mcp-research:8080;
+        keepalive 32;
+    }
+
+    upstream mcp_business {
+        server mcp-business:8080;
+        keepalive 32;
+    }
+
+    upstream prometheus {
+        server prometheus:9090;
+        keepalive 32;
+    }
+
+    upstream grafana {
+        server grafana:3000;
+        keepalive 32;
+    }
+
+    upstream loki {
+        server loki:3100;
+        keepalive 32;
+    }
+
+    # HTTP to HTTPS redirect
+    server {
+        listen 80 default_server;
+        server_name _;
+        return 301 https://$host$request_uri;
+    }
+
+    # Production server block (HTTP) - Redirect to HTTPS
+    server {
+        listen 80;
+        server_name www.sophia-intel.ai sophia-intel.ai;
+
+        # Health check endpoint (no rate limiting)
+        location /health {
+            access_log off;
+            return 200 "healthy\n";
+            add_header Content-Type text/plain;
+        }
+
+        # Let's Encrypt ACME challenge location
+        location /.well-known/acme-challenge/ {
+            root /var/www/html;
+            try_files $uri =404;
+            access_log off;
+        }
+
+        # Redirect all HTTP traffic to HTTPS
+        location / {
+            return 301 https://$host$request_uri;
+        }
+    }
+
+    # IP-based access server block (HTTP)
+    server {
+        listen 80;
+        server_name 192.222.51.223;
+
+        # Health check endpoint (no rate limiting)
+        location /health {
+            access_log off;
+            return 200 "healthy\n";
+            add_header Content-Type text/plain;
+        }
+
+        # Root location - serve main application page
+        location / {
+            proxy_pass http://agno_coordinator/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_connect_timeout 30s;
+            proxy_send_timeout 30s;
+            proxy_read_timeout 30s;
+
+            # Security headers
+            add_header X-Frame-Options DENY;
+            add_header X-Content-Type-Options nosniff;
+            add_header X-XSS-Protection "1; mode=block";
+        }
+
+        # API endpoints with rate limiting
+        location /api/ {
+            limit_req zone=api burst=20 nodelay;
+            proxy_pass http://agno_coordinator/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_connect_timeout 30s;
+            proxy_send_timeout 30s;
+            proxy_read_timeout 30s;
+        }
+
+        # MCP service endpoints
+        location /agents/ {
+            limit_req zone=api burst=20 nodelay;
+            proxy_pass http://mcp_agents/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /context/ {
+            limit_req zone=api burst=20 nodelay;
+            proxy_pass http://mcp_context/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /github/ {
+            limit_req zone=api burst=20 nodelay;
+            proxy_pass http://mcp_github/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /hubspot/ {
+            limit_req zone=api burst=20 nodelay;
+            proxy_pass http://mcp_hubspot/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /lambda/ {
+            limit_req zone=api burst=20 nodelay;
+            proxy_pass http://mcp_lambda/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /research/ {
+            limit_req zone=api burst=20 nodelay;
+            proxy_pass http://mcp_research/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /business/ {
+            limit_req zone=api burst=20 nodelay;
+            proxy_pass http://mcp_business/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # Monitoring endpoints (no rate limiting)
+        location /prometheus/ {
+            proxy_pass http://prometheus/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /grafana/ {
+            proxy_pass http://grafana/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+
+            # WebSocket support for Grafana
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+        }
+
+        location /loki/ {
+            proxy_pass http://loki/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # Security headers
+        add_header X-Frame-Options DENY;
+        add_header X-Content-Type-Options nosniff;
+        add_header X-XSS-Protection "1; mode=block";
+
+        # Error pages
+        error_page 404 /404.html;
+        error_page 500 502 503 504 /50x.html;
+    }
+
+    # SSL/TLS configuration
+    server {
+        listen 443 ssl http2;
+        server_name www.sophia-intel.ai sophia-intel.ai;
+
+        # SSL certificate configuration
+        ssl_certificate /etc/ssl/certs/www.sophia-intel.ai.crt;
+        ssl_certificate_key /etc/ssl/certs/www.sophia-intel.ai.key;
+
+        # SSL protocols and ciphers
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-CHACHA20-POLY1305;
+        ssl_prefer_server_ciphers off;
+
+        # SSL session settings
+        ssl_session_cache shared:SSL:10m;
+        ssl_session_timeout 10m;
+        ssl_session_tickets off;
+
+        # HSTS (HTTP Strict Transport Security)
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
+
+        # OCSP stapling
+        ssl_stapling on;
+        ssl_stapling_verify on;
+        resolver 8.8.8.8 8.8.4.4 valid=300s;
+        resolver_timeout 5s;
+
+        # Root location - serve main application page
+        location / {
+            proxy_pass http://agno_coordinator/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_connect_timeout 30s;
+            proxy_send_timeout 30s;
+            proxy_read_timeout 30s;
+
+            # Security headers
+            add_header X-Frame-Options DENY;
+            add_header X-Content-Type-Options nosniff;
+            add_header X-XSS-Protection "1; mode=block";
+        }
+
+        # API endpoints with rate limiting
+        location /api/ {
+            limit_req zone=api burst=20 nodelay;
+            proxy_pass http://agno_coordinator/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_connect_timeout 30s;
+            proxy_send_timeout 30s;
+            proxy_read_timeout 30s;
+        }
+
+        # MCP service endpoints
+        location /agents/ {
+            limit_req zone=api burst=20 nodelay;
+            proxy_pass http://mcp_agents/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /context/ {
+            limit_req zone=api burst=20 nodelay;
+            proxy_pass http://mcp_context/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /github/ {
+            limit_req zone=api burst=20 nodelay;
+            proxy_pass http://mcp_github/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /hubspot/ {
+            limit_req zone=api burst=20 nodelay;
+            proxy_pass http://mcp_hubspot/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /lambda/ {
+            limit_req zone=api burst=20 nodelay;
+            proxy_pass http://mcp_lambda/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /research/ {
+            limit_req zone=api burst=20 nodelay;
+            proxy_pass http://mcp_research/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /business/ {
+            limit_req zone=api burst=20 nodelay;
+            proxy_pass http://mcp_business/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # Monitoring endpoints (no rate limiting)
+        location /prometheus/ {
+            proxy_pass http://prometheus/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /grafana/ {
+            proxy_pass http://grafana/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+
+            # WebSocket support for Grafana
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+        }
+
+        location /loki/ {
+            proxy_pass http://loki/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # Health check endpoint (no rate limiting)
+        location /health {
+            access_log off;
+            return 200 "healthy\\n";
+            add_header Content-Type text/plain;
+        }
+
+        # Static file serving (if needed in future)
+        location /static/ {
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+        }
+
+        # Security headers
+        add_header X-Frame-Options DENY;
+        add_header X-Content-Type-Options nosniff;
+        add_header X-XSS-Protection "1; mode=block";
+
+        # Error pages
+        error_page 404 /404.html;
+        error_page 500 502 503 504 /50x.html;
+    }
+
+    # IP-based access server block (HTTPS)
+    server {
+        listen 443 ssl http2;
+        server_name 192.222.51.223;
+
+        # Use self-signed certificate for IP access (or you can use a proper cert)
+        ssl_certificate /etc/ssl/certs/sophia-intel.ai.crt;
+        ssl_certificate_key /etc/ssl/certs/sophia-intel.ai.key;
+
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-CHACHA20-POLY1305;
+        ssl_prefer_server_ciphers off;
+
+        ssl_session_cache shared:SSL:10m;
+        ssl_session_timeout 10m;
+        ssl_session_tickets off;
+
+        # HSTS (HTTP Strict Transport Security)
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
+
+        # OCSP stapling
+        ssl_stapling on;
+        ssl_stapling_verify on;
+        resolver 8.8.8.8 8.8.4.4 valid=300s;
+        resolver_timeout 5s;
+
+        # Root location - serve main application page
+        location / {
+            proxy_pass http://agno_coordinator/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_connect_timeout 30s;
+            proxy_send_timeout 30s;
+            proxy_read_timeout 30s;
+
+            # Security headers
+            add_header X-Frame-Options DENY;
+            add_header X-Content-Type-Options nosniff;
+            add_header X-XSS-Protection "1; mode=block";
+        }
+
+        # API endpoints with rate limiting
+        location /api/ {
+            limit_req zone=api burst=20 nodelay;
+            proxy_pass http://agno_coordinator/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_connect_timeout 30s;
+            proxy_send_timeout 30s;
+            proxy_read_timeout 30s;
+        }
+
+        # MCP service endpoints
+        location /agents/ {
+            limit_req zone=api burst=20 nodelay;
+            proxy_pass http://mcp_agents/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /context/ {
+            limit_req zone=api burst=20 nodelay;
+            proxy_pass http://mcp_context/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /github/ {
+            limit_req zone=api burst=20 nodelay;
+            proxy_pass http://mcp_github/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /hubspot/ {
+            limit_req zone=api burst=20 nodelay;
+            proxy_pass http://mcp_hubspot/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /lambda/ {
+            limit_req zone=api burst=20 nodelay;
+            proxy_pass http://mcp_lambda/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /research/ {
+            limit_req zone=api burst=20 nodelay;
+            proxy_pass http://mcp_research/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /business/ {
+            limit_req zone=api burst=20 nodelay;
+            proxy_pass http://mcp_business/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # Monitoring endpoints (no rate limiting)
+        location /prometheus/ {
+            proxy_pass http://prometheus/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /grafana/ {
+            proxy_pass http://grafana/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+
+            # WebSocket support for Grafana
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+        }
+
+        location /loki/ {
+            proxy_pass http://loki/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # Health check endpoint (no rate limiting)
+        location /health {
+            access_log off;
+            return 200 "healthy\\n";
+            add_header Content-Type text/plain;
+        }
+
+        # Static file serving (if needed in future)
+        location /static/ {
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+        }
+
+        # Security headers
+        add_header X-Frame-Options DENY;
+        add_header X-Content-Type-Options nosniff;
+        add_header X-XSS-Protection "1; mode=block";
+
+        # Error pages
+        error_page 404 /404.html;
+        error_page 500 502 503 504 /50x.html;
+    }
+}

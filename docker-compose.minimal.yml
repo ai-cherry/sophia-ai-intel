@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  # ===========================================
+  # Core AI Orchestration Layer
+  # ===========================================
+
+  agno-coordinator:
+    build:
+      context: ./services/agno-coordinator
+      dockerfile: Dockerfile
+    container_name: agno-coordinator
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production
+      - LOG_LEVEL=info
+      - REDIS_URL=redis://redis:6379
+      - QDRANT_URL=http://qdrant:6333
+    volumes:
+      - ./services/agno-coordinator:/app
+    depends_on:
+      - redis
+      - qdrant
+    networks:
+      - sophia-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ===========================================
+  # Infrastructure Services
+  # ===========================================
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - sophia-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  qdrant:
+    image: qdrant/qdrant:v1.7.4
+    container_name: qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant-data:/qdrant/storage
+    networks:
+      - sophia-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ===========================================
+  # Load Balancer / Reverse Proxy
+  # ===========================================
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf.ssl:/etc/nginx/nginx.conf
+      - ./ssl:/etc/ssl/certs
+      - ./acme-challenge:/var/www/html/.well-known/acme-challenge
+    networks:
+      - sophia-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  redis-data:
+  qdrant-data:
+
+networks:
+  sophia-network:
+    driver: bridge

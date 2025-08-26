@@ -1,0 +1,278 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sophia-main-ingress-ssl
+  namespace: sophia
+  annotations:
+    # Certificate management
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+
+    # SSL/TLS Configuration
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+
+    # Security Headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      # Security headers
+      add_header X-Frame-Options "DENY" always;
+      add_header X-Content-Type-Options "nosniff" always;
+      add_header X-XSS-Protection "1; mode=block" always;
+      add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+      add_header Permissions-Policy "geolocation=(), microphone=(), camera=()" always;
+
+      # HSTS (HTTP Strict Transport Security)
+      add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
+
+      # Content Security Policy (adjust as needed)
+      add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://api.sophia-intel.ai wss://api.sophia-intel.ai;" always;
+
+    # SSL Configuration
+    nginx.ingress.kubernetes.io/ssl-protocols: "TLSv1.2 TLSv1.3"
+    nginx.ingress.kubernetes.io/ssl-ciphers: "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-CHACHA20-POLY1305"
+
+    # Performance and Security
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/rate-limit: "10"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+
+    # CORS Configuration
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://www.sophia-intel.ai"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization"
+
+    # Compression
+    nginx.ingress.kubernetes.io/enable-gzip: "true"
+
+    # Real IP Configuration
+    nginx.ingress.kubernetes.io/real-ip-header: "X-Forwarded-For"
+    nginx.ingress.kubernetes.io/set-real-ip-from: "0.0.0.0/0"
+
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - www.sophia-intel.ai
+    - api.sophia-intel.ai
+    secretName: sophia-tls
+  rules:
+  # Main application routes
+  - host: www.sophia-intel.ai
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-dashboard
+            port:
+              number: 3000
+
+      # API routes with specific rate limiting
+      - path: /api/v1/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: agno-coordinator
+            port:
+              number: 8080
+
+      # MCP service routes
+      - path: /agents/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-agents
+            port:
+              number: 8000
+
+      - path: /context/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-context
+            port:
+              number: 8080
+
+      - path: /github/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-github
+            port:
+              number: 8080
+
+      - path: /hubspot/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-hubspot
+            port:
+              number: 8080
+
+      - path: /lambda/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-lambda
+            port:
+              number: 8080
+
+      - path: /research/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-research
+            port:
+              number: 8080
+
+      - path: /business/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-business
+            port:
+              number: 8080
+
+      # Health check endpoint
+      - path: /health
+        pathType: Exact
+        backend:
+          service:
+            name: sophia-dashboard
+            port:
+              number: 3000
+
+      # Let's Encrypt ACME challenge
+      - path: /.well-known/acme-challenge/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: cert-manager-acme-challenge
+            port:
+              number: 8089
+
+  # API subdomain
+  - host: api.sophia-intel.ai
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: agno-coordinator
+            port:
+              number: 8080
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sophia-monitoring-ingress-ssl
+  namespace: monitoring
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: monitoring-auth
+    nginx.ingress.kubernetes.io/auth-realm: 'Sophia AI Monitoring'
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      # Security headers for monitoring
+      add_header X-Frame-Options "DENY" always;
+      add_header X-Content-Type-Options "nosniff" always;
+      add_header X-XSS-Protection "1; mode=block" always;
+      add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - monitoring.sophia-intel.ai
+    - prometheus.sophia-intel.ai
+    - grafana.sophia-intel.ai
+    secretName: monitoring-tls
+  rules:
+  - host: prometheus.sophia-intel.ai
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: prometheus-service
+            port:
+              number: 9090
+
+  - host: grafana.sophia-intel.ai
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: grafana-service
+            port:
+              number: 3000
+
+  - host: monitoring.sophia-intel.ai
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: grafana-service
+            port:
+              number: 3000
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sophia-jaeger-ingress-ssl
+  namespace: monitoring
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      # Security headers for Jaeger
+      add_header X-Frame-Options "DENY" always;
+      add_header X-Content-Type-Options "nosniff" always;
+      add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - jaeger.sophia-intel.ai
+    secretName: monitoring-tls
+  rules:
+  - host: jaeger.sophia-intel.ai
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: jaeger-query
+            port:
+              number: 16686
+
+---
+# Service for ACME challenges (if needed)
+apiVersion: v1
+kind: Service
+metadata:
+  name: cert-manager-acme-challenge
+  namespace: sophia
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8089
+    targetPort: 8089
+    protocol: TCP
+  selector:
+    app: cert-manager-acme-challenge

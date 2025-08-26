@@ -180,7 +180,7 @@ export class HealthChecker {
     const configValidation = configManager.validateConfig();
     checks.push({
       name: 'Configuration',
-      status: configValidation.valid ? 'healthy' : 'unhealthy',
+      status: (configValidation.valid ? 'healthy' : 'unhealthy') as 'healthy' | 'unhealthy' | 'degraded',
       message: configValidation.valid ? 'Configuration valid' : 'Configuration invalid',
       details: configValidation.errors
     });
@@ -193,7 +193,7 @@ export class HealthChecker {
     const flagValidation = featureFlags.validateConfiguration();
     checks.push({
       name: 'Feature Flags',
-      status: flagValidation.valid ? 'healthy' : 'degraded',
+      status: (flagValidation.valid ? 'healthy' : 'degraded') as 'healthy' | 'unhealthy' | 'degraded',
       message: flagValidation.valid ? 'Feature flags valid' : 'Feature flag issues detected',
       details: flagValidation.issues
     });
@@ -206,7 +206,7 @@ export class HealthChecker {
     const redisHealth = await this.checkRedisHealth();
     checks.push({
       name: 'Redis',
-      status: redisHealth.healthy ? 'healthy' : 'unhealthy',
+      status: (redisHealth.healthy ? 'healthy' : 'unhealthy') as 'healthy' | 'unhealthy' | 'degraded',
       message: redisHealth.healthy ? 'Redis connected' : 'Redis connection failed',
       details: redisHealth.error
     });
@@ -219,7 +219,7 @@ export class HealthChecker {
     const memoryHealth = this.checkMemoryHealth();
     checks.push({
       name: 'Memory Usage',
-      status: memoryHealth.healthy ? 'healthy' : 'degraded',
+      status: (memoryHealth.healthy ? 'healthy' : 'degraded') as 'healthy' | 'unhealthy' | 'degraded',
       message: memoryHealth.healthy ? 'Memory usage normal' : 'High memory usage detected',
       details: { usage: memoryHealth.usage }
     });

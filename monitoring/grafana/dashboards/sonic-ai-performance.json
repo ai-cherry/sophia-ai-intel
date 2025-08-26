@@ -1,0 +1,228 @@
+{
+  "dashboard": {
+    "title": "Sonic AI Performance Dashboard",
+    "tags": ["sonic-ai", "reasoning", "performance", "ai"],
+    "timezone": "UTC",
+    "panels": [
+      {
+        "title": "Sonic AI Service Health",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "up{service_name=\"sonic-ai\"}",
+            "legendFormat": "Sonic AI Status",
+            "datasource": "Prometheus"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0}
+      },
+      {
+        "title": "Active Requests",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sonic_ai_active_requests",
+            "legendFormat": "Active Requests",
+            "datasource": "Prometheus"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0}
+      },
+      {
+        "title": "Average Response Time",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sonic_ai_avg_response_time_ms",
+            "legendFormat": "Response Time (ms)",
+            "datasource": "Prometheus"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0}
+      },
+      {
+        "title": "Total Requests Processed",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sonic_ai_total_requests_processed",
+            "legendFormat": "Total Requests",
+            "datasource": "Prometheus"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0}
+      },
+      {
+        "title": "Sonic AI Performance Metrics",
+        "type": "row",
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 4}
+      },
+      {
+        "title": "CPU Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(container_cpu_usage_seconds_total{service_name=\"sonic-ai\"}[5m]) * 100",
+            "legendFormat": "CPU %",
+            "datasource": "Prometheus"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 8, "x": 0, "y": 5}
+      },
+      {
+        "title": "Memory Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "container_memory_usage_bytes{service_name=\"sonic-ai\"}",
+            "legendFormat": "Memory Bytes",
+            "datasource": "Prometheus"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 8, "x": 8, "y": 5}
+      },
+      {
+        "title": "GPU Utilization",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "DCGM_FI_DEV_GPU_UTIL{service_name=\"sonic-ai\"}",
+            "legendFormat": "GPU %",
+            "datasource": "Prometheus"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 8, "x": 16, "y": 5}
+      },
+      {
+        "title": "AI Reasoning Metrics",
+        "type": "row",
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 13}
+      },
+      {
+        "title": "Requests Per Second",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(sonic_ai_total_requests_processed[1m])",
+            "legendFormat": "Requests/sec",
+            "datasource": "Prometheus"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 14}
+      },
+      {
+        "title": "Response Time Distribution",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.5, rate(sonic_ai_response_time_bucket[5m]))",
+            "legendFormat": "50th percentile",
+            "datasource": "Prometheus"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(sonic_ai_response_time_bucket[5m]))",
+            "legendFormat": "95th percentile",
+            "datasource": "Prometheus"
+          },
+          {
+            "expr": "histogram_quantile(0.99, rate(sonic_ai_response_time_bucket[5m]))",
+            "legendFormat": "99th percentile",
+            "datasource": "Prometheus"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 14}
+      },
+      {
+        "title": "Code Generation Success Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(sonic_ai_code_generation_success_total[5m]) / rate(sonic_ai_code_generation_total[5m]) * 100",
+            "legendFormat": "Success Rate %",
+            "datasource": "Prometheus"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 8, "x": 0, "y": 22}
+      },
+      {
+        "title": "Reasoning Confidence Score",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sonic_ai_reasoning_confidence_avg",
+            "legendFormat": "Confidence Score",
+            "datasource": "Prometheus"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 8, "x": 8, "y": 22}
+      },
+      {
+        "title": "MCP Integration Health",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sonic_ai_mcp_integration_health",
+            "legendFormat": "{{mcp_service}}",
+            "datasource": "Prometheus"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 8, "x": 16, "y": 22}
+      },
+      {
+        "title": "Agentic Coding Operations",
+        "type": "row",
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 30}
+      },
+      {
+        "title": "Code Generation Requests",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(sonic_ai_code_generation_total[5m])",
+            "legendFormat": "Code Generation",
+            "datasource": "Prometheus"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 8, "x": 0, "y": 31}
+      },
+      {
+        "title": "Reasoning Requests",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(sonic_ai_reasoning_total[5m])",
+            "legendFormat": "Reasoning",
+            "datasource": "Prometheus"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 8, "x": 8, "y": 31}
+      },
+      {
+        "title": "Optimization Requests",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(sonic_ai_optimization_total[5m])",
+            "legendFormat": "Optimization",
+            "datasource": "Prometheus"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 8, "x": 16, "y": 31}
+      },
+      {
+        "title": "Error Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(sonic_ai_errors_total[5m]) / rate(sonic_ai_total_requests_processed[5m]) * 100",
+            "legendFormat": "Error Rate %",
+            "datasource": "Prometheus"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 39}
+      }
+    ],
+    "time": {"from": "now-1h", "to": "now"},
+    "refresh": "10s"
+  }
+}

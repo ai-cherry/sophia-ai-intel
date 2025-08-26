@@ -1,0 +1,12 @@
+{
+  "timestamp": "2025-08-26T07:25:03-07:00",
+  "summary": {
+    "infrastructure_healthy": 3,
+    "infrastructure_total": 3,
+    "services_healthy": 1,
+    "services_total": 6,
+    "infrastructure_percent": 100,
+    "services_percent": 16,
+    "overall_result": 0
+  }
+}

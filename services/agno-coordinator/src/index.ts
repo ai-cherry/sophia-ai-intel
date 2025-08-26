@@ -109,6 +109,7 @@ class Server {
         // Route the request
         const result = await agnosticCoordinator.routeRequest(request);
         res.json(result);
+        return;
 
       } catch (error) {
         console.error('Request routing error:', error);
@@ -117,6 +118,7 @@ class Server {
           message: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString()
         });
+        return;
       }
     });
 
@@ -154,11 +156,13 @@ class Server {
           enabled,
           timestamp: new Date().toISOString()
         });
+        return;
       } catch (error) {
         res.status(500).json({
           error: 'Failed to update feature flag',
           timestamp: new Date().toISOString()
         });
+        return;
       }
     });
 
@@ -227,6 +231,134 @@ class Server {
         }
       });
     }
+
+    // Main landing page
+    this.app.get('/', (_req, res) => {
+      const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sophia AI - Intelligent Enterprise Solutions</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            text-align: center;
+        }
+        .hero {
+            padding: 4rem 0;
+        }
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+        .subtitle {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+        .status {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2rem;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+        .services {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+        .service-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 1rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .service-card h3 {
+            margin-top: 0;
+            font-size: 1.5rem;
+        }
+        .health-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4CAF50;
+            margin-left: 0.5rem;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .footer {
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>🧠 Sophia AI</h1>
+            <p class="subtitle">Intelligent Enterprise Solutions Platform</p>
+            <div class="status">
+                System Status: Operational
+                <span class="health-indicator"></span>
+            </div>
+        </div>
+
+        <div class="services">
+            <div class="service-card">
+                <h3>🤖 AI Coordinator</h3>
+                <p>Intelligent request routing and coordination across AI agents</p>
+            </div>
+            <div class="service-card">
+                <h3>📊 Business Intelligence</h3>
+                <p>Advanced analytics and insights for sales and client management</p>
+            </div>
+            <div class="service-card">
+                <h3>🔧 MCP Services</h3>
+                <p>Multi-Context Protocol integration for external tools and platforms</p>
+            </div>
+            <div class="service-card">
+                <h3>📈 Monitoring</h3>
+                <p>Real-time system monitoring and performance analytics</p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>© 2025 Sophia AI - Enterprise-grade AI solutions</p>
+            <p>Status: <a href="/healthz" style="color: white; text-decoration: none;">Health Check</a> |
+               <a href="/api/" style="color: white; text-decoration: none;">API Docs</a> |
+               <a href="/grafana/" style="color: white; text-decoration: none;">Monitoring</a></p>
+        </div>
+    </div>
+</body>
+</html>`;
+      res.setHeader('Content-Type', 'text/html');
+      res.send(html);
+    });
 
     // 404 handler
     this.app.use('*', (_req, res) => {

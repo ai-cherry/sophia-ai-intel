@@ -61,7 +61,7 @@ CREATE TABLE knowledge (
     type knowledge_type DEFAULT 'document',
     source_url VARCHAR(1000),
     metadata JSONB DEFAULT '{}',
-    embedding VECTOR(1536), -- OpenAI ada-002 dimensions
+    -- embedding VECTOR(1536), -- OpenAI ada-002 dimensions - requires pgvector extension
     created_by UUID REFERENCES users(id),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()

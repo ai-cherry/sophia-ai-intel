@@ -1,0 +1,148 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-config
+  namespace: monitoring
+data:
+  alertmanager.yml: |
+    global:
+      smtp_smarthost: 'smtp.gmail.com:587'
+      smtp_from: 'alerts@sophia-intel.ai'
+      smtp_auth_username: 'alerts@sophia-intel.ai'
+      smtp_auth_password: 'password'
+      smtp_require_tls: true
+
+    route:
+      group_by: ['alertname']
+      group_wait: 10s
+      group_interval: 10s
+      repeat_interval: 1h
+      receiver: 'sophia-alerts'
+      routes:
+      - match:
+          severity: critical
+        receiver: 'sophia-critical'
+      - match:
+          severity: warning
+        receiver: 'sophia-warnings'
+
+    receivers:
+    - name: 'sophia-alerts'
+      slack_configs:
+      - api_url: 'SLACK_WEBHOOK_URL'
+        channel: '#sophia-alerts'
+        title: '{{ .GroupLabels.alertname }}'
+        text: '{{ .CommonAnnotations.summary }}'
+        send_resolved: true
+      email_configs:
+      - to: 'admin@sophia-intel.ai'
+        subject: '{{ .GroupLabels.alertname }} - {{ .GroupLabels.severity }}'
+        body: '{{ .CommonAnnotations.description }}'
+        send_resolved: true
+
+    - name: 'sophia-critical'
+      slack_configs:
+      - api_url: 'SLACK_WEBHOOK_URL'
+        channel: '#sophia-critical'
+        title: '🚨 CRITICAL: {{ .GroupLabels.alertname }}'
+        text: '{{ .CommonAnnotations.summary }}'
+        send_resolved: true
+      email_configs:
+      - to: 'admin@sophia-intel.ai,devops@sophia-intel.ai'
+        subject: '🚨 CRITICAL: {{ .GroupLabels.alertname }}'
+        body: '{{ .CommonAnnotations.description }}'
+        send_resolved: true
+
+    - name: 'sophia-warnings'
+      slack_configs:
+      - api_url: 'SLACK_WEBHOOK_URL'
+        channel: '#sophia-warnings'
+        title: '⚠️ WARNING: {{ .GroupLabels.alertname }}'
+        text: '{{ .CommonAnnotations.summary }}'
+        send_resolved: true
+      email_configs:
+      - to: 'admin@sophia-intel.ai'
+        subject: '⚠️ WARNING: {{ .GroupLabels.alertname }}'
+        body: '{{ .CommonAnnotations.description }}'
+        send_resolved: true
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alertmanager
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alertmanager
+  template:
+    metadata:
+      labels:
+        app: alertmanager
+    spec:
+      containers:
+      - name: alertmanager
+        image: prom/alertmanager:latest
+        ports:
+        - containerPort: 9093
+          name: http
+        args:
+        - --config.file=/etc/alertmanager/alertmanager.yml
+        - --storage.path=/alertmanager
+        volumeMounts:
+        - name: config
+          mountPath: /etc/alertmanager
+        - name: storage
+          mountPath: /alertmanager
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+        livenessProbe:
+          httpGet:
+            path: /-/healthy
+            port: 9093
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /-/ready
+            port: 9093
+          initialDelaySeconds: 3
+          periodSeconds: 5
+      volumes:
+      - name: config
+        configMap:
+          name: alertmanager-config
+      - name: storage
+        persistentVolumeClaim:
+          claimName: alertmanager-storage
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: alertmanager
+  namespace: monitoring
+spec:
+  selector:
+    app: alertmanager
+  ports:
+  - port: 9093
+    targetPort: 9093
+  type: ClusterIP
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: alertmanager-storage
+  namespace: monitoring
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi

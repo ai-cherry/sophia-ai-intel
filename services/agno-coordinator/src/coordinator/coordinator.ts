@@ -144,7 +144,7 @@ export class AgnosticCoordinator extends EventEmitter {
 
     // Analyze request complexity
     const complexity = this.analyzeComplexity(request);
-    const confidence = this.calculateConfidence(request, complexity);
+    const confidence = this.calculateConfidence(complexity);
 
     // Determine routing based on complexity and confidence
     const shouldUseAGNO = complexity.estimatedComplexity !== 'low' &&
@@ -197,7 +197,7 @@ export class AgnosticCoordinator extends EventEmitter {
   /**
    * Calculate confidence score for routing decision
    */
-  private calculateConfidence(request: PipelineRequest, complexity: any): number {
+  private calculateConfidence(complexity: any): number {
     let confidence = 0.5; // Base confidence
 
     // Increase confidence based on complexity

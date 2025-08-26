@@ -1,0 +1,203 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-config
+  namespace: monitoring
+data:
+  grafana.ini: |
+    [server]
+    http_port = 3000
+    http_addr = 0.0.0.0
+
+    [security]
+    admin_user = admin
+    admin_password = sophia2024!
+
+    [auth.anonymous]
+    enabled = true
+    org_role = Viewer
+
+    [install_plugins]
+    grafana-piechart-panel,grafana-worldmap-panel
+
+    [log]
+    level = info
+    mode = console
+
+    [metrics]
+    enabled = true
+    basic_auth_username = admin
+    basic_auth_password = sophia2024!
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      containers:
+      - name: grafana
+        image: grafana/grafana:latest
+        ports:
+        - containerPort: 3000
+          name: http
+        env:
+        - name: GF_SECURITY_ADMIN_USER
+          valueFrom:
+            secretKeyRef:
+              name: monitoring-secrets
+              key: GF_SECURITY_ADMIN_USER
+        - name: GF_SECURITY_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: monitoring-secrets
+              key: GF_SECURITY_ADMIN_PASSWORD
+        volumeMounts:
+        - name: config
+          mountPath: /etc/grafana/grafana.ini
+          subPath: grafana.ini
+        - name: storage
+          mountPath: /var/lib/grafana
+        - name: dashboards
+          mountPath: /var/lib/grafana/dashboards
+        - name: datasources
+          mountPath: /etc/grafana/provisioning/datasources
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            cpu: 500m
+            memory: 1Gi
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+      volumes:
+      - name: config
+        configMap:
+          name: grafana-config
+      - name: storage
+        persistentVolumeClaim:
+          claimName: grafana-storage
+      - name: dashboards
+        configMap:
+          name: grafana-dashboards
+      - name: datasources
+        configMap:
+          name: grafana-datasources
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: monitoring
+spec:
+  selector:
+    app: grafana
+  ports:
+  - port: 3000
+    targetPort: 3000
+  type: ClusterIP
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-storage
+  namespace: monitoring
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+  namespace: monitoring
+data:
+  prometheus.yaml: |
+    apiVersion: 1
+    datasources:
+    - name: Prometheus
+      type: prometheus
+      access: proxy
+      url: http://prometheus:9090
+      isDefault: true
+      editable: true
+    - name: Loki
+      type: loki
+      access: proxy
+      url: http://loki:3100
+      editable: true
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  namespace: monitoring
+data:
+  sophia-overview.json: |
+    {
+      "dashboard": {
+        "title": "Sophia AI Overview",
+        "tags": ["sophia", "ai", "monitoring"],
+        "timezone": "UTC",
+        "panels": [
+          {
+            "title": "Service Health",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "up{namespace=\"sophia\"}",
+                "legendFormat": "{{pod}}"
+              }
+            ]
+          },
+          {
+            "title": "CPU Usage",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(container_cpu_usage_seconds_total{namespace=\"sophia\"}[5m])",
+                "legendFormat": "{{pod}}"
+              }
+            ]
+          },
+          {
+            "title": "Memory Usage",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "container_memory_usage_bytes{namespace=\"sophia\"}",
+                "legendFormat": "{{pod}}"
+              }
+            ]
+          }
+        ],
+        "time": {
+          "from": "now-1h",
+          "to": "now"
+        },
+        "refresh": "30s"
+      }
+    }

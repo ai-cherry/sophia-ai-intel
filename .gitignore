@@ -9,3 +9,31 @@
 *_ed25519
 *_ed25519.pub
 .env
+
+# SSH Keys - NEVER commit private keys
+lambda-ssh-key
+*-ssh-key
+id_*
+*ssh*
+
+# SSL Certificates and Keys - NEVER commit private keys
+ssl/*.key
+ssl/privkey.pem
+ssl/private.key
+ssl/*.p12
+ssl/*.pfx
+
+# Deployment Keys - NEVER commit private keys
+sophia-deployment-key
+sophia-deployment-key.pub
+*deployment-key
+
+# Certificate files that may contain private keys
+ssl/*.crt
+ssl/*.cert
+
+# Additional sensitive patterns
+*.pem
+*.key
+*_private*
+*private_key*
