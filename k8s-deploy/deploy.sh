@@ -14,6 +14,10 @@ NC='\033[0m' # No Color
 # Configuration
 NAMESPACE="sophia"
 DEPLOY_TIMEOUT="600s"
+PRODUCTION_TAG="v1.0.0"
+STABILITY_MODE=true
+HEALTH_CHECK_RETRIES=3
+ROLLBACK_ENABLED=true
 
 # Logging functions
 log_info() {
@@ -219,19 +223,117 @@ run_health_checks() {
     done
 }
 
+# Production readiness check
+production_readiness_check() {
+    log_info "Performing production readiness checks..."
+
+    # Check if we're using the production tag
+    if [ "$STABILITY_MODE" = true ]; then
+        log_info "Stability mode enabled - using production tag: $PRODUCTION_TAG"
+
+        # Verify production configurations exist
+        if [ ! -f "manifests/configmap-production.yaml" ]; then
+            log_error "Production ConfigMap not found"
+            exit 1
+        fi
+
+        if [ ! -f "manifests/ingress-enhanced-ssl.yaml" ]; then
+            log_error "Production SSL ingress not found"
+            exit 1
+        fi
+
+        # Check for security configurations
+        if [ ! -f "manifests/network-policies.yaml" ]; then
+            log_warning "Network policies not found - recommend adding for production"
+        fi
+
+        if [ ! -f "manifests/rbac.yaml" ]; then
+            log_warning "RBAC configuration not found - recommend adding for production"
+        fi
+    fi
+
+    log_success "Production readiness checks passed"
+}
+
+# Enhanced health check with retries
+run_enhanced_health_checks() {
+    log_info "Running enhanced health checks..."
+
+    local retry_count=0
+    local max_retries=$HEALTH_CHECK_RETRIES
+
+    while [ $retry_count -lt $max_retries ]; do
+        log_info "Health check attempt $((retry_count + 1))/$max_retries"
+
+        # Run basic health checks
+        run_health_checks
+
+        # Check if all pods are ready
+        local not_ready=$(kubectl get pods -n "$NAMESPACE" -o jsonpath='{.items[?(@.status.conditions[?(@.type=="Ready")].status!="True")].metadata.name}')
+
+        if [ -z "$not_ready" ]; then
+            log_success "All health checks passed"
+            return 0
+        else
+            log_warning "Pods not ready: $not_ready"
+            retry_count=$((retry_count + 1))
+
+            if [ $retry_count -lt $max_retries ]; then
+                log_info "Waiting 30 seconds before retry..."
+                sleep 30
+            fi
+        fi
+    done
+
+    log_error "Health checks failed after $max_retries attempts"
+    return 1
+}
+
+# Pre-deployment backup
+create_deployment_backup() {
+    if [ "$ROLLBACK_ENABLED" = true ]; then
+        log_info "Creating pre-deployment backup..."
+
+        # Backup current deployments
+        kubectl get deployments -n "$NAMESPACE" -o yaml > "backup-deployments-$(date +%Y%m%d-%H%M%S).yaml"
+        kubectl get services -n "$NAMESPACE" -o yaml > "backup-services-$(date +%Y%m%d-%H%M%S).yaml"
+        kubectl get configmaps -n "$NAMESPACE" -o yaml > "backup-configmaps-$(date +%Y%m%d-%H%M%S).yaml"
+
+        log_success "Pre-deployment backup created"
+    fi
+}
+
 # Main deployment function
 deploy() {
     log_info "Starting Sophia AI Kubernetes deployment..."
+    log_info "Production Tag: $PRODUCTION_TAG"
+    log_info "Namespace: $NAMESPACE"
+    log_info "Stability Mode: $STABILITY_MODE"
 
     check_prerequisites
+    production_readiness_check
     create_namespace
+    create_deployment_backup
     apply_configuration
     wait_for_deployments
     wait_for_statefulsets
+
+    # Run enhanced health checks
+    if ! run_enhanced_health_checks; then
+        log_error "Deployment failed health checks"
+        if [ "$ROLLBACK_ENABLED" = true ]; then
+            log_warning "Initiating rollback..."
+            rollback
+        fi
+        exit 1
+    fi
+
     verify_deployment
 
     log_success "Sophia AI deployment completed successfully!"
+    log_info "Production tag: $PRODUCTION_TAG"
     log_info "You can now access your services through the configured ingress endpoints."
+    log_info "Run '$0 status' to check deployment status"
 }
 
 # Rollback function
@@ -258,19 +360,31 @@ Sophia AI Kubernetes Deployment Script
 Usage: $0 [COMMAND]
 
 Commands:
-  deploy          Deploy all services (default)
-  rollback        Rollback to previous state
-  status          Show deployment status
-  help            Show this help message
+   deploy          Deploy all services with production readiness checks (default)
+   rollback        Rollback to previous state
+   status          Show deployment status
+   help            Show this help message
 
 Environment Variables:
-  NAMESPACE       Kubernetes namespace (default: sophia)
-  DEPLOY_TIMEOUT  Deployment timeout (default: 600s)
+   NAMESPACE           Kubernetes namespace (default: sophia)
+   DEPLOY_TIMEOUT      Deployment timeout (default: 600s)
+   PRODUCTION_TAG      Production tag to use (default: v1.0.0)
+   STABILITY_MODE      Enable stability checks (default: true)
+   HEALTH_CHECK_RETRIES Number of health check retries (default: 3)
+   ROLLBACK_ENABLED    Enable automatic rollback on failure (default: true)
+
+Production Features:
+   - Production readiness validation
+   - Enhanced health checks with retries
+   - Pre-deployment backup creation
+   - Stability mode for production deployments
+   - Comprehensive error handling and rollback
 
 Examples:
-  $0 deploy
-  $0 status
-  NAMESPACE=staging $0 deploy
+   $0 deploy
+   $0 status
+   NAMESPACE=staging STABILITY_MODE=false $0 deploy
+   PRODUCTION_TAG=v1.0.0 $0 deploy
 
 EOF
 }
