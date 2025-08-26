@@ -1,0 +1,2 @@
+✅ Repo MCP healthy (200)
+{"status":"healthy","service":"sophia-mcp-github","version":"1.0.0","timestamp":"2025-08-26T03:24:55Z","uptime_ms":1756178695726,"repo":"ai-cherry/sophia-ai-intel"}
