@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from enum import Enum
 import asyncio
 import logging
+import os
 
 from agno import Team, Agent, Memory
 from agno.collaboration import CollaborationMode
@@ -78,13 +79,13 @@ class ClientHealthTeam(Team):
         logger.info(f"Initialized {name} with {len(self.agents)} agents")
 
     def _default_integrations(self) -> Dict[str, str]:
-        """Default integration endpoints"""
+        """Default integration endpoints with environment overrides"""
         return {
-            "intercom": "http://mcp-intercom:8080",
-            "support_tickets": "http://mcp-support:8080",
-            "usage_metrics": "http://mcp-usage:8080",
-            "financial_data": "http://mcp-financial:8080",
-            "engagement_data": "http://mcp-engagement:8080"
+            "intercom": os.getenv("MCP_INTERCOM_URL", "http://mcp-intercom:8080"),
+            "support_tickets": os.getenv("MCP_SUPPORT_URL", "http://mcp-support:8080"),
+            "usage_metrics": os.getenv("MCP_USAGE_URL", "http://mcp-usage:8080"),
+            "financial_data": os.getenv("MCP_FINANCIAL_URL", "http://mcp-financial:8080"),
+            "engagement_data": os.getenv("MCP_ENGAGEMENT_URL", "http://mcp-engagement:8080")
         }
 
     def _create_agents(self) -> Dict[str, Agent]:
@@ -112,6 +113,9 @@ class ClientHealthTeam(Team):
             name="ClientSuccessManager",
             integrations=self.integrations
         )
+
+        # CRITICAL FIX: Set up agent collaboration framework
+        self._setup_agent_collaboration(agents)
 
         return agents
 
@@ -176,8 +180,6 @@ class ClientHealthTeam(Team):
             data_tasks.append(self.agents["support_analyst"].analyze_support_tickets(
                 client_id, days=request.time_window
             ))
-
-        
 
         # Gather all analyses
         results = await asyncio.gather(*data_tasks, return_exceptions=True)
@@ -305,8 +307,6 @@ class ClientHealthTeam(Team):
 
         return min(1.0, max(0.0, score))
 
-    
-
     def _assess_area_health(self, area: str, score: float) -> str:
         """Provide qualitative assessment of area health"""
         if score >= 0.8:
@@ -385,7 +385,6 @@ class ClientHealthTeam(Team):
                         "Review support ticket trends",
                         "Offer additional training resources"
                     ])
-                
 
         # Risk-level specific recommendations
         if risk_level == HealthRiskLevel.CRITICAL.value:
@@ -488,10 +487,9 @@ class ClientHealthTeam(Team):
                 # Simple mock prediction
                 return [50000]  # Mock LTV value
 
-                        return MockLTVModel()
+        return MockLTVModel()
 
-    def _setup_agent_collaboration(self, agents: Dict[str, Agent]):</search>
-</search_and_replace>
+    def _setup_agent_collaboration(self, agents: Dict[str, Agent]):
         """Set up collaboration framework between agents"""
         # Set collaborators for Client Success Manager
         if "client_success_manager" in agents:
@@ -648,8 +646,7 @@ class ClientHealthTeam(Team):
             logger.error(f"Error getting agent communication stats: {e}")
             return {"error": str(e)}
 
-    async def get_client_health(self, client_id: str) -> Optional[ClientHealthScore]:</search>
-</search_and_replace>
+    async def get_client_health(self, client_id: str) -> Optional[ClientHealthScore]:
         """Get current health score for a specific client"""
         return self.health_scores.get(client_id)
 
