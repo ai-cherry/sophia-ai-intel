@@ -1,0 +1,31 @@
+{
+  "timestamp": "2025-08-26T03:26:20+00:00",
+  "test_type": "nightly_smoke",
+  "services": {
+    "dashboard": {
+      "status": "healthy",
+      "url": "https://sophiaai-dashboard-v2.fly.dev"
+    },
+    "mcp_repo": {
+      "status": "healthy",
+      "url": "https://sophiaai-mcp-repo-v2.fly.dev"
+    },
+    "mcp_research": {
+      "status": "unhealthy",
+      "url": "https://sophiaai-mcp-research-v2.fly.dev"
+    },
+    "mcp_business": {
+      "status": "unhealthy",
+      "url": "https://sophiaai-mcp-business-v2.fly.dev"
+    },
+    "mcp_context": {
+      "status": "unhealthy",
+      "url": "https://sophiaai-mcp-context-v2.fly.dev"
+    }
+  },
+  "summary": {
+    "total_services": 5,
+    "healthy_services": 1+1+0+0+0 | bc,
+    "overall_health": "healthy"
+  }
+}
