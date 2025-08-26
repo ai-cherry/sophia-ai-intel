@@ -353,6 +353,6 @@
 ---
 
 **Document Version**: 1.1.0  
-**Last Updated**: December 2024  
-**Next Review**: March 2025  
+**Last Updated**: August 2025  
+**Next Review**: November 2025  
 **Owner**: Sophia AI Operations Team
