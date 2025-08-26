@@ -1,5 +1,0 @@
-Fly app naming changes:
-Before: sophiaai-mcp-git
-After: sophiaai-mcp-repo
-Reason: Fly.io abuse filter blocks 'github' in app names
-Timestamp: Fri Aug 22 00:26:08 UTC 2025
