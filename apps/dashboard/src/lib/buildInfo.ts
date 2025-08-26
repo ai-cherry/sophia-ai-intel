@@ -193,7 +193,7 @@ class DashboardBuildGuard {
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 3000)
 
-      const response = await fetch('https://sophiaai-mcp-context-v2.fly.dev/healthz', {
+      const response = await fetch('http://localhost:{port}/healthz', {
         method: 'HEAD',
         signal: controller.signal
       })

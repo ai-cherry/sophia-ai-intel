@@ -27,5 +27,4 @@ package.json @scoobyjava
 tsconfig.json @scoobyjava
 .env.example @scoobyjava
 docker-compose.yml @scoobyjava
-fly.toml @scoobyjava
 

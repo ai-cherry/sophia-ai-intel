@@ -8,7 +8,6 @@ from nacl import public
 GITHUB_TOKEN = os.environ["GITHUB_TOKEN"]
 PORTKEY_API_KEY = os.environ["PORTKEY_API_KEY"]
 NEON_API_TOKEN = os.environ["NEON_API_TOKEN"]
-FLY_API_TOKEN = os.environ["FLY_API_TOKEN"]
 
 # Read public key data directly from API response
 url = (
@@ -71,7 +70,6 @@ print("🔐 Setting GitHub Actions secrets...")
 success = True
 success = set_secret("PORTKEY_API_KEY", PORTKEY_API_KEY) and success
 success = set_secret("NEON_API_TOKEN", NEON_API_TOKEN) and success
-success = set_secret("FLY_API_TOKEN", FLY_API_TOKEN) and success
 
 if success:
     print("\n✅ All secrets set successfully!")

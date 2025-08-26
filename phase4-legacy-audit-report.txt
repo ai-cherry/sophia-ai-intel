@@ -1,0 +1,1465 @@
+================================================================================
+SOPHIA AI PHASE 4 - LEGACY REFERENCE AUDIT REPORT
+================================================================================
+Generated: phase4-legacy-audit.py
+
+TOTAL ISSUES FOUND: 240
+
+CRITICAL: 7 issues
+HIGH: 217 issues
+MEDIUM: 16 issues
+LOW: 0 issues
+
+CRITICAL ISSUES:
+----------------------------------------
+File: scripts/phase4-legacy-audit.py:58
+Type: CONFLICTING_CONFIG
+Description: Found reference to conflicting deployment configurations
+Recommendation: Resolve configuration conflicts
+Context: re.compile(r'multiple.*deployment.*method', re.IGNORECASE),
+
+File: scripts/phase4-legacy-audit.py:59
+Type: CONFLICTING_CONFIG
+Description: Found reference to conflicting deployment configurations
+Recommendation: Resolve configuration conflicts
+Context: re.compile(r'conflicting.*configuration', re.IGNORECASE),
+
+File: scripts/phase4-legacy-audit.py:115
+Type: CONFLICTING_CONFIG
+Description: Found reference to conflicting deployment configurations
+Recommendation: Resolve configuration conflicts
+Context: # Check for conflicting configurations
+
+File: scripts/phase4-legacy-audit.py:123
+Type: CONFLICTING_CONFIG
+Description: Found reference to conflicting deployment configurations
+Recommendation: Resolve configuration conflicts
+Context: description="Found reference to conflicting deployment configurations",
+
+File: services/agno-coordinator/src/config/featureFlags.ts:136
+Type: CONFLICTING_CONFIG
+Description: Found reference to conflicting deployment configurations
+Recommendation: Resolve configuration conflicts
+Context: // Check for conflicting configurations
+
+File: SOPHIA_AI_DEPLOYMENT_ANALYSIS_REPORT.md:94
+Type: CONFLICTING_CONFIG
+Description: Found reference to conflicting deployment configurations
+Recommendation: Resolve configuration conflicts
+Context: ### 4.1 Multiple Conflicting Deployment Methods
+
+File: SOPHIA_AI_COMPREHENSIVE_DEPLOYMENT_INTEGRATION_FINAL_REPORT.md:19
+Type: CONFLICTING_CONFIG
+Description: Found reference to conflicting deployment configurations
+Recommendation: Resolve configuration conflicts
+Context: ❌ Multiple conflicting deployment methods:
+
+HIGH ISSUES:
+----------------------------------------
+File: scripts/agent_infrastructure.py:7
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: Uses GitHub Secrets -> Pulumi -> Fly.io chain for automated secrets management.
+
+File: scripts/agent_infrastructure.py:94
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: "app_name": f"sophiaai-mcp-{service_name}-v2",
+
+File: scripts/phase4-legacy-audit.py:48
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: re.compile(r'flyctl', re.IGNORECASE),
+
+File: scripts/phase4-legacy-audit.py:50
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: re.compile(r'sophiaai-.*-v2', re.IGNORECASE),  # Old Fly.io naming
+
+File: scripts/phase4-legacy-audit.py:50
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: re.compile(r'sophiaai-.*-v2', re.IGNORECASE),  # Old Fly.io naming
+
+File: scripts/phase4-legacy-audit.py:89
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: # Check for Fly.io references
+
+File: scripts/phase4-legacy-audit.py:97
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: description="Found Fly.io reference in current codebase",
+
+File: scripts/phase4-legacy-audit.py:98
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: recommendation="Remove Fly.io references and update to Lambda Labs/Kubernetes",
+
+File: scripts/phase4-legacy-audit.py:165
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: # Check for fly.toml (should not exist)
+
+File: scripts/phase4-legacy-audit.py:166
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: fly_toml = service_path / "fly.toml"
+
+File: scripts/phase4-legacy-audit.py:173
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: description=f"Legacy fly.toml found in {service} service",
+
+File: scripts/phase4-legacy-audit.py:174
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: recommendation="Remove fly.toml and migrate to Docker/Kubernetes"
+
+File: scripts/flyio-cleanup.py:3
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: Fly.io Reference Cleanup Script
+
+File: scripts/flyio-cleanup.py:6
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: Systematically removes all Fly.io references from the Sophia AI codebase
+
+File: scripts/flyio-cleanup.py:9
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: This addresses the 226+ HIGH priority Fly.io references found during the audit.
+
+File: scripts/flyio-cleanup.py:43
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: pattern=r'https://sophiaai-[a-zA-Z0-9-]+-v2\.fly\.dev',
+
+File: scripts/flyio-cleanup.py:46
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: description='Replace Fly.io service URLs with localhost references'
+
+File: scripts/flyio-cleanup.py:51
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: pattern=r'sophiaai-[a-zA-Z0-9-]+-v2',
+
+File: scripts/flyio-cleanup.py:54
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: description='Replace Fly.io app names with Docker service names'
+
+File: scripts/flyio-cleanup.py:57
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: # Fly.io specific terms
+
+File: scripts/flyio-cleanup.py:62
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: description='Replace fly.io references with lambda-labs'
+
+File: scripts/flyio-cleanup.py:65
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: # Flyctl commands
+
+File: scripts/flyio-cleanup.py:67
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: pattern=r'flyctl',
+
+File: scripts/flyio-cleanup.py:70
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: description='Replace flyctl commands with docker-compose'
+
+File: scripts/flyio-cleanup.py:73
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: # Fly.toml references
+
+File: scripts/flyio-cleanup.py:78
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: description='Replace fly.toml with docker-compose.yml'
+
+File: scripts/flyio-cleanup.py:83
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: pattern=r'flyctl deploy',
+
+File: scripts/flyio-cleanup.py:86
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: description='Replace flyctl deploy with docker-compose up'
+
+File: scripts/flyio-cleanup.py:91
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: pattern=r'https://sophiaai-[a-zA-Z0-9-]+-v2\.fly\.dev/healthz',
+
+File: scripts/flyio-cleanup.py:94
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: description='Replace Fly.io health URLs with relative paths'
+
+File: scripts/flyio-cleanup.py:99
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: pattern=r'https://sophiaai-[a-zA-Z0-9-]+-v2\.fly\.dev/api/',
+
+File: scripts/flyio-cleanup.py:102
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: description='Replace Fly.io API URLs with relative paths'
+
+File: scripts/flyio-cleanup.py:110
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: description='Replace Fly.io platform references'
+
+File: scripts/flyio-cleanup.py:115
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: pattern=r'flyctl secrets set',
+
+File: scripts/flyio-cleanup.py:118
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: description='Replace flyctl secrets with docker-compose exec'
+
+File: scripts/flyio-cleanup.py:123
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: """Determine if a file should be processed for Fly.io cleanup."""
+
+File: scripts/flyio-cleanup.py:147
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: """Process a single file for Fly.io references."""
+
+File: scripts/flyio-cleanup.py:186
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: """Remove actual Fly.io configuration files."""
+
+File: scripts/flyio-cleanup.py:188
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: 'fly.toml',
+
+File: scripts/flyio-cleanup.py:189
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: 'fly.toml.backup'
+
+File: scripts/flyio-cleanup.py:200
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: # Also check for fly.toml files in service directories
+
+File: scripts/flyio-cleanup.py:201
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: for service_dir in self.root_path.rglob('services/*/fly.toml'):
+
+File: scripts/flyio-cleanup.py:206
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: print(f"Removed {files_removed} Fly.io configuration files")
+
+File: scripts/flyio-cleanup.py:209
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: """Process all relevant files for Fly.io cleanup."""
+
+File: scripts/flyio-cleanup.py:210
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: print("🔍 Starting Fly.io reference cleanup...")
+
+File: scripts/flyio-cleanup.py:226
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: report_lines.append("FLY.IO CLEANUP REPORT")
+
+File: scripts/flyio-cleanup.py:241
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: report_lines.append("• fly.toml files")
+
+File: scripts/flyio-cleanup.py:242
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: report_lines.append("• fly.toml.backup files")
+
+File: scripts/flyio-cleanup.py:243
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: report_lines.append("• Service-level fly.toml files")
+
+File: scripts/flyio-cleanup.py:256
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: print("🧹 Starting comprehensive Fly.io cleanup...")
+
+File: scripts/flyio-cleanup.py:260
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: # First, remove Fly.io configuration files
+
+File: scripts/flyio-cleanup.py:273
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: print("\n🎉 Fly.io cleanup completed!")
+
+File: libs/prompt/prompt_enhancer.ts:432
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: { name: 'sophiaai-mcp-repo-v2', status: 'healthy', url: 'http://localhost:{port}' }
+
+File: .infra/secrets_map.json:116
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: "sophiaai-dashboard-v2": {
+
+File: .infra/secrets_map.json:120
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: "sophiaai-mcp-research-v2": {
+
+File: .infra/secrets_map.json:124
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: "sophiaai-mcp-business-v2": {
+
+File: .infra/secrets_map.json:128
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: "sophiaai-mcp-context-v2": {
+
+File: .infra/secrets_map.json:132
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: "sophiaai-mcp-repo-v2": {
+
+File: SOPHIA_AI_PHASE_4_FINAL_REPORT.md:17
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: **Fly.io References**: All 5 Fly.io references have been completely eliminated from the codebase:
+
+File: SOPHIA_AI_PHASE_4_FINAL_REPORT.md:18
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - ✅ `libs/memory/schema.sql` - Updated tech stack from "fly.io" to "kubernetes, lambda-labs"
+
+File: SOPHIA_AI_PHASE_4_FINAL_REPORT.md:21
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - ✅ `proofs/healthz/sophiaai-mcp-repo-v2_fresh.txt` - Deleted (historical health check)
+
+File: PHASE_1_COMPLETION_REPORT.md:1
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: # Phase 1 - Fly.io Decommission and Migration Initiation: COMPLETION REPORT
+
+File: PHASE_1_COMPLETION_REPORT.md:5
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: Phase 1 of the Sophia AI infrastructure migration has been completed successfully. All Fly.io legacy resources have been identified and confirmed safe for decommissioning. The current Docker Compose architecture on Lambda Labs is fully operational, and comprehensive Kubernetes manifests are prepared for the migration to K3s with GPU support.
+
+File: PHASE_1_COMPLETION_REPORT.md:7
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: ## 1. Fly.io Audit Results ✅
+
+File: PHASE_1_COMPLETION_REPORT.md:11
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - `sophiaai-dashboard-v2.fly.dev` (legacy)
+
+File: PHASE_1_COMPLETION_REPORT.md:12
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - `sophiaai-mcp-repo-v2.fly.dev` (legacy)
+
+File: PHASE_1_COMPLETION_REPORT.md:13
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - `sophiaai-mcp-research-v2.fly.dev` (legacy)
+
+File: PHASE_1_COMPLETION_REPORT.md:14
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - `sophiaai-mcp-context-v2.fly.dev` (legacy)
+
+File: PHASE_1_COMPLETION_REPORT.md:15
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - `sophiaai-mcp-business-v2.fly.dev` (legacy)
+
+File: PHASE_1_COMPLETION_REPORT.md:16
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - `sophiaai-mcp-lambda-v2.fly.dev` (legacy)
+
+File: PHASE_1_COMPLETION_REPORT.md:17
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - `sophiaai-mcp-hubspot-v2.fly.dev` (legacy)
+
+File: PHASE_1_COMPLETION_REPORT.md:18
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - `sophiaai-jobs-v2.fly.dev` (legacy)
+
+File: PHASE_1_COMPLETION_REPORT.md:21
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - **No root-level fly.toml**: Clean project structure
+
+File: PHASE_1_COMPLETION_REPORT.md:22
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - **Service-level fly.toml files**: Present in individual service directories
+
+File: PHASE_1_COMPLETION_REPORT.md:23
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - **Fly.io CLI**: Not available locally (expected)
+
+File: PHASE_1_COMPLETION_REPORT.md:196
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - ✅ Fly.io resources audited and confirmed safe for decommissioning
+
+File: SOPHIA_AI_DEPLOYMENT_INFRASTRUCTURE_ANALYSIS.md:24
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: 3. **Fly.io** (multiple `fly.toml` files)
+
+File: SOPHIA_AI_DEPLOYMENT_INFRASTRUCTURE_ANALYSIS.md:24
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: 3. **Fly.io** (multiple `fly.toml` files)
+
+File: SOPHIA_AI_DEPLOYMENT_INFRASTRUCTURE_ANALYSIS.md:216
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: # Remove Fly.io configurations
+
+File: SOPHIA_AI_DEPLOYMENT_INFRASTRUCTURE_ANALYSIS.md:217
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: find . -name "fly.toml*" -delete
+
+File: DOCUMENTATION_AUDIT_REPORT.md:76
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - **Purpose**: ✅ Clear - Current deployment strategy guide with Lambda Labs and Fly.io options
+
+File: DOCUMENTATION_AUDIT_REPORT.md:93
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - **Accuracy**: ✅ Current - Reflects operational Fly.io services
+
+File: DOCUMENTATION_AUDIT_REPORT.md:99
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - References Fly.io infrastructure but primary deployment strategy is Lambda Labs
+
+File: DOCUMENTATION_AUDIT_REPORT.md:119
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - `PHASE_BC_COMPLETION.md`: Fly.io infrastructure (legacy)
+
+File: DOCUMENTATION_AUDIT_REPORT.md:121
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - `package.json`: Fly.io deployment scripts (legacy)
+
+File: DOCUMENTATION_AUDIT_REPORT.md:129
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: 1. **Establish Primary Deployment Strategy**: Document which is current (Lambda Labs vs Fly.io)
+
+File: DOCUMENTATION_AUDIT_REPORT.md:227
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - **Scope**: Clarify Lambda Labs vs Fly.io deployment as primary/secondary
+
+File: DOCUMENTATION_AUDIT_REPORT.md:382
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: 1. **Resolve deployment strategy confusion** between Lambda Labs and Fly.io
+
+File: todo.md:29
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - [ ] Set up Fly.io deployment configs
+
+File: todo.md:42
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - [x] Clean up old Fly.io apps
+
+File: todo.md:43
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - [x] Create new Fly.io apps (sophiaai-dashboard, sophiaai-mcp-research, sophiaai-mcp-context, sophiaai-mcp-git)
+
+File: todo.md:46
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - [ ] Set up Fly.io secrets for each service
+
+File: RENDER_FLY_CLEANUP_ASSESSMENT.md:1
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: # Render and Fly.io Complete Cleanup Assessment
+
+File: RENDER_FLY_CLEANUP_ASSESSMENT.md:8
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: This assessment provides guidance on handling remaining Render and Fly.io references to achieve a clean, Lambda Labs Kubernetes-only codebase.
+
+File: RENDER_FLY_CLEANUP_ASSESSMENT.md:55
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: ## 2. Fly.io Status
+
+File: RENDER_FLY_CLEANUP_ASSESSMENT.md:58
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - ✅ All fly.toml files removed
+
+File: RENDER_FLY_CLEANUP_ASSESSMENT.md:59
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - ✅ Fly.io workflows removed
+
+File: RENDER_FLY_CLEANUP_ASSESSMENT.md:60
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - ✅ Fly.io specific scripts removed
+
+File: RENDER_FLY_CLEANUP_ASSESSMENT.md:106
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - [ ] No active GitHub workflows reference Render or Fly.io
+
+File: RENDER_FLY_CLEANUP_ASSESSMENT.md:107
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - [ ] No deployment scripts contain Render/Fly.io logic
+
+File: RENDER_FLY_CLEANUP_ASSESSMENT.md:115
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - **Zero active deployment code** for Render/Fly.io
+
+File: SOPHIA_AI_COMPREHENSIVE_DEPLOYMENT_INTEGRATION_FINAL_REPORT.md:11
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - **3 conflicting deployment strategies** (Docker Compose, Kubernetes, Fly.io) consolidated into one
+
+File: SOPHIA_AI_COMPREHENSIVE_DEPLOYMENT_INTEGRATION_FINAL_REPORT.md:22
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - Fly.io (fly.toml)
+
+File: SOPHIA_AI_COMPREHENSIVE_DEPLOYMENT_INTEGRATION_FINAL_REPORT.md:22
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - Fly.io (fly.toml)
+
+File: SOPHIA_AI_COMPREHENSIVE_DEPLOYMENT_INTEGRATION_FINAL_REPORT.md:30
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: ✅ Removed all Fly.io configurations
+
+File: SOPHIA_AI_COMPREHENSIVE_DEPLOYMENT_INTEGRATION_FINAL_REPORT.md:41
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: Removed: Fly.io deployment artifacts
+
+File: SOPHIA_AI_COMPREHENSIVE_DEPLOYMENT_INTEGRATION_FINAL_REPORT.md:127
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - fly.toml environment sections
+
+File: SOPHIA_AI_COMPREHENSIVE_DEPLOYMENT_INTEGRATION_FINAL_REPORT.md:134
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - Removed Fly.io configurations entirely
+
+File: SOPHIA_AI_COMPREHENSIVE_DEPLOYMENT_INTEGRATION_FINAL_REPORT.md:218
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - Removed outdated Fly.io references
+
+File: SOPHIA_AI_COMPREHENSIVE_DEPLOYMENT_INTEGRATION_FINAL_REPORT.md:306
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: .github/workflows/deploy.yml (removed Fly.io)
+
+File: SOPHIA_AI_COMPREHENSIVE_DEPLOYMENT_INTEGRATION_FINAL_REPORT.md:313
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: All fly.toml variants
+
+File: SOPHIA_AI_COMPREHENSIVE_DEPLOYMENT_INTEGRATION_FINAL_REPORT.md:314
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: Fly.io deployment scripts
+
+File: SOPHIA_AI_DEPLOYMENT_FIX_SUMMARY.md:5
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: ### 1. ✅ Removed Fly.io Configurations
+
+File: SOPHIA_AI_DEPLOYMENT_FIX_SUMMARY.md:6
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - All fly.toml files removed from the project
+
+File: docs/PHASE2_ROADMAP.md:51
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: ├── fly.toml
+
+File: docs/PHASE2_ROADMAP.md:64
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: ├── fly.toml
+
+File: docs/PHASE2_ROADMAP.md:325
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: 3. Fly.io dashboard for machine status
+
+File: docs/PHASE_1_7_SUMMARY.md:22
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: ### ✅ Fly.io Apps Setup
+
+File: docs/PHASE_1_7_SUMMARY.md:23
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: All required apps exist on Fly.io:
+
+File: docs/PHASE_1_7_SUMMARY.md:56
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: 1. **Fly.io Authentication**: While FLY_API_TOKEN exists and preflight passes, the actual deployment steps fail immediately
+
+File: docs/PHASE_1_7_SUMMARY.md:62
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: 2. **Fly.io organization mismatch**: Apps might belong to a different organization than the token
+
+File: docs/PHASE_1_7_SUMMARY.md:68
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - `proofs/fly/app_setup.log` - Fly.io app verification log
+
+File: docs/PHASE_1_7_SUMMARY.md:120
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: Phase 1.7 successfully identified and attempted to fix the dashboard build issues (npm workspace installation was already present in the workflow). However, the deployment to Fly.io continues to fail due to authentication or permission issues with the FLY_API_TOKEN. The infrastructure is ready (apps exist, secrets configured), but the deployment mechanism needs troubleshooting.
+
+File: docs/PHASE_1_7_SUMMARY.md:125
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - ✅ Fly.io apps created
+
+File: docs/PULUMI_MIGRATION_COMPLETE.md:11
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: This document covers the complete migration of Sophia AI Intel from Fly.io/Render platforms to **pure Pulumi Cloud infrastructure**. The migration achieves:
+
+File: docs/PULUMI_MIGRATION_COMPLETE.md:13
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - ✅ **Zero platform dependency** - No Fly.io, no Render
+
+File: docs/PULUMI_MIGRATION_COMPLETE.md:253
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - **Previous (Fly.io + Render)**: ~$200-300/month
+
+File: docs/PULUMI_MIGRATION_COMPLETE.md:303
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - **🚫 Zero Platform Lock-in**: Complete independence from Fly.io/Render
+
+File: docs/INFRA_OPERATIONS.md:16
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: #### Fly.io (Production Apps)
+
+File: docs/INFRA_OPERATIONS.md:19
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - `sophiaai-dashboard-v2` - React dashboard
+
+File: docs/INFRA_OPERATIONS.md:20
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - `sophiaai-mcp-repo-v2` - GitHub repository MCP
+
+File: docs/INFRA_OPERATIONS.md:21
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - `sophiaai-mcp-research-v2` - Web research MCP
+
+File: docs/INFRA_OPERATIONS.md:22
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - `sophiaai-mcp-context-v2` - Context database MCP
+
+File: docs/INFRA_OPERATIONS.md:61
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: app: sophiaai-dashboard-v2
+
+File: docs/INFRA_OPERATIONS.md:67
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: app: sophiaai-mcp-research-v2
+
+File: docs/INFRA_OPERATIONS.md:73
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: app: sophiaai-mcp-context-v2
+
+File: docs/INFRA_OPERATIONS.md:191
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: ├── fly/                    # Fly.io operations
+
+File: docs/INFRA_OPERATIONS.md:239
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - App: `sophiaai-dashboard-v2`
+
+File: docs/INFRA_OPERATIONS.md:343
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: docker-compose status -a sophiaai-dashboard-v2 --access-token "$TOKEN"
+
+File: docs/INFRA_OPERATIONS.md:344
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: docker-compose logs -a sophiaai-dashboard-v2 --access-token "$TOKEN"
+
+File: docs/SECRETS.md:96
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - `FLY_API_TOKEN` - For deploying to Fly.io (already configured)
+
+File: docs/SECRETS.md:123
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: 2. Sets them as Fly.io app secrets for each service
+
+File: docs/SECRETS.md:143
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: #### Fly.io Operations
+
+File: docs/SECRETS.md:237
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: 3. Check workflow logs to ensure secret was passed to Fly.io
+
+File: docs/SECRETS.md:238
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: 4. Use `docker-compose secrets list -a <app-name>` to verify on Fly.io
+
+File: docs/SECRETS.md:254
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: app: sophiaai-dashboard-v2
+
+File: docs/CODEBASE_AUDIT.md:85
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: ## ✈️ Fly.io Deployment Readiness
+
+File: docs/CODEBASE_AUDIT.md:91
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - ✅ fly.toml files present
+
+File: docs/CODEBASE_AUDIT.md:133
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: 1. **Environment Variables**: Configure all required secrets in Fly.io
+
+File: docs/CODEBASE_AUDIT.md:191
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - [fly_tomls.json](../proofs/assessment/fly_tomls.json) - Fly.io configurations
+
+File: docs/BUSINESS_MCP.md:3
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: **Service**: [`sophiaai-mcp-business-v2`](http://localhost:{port})
+
+File: docs/BUSINESS_MCP.md:711
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - **Deployment**: Fly.io (Pay Ready org) + Docker containers
+
+File: docs/BUSINESS_MCP.md:734
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - ✅ **Deployment Configuration**: Fly.io + Docker with secret management
+
+File: docs/STABILITY_READINESS.md:82
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - **Platform**: Fly.io experiencing capacity issues in ORD/IAD regions
+
+File: docs/STABILITY_READINESS.md:126
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: Purpose: Remove legacy applications from personal Fly.io organization
+
+File: docs/STABILITY_READINESS.md:136
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - **Fly.io Secrets**: Automatic deployment to Pay Ready organization
+
+File: docs/STABILITY_READINESS.md:283
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - **Repository MCP**: [`sophiaai-mcp-repo-v2.txt`](proofs/healthz/sophiaai-mcp-repo-v2.txt) - **HEALTHY**
+
+File: docs/STABILITY_READINESS.md:289
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - **Dashboard**: [`sophiaai-dashboard-v2.txt`](proofs/healthz/sophiaai-dashboard-v2.txt) - Exit code 6, domain does not exist
+
+File: docs/STABILITY_READINESS.md:290
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - **Research MCP**: [`sophiaai-mcp-research-v2.txt`](proofs/healthz/sophiaai-mcp-research-v2.txt) - Exit code 6, domain does not exist
+
+File: docs/STABILITY_READINESS.md:291
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - **Business MCP**: [`sophiaai-mcp-business-v2.txt`](proofs/healthz/sophiaai-mcp-business-v2.txt) - Exit code 6, domain does not exist
+
+File: docs/STABILITY_READINESS.md:292
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - **Context MCP**: [`sophiaai-mcp-context-v2.txt`](proofs/healthz/sophiaai-mcp-context-v2.txt) - Exit code 6, domain does not exist
+
+File: docs/STABILITY_READINESS.md:338
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: **App name mismatches**: The canonical `-v2` naming fix applied to `fly.toml` files didn't address the core deployment workflow expectation mismatch.
+
+File: docs/STABILITY_READINESS.md:348
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - **✅ Repository MCP**: [`sophiaai-mcp-repo-v2.txt`](proofs/healthz/sophiaai-mcp-repo-v2.txt) - HEALTHY (only working service)
+
+File: docs/STABILITY_READINESS.md:349
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - **❌ Dashboard**: [`sophiaai-dashboard-v2_health_error.json`](proofs/fly/sophiaai-dashboard-v2_health_error.json) - DNS resolution failure
+
+File: docs/STABILITY_READINESS.md:350
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - **❌ Research MCP**: [`sophiaai-mcp-research-v2_health_error.json`](proofs/fly/sophiaai-mcp-research-v2_health_error.json) - DNS resolution failure
+
+File: docs/STABILITY_READINESS.md:351
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - **❌ Business MCP**: [`sophiaai-mcp-business-v2_health_error.json`](proofs/fly/sophiaai-mcp-business-v2_health_error.json) - DNS resolution failure
+
+File: docs/STABILITY_READINESS.md:352
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - **❌ Context MCP**: [`sophiaai-mcp-context-v2_health_error.json`](proofs/fly/sophiaai-mcp-context-v2_health_error.json) - DNS resolution failure
+
+File: docs/RESEARCH_MCP.md:3
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: **Service**: [`sophiaai-mcp-research-v2`](http://localhost:{port})
+
+File: docs/RESEARCH_MCP.md:398
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - **Deployment**: Fly.io (Pay Ready org) + Docker
+
+File: docs/SOPHIA_AI_DEPLOYMENT_VERIFICATION.md:14
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: 2. **Lambda Labs Integration**: Native deployment eliminating all Fly.io dependencies
+
+File: docs/SOPHIA_AI_DEPLOYMENT_VERIFICATION.md:86
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: // BEFORE: Hardcoded Fly.io URLs
+
+File: docs/PHASE_BC_COMPLETION.md:105
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - **✅ All Fly.io Applications**: 5/5 services deployed and operational
+
+File: docs/PHASE_BC_COMPLETION.md:201
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - **Fly.io Regions**: Distributed deployment for optimal performance
+
+File: docs/PHASE_BC_COMPLETION.md:218
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: | **Production Deployment** | ✅ Complete | All services on Fly.io |
+
+File: docs/PHASE_BC_COMPLETION.md:268
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - **Infrastructure**: Fly.io support for hosting issues
+
+File: docs/PHASE_BC_ARCHITECTURE_PLAN.md:10
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - **5 Fly.io Microservices**: Dashboard (React), MCP-Repo (GitHub), MCP-Research (APIs), MCP-Business (CRM/Telegram), MCP-Context (Memory/Qdrant)
+
+File: docs/PHASE_BC_ARCHITECTURE_PLAN.md:25
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: subgraph "Fly.io Pay-Ready Org"
+
+File: docs/PHASE_BC_ARCHITECTURE_PLAN.md:26
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: Dashboard[sophiaai-dashboard-v2<br/>React SPA]
+
+File: docs/PHASE_BC_ARCHITECTURE_PLAN.md:27
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: RepoMCP[sophiaai-mcp-repo-v2<br/>GitHub Operations]
+
+File: docs/PHASE_BC_ARCHITECTURE_PLAN.md:28
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: ResearchMCP[sophiaai-mcp-research-v2<br/>Web Research APIs]
+
+File: docs/PHASE_BC_ARCHITECTURE_PLAN.md:29
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: BusinessMCP[sophiaai-mcp-business-v2<br/>CRM + Notifications]
+
+File: docs/PHASE_BC_ARCHITECTURE_PLAN.md:30
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: ContextMCP[sophiaai-mcp-context-v2<br/>Memory + Embeddings]
+
+File: docs/PHASE_BC_ARCHITECTURE_PLAN.md:105
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: #### 1.1 Fly.toml Name Fixes
+
+File: docs/PHASE_BC_ARCHITECTURE_PLAN.md:109
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - Fix [`apps/dashboard/fly.toml`](../apps/dashboard/fly.toml): `sophiaai-dashboard` → `sophiaai-dashboard-v2`
+
+File: docs/PHASE_BC_ARCHITECTURE_PLAN.md:109
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - Fix [`apps/dashboard/fly.toml`](../apps/dashboard/fly.toml): `sophiaai-dashboard` → `sophiaai-dashboard-v2`
+
+File: docs/PHASE_BC_ARCHITECTURE_PLAN.md:110
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - Fix [`services/mcp-github/fly.toml`](../services/mcp-github/fly.toml): `sophiaai-mcp-repo` → `sophiaai-mcp-repo-v2`
+
+File: docs/PHASE_BC_ARCHITECTURE_PLAN.md:110
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - Fix [`services/mcp-github/fly.toml`](../services/mcp-github/fly.toml): `sophiaai-mcp-repo` → `sophiaai-mcp-repo-v2`
+
+File: docs/PHASE_BC_ARCHITECTURE_PLAN.md:111
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - Fix [`services/mcp-research/fly.toml`](../services/mcp-research/fly.toml): `sophiaai-mcp-research` → `sophiaai-mcp-research-v2`
+
+File: docs/PHASE_BC_ARCHITECTURE_PLAN.md:111
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - Fix [`services/mcp-research/fly.toml`](../services/mcp-research/fly.toml): `sophiaai-mcp-research` → `sophiaai-mcp-research-v2`
+
+File: docs/PHASE_BC_ARCHITECTURE_PLAN.md:112
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - Fix [`services/mcp-context/fly.toml`](../services/mcp-context/fly.toml): `sophiaai-mcp-context` → `sophiaai-mcp-context-v2`
+
+File: docs/PHASE_BC_ARCHITECTURE_PLAN.md:112
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - Fix [`services/mcp-context/fly.toml`](../services/mcp-context/fly.toml): `sophiaai-mcp-context` → `sophiaai-mcp-context-v2`
+
+File: docs/PHASE_BC_ARCHITECTURE_PLAN.md:113
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - [`services/mcp-business/fly.toml`](../services/mcp-business/fly.toml) already correct
+
+File: docs/PHASE_BC_ARCHITECTURE_PLAN.md:128
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: url="https://sophiaai-${service}-v2.fly.dev/healthz"
+
+File: docs/PHASE_BC_ARCHITECTURE_PLAN.md:129
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: curl -i -sS "$url" > "proofs/healthz/sophiaai-${service}-v2.txt"
+
+File: docs/PHASE_BC_ARCHITECTURE_PLAN.md:556
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - `proofs/healthz/sophiaai-dashboard-v2.txt` - Dashboard health status
+
+File: docs/PHASE_BC_ARCHITECTURE_PLAN.md:557
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - `proofs/healthz/sophiaai-mcp-repo-v2.txt` - GitHub MCP health
+
+File: docs/PHASE_BC_ARCHITECTURE_PLAN.md:558
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - `proofs/healthz/sophiaai-mcp-research-v2.txt` - Research MCP health
+
+File: docs/PHASE_BC_ARCHITECTURE_PLAN.md:559
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - `proofs/healthz/sophiaai-mcp-business-v2.txt` - Business MCP health
+
+File: docs/PHASE_BC_ARCHITECTURE_PLAN.md:560
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - `proofs/healthz/sophiaai-mcp-context-v2.txt` - Context MCP health
+
+File: docs/PHASE_BC_ARCHITECTURE_PLAN.md:590
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - Dashboard: http://localhost:{port} ([health](proofs/healthz/sophiaai-dashboard-v2.txt))
+
+File: docs/PHASE_BC_ARCHITECTURE_PLAN.md:591
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - MCP-Repo: http://localhost:{port} ([health](proofs/healthz/sophiaai-mcp-repo-v2.txt))
+
+File: docs/PHASE_BC_ARCHITECTURE_PLAN.md:592
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - MCP-Research: http://localhost:{port} ([health](proofs/healthz/sophiaai-mcp-research-v2.txt))
+
+File: docs/PHASE_BC_ARCHITECTURE_PLAN.md:593
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - MCP-Business: http://localhost:{port} ([health](proofs/healthz/sophiaai-mcp-business-v2.txt))
+
+File: docs/PHASE_BC_ARCHITECTURE_PLAN.md:594
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - MCP-Context: http://localhost:{port} ([health](proofs/healthz/sophiaai-mcp-context-v2.txt))
+
+File: docs/PHASE_BC_ARCHITECTURE_PLAN.md:667
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - Fix Fly.toml naming and deploy all services
+
+File: docs/CLOUD_CONTROL_USAGE.md:15
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: **Purpose**: Normal deployment of all services to Fly.io
+
+File: docs/CLOUD_CONTROL_USAGE.md:76
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - Discovers all Fly apps from [`fly.toml`](apps/dashboard/fly.toml:1) files in the repository
+
+File: docs/CLOUD_CONTROL_USAGE.md:155
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: FLY_ORG: pay-ready                    # Target Fly.io organization
+
+File: docs/CLOUD_CONTROL_USAGE.md:162
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - `FLY_API_TOKEN`: Fly.io API authentication
+
+File: docs/CLOUD_CONTROL_USAGE.md:179
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - Check Fly.io dashboard for machine states
+
+File: docs/CLOUD_CONTROL_USAGE.md:184
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - Verify Fly.io organization access
+
+File: docs/AGENT_SWARM_INTEGRATION_COMPLETE.md:14
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: 2. **Lambda Labs Integration**: Native Docker Compose deployment (no Fly.io dependencies)
+
+File: docs/AGENT_SWARM_INTEGRATION_COMPLETE.md:147
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: - All Fly.io references removed
+
+File: docs/ROO_EXTERNAL_SERVICES_CONFIG.md:403
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: 5. **Deploy MCP servers** to Fly.io for production use
+
+File: scripts/verify-infrastructure-cleanup.sh:42
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: # Check 1: Fly.io references
+
+File: scripts/verify-infrastructure-cleanup.sh:45
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: check_result "Fly.io references" "PASS" "No Fly.io references found in codebase"
+
+File: scripts/verify-infrastructure-cleanup.sh:47
+Type: FLY_IO_REFERENCE
+Description: Found Fly.io reference in current codebase
+Recommendation: Remove Fly.io references and update to Lambda Labs/Kubernetes
+Context: check_result "Fly.io references" "FAIL" "Found $flyio_refs Fly.io references that need removal"
+
+MEDIUM ISSUES:
+----------------------------------------
+File: scripts/phase4-legacy-audit.py:52
+Type: DEPRECATED_SERVICE
+Description: Found reference to deprecated service or deployment method
+Recommendation: Update to current deployment architecture
+Context: 'deprecated_services': [
+
+File: scripts/phase4-legacy-audit.py:54
+Type: DEPRECATED_SERVICE
+Description: Found reference to deprecated service or deployment method
+Recommendation: Update to current deployment architecture
+Context: re.compile(r'legacy.*deployment', re.IGNORECASE),
+
+File: scripts/phase4-legacy-audit.py:55
+Type: DEPRECATED_SERVICE
+Description: Found reference to deprecated service or deployment method
+Recommendation: Update to current deployment architecture
+Context: re.compile(r'deprecated', re.IGNORECASE),
+
+File: scripts/phase4-legacy-audit.py:102
+Type: DEPRECATED_SERVICE
+Description: Found reference to deprecated service or deployment method
+Recommendation: Update to current deployment architecture
+Context: # Check for deprecated service references
+
+File: scripts/phase4-legacy-audit.py:103
+Type: DEPRECATED_SERVICE
+Description: Found reference to deprecated service or deployment method
+Recommendation: Update to current deployment architecture
+Context: for pattern in self.legacy_patterns['deprecated_services']:
+
+File: scripts/phase4-legacy-audit.py:108
+Type: DEPRECATED_SERVICE
+Description: Found reference to deprecated service or deployment method
+Recommendation: Update to current deployment architecture
+Context: issue_type="DEPRECATED_SERVICE",
+
+File: scripts/phase4-legacy-audit.py:110
+Type: DEPRECATED_SERVICE
+Description: Found reference to deprecated service or deployment method
+Recommendation: Update to current deployment architecture
+Context: description="Found reference to deprecated service or deployment method",
+
+File: scripts/flyio-cleanup.py:110
+Type: DEPRECATED_SERVICE
+Description: Found reference to deprecated service or deployment method
+Recommendation: Update to current deployment architecture
+Context: description='Replace Fly.io platform references'
+
+File: SOPHIA_AI_PHASE_4_FINAL_REPORT.md:363
+Type: DEPRECATED_SERVICE
+Description: Found reference to deprecated service or deployment method
+Recommendation: Update to current deployment architecture
+Context: The Sophia AI Intel platform has been successfully transformed from a fragmented microservices architecture into a unified, enterprise-grade AI orchestration system. All legacy platform references have been eliminated, comprehensive documentation has been created, and the system is ready for production deployment on the Lambda Labs + Kubernetes infrastructure.
+
+File: SOPHIA_AI_DEPLOYMENT_INFRASTRUCTURE_ANALYSIS.md:25
+Type: DEPRECATED_SERVICE
+Description: Found reference to deprecated service or deployment method
+Recommendation: Update to current deployment architecture
+Context: - Legacy deployment configuration
+
+File: SOPHIA_AI_DEPLOYMENT_INFRASTRUCTURE_ANALYSIS.md:27
+Type: DEPRECATED_SERVICE
+Description: Found reference to deprecated service or deployment method
+Recommendation: Update to current deployment architecture
+Context: - Status: **DEPRECATED** but not removed
+
+File: DOCUMENTATION_AUDIT_REPORT.md:21
+Type: DEPRECATED_SERVICE
+Description: Found reference to deprecated service or deployment method
+Recommendation: Update to current deployment architecture
+Context: - ⚠️ **Maintenance Gaps**: Some documents reference deprecated infrastructure
+
+File: DOCUMENTATION_AUDIT_REPORT.md:191
+Type: DEPRECATED_SERVICE
+Description: Found reference to deprecated service or deployment method
+Recommendation: Update to current deployment architecture
+Context: ### **Deprecated Documents** (Candidates for Removal)
+
+File: SOPHIA_AI_DEPLOYMENT_FIX_SUMMARY.md:7
+Type: DEPRECATED_SERVICE
+Description: Found reference to deprecated service or deployment method
+Recommendation: Update to current deployment architecture
+Context: - No legacy deployment artifacts remain
+
+File: docs/PULUMI_MIGRATION_COMPLETE.md:11
+Type: DEPRECATED_SERVICE
+Description: Found reference to deprecated service or deployment method
+Recommendation: Update to current deployment architecture
+Context: This document covers the complete migration of Sophia AI Intel from Fly.io/Render platforms to **pure Pulumi Cloud infrastructure**. The migration achieves:
+
+File: docs/DOCUMENTATION_AUDIT_PROMPT.md:91
+Type: DEPRECATED_SERVICE
+Description: Found reference to deprecated service or deployment method
+Recommendation: Update to current deployment architecture
+Context: - **Deprecated Documents**: Outdated content that should be archived/removed
+
+================================================================================
+RECOMMENDATIONS SUMMARY
+================================================================================
+1. Address CRITICAL issues immediately
+2. Review HIGH priority issues before deployment
+3. Clean up MEDIUM and LOW priority issues
+4. Re-run this audit after fixes

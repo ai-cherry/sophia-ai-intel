@@ -607,7 +607,7 @@ async def main():
         all_chunks.extend(proof_chunks)
     
     # Process README and other root docs
-    for root_file in ["README.md", "SETUP_COMPLETION_REPORT.md", "todo.md"]:
+    for root_file in ["README.md", "todo.md"]:
         root_path = Path(root_file)
         if root_path.exists():
             try:

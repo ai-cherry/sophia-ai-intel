@@ -1,0 +1,391 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: config-drift-detection
+  namespace: sophia
+  labels:
+    app: config-management
+    component: drift-detection
+spec:
+  schedule: "0 */6 * * *"  # Every 6 hours
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: config-management-sa
+          containers:
+          - name: drift-detector
+            image: bitnami/kubectl:latest
+            command:
+            - /bin/bash
+            - -c
+            - |
+              # Copy drift detection script
+              cp /scripts/config-drift-detection.sh /tmp/drift-detection.sh
+              chmod +x /tmp/drift-detection.sh
+
+              # Run drift detection
+              /tmp/drift-detection.sh
+            volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+            - name: reports
+              mountPath: /tmp
+            env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: SLACK_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: slack-webhook
+                  key: url
+                  optional: true
+          volumes:
+          - name: scripts
+            configMap:
+              name: config-management-scripts
+          - name: reports
+            emptyDir: {}
+          restartPolicy: OnFailure
+          ttlSecondsAfterFinished: 86400  # Clean up after 24 hours
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: comprehensive-health-check
+  namespace: sophia
+  labels:
+    app: config-management
+    component: health-check
+spec:
+  schedule: "*/30 * * * *"  # Every 30 minutes
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: config-management-sa
+          containers:
+          - name: health-checker
+            image: bitnami/kubectl:latest
+            command:
+            - /bin/bash
+            - -c
+            - |
+              # Copy health check script
+              cp /scripts/comprehensive-health-check.sh /tmp/health-check.sh
+              chmod +x /tmp/health-check.sh
+
+              # Run health check
+              /tmp/health-check.sh
+            volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+            - name: reports
+              mountPath: /tmp
+            env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: SLACK_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: slack-webhook
+                  key: url
+                  optional: true
+          volumes:
+          - name: scripts
+            configMap:
+              name: config-management-scripts
+          - name: reports
+            emptyDir: {}
+          restartPolicy: OnFailure
+          ttlSecondsAfterFinished: 3600  # Clean up after 1 hour
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-management-scripts
+  namespace: sophia
+  labels:
+    app: config-management
+    component: scripts
+data:
+  config-drift-detection.sh: |
+    #!/bin/bash
+    # Configuration Drift Detection Script
+    set -e
+
+    NAMESPACE="${NAMESPACE:-sophia}"
+    CONFIG_MAPS=("sophia-config" "sophia-config-production" "sophia-config-staging")
+    DEPLOYMENT_DIR="./manifests"
+    DRIFT_REPORT_FILE="/tmp/config-drift-report-$(date +%Y%m%d-%H%M%S).json"
+    SLACK_WEBHOOK_URL="${SLACK_WEBHOOK_URL:-}"
+
+    # Colors for output
+    RED='\033[0;31m'
+    GREEN='\033[0;32m'
+    YELLOW='\033[1;33m'
+    NC='\033[0m'
+
+    log_info() {
+        echo -e "${GREEN}[INFO]${NC} $1"
+    }
+
+    log_warn() {
+        echo -e "${YELLOW}[WARN]${NC} $1"
+    }
+
+    log_error() {
+        echo -e "${RED}[ERROR]${NC} $1"
+    }
+
+    check_configmap_drift() {
+        local configmap="$1"
+        local namespace="$2"
+        local file_path="$3"
+
+        log_info "Checking ConfigMap: $configmap in namespace: $namespace"
+
+        if ! kubectl get configmap "$configmap" -n "$namespace" &> /dev/null; then
+            log_warn "ConfigMap $configmap does not exist in cluster"
+            return 1
+        fi
+
+        # Get current ConfigMap data
+        local current_data
+        current_data=$(kubectl get configmap "$configmap" -n "$namespace" -o jsonpath='{.data}')
+
+        # Read desired ConfigMap data from file
+        if [[ ! -f "$file_path" ]]; then
+            log_warn "ConfigMap file $file_path does not exist"
+            return 1
+        fi
+
+        # Extract data section from YAML file
+        local desired_data
+        desired_data=$(grep -A 1000 '^data:' "$file_path" | tail -n +2 | sed '/^[^ ]/q' | head -n -1)
+
+        # Compare data (simplified comparison)
+        if [[ "$current_data" != "$desired_data" ]]; then
+            log_warn "Configuration drift detected in ConfigMap: $configmap"
+            return 1
+        else
+            log_info "ConfigMap $configmap is in sync"
+            return 0
+        fi
+    }
+
+    main() {
+        log_info "Starting configuration drift detection..."
+
+        local drift_items=""
+        local drift_count=0
+
+        # Check ConfigMaps
+        for configmap in "${CONFIG_MAPS[@]}"; do
+            local config_file="$DEPLOYMENT_DIR/configmap.yaml"
+            if [[ "$configmap" == *"production"* ]]; then
+                config_file="$DEPLOYMENT_DIR/configmap-production.yaml"
+            elif [[ "$configmap" == *"staging"* ]]; then
+                config_file="$DEPLOYMENT_DIR/configmap-staging.yaml"
+            fi
+
+            if check_configmap_drift "$configmap" "$NAMESPACE" "$config_file"; then
+                log_info "ConfigMap $configmap is in sync"
+            else
+                drift_items="$drift_items{\"type\":\"configmap\",\"name\":\"$configmap\",\"status\":\"drift_detected\"},"
+                ((drift_count++))
+            fi
+        done
+
+        # Remove trailing comma
+        drift_items="${drift_items%,}"
+
+        # Generate report
+        cat > "$DRIFT_REPORT_FILE" << EOF
+    {
+        "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+        "cluster": "$(kubectl config current-context)",
+        "namespace": "$NAMESPACE",
+        "drift_detected": $([ -n "$drift_items" ] && echo "true" || echo "false"),
+        "items": [
+            $drift_items
+        ]
+    }
+    EOF
+
+        if [[ $drift_count -gt 0 ]]; then
+            log_warn "Configuration drift detection completed. Found $drift_count drift(s)."
+            cat "$DRIFT_REPORT_FILE"
+            exit 1
+        else
+            log_info "Configuration drift detection completed. No drifts detected."
+            exit 0
+        fi
+    }
+
+    main "$@"
+  comprehensive-health-check.sh: |
+    #!/bin/bash
+    # Comprehensive Health Check Script
+    set -e
+
+    NAMESPACE="${NAMESPACE:-sophia}"
+    SERVICES=("mcp-context" "mcp-research" "mcp-agents" "mcp-github" "mcp-business" "mcp-hubspot" "mcp-lambda" "agno-coordinator" "agno-teams" "orchestrator" "sophia-dashboard")
+    MONITORING_SERVICES=("prometheus" "grafana" "loki")
+    HEALTH_CHECK_TIMEOUT=30
+    HEALTH_CHECK_INTERVAL=5
+    SLACK_WEBHOOK_URL="${SLACK_WEBHOOK_URL:-}"
+    HEALTH_REPORT_FILE="/tmp/health-check-report-$(date +%Y%m%d-%H%M%S).json"
+
+    # Colors for output
+    RED='\033[0;31m'
+    GREEN='\033[0;32m'
+    YELLOW='\033[1;33m'
+    BLUE='\033[0;34m'
+    NC='\033[0m'
+
+    log_info() {
+        echo -e "${BLUE}[INFO]${NC} $1"
+    }
+
+    log_success() {
+        echo -e "${GREEN}[SUCCESS]${NC} $1"
+    }
+
+    log_warn() {
+        echo -e "${YELLOW}[WARN]${NC} $1"
+    }
+
+    log_error() {
+        echo -e "${RED}[ERROR]${NC} $1"
+    }
+
+    check_service_status() {
+        local service="$1"
+        local namespace="$2"
+
+        log_info "Checking service status: $service"
+
+        # Check if deployment exists
+        if ! kubectl get deployment "$service" -n "$namespace" &> /dev/null; then
+            log_error "Deployment $service does not exist"
+            return 1
+        fi
+
+        # Check deployment status
+        local ready_replicas
+        local desired_replicas
+        ready_replicas=$(kubectl get deployment "$service" -n "$namespace" -o jsonpath='{.status.readyReplicas}')
+        desired_replicas=$(kubectl get deployment "$service" -n "$namespace" -o jsonpath='{.status.replicas}')
+
+        if [[ -z "$ready_replicas" ]] || [[ "$ready_replicas" != "$desired_replicas" ]]; then
+            log_error "Service $service is not ready. Ready: $ready_replicas/$desired_replicas"
+            return 1
+        fi
+
+        log_success "Service $service is healthy"
+        return 0
+    }
+
+    main() {
+        log_info "Starting comprehensive health check..."
+
+        local issues=""
+        local failed_checks=0
+
+        # Check main services
+        for service in "${SERVICES[@]}"; do
+            if ! check_service_status "$service" "$NAMESPACE"; then
+                issues="$issues{\"type\":\"service\",\"name\":\"$service\",\"status\":\"unhealthy\"},"
+                ((failed_checks++))
+            fi
+        done
+
+        # Check monitoring services
+        for service in "${MONITORING_SERVICES[@]}"; do
+            if ! check_service_status "$service" "monitoring"; then
+                issues="$issues{\"type\":\"monitoring\",\"name\":\"$service\",\"status\":\"unhealthy\"},"
+                ((failed_checks++))
+            fi
+        done
+
+        # Remove trailing comma
+        issues="${issues%,}"
+
+        # Generate report
+        cat > "$HEALTH_REPORT_FILE" << EOF
+    {
+        "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+        "cluster": "$(kubectl config current-context)",
+        "namespace": "$NAMESPACE",
+        "overall_status": "$([ -n "$issues" ] && echo "unhealthy" || echo "healthy")",
+        "issues": [
+            $issues
+        ]
+    }
+    EOF
+
+        if [[ $failed_checks -gt 0 ]]; then
+            log_error "Health check completed. Found $failed_checks failed checks."
+            cat "$HEALTH_REPORT_FILE"
+            exit 1
+        else
+            log_success "Health check completed. All checks passed."
+            exit 0
+        fi
+    }
+
+    main "$@"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: config-management-sa
+  namespace: sophia
+  labels:
+    app: config-management
+    component: service-account
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: config-management-role
+  labels:
+    app: config-management
+    component: rbac
+rules:
+- apiGroups: [""]
+  resources: ["configmaps", "secrets", "pods", "services", "endpoints"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["apps"]
+  resources: ["deployments", "replicasets"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["networking.istio.io"]
+  resources: ["virtualservices", "gateways", "destinationrules"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["policy"]
+  resources: ["poddisruptionbudgets"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["batch"]
+  resources: ["cronjobs", "jobs"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: config-management-rolebinding
+  labels:
+    app: config-management
+    component: rbac
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: config-management-role
+subjects:
+- kind: ServiceAccount
+  name: config-management-sa
+  namespace: sophia

@@ -128,9 +128,9 @@ class AgentInfraManager:
         """Audit available GitHub secrets in environment"""
         
         critical_secrets = [
-            "FLY_API_TOKEN", "GH_PAT_TOKEN", "LAMBDA_API_KEY", "LAMBDA_CLOUD_API_KEY",
+            "GH_PAT_TOKEN", "LAMBDA_API_KEY", "LAMBDA_CLOUD_API_KEY",
             "REDIS_USER_API_KEY", "QDRANT_API_KEY", "NEON_API_TOKEN",
-            "GONG_ACCESS_KEY", "HUBSPOT_ACCESS_TOKEN", "SLACK_BOT_TOKEN", 
+            "GONG_ACCESS_KEY", "HUBSPOT_ACCESS_TOKEN", "SLACK_BOT_TOKEN",
             "NOTION_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_API_KEY"
         ]
         

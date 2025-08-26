@@ -1,0 +1,283 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: admin@sophia-intel.ai
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+    - dns01:
+        dnsimple:
+          tokenSecretRef:
+            name: dnsimple-secret
+            key: token
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: admin@sophia-intel.ai
+    privateKeySecretRef:
+      name: letsencrypt-staging
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+    - dns01:
+        dnsimple:
+          tokenSecretRef:
+            name: dnsimple-secret
+            key: token
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned-issuer
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: sophia-intel-ai-tls
+  namespace: sophia
+spec:
+  secretName: sophia-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+  - sophia-intel.ai
+  - www.sophia-intel.ai
+  - api.sophia-intel.ai
+  - dashboard.sophia-intel.ai
+  - jaeger.sophia-intel.ai
+  - monitoring.sophia-intel.ai
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: sophia-wildcard-tls
+  namespace: sophia
+spec:
+  secretName: sophia-wildcard-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+  - "*.sophia-intel.ai"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: internal-services-tls
+  namespace: sophia
+spec:
+  secretName: internal-tls
+  issuerRef:
+    name: selfsigned-issuer
+    kind: ClusterIssuer
+  dnsNames:
+  - "*.sophia.svc.cluster.local"
+  - "sophia.svc.cluster.local"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dnsimple-secret
+  namespace: cert-manager
+type: Opaque
+data:
+  token: <base64-encoded-dnsimple-token>
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: monitoring-tls
+  namespace: monitoring
+spec:
+  secretName: monitoring-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+  - monitoring.sophia-intel.ai
+  - prometheus.sophia-intel.ai
+  - grafana.sophia-intel.ai
+  - alertmanager.sophia-intel.ai
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sophia-ingress-with-cert
+  namespace: sophia
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - sophia-intel.ai
+    - www.sophia-intel.ai
+    - api.sophia-intel.ai
+    - dashboard.sophia-intel.ai
+    secretName: sophia-tls
+  rules:
+  - host: sophia-intel.ai
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-dashboard
+            port:
+              number: 3000
+  - host: www.sophia-intel.ai
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-dashboard
+            port:
+              number: 3000
+  - host: api.sophia-intel.ai
+    http:
+      paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: orchestrator
+            port:
+              number: 8080
+  - host: dashboard.sophia-intel.ai
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-dashboard
+            port:
+              number: 3000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: monitoring-ingress
+  namespace: monitoring
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: monitoring-auth
+    nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required'
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - monitoring.sophia-intel.ai
+    - prometheus.sophia-intel.ai
+    - grafana.sophia-intel.ai
+    - alertmanager.sophia-intel.ai
+    secretName: monitoring-tls
+  rules:
+  - host: prometheus.sophia-intel.ai
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: prometheus-service
+            port:
+              number: 9090
+  - host: grafana.sophia-intel.ai
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: grafana-service
+            port:
+              number: 3000
+  - host: alertmanager.sophia-intel.ai
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: alertmanager-service
+            port:
+              number: 9093
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: multi-node-tls
+  namespace: sophia
+spec:
+  secretName: multi-node-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+  - node1.sophia-intel.ai
+  - node2.sophia-intel.ai
+  - node3.sophia-intel.ai
+  - "*.sophia-nodes.local"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: monitoring-auth
+  namespace: monitoring
+type: Opaque
+data:
+  users: <base64-encoded-htpasswd>
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: ca-issuer
+spec:
+  ca:
+    secretName: ca-key-pair
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: ca-certificate
+  namespace: cert-manager
+spec:
+  isCA: true
+  commonName: sophia-ca
+  secretName: ca-key-pair
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: selfsigned-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+  duration: 8760h0m0s  # 1 year
+  renewBefore: 720h0m0s  # 30 days

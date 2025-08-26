@@ -1,0 +1,170 @@
+apiVersion: jaegertracing.io/v1
+kind: Jaeger
+metadata:
+  name: sophia-jaeger
+  namespace: sophia
+spec:
+  strategy: allInOne
+  allInOne:
+    image: jaegertracing/all-in-one:latest
+    options:
+      log-level: info
+      query:
+        base-path: /jaeger
+      memory:
+        max-traces: 50000
+    resources:
+      limits:
+        cpu: 500m
+        memory: 1Gi
+      requests:
+        cpu: 200m
+        memory: 512Mi
+    env:
+    - name: COLLECTOR_OTLP_ENABLED
+      value: "true"
+    - name: COLLECTOR_OTLP_GRPC_PORT
+      value: "14268"
+    - name: COLLECTOR_OTLP_HTTP_PORT
+      value: "14268"
+  storage:
+    type: memory
+    options:
+      memory:
+        max-traces: 100000
+  ui:
+    options:
+      dependencies:
+        menuEnabled: false
+      tracking:
+        gaID: null
+      menuEnabled: true
+  ingress:
+    enabled: false
+  agent:
+    strategy: DaemonSet
+    options:
+      log-level: info
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jaeger-collector
+  namespace: sophia
+  labels:
+    app: jaeger
+    app.kubernetes.io/component: collector
+    app.kubernetes.io/instance: sophia-jaeger
+    app.kubernetes.io/name: jaeger
+spec:
+  ports:
+  - name: http
+    port: 14268
+    protocol: TCP
+    targetPort: 14268
+  - name: grpc
+    port: 14250
+    protocol: TCP
+    targetPort: 14250
+  selector:
+    app.kubernetes.io/component: all-in-one
+    app.kubernetes.io/instance: sophia-jaeger
+    app.kubernetes.io/name: jaeger
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jaeger-query
+  namespace: sophia
+  labels:
+    app: jaeger
+    app.kubernetes.io/component: query
+    app.kubernetes.io/instance: sophia-jaeger
+    app.kubernetes.io/name: jaeger
+spec:
+  ports:
+  - name: http
+    port: 16686
+    protocol: TCP
+    targetPort: 16686
+  selector:
+    app.kubernetes.io/component: all-in-one
+    app.kubernetes.io/instance: sophia-jaeger
+    app.kubernetes.io/name: jaeger
+  type: ClusterIP
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: jaeger-ui
+  namespace: sophia
+spec:
+  hosts:
+  - "jaeger.sophia-intel.ai"
+  gateways:
+  - sophia-gateway
+  http:
+  - match:
+    - uri:
+        prefix: "/"
+    route:
+    - destination:
+        host: jaeger-query
+        port:
+          number: 16686
+---
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: mesh-default
+  namespace: sophia
+spec:
+  tracing:
+  - providers:
+    - name: jaeger
+  metrics:
+  - providers:
+    - name: prometheus
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sophia-telemetry-config
+  namespace: sophia
+data:
+  telemetry-config.yaml: |
+    extensions:
+      zpages: {}
+
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+      jaeger:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:14250
+          thrift_http:
+            endpoint: 0.0.0.0:14268
+
+    processors:
+      batch:
+        send_batch_size: 1024
+        timeout: 1s
+
+    exporters:
+      jaeger:
+        endpoint: jaeger-collector.sophia.svc.cluster.local:14268
+        insecure: true
+
+    service:
+      extensions: [zpages]
+      pipelines:
+        traces:
+          receivers: [otlp, jaeger]
+          processors: [batch]
+          exporters: [jaeger]

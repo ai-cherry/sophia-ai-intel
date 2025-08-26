@@ -33,12 +33,12 @@ The enhanced [`reset_deploy.yml`](.github/workflows/reset_deploy.yml:1) workflow
 - Generates deployment proofs and summaries
 
 **Services Deployed**:
-- Dashboard: https://sophiaai-dashboard-v2.fly.dev
-- MCP Repository: https://sophiaai-mcp-repo-v2.fly.dev
-- MCP Research: https://sophiaai-mcp-research-v2.fly.dev
-- MCP Context: https://sophiaai-mcp-context-v2.fly.dev
-- MCP Business: https://sophiaai-mcp-business-v2.fly.dev
-- Jobs: https://sophiaai-jobs-v2.fly.dev
+- Dashboard: http://localhost:{port}
+- MCP Repository: http://localhost:{port}
+- MCP Research: http://localhost:{port}
+- MCP Context: http://localhost:{port}
+- MCP Business: http://localhost:{port}
+- Jobs: http://localhost:{port}
 
 ### 2. Cancel Mode
 
@@ -144,7 +144,7 @@ Each run provides detailed summary including:
 
 ### Real-time Logs
 - Live workflow execution logs in GitHub Actions
-- Flyctl command output for transparency
+- docker-compose command output for transparency
 - Health check results with retry attempts
 - Machine state transitions
 
@@ -154,7 +154,7 @@ Each run provides detailed summary including:
 ```yaml
 FLY_ORG: pay-ready                    # Target Fly.io organization
 FLY_PRIMARY_REGION: iad              # Primary deployment region  
-DASHBOARD_URL: https://sophiaai-dashboard-v2.fly.dev
+DASHBOARD_URL: http://localhost:{port}
 # ... additional service URLs
 ```
 
@@ -177,7 +177,7 @@ DASHBOARD_URL: https://sophiaai-dashboard-v2.fly.dev
 ### Stop Mode Incomplete
 - Some machines may not respond to stop commands
 - Check Fly.io dashboard for machine states
-- Use Fly CLI manually: `flyctl machines stop <id> -a <app>`
+- Use Fly CLI manually: `docker-compose machines stop <id> -a <app>`
 
 ### Deploy Mode Failures
 - Check FLY_API_TOKEN validity

@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sophia-hubspot
+  namespace: sophia
+  labels:
+    app: sophia-hubspot
+    component: hubspot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sophia-hubspot
+  template:
+    metadata:
+      labels:
+        app: sophia-hubspot
+        component: hubspot
+    spec:
+      containers:
+      - name: sophia-hubspot
+        image: sophia-ai-intel-1-sophia-hubspot:latest
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "8080"
+        - name: TENANT
+          value: "pay-ready"
+        resources:
+          limits:
+            cpu: 200m
+            memory: 256Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        imagePullPolicy: IfNotPresent
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sophia-hubspot
+  namespace: sophia
+  labels:
+    app: sophia-hubspot
+    component: hubspot
+spec:
+  type: ClusterIP
+  selector:
+    app: sophia-hubspot
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+    name: http

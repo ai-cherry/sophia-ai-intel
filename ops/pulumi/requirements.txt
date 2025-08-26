@@ -1,4 +1,0 @@
-pulumi>=3.0.0
-pulumi-command>=0.9.0
-requests>=2.31.0
-# Deployment triggered with all secrets - Mon Aug 25 10:22:32 UTC 2025

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Hourly Reindex Agent - Fly Scheduled Machine
+Hourly Reindex Agent - Kubernetes Cron Job
 ============================================
 
 Autonomous agent that runs hourly to:
@@ -9,7 +9,7 @@ Autonomous agent that runs hourly to:
 - Generate proof artifacts for compliance
 - Trigger MCP service operations when needed
 
-Designed for Fly.io scheduled machine execution with cloud-only operations.
+Designed for Kubernetes cron job execution with cloud-native operations.
 """
 
 import asyncio
@@ -44,11 +44,11 @@ class ReindexAgent:
         self.start_time = datetime.now(timezone.utc)
         self.execution_id = f"reindex_{int(self.start_time.timestamp())}"
         self.services = {
-            "context": "https://sophiaai-mcp-context-v2.fly.dev",
-            "research": "https://sophiaai-mcp-research-v2.fly.dev",
-            "business": "https://sophiaai-mcp-business-v2.fly.dev",
-            "github": "https://sophiaai-mcp-repo-v2.fly.dev",
-            "dashboard": "https://sophiaai-dashboard-v2.fly.dev",
+            "context": "http://sophia-context:8080",
+            "research": "http://sophia-research:8080",
+            "business": "http://sophia-business:8080",
+            "github": "http://sophia-github:8080",
+            "dashboard": "http://sophia-dashboard:3000",
         }
         self.results = {
             "execution_id": self.execution_id,
@@ -329,8 +329,8 @@ class ReindexAgent:
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "agent_version": "1.0.0",
             "environment": {
-                "platform": "fly.io",
-                "execution_type": "scheduled_machine",
+                "platform": "kubernetes",
+                "execution_type": "cron_job",
             },
             "summary": {
                 "total_services_checked": len(self.services),
@@ -365,7 +365,7 @@ class ReindexAgent:
             proofs_dir = Path("/tmp/proofs") if Path("/tmp").exists() else Path(".")
             proofs_dir.mkdir(exist_ok=True)
 
-            # Save to local file (will be uploaded by Fly machine)
+            # Save to local file (will be uploaded by Kubernetes pod)
             results_file = proofs_dir / f"reindex_result_{self.execution_id}.json"
 
             with open(results_file, "w") as f:

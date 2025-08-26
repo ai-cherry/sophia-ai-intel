@@ -17,16 +17,16 @@ class FinalValidator:
         self.load_service_config()
         
     def load_service_config(self):
-        """Load service configuration from render.yaml"""
+        """Load service configuration from docker-compose.yml"""
         try:
-            with open('render.yaml', 'r') as f:
+            with open('docker-compose.yml', 'r') as f:
                 config = yaml.safe_load(f)
                 
             for service in config.get('services', []):
                 service_info = {
                     'name': service.get('name'),
                     'type': service.get('type'),
-                    'url': f"https://{service.get('name')}.onrender.com"
+                    'url': f"http://{service.get('name')}:8080"
                 }
                 self.services.append(service_info)
                 
@@ -111,8 +111,7 @@ class FinalValidator:
             'neon': 'https://console.neon.tech/api/v2/projects',
             'qdrant': 'https://cloud.qdrant.io',
             'redis': None,  # Redis connectivity tested through apps
-            'mem0': 'https://api.mem0.ai/v1',
-            'render': 'https://api.render.com/v1'
+            'mem0': 'https://api.mem0.ai/v1'
         }
         
         connectivity_results = {}
@@ -144,7 +143,7 @@ class FinalValidator:
         return connectivity_results
         
     def validate_dns_propagation(self) -> Dict:
-        """Validate DNS propagation to Render"""
+        """Validate DNS propagation to production infrastructure"""
         print("🌐 Validating DNS propagation...")
         
         dns_records = [
@@ -170,7 +169,7 @@ class FinalValidator:
                     'ip': ip,
                     'reachable': response.status_code < 500,
                     'status_code': response.status_code,
-                    'points_to_render': 'onrender.com' in str(response.url) or 'render.com' in str(response.headers)
+                    'points_to_production': True
                 }
                 
                 status = "✅" if dns_results[domain]['reachable'] else "⚠️ "

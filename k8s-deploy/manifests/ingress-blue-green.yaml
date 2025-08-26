@@ -1,0 +1,212 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sophia-blue-green-ingress
+  namespace: sophia
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    # Blue-green deployment configuration
+    nginx.ingress.kubernetes.io/canary: "true"
+    nginx.ingress.kubernetes.io/canary-weight: "10"
+    nginx.ingress.kubernetes.io/canary-by-header: "X-Canary"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - www.sophia-intel.ai
+    secretName: sophia-tls-secret
+  rules:
+  - host: www.sophia-intel.ai
+    http:
+      paths:
+      # Frontend routes - Blue environment (Kubernetes)
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-dashboard
+            port:
+              number: 3000
+      # API routes - Blue environment (Kubernetes)
+      - path: /api/research
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-research
+            port:
+              number: 8000
+      - path: /api/context
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-context
+            port:
+              number: 8001
+      - path: /api/github
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-github
+            port:
+              number: 8005
+      - path: /api/business
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-business
+            port:
+              number: 8080
+      - path: /api/lambda
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-lambda
+            port:
+              number: 8080
+      - path: /api/hubspot
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-hubspot
+            port:
+              number: 8004
+      - path: /api/agents
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-agents
+            port:
+              number: 8002
+      - path: /api/orchestrator
+        pathType: Prefix
+        backend:
+          service:
+            name: orchestrator
+            port:
+              number: 3001
+      # Health check endpoints
+      - path: /health
+        pathType: Exact
+        backend:
+          service:
+            name: sophia-dashboard
+            port:
+              number: 3000
+      - path: /api/health
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-research
+            port:
+              number: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sophia-main-ingress
+  namespace: sophia
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    # Main production ingress (90% traffic)
+    nginx.ingress.kubernetes.io/upstream-fail-timeout: "10"
+    nginx.ingress.kubernetes.io/upstream-max-fails: "3"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - www.sophia-intel.ai
+    secretName: sophia-tls-secret
+  rules:
+  - host: www.sophia-intel.ai
+    http:
+      paths:
+      # Frontend routes - Green environment (Docker Compose)
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-dashboard-green
+            port:
+              number: 3000
+      # API routes - Green environment (Docker Compose)
+      - path: /api/research
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-research-green
+            port:
+              number: 8080
+      - path: /api/context
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-context-green
+            port:
+              number: 8080
+      - path: /api/github
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-github-green
+            port:
+              number: 8080
+      - path: /api/business
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-business-green
+            port:
+              number: 8080
+      - path: /api/lambda
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-lambda-green
+            port:
+              number: 8080
+      - path: /api/hubspot
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-hubspot-green
+            port:
+              number: 8080
+      - path: /api/agents
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-agents-green
+            port:
+              number: 8000
+      - path: /api/orchestrator
+        pathType: Prefix
+        backend:
+          service:
+            name: orchestrator-green
+            port:
+              number: 3001
+      # Health check endpoints
+      - path: /health
+        pathType: Exact
+        backend:
+          service:
+            name: sophia-dashboard-green
+            port:
+              number: 3000
+      - path: /api/health
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-research-green
+            port:
+              number: 8080

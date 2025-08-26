@@ -307,7 +307,7 @@ def create_proof_artifacts(manager, tokens, validation_results, rejection_result
                         "token_jwt": token[:50] + "...",  # Truncated for security
                         "validation_result": validation_results.get(token_name),
                         "usage_example": {
-                            "curl": f"curl -H 'Authorization: Bearer {token[:20]}...' https://sophiaai-mcp-business-v2.fly.dev/prospects/search",
+                            "curl": f"curl -H 'Authorization: Bearer {token[:20]}...' http://localhost:{port}/prospects/search",
                             "description": f"Example usage of {token_name} for MCP service authentication",
                         },
                     },

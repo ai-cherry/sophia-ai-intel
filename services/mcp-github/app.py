@@ -35,7 +35,7 @@ from pydantic import BaseModel
 from github_app import gh_get, MissingCredentialsError
 
 REPO = os.getenv("GITHUB_REPO", "ai-cherry/sophia-ai-intel")
-DASHBOARD_ORIGIN = os.getenv("DASHBOARD_ORIGIN", "https://sophiaai-dashboard.fly.dev")
+DASHBOARD_ORIGIN = os.getenv("DASHBOARD_ORIGIN", "http://sophia-dashboard:3000")
 
 app = FastAPI(title="sophia-mcp-github-v2", version="2.0.0")
 

@@ -43,7 +43,7 @@
 │   └── settings.json
 ├── CODEOWNERS
 ├── README.md
-├── SETUP_COMPLETION_REPORT.md
+
 ├── apps
 │   └── dashboard
 │       ├── Dockerfile.static

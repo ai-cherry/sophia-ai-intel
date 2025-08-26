@@ -99,7 +99,13 @@ spec:
             port: 8080
           initialDelaySeconds: 10
           periodSeconds: 10
-      imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - name: research-storage
+          mountPath: /data
+      volumes:
+      - name: research-storage
+        persistentVolumeClaim:
+          claimName: mcp-research-storage
 ---
 apiVersion: v1
 kind: Service

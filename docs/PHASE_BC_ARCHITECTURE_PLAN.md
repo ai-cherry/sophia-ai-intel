@@ -116,7 +116,7 @@ graph TB
 **Current Issue**: FLY_TOKEN_PAY_READY authentication failures
 
 **Requirements**:
-- All flyctl commands MUST include `--access-token "$FLY_API_TOKEN"` and `--org=pay-ready`
+- All docker-compose commands MUST include `--access-token "$FLY_API_TOKEN"` and `--org=pay-ready`
 - Verify [`deploy_all.yml`](../.github/workflows/deploy_all.yml) uses FLY_TOKEN_PAY_READY secret
 - Handle 401/403 errors with normalized error format
 
@@ -587,11 +587,11 @@ class RegressionDetector:
 
 ## Service Deployment Status
 ✅ All 5 services deployed and healthy:
-- Dashboard: https://sophiaai-dashboard-v2.fly.dev ([health](proofs/healthz/sophiaai-dashboard-v2.txt))
-- MCP-Repo: https://sophiaai-mcp-repo-v2.fly.dev ([health](proofs/healthz/sophiaai-mcp-repo-v2.txt))
-- MCP-Research: https://sophiaai-mcp-research-v2.fly.dev ([health](proofs/healthz/sophiaai-mcp-research-v2.txt))  
-- MCP-Business: https://sophiaai-mcp-business-v2.fly.dev ([health](proofs/healthz/sophiaai-mcp-business-v2.txt))
-- MCP-Context: https://sophiaai-mcp-context-v2.fly.dev ([health](proofs/healthz/sophiaai-mcp-context-v2.txt))
+- Dashboard: http://localhost:{port} ([health](proofs/healthz/sophiaai-dashboard-v2.txt))
+- MCP-Repo: http://localhost:{port} ([health](proofs/healthz/sophiaai-mcp-repo-v2.txt))
+- MCP-Research: http://localhost:{port} ([health](proofs/healthz/sophiaai-mcp-research-v2.txt))  
+- MCP-Business: http://localhost:{port} ([health](proofs/healthz/sophiaai-mcp-business-v2.txt))
+- MCP-Context: http://localhost:{port} ([health](proofs/healthz/sophiaai-mcp-context-v2.txt))
 
 ## Feature Implementation Status
 ✅ Jobs Panel + Mini Agents ([demo](proofs/jobs/reindex_result.json))

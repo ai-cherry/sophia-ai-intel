@@ -111,7 +111,7 @@ jobs:
           
       - name: Deploy to staging
         run: |
-          flyctl deploy --app sophiaai-staging
+          docker-compose deploy --app sophiaai-staging
           
       - name: Playwright screenshot
         run: |

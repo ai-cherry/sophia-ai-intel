@@ -1,0 +1,109 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sophia-config-staging
+  namespace: sophia-staging
+  labels:
+    app: sophia-ai
+    component: configuration
+    environment: staging
+data:
+  # Environment Configuration
+  NODE_ENV: "staging"
+  ENVIRONMENT: "staging"
+  LOG_LEVEL: "info"
+
+  # Domain Configuration
+  DOMAIN: "staging.sophia-intel.ai"
+  API_DOMAIN: "api-staging.sophia-intel.ai"
+  APP_DOMAIN: "staging.sophia-intel.ai"
+
+  # Service URLs (Internal)
+  DASHBOARD_ORIGIN: "http://sophia-dashboard:3000"
+  GITHUB_MCP_URL: "http://sophia-github:8080"
+  CONTEXT_MCP_URL: "http://sophia-context:8080"
+  RESEARCH_MCP_URL: "http://sophia-research:8080"
+  BUSINESS_MCP_URL: "http://sophia-business:8080"
+
+  # Service Ports (Standardized)
+  DASHBOARD_PORT: "3000"
+  MCP_RESEARCH_PORT: "8081"
+  MCP_CONTEXT_PORT: "8082"
+  MCP_GITHUB_PORT: "8083"
+  MCP_BUSINESS_PORT: "8084"
+  MCP_LAMBDA_PORT: "8085"
+  MCP_HUBSPOT_PORT: "8086"
+  MCP_AGENTS_PORT: "8087"
+
+  # Monitoring
+  PROMETHEUS_PORT: "9090"
+  GRAFANA_PORT: "3001"
+  CADVISOR_PORT: "8080"
+  NODE_EXPORTER_PORT: "9100"
+  LOKI_PORT: "3100"
+  DCGM_EXPORTER_PORT: "9400"
+
+  # Monitoring URLs
+  PROMETHEUS_URL: "http://prometheus:9090"
+  GRAFANA_URL: "http://grafana:3000"
+  LOKI_URL: "http://loki:3100"
+
+  # SSL Configuration
+  SSL_CERT_PATH: "/etc/letsencrypt/live/staging.sophia-intel.ai"
+  SSL_CERT_FILE: "fullchain.pem"
+  SSL_KEY_FILE: "privkey.pem"
+  SSL_DH_PARAM_FILE: "dhparam.pem"
+
+  # Logging
+  LOG_FORMAT: "json"
+  LOG_MAX_SIZE: "50m"
+  LOG_MAX_FILES: "5"
+
+  # Performance & Scaling
+  MAX_WORKERS: "4"
+  MAX_REQUESTS: "1000"
+  MAX_REQUESTS_JITTER: "50"
+
+  # Cache Settings
+  CACHE_TTL: "900"
+  REDIS_CACHE_DB: "2"
+
+  # Connection Pool
+  DB_POOL_SIZE: "15"
+  DB_MAX_OVERFLOW: "20"
+  REDIS_POOL_SIZE: "15"
+
+  # Feature Flags
+  ENABLE_MONITORING: "true"
+  ENABLE_LOGGING: "true"
+  ENABLE_CACHING: "true"
+  ENABLE_SSL: "true"
+  ENABLE_BACKUP: "true"
+  ENABLE_AUTO_SCALING: "false"
+
+  # Development features (disabled in staging)
+  DEBUG: "false"
+  ENABLE_SWAGGER: "false"
+  ENABLE_CORS_ALL: "false"
+
+  # Backup Configuration
+  BACKUP_SCHEDULE: "0 4 * * *"
+  BACKUP_RETENTION_DAYS: "7"
+  BACKUP_PATH: "/opt/sophia/backups"
+
+  # Recovery Settings
+  RECOVERY_TIMEOUT: "300"
+  RECOVERY_RETRIES: "3"
+
+  # GitHub Repository
+  GITHUB_REPO: "ai-cherry/sophia-ai-intel"
+
+  # Multi-tenant Support
+  TENANT: "staging"
+
+  # Default Integration Endpoints
+  MCP_INTERCOM_URL: "http://mcp-intercom:8080"
+  MCP_SUPPORT_URL: "http://mcp-support:8080"
+  MCP_USAGE_URL: "http://mcp-usage:8080"
+  MCP_FINANCIAL_URL: "http://mcp-financial:8080"
+  MCP_ENGAGEMENT_URL: "http://mcp-engagement:8080"

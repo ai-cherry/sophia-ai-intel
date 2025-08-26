@@ -117,10 +117,11 @@
     ],
     "documents_processed": {
       "total_attempted": "50+ documents across docs/ and proofs/",
-      "successfully_chunked": 3,
-      "chunks_created": 3,
-      "root_documents": ["README.md", "SETUP_COMPLETION_REPORT.md", "todo.md"],
-      "embeddings_generated": 3
+      "successfully_chunked": 2,
+      "chunks_created": 2,
+      "root_documents": ["README.md", "todo.md"],
+      "embeddings_generated": 2,
+      "archived_documents": ["SETUP_COMPLETION_REPORT.md"]
     },
     "infrastructure_verified": {
       "qdrant_connection": "SUCCESS",

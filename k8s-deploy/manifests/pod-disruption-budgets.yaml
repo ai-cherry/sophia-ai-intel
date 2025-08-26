@@ -1,0 +1,97 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: mcp-context-pdb
+  namespace: sophia
+  labels:
+    app: mcp-context
+    component: pdb
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: mcp-context
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: mcp-research-pdb
+  namespace: sophia
+  labels:
+    app: mcp-research
+    component: pdb
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: mcp-research
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: mcp-agents-pdb
+  namespace: sophia
+  labels:
+    app: mcp-agents
+    component: pdb
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: mcp-agents
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: agno-coordinator-pdb
+  namespace: sophia
+  labels:
+    app: agno-coordinator
+    component: pdb
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: agno-coordinator
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: agno-teams-pdb
+  namespace: sophia
+  labels:
+    app: agno-teams
+    component: pdb
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: agno-teams
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: orchestrator-pdb
+  namespace: sophia
+  labels:
+    app: orchestrator
+    component: pdb
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: orchestrator
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: sophia-dashboard-pdb
+  namespace: sophia
+  labels:
+    app: sophia-dashboard
+    component: pdb
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: sophia-dashboard

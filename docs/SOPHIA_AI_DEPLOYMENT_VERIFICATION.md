@@ -84,7 +84,7 @@ location /agents/ {
 **4. SERVICE INTEGRATION GAPS**
 ```typescript  
 // BEFORE: Hardcoded Fly.io URLs
-private baseUrl = 'https://sophiaai-mcp-context-v2.fly.dev'
+private baseUrl = 'http://localhost:{port}'
 
 // AFTER: Lambda Labs infrastructure
 private baseUrl = 'http://192.222.51.223:8082'  # Context service

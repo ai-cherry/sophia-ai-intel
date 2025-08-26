@@ -1,0 +1,338 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: istiocontrolplane
+  namespace: istio-system
+spec:
+  profile: default
+  components:
+    ingressGateways:
+    - name: istio-ingressgateway
+      enabled: true
+      k8s:
+        hpaSpec:
+          minReplicas: 2
+          maxReplicas: 5
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 2000m
+            memory: 1024Mi
+        service:
+          type: LoadBalancer
+          ports:
+          - name: http2
+            port: 80
+            targetPort: 8080
+            protocol: TCP
+          - name: https
+            port: 443
+            targetPort: 8443
+            protocol: TCP
+    pilot:
+      enabled: true
+      k8s:
+        resources:
+          requests:
+            cpu: 500m
+            memory: 2048Mi
+          limits:
+            cpu: 1000m
+            memory: 4096Mi
+    telemetry:
+      enabled: true
+  values:
+    global:
+      proxy:
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 2000m
+            memory: 1024Mi
+    telemetry:
+      v2:
+        enabled: true
+        prometheus:
+          enabled: true
+        stackdriver:
+          enabled: false
+    pilot:
+      autoscaleEnabled: true
+      autoscaleMin: 2
+      autoscaleMax: 5
+    gateways:
+      istio-ingressgateway:
+        autoscaleEnabled: true
+        autoscaleMin: 2
+        autoscaleMax: 5
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: sophia-gateway
+  namespace: sophia
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    tls:
+      mode: SIMPLE
+      credentialName: sophia-tls
+    hosts:
+    - "sophia-intel.ai"
+    - "www.sophia-intel.ai"
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: sophia-dashboard
+  namespace: sophia
+spec:
+  hosts:
+  - "sophia-intel.ai"
+  - "www.sophia-intel.ai"
+  gateways:
+  - sophia-gateway
+  http:
+  - match:
+    - uri:
+        prefix: "/dashboard"
+    route:
+    - destination:
+        host: sophia-dashboard
+        port:
+          number: 3000
+  - match:
+    - uri:
+        prefix: "/api/dashboard"
+    route:
+    - destination:
+        host: sophia-dashboard
+        port:
+          number: 3000
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: mcp-context
+  namespace: sophia
+spec:
+  hosts:
+  - "sophia-intel.ai"
+  - "www.sophia-intel.ai"
+  gateways:
+  - sophia-gateway
+  http:
+  - match:
+    - uri:
+        prefix: "/api/context"
+    route:
+    - destination:
+        host: mcp-context
+        port:
+          number: 8080
+      retries:
+        attempts: 3
+        perTryTimeout: 2s
+        retryOn: connect-failure,refused-stream,unavailable,cancelled,retriable-4xx,retriable-5xx
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: mcp-research
+  namespace: sophia
+spec:
+  hosts:
+  - "sophia-intel.ai"
+  - "www.sophia-intel.ai"
+  gateways:
+  - sophia-gateway
+  http:
+  - match:
+    - uri:
+        prefix: "/api/research"
+    route:
+    - destination:
+        host: mcp-research
+        port:
+          number: 8080
+      retries:
+        attempts: 3
+        perTryTimeout: 5s
+        retryOn: connect-failure,refused-stream,unavailable,cancelled,retriable-4xx,retriable-5xx
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: mcp-agents
+  namespace: sophia
+spec:
+  hosts:
+  - "sophia-intel.ai"
+  - "www.sophia-intel.ai"
+  gateways:
+  - sophia-gateway
+  http:
+  - match:
+    - uri:
+        prefix: "/api/agents"
+    route:
+    - destination:
+        host: mcp-agents
+        port:
+          number: 8080
+      retries:
+        attempts: 2
+        perTryTimeout: 3s
+        retryOn: connect-failure,refused-stream,unavailable,cancelled,retriable-4xx,retriable-5xx
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: agno-coordinator
+  namespace: sophia
+spec:
+  hosts:
+  - "sophia-intel.ai"
+  - "www.sophia-intel.ai"
+  gateways:
+  - sophia-gateway
+  http:
+  - match:
+    - uri:
+        prefix: "/api/coordinator"
+    route:
+    - destination:
+        host: agno-coordinator
+        port:
+          number: 3000
+      retries:
+        attempts: 3
+        perTryTimeout: 4s
+        retryOn: connect-failure,refused-stream,unavailable,cancelled,retriable-4xx,retriable-5xx
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: orchestrator
+  namespace: sophia
+spec:
+  hosts:
+  - "sophia-intel.ai"
+  - "www.sophia-intel.ai"
+  gateways:
+  - sophia-gateway
+  http:
+  - match:
+    - uri:
+        prefix: "/api/orchestrator"
+    route:
+    - destination:
+        host: orchestrator
+        port:
+          number: 8080
+      retries:
+        attempts: 3
+        perTryTimeout: 3s
+        retryOn: connect-failure,refused-stream,unavailable,cancelled,retriable-4xx,retriable-5xx
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: sophia-services-dr
+  namespace: sophia
+spec:
+  host: "*.sophia.svc.cluster.local"
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN
+    outlierDetection:
+      consecutive5xxErrors: 3
+      interval: 10s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 50
+    connectionPool:
+      tcp:
+        maxConnections: 100
+      http:
+        http2MaxRequests: 1000
+        maxRequestsPerConnection: 10
+    tls:
+      mode: ISTIO_MUTUAL
+---
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: sophia
+spec:
+  mtls:
+    mode: STRICT
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-nothing
+  namespace: sophia
+spec:
+  {}
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: sophia-ingress
+  namespace: sophia
+spec:
+  selector:
+    matchLabels:
+      app: istio-ingressgateway
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        ipBlocks: ["0.0.0.0/0"]
+    to:
+    - operation:
+        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+        paths: ["/api/*", "/dashboard/*"]
+---
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: mesh-default
+  namespace: sophia
+spec:
+  tracing:
+  - providers:
+    - name: jaeger
+  metrics:
+  - providers:
+    - name: prometheus
+    overrides:
+    - tagOverrides:
+        request_method:
+          value: "request.method"
+        request_path:
+          value: "request.path"
+        response_code:
+          value: "response.code"
+        response_size:
+          value: "response.size"
+        request_size:
+          value: "request.size"
+        response_duration:
+          value: "response.duration"

@@ -1,0 +1,348 @@
+# Sophia AI mTLS Network Policies
+# These policies enforce mutual TLS authentication between all services
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: sophia-mtls-orchestrator
+  namespace: sophia
+  labels:
+    app: sophia-ai
+    component: network-policy
+    service: orchestrator
+spec:
+  podSelector:
+    matchLabels:
+      app: sophia-orchestrator
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow ingress only from other Sophia services on specific ports
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: sophia-ai
+    ports:
+    - protocol: TCP
+      port: 8443  # HTTPS/mTLS port
+    - protocol: TCP
+      port: 8080  # Health check port
+  - from:
+    # Allow ingress from Istio sidecar proxy
+    - podSelector:
+        matchLabels:
+          app: istio-proxy
+    ports:
+    - protocol: TCP
+      port: 15001  # Istio proxy status
+  egress:
+  # Allow egress to other Sophia services and infrastructure
+  - to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: sophia-ai
+    ports:
+    - protocol: TCP
+      port: 8443  # HTTPS/mTLS port
+    - protocol: TCP
+      port: 8080  # Health check port
+  - to:
+    # DNS resolution
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: UDP
+      port: 53
+  - to:
+    # External APIs (with TLS)
+    ports:
+    - protocol: TCP
+      port: 443  # HTTPS only
+  - to:
+    # Monitoring and logging
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+      podSelector:
+        matchLabels:
+          app: prometheus
+    ports:
+    - protocol: TCP
+      port: 9090
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+      podSelector:
+        matchLabels:
+          app: loki
+    ports:
+    - protocol: TCP
+      port: 3100
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: sophia-mtls-mcp-services
+  namespace: sophia
+  labels:
+    app: sophia-ai
+    component: network-policy
+    service: mcp
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: sophia-mcp
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow ingress only from authorized services
+  - from:
+    - podSelector:
+        matchLabels:
+          app: sophia-orchestrator
+    - podSelector:
+        matchLabels:
+          app: sophia-agno-coordinator
+    - podSelector:
+        matchLabels:
+          app: sophia-agno-teams
+    ports:
+    - protocol: TCP
+      port: 8443  # HTTPS/mTLS port
+    - protocol: TCP
+      port: 8080  # Health check port
+  egress:
+  # Allow egress to other services and external APIs
+  - to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: sophia-ai
+    ports:
+    - protocol: TCP
+      port: 8443  # HTTPS/mTLS port
+    - protocol: TCP
+      port: 8080  # Health check port
+  - to:
+    # External business APIs (HubSpot, Salesforce, etc.)
+    ports:
+    - protocol: TCP
+      port: 443  # HTTPS only
+  - to:
+    # DNS resolution
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: UDP
+      port: 53
+  - to:
+    # Database connections
+    - podSelector:
+        matchLabels:
+          app: redis
+    ports:
+    - protocol: TCP
+      port: 6379
+  - to:
+    - podSelector:
+        matchLabels:
+          app: qdrant
+    ports:
+    - protocol: TCP
+      port: 6333
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: sophia-mtls-agno-services
+  namespace: sophia
+  labels:
+    app: sophia-ai
+    component: network-policy
+    service: agno
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: sophia-agno
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow ingress from orchestrator and other agno services
+  - from:
+    - podSelector:
+        matchLabels:
+          app: sophia-orchestrator
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: sophia-agno
+    ports:
+    - protocol: TCP
+      port: 8443  # HTTPS/mTLS port
+    - protocol: TCP
+      port: 8080  # Health check port
+  egress:
+  # Allow egress to MCP services and external APIs
+  - to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: sophia-mcp
+    ports:
+    - protocol: TCP
+      port: 8443  # HTTPS/mTLS port
+    - protocol: TCP
+      port: 8080  # Health check port
+  - to:
+    - podSelector:
+        matchLabels:
+          app: sophia-orchestrator
+    ports:
+    - protocol: TCP
+      port: 8443  # HTTPS/mTLS port
+  - to:
+    # External LLM APIs
+    ports:
+    - protocol: TCP
+      port: 443  # HTTPS only
+  - to:
+    # DNS resolution
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: UDP
+      port: 53
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: sophia-mtls-database-access
+  namespace: sophia
+  labels:
+    app: sophia-ai
+    component: network-policy
+    service: database
+spec:
+  podSelector:
+    matchLabels:
+      app: redis
+  policyTypes:
+  - Ingress
+  ingress:
+  # Allow access only from authorized services
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: sophia-mcp
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: sophia-agno
+    ports:
+    - protocol: TCP
+      port: 6379
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: sophia-mtls-vector-db-access
+  namespace: sophia
+  labels:
+    app: sophia-ai
+    component: network-policy
+    service: vector-db
+spec:
+  podSelector:
+    matchLabels:
+      app: qdrant
+  policyTypes:
+  - Ingress
+  ingress:
+  # Allow access only from authorized services
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: sophia-mcp-context
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: sophia-agno
+    ports:
+    - protocol: TCP
+      port: 6333
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: sophia-mtls-deny-all
+  namespace: sophia
+  labels:
+    app: sophia-ai
+    component: network-policy
+    policy: deny-all
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress: []  # Deny all ingress by default
+  egress: []   # Deny all egress by default
+---
+# Allow traffic from kube-system namespace for DNS and system services
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: sophia-mtls-allow-kube-system
+  namespace: sophia
+  labels:
+    app: sophia-ai
+    component: network-policy
+    policy: allow-kube-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow system services
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+    ports:
+    - protocol: TCP
+      port: 443
+  egress:
+  # Allow DNS resolution
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: UDP
+      port: 53
+  # Allow access to Kubernetes API
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: default
+      podSelector:
+        matchLabels:
+          component: kube-apiserver
+    ports:
+    - protocol: TCP
+      port: 443

@@ -1,0 +1,296 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: sophia-ai-alerts
+  namespace: monitoring
+  labels:
+    app: prometheus
+    role: alert-rules
+spec:
+  groups:
+  - name: sophia-ai-alerts
+    rules:
+    # GPU Resource Alerts
+    - alert: GPUUtilizationHigh
+      expr: nvidia_gpu_utilization > 90
+      for: 5m
+      labels:
+        severity: critical
+        service: gpu
+      annotations:
+        summary: "High GPU utilization detected"
+        description: "GPU utilization is above 90% for more than 5 minutes on {{ $labels.instance }}"
+
+    - alert: GPUOutOfMemory
+      expr: nvidia_gpu_memory_used / nvidia_gpu_memory_total > 0.95
+      for: 2m
+      labels:
+        severity: warning
+        service: gpu
+      annotations:
+        summary: "GPU memory usage critical"
+        description: "GPU memory usage is above 95% on {{ $labels.instance }}"
+
+    # AI Model Performance Alerts
+    - alert: AIModelHighLatency
+      expr: histogram_quantile(0.95, rate(ai_model_inference_duration_seconds_bucket[5m])) > 30
+      for: 10m
+      labels:
+        severity: warning
+        service: ai-model
+      annotations:
+        summary: "AI model inference latency is high"
+        description: "95th percentile inference latency > 30s for {{ $labels.model }}"
+
+    - alert: AIModelErrorsHigh
+      expr: rate(ai_model_inference_errors_total[5m]) / rate(ai_model_inference_requests_total[5m]) > 0.1
+      for: 5m
+      labels:
+        severity: critical
+        service: ai-model
+      annotations:
+        summary: "High AI model error rate"
+        description: "AI model error rate > 10% for {{ $labels.model }}"
+
+    # Service Queue Alerts
+    - alert: RequestQueueBacklog
+      expr: request_queue_size > 50
+      for: 5m
+      labels:
+        severity: warning
+        service: queue
+      annotations:
+        summary: "Request queue backlog detected"
+        description: "Request queue size > 50 for {{ $labels.service }}"
+
+    - alert: AgentTaskBacklog
+      expr: active_agent_tasks > 100
+      for: 10m
+      labels:
+        severity: warning
+        service: agents
+      annotations:
+        summary: "Agent task backlog detected"
+        description: "Active agent tasks > 100 for {{ $labels.service }}"
+
+    # Workflow Alerts
+    - alert: WorkflowStuck
+      expr: active_workflows > 20
+      for: 15m
+      labels:
+        severity: warning
+        service: workflow
+      annotations:
+        summary: "Stuck workflows detected"
+        description: "Active workflows > 20 for more than 15 minutes"
+
+    - alert: WorkflowErrorsHigh
+      expr: rate(workflow_execution_errors_total[5m]) / rate(workflow_execution_attempts_total[5m]) > 0.05
+      for: 5m
+      labels:
+        severity: critical
+        service: workflow
+      annotations:
+        summary: "High workflow error rate"
+        description: "Workflow error rate > 5% for {{ $labels.workflow_type }}"
+
+    # Resource Alerts
+    - alert: MemoryPressure
+      expr: (container_memory_usage_bytes / container_spec_memory_limit_bytes) > 0.9
+      for: 5m
+      labels:
+        severity: warning
+        service: resources
+      annotations:
+        summary: "Memory pressure detected"
+        description: "Container memory usage > 90% for {{ $labels.container }} in {{ $labels.pod }}"
+
+    - alert: CPUThrottling
+      expr: rate(container_cpu_cfs_throttled_seconds_total[5m]) > 0.1
+      for: 5m
+      labels:
+        severity: warning
+        service: resources
+      annotations:
+        summary: "CPU throttling detected"
+        description: "Container CPU throttling > 10% for {{ $labels.container }} in {{ $labels.pod }}"
+
+    # Service Health Alerts
+    - alert: ServiceDown
+      expr: up == 0
+      for: 2m
+      labels:
+        severity: critical
+        service: health
+      annotations:
+        summary: "Service is down"
+        description: "{{ $labels.job }} service is down on {{ $labels.instance }}"
+
+    - alert: HighErrorRate
+      expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.1
+      for: 5m
+      labels:
+        severity: critical
+        service: http
+      annotations:
+        summary: "High HTTP error rate"
+        description: "HTTP 5xx error rate > 10% for {{ $labels.service }}"
+
+    # Network Alerts
+    - alert: HighNetworkLatency
+      expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 5
+      for: 10m
+      labels:
+        severity: warning
+        service: network
+      annotations:
+        summary: "High network latency"
+        description: "95th percentile response time > 5s for {{ $labels.service }}"
+
+    # Database Alerts
+    - alert: DatabaseConnectionPoolFull
+      expr: database_connections_active / database_connections_max > 0.9
+      for: 5m
+      labels:
+        severity: warning
+        service: database
+      annotations:
+        summary: "Database connection pool nearly full"
+        description: "Database connection pool usage > 90%"
+
+    - alert: DatabaseSlowQueries
+      expr: rate(database_query_duration_seconds_bucket{le="1"}[5m]) > 10
+      for: 5m
+      labels:
+        severity: warning
+        service: database
+      annotations:
+        summary: "High number of slow database queries"
+        description: "Slow queries (>1s) rate > 10 per second"
+
+    # Kubernetes Specific Alerts
+    - alert: PodRestartRateHigh
+      expr: rate(kube_pod_container_status_restarts_total[15m]) > 0.1
+      for: 10m
+      labels:
+        severity: warning
+        service: kubernetes
+      annotations:
+        summary: "High pod restart rate"
+        description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is restarting frequently"
+
+    - alert: NodeDiskPressure
+      expr: kube_node_status_condition{condition="DiskPressure", status="true"} == 1
+      for: 5m
+      labels:
+        severity: critical
+        service: kubernetes
+      annotations:
+        summary: "Node disk pressure"
+        description: "Node {{ $labels.node }} is under disk pressure"
+
+    - alert: NodeMemoryPressure
+      expr: kube_node_status_condition{condition="MemoryPressure", status="true"} == 1
+      for: 5m
+      labels:
+        severity: critical
+        service: kubernetes
+      annotations:
+        summary: "Node memory pressure"
+        description: "Node {{ $labels.node }} is under memory pressure"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-config
+  namespace: monitoring
+data:
+  alertmanager.yml: |
+    global:
+      smtp_smarthost: 'smtp.gmail.com:587'
+      smtp_from: 'alerts@sophia-intel.ai'
+      smtp_auth_username: 'alerts@sophia-intel.ai'
+      smtp_auth_password: '${SMTP_PASSWORD}'
+
+    route:
+      group_by: ['alertname']
+      group_wait: 10s
+      group_interval: 10s
+      repeat_interval: 1h
+      receiver: 'sophia-team'
+      routes:
+      - match:
+          severity: critical
+        receiver: 'sophia-critical'
+      - match:
+          service: gpu
+        receiver: 'gpu-team'
+      - match:
+          service: ai-model
+        receiver: 'ml-team'
+
+    receivers:
+    - name: 'sophia-team'
+      email_configs:
+      - to: 'team@sophia-intel.ai'
+        subject: '[SOPHIA] {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Runbook: {{ .Annotations.runbook_url }}
+          {{ end }}
+      slack_configs:
+      - api_url: '${SLACK_WEBHOOK_URL}'
+        channel: '#sophia-alerts'
+        title: '{{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          {{ end }}
+
+    - name: 'sophia-critical'
+      email_configs:
+      - to: 'critical@sophia-intel.ai'
+        subject: '[CRITICAL] {{ .GroupLabels.alertname }}'
+        body: |
+          CRITICAL ALERT - IMMEDIATE ATTENTION REQUIRED
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          {{ end }}
+      slack_configs:
+      - api_url: '${SLACK_WEBHOOK_URL}'
+        channel: '#sophia-critical'
+        title: '🚨 CRITICAL: {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *🚨 CRITICAL ALERT*
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          {{ end }}
+
+    - name: 'gpu-team'
+      slack_configs:
+      - api_url: '${SLACK_WEBHOOK_URL}'
+        channel: '#gpu-monitoring'
+        title: 'GPU Alert: {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *GPU Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Instance:* {{ .Labels.instance }}
+          {{ end }}
+
+    - name: 'ml-team'
+      slack_configs:
+      - api_url: '${SLACK_WEBHOOK_URL}'
+        channel: '#ml-monitoring'
+        title: 'ML Model Alert: {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *ML Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Model:* {{ .Labels.model }}
+          {{ end }}

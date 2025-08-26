@@ -1,6 +1,6 @@
 # Business MCP v1 - GTM/RevOps Integrations
 
-**Service**: [`sophiaai-mcp-business-v2`](https://sophiaai-mcp-business-v2.fly.dev)  
+**Service**: [`sophiaai-mcp-business-v2`](http://localhost:{port})  
 **Version**: 1.0.0  
 **Status**: Production-ready with CEO-gated operations  
 

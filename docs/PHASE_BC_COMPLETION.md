@@ -28,11 +28,11 @@ The Sophia AI Intelligence Platform Phase B/C implementation has achieved **comp
 
 | Service | URL | Health Check | Status |
 |---------|-----|--------------|--------|
-| **Dashboard** | https://sophiaai-dashboard-v2.fly.dev | [/healthz](https://sophiaai-dashboard-v2.fly.dev/) | 🟢 Healthy |
-| **Repository MCP** | https://sophiaai-mcp-repo-v2.fly.dev | [/healthz](https://sophiaai-mcp-repo-v2.fly.dev/healthz) | 🟢 Healthy |
-| **Research MCP** | https://sophiaai-mcp-research-v2.fly.dev | [/healthz](https://sophiaai-mcp-research-v2.fly.dev/healthz) | 🟢 Healthy |
-| **Business MCP** | https://sophiaai-mcp-business-v2.fly.dev | [/healthz](https://sophiaai-mcp-business-v2.fly.dev/healthz) | 🟢 Healthy |
-| **Context MCP** | https://sophiaai-mcp-context-v2.fly.dev | [/healthz](https://sophiaai-mcp-context-v2.fly.dev/healthz) | 🟢 Healthy |
+| **Dashboard** | http://localhost:{port} | [/healthz](http://localhost:{port}/) | 🟢 Healthy |
+| **Repository MCP** | http://localhost:{port} | [/healthz](http://localhost:{port}/healthz) | 🟢 Healthy |
+| **Research MCP** | http://localhost:{port} | [/healthz](http://localhost:{port}/healthz) | 🟢 Healthy |
+| **Business MCP** | http://localhost:{port} | [/healthz](http://localhost:{port}/healthz) | 🟢 Healthy |
+| **Context MCP** | http://localhost:{port} | [/healthz](http://localhost:{port}/healthz) | 🟢 Healthy |
 
 ### Service Architecture Overview
 
@@ -120,11 +120,11 @@ graph TB
 
 ```bash
 # 1. Health Check All Services
-curl https://sophiaai-dashboard-v2.fly.dev/
-curl https://sophiaai-mcp-repo-v2.fly.dev/healthz
-curl https://sophiaai-mcp-research-v2.fly.dev/healthz
-curl https://sophiaai-mcp-business-v2.fly.dev/healthz  
-curl https://sophiaai-mcp-context-v2.fly.dev/healthz
+curl http://localhost:{port}/
+curl http://localhost:{port}/healthz
+curl http://localhost:{port}/healthz
+curl http://localhost:{port}/healthz  
+curl http://localhost:{port}/healthz
 
 # 2. Verify Provider Integration
 ./scripts/post_deploy_verify.sh

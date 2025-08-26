@@ -108,7 +108,7 @@ For the sophia-ai-intel project, create `.vscode/settings.json`:
   "cider.dangerousCommands": [
     "rm -rf /",
     "sudo rm",
-    "flyctl secrets",
+    "docker-compose secrets",
     "git push --force"
   ]
 }

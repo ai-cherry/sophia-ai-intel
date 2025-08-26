@@ -6,7 +6,7 @@
   "cider.dangerousCommands": [
     "rm -rf /",
     "sudo rm",
-    "flyctl secrets",
+    "docker-compose secrets",
     "git push --force",
     "git reset --hard",
     "DROP TABLE",

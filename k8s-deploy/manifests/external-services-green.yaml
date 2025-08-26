@@ -1,0 +1,107 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sophia-dashboard-green
+  namespace: sophia
+spec:
+  type: ExternalName
+  externalName: 192.222.51.223
+  ports:
+  - port: 3000
+    protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sophia-research-green
+  namespace: sophia
+spec:
+  type: ExternalName
+  externalName: 192.222.51.223
+  ports:
+  - port: 8080
+    protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sophia-context-green
+  namespace: sophia
+spec:
+  type: ExternalName
+  externalName: 192.222.51.223
+  ports:
+  - port: 8081
+    protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sophia-github-green
+  namespace: sophia
+spec:
+  type: ExternalName
+  externalName: 192.222.51.223
+  ports:
+  - port: 8082
+    protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sophia-business-green
+  namespace: sophia
+spec:
+  type: ExternalName
+  externalName: 192.222.51.223
+  ports:
+  - port: 8083
+    protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sophia-lambda-green
+  namespace: sophia
+spec:
+  type: ExternalName
+  externalName: 192.222.51.223
+  ports:
+  - port: 8084
+    protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sophia-hubspot-green
+  namespace: sophia
+spec:
+  type: ExternalName
+  externalName: 192.222.51.223
+  ports:
+  - port: 8085
+    protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sophia-agents-green
+  namespace: sophia
+spec:
+  type: ExternalName
+  externalName: 192.222.51.223
+  ports:
+  - port: 8000
+    protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orchestrator-green
+  namespace: sophia
+spec:
+  type: ExternalName
+  externalName: 192.222.51.223
+  ports:
+  - port: 3001
+    protocol: TCP

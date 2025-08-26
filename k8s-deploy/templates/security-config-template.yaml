@@ -1,0 +1,296 @@
+# Sophia AI Security Configuration Template
+# This template provides standardized security configurations for all services
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sophia-security-config-template
+  namespace: sophia
+  labels:
+    app: sophia-ai
+    component: security-config
+data:
+  # TLS Configuration Template
+  tls-config.json: |
+    {
+      "tls": {
+        "certificate": "/etc/ssl/certs/tls.crt",
+        "private_key": "/etc/ssl/private/tls.key",
+        "ca_certificate": "/etc/ssl/certs/ca.crt",
+        "min_version": "TLS_1_2",
+        "max_version": "TLS_1_3",
+        "cipher_suites": [
+          "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+          "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+          "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+          "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
+        ],
+        "client_auth": {
+          "type": "RequireAndVerifyClientCert",
+          "ca_certificate": "/etc/ssl/certs/ca.crt"
+        }
+      }
+    }
+
+  # Authentication Configuration
+  auth-config.json: |
+    {
+      "authentication": {
+        "mutual_tls": {
+          "enabled": true,
+          "verify_client_cert": true,
+          "client_ca_cert": "/etc/ssl/certs/ca.crt"
+        },
+        "service_mesh": {
+          "enabled": true,
+          "istio_integration": true,
+          "sidecar_injection": true
+        },
+        "authorization": {
+          "rbac_enabled": true,
+          "service_account_validation": true,
+          "namespace_restriction": true
+        }
+      }
+    }
+
+  # Security Headers Configuration
+  security-headers.json: |
+    {
+      "headers": {
+        "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
+        "X-Frame-Options": "DENY",
+        "X-Content-Type-Options": "nosniff",
+        "X-XSS-Protection": "1; mode=block",
+        "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'",
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+        "Permissions-Policy": "geolocation=(), microphone=(), camera=()"
+      }
+    }
+
+  # Audit Logging Configuration
+  audit-config.json: |
+    {
+      "audit": {
+        "enabled": true,
+        "log_level": "INFO",
+        "sensitive_data_masking": true,
+        "events": {
+          "authentication": true,
+          "authorization": true,
+          "data_access": true,
+          "configuration_changes": true,
+          "security_events": true
+        },
+        "outputs": {
+          "stdout": true,
+          "file": "/var/log/sophia/audit.log",
+          "remote_endpoint": "http://loki.monitoring.svc.cluster.local:3100/loki/api/v1/push"
+        }
+      }
+    }
+
+  # Encryption Configuration
+  encryption-config.json: |
+    {
+      "encryption": {
+        "at_rest": {
+          "enabled": true,
+          "algorithm": "AES256",
+          "key_rotation_days": 90
+        },
+        "in_transit": {
+          "tls_required": true,
+          "min_version": "TLS_1_2",
+          "perfect_forward_secrecy": true
+        },
+        "data_sensitivity_levels": {
+          "public": "AES128",
+          "internal": "AES256",
+          "confidential": "AES256_GCM",
+          "restricted": "AES256_GCM_HMAC"
+        }
+      }
+    }
+
+  # Network Security Configuration
+  network-security.json: |
+    {
+      "network": {
+        "service_mesh": {
+          "enabled": true,
+          "sidecar_injection": true,
+          "traffic_encryption": true,
+          "mutual_tls": true
+        },
+        "network_policies": {
+          "enabled": true,
+          "deny_by_default": true,
+          "allow_dns": true,
+          "allow_kube_api": true,
+          "allow_monitoring": true
+        },
+        "ingress": {
+          "ssl_termination": true,
+          "client_cert_auth": false,
+          "rate_limiting": true,
+          "geo_blocking": false
+        },
+        "egress": {
+          "external_api_calls": true,
+          "dns_resolution": true,
+          "monitoring_endpoints": true
+        }
+      }
+    }
+
+  # Monitoring and Alerting Configuration
+  monitoring-config.json: |
+    {
+      "monitoring": {
+        "security_metrics": {
+          "enabled": true,
+          "tls_handshake_failures": true,
+          "authentication_failures": true,
+          "authorization_denials": true,
+          "suspicious_traffic": true,
+          "certificate_expiry_warnings": true
+        },
+        "alerts": {
+          "high_severity": {
+            "tls_certificate_expiry": 30,
+            "authentication_failure_rate": 0.1,
+            "unauthorized_access_attempts": 5
+          },
+          "medium_severity": {
+            "network_policy_violations": true,
+            "suspicious_traffic_patterns": true
+          }
+        },
+        "dashboards": {
+          "security_overview": true,
+          "tls_monitoring": true,
+          "access_control": true,
+          "threat_detection": true
+        }
+      }
+    }
+---
+# Service Account Template with Security Annotations
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sophia-service-account-template
+  namespace: sophia
+  labels:
+    app: sophia-ai
+    component: service-account-template
+  annotations:
+    # Security annotations
+    iam.gke.io/gcp-service-account: "sophia-ai-workload@sophia-intel-ai.iam.gserviceaccount.com"
+    azure.workload.identity/client-id: "sophia-ai-workload"
+    eks.amazonaws.com/role-arn: "arn:aws:iam::123456789012:role/sophia-ai-workload"
+automountServiceAccountToken: false
+---
+# Pod Security Standards Template
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sophia-pod-security-template
+  namespace: sophia
+  labels:
+    app: sophia-ai
+    component: pod-security
+data:
+  pod-security-standards.yaml: |
+    apiVersion: policy/v1beta1
+    kind: PodSecurityPolicy
+    metadata:
+      name: sophia-restricted-psp
+    spec:
+      privileged: false
+      allowPrivilegeEscalation: false
+      requiredDropCapabilities:
+        - ALL
+      volumes:
+        - 'configMap'
+        - 'emptyDir'
+        - 'projected'
+        - 'secret'
+        - 'downwardAPI'
+        - 'persistentVolumeClaim'
+      hostNetwork: false
+      hostIPC: false
+      hostPID: false
+      runAsUser:
+        rule: 'MustRunAsNonRoot'
+      runAsGroup:
+        rule: 'MustRunAs'
+        ranges:
+        - min: 1000
+          max: 65535
+      seLinux:
+        rule: 'RunAsAny'
+      supplementalGroups:
+        rule: 'MustRunAs'
+        ranges:
+        - min: 1000
+          max: 65535
+      fsGroup:
+        rule: 'MustRunAs'
+        ranges:
+        - min: 1000
+          max: 65535
+      readOnlyRootFilesystem: true
+
+  security-context.yaml: |
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000
+      readOnlyRootFilesystem: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      seccompProfile:
+        type: RuntimeDefault
+
+  resource-limits.yaml: |
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
+        memory: "1Gi"
+        cpu: "500m"
+
+  health-probes.yaml: |
+    livenessProbe:
+      httpGet:
+        path: /health/live
+        port: 8080
+        scheme: HTTPS
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+    readinessProbe:
+      httpGet:
+        path: /health/ready
+        port: 8080
+        scheme: HTTPS
+      initialDelaySeconds: 5
+      periodSeconds: 5
+      timeoutSeconds: 3
+      failureThreshold: 3
+    startupProbe:
+      httpGet:
+        path: /health/startup
+        port: 8080
+        scheme: HTTPS
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 30

@@ -38,6 +38,13 @@ spec:
             cpu: 4
             memory: "8Gi"
             nvidia.com/gpu: 1
+        volumeMounts:
+        - name: agents-storage
+          mountPath: /data
+      volumes:
+      - name: agents-storage
+        persistentVolumeClaim:
+          claimName: mcp-agents-storage
       imagePullSecrets:
       - name: github-registry
 ---

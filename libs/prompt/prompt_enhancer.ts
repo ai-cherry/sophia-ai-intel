@@ -429,7 +429,7 @@ export class PromptEnhancer {
   private async getInfrastructureState(): Promise<SystemStatus> {
     return {
       services: [
-        { name: 'sophiaai-mcp-repo-v2', status: 'healthy', url: 'https://sophiaai-mcp-repo-v2.fly.dev' }
+        { name: 'sophiaai-mcp-repo-v2', status: 'healthy', url: 'http://localhost:{port}' }
       ],
       infrastructure: {
         qdrant_collections: [],

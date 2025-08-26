@@ -21,6 +21,10 @@ This guide covers the deployment of Sophia AI to Lambda Labs GPU infrastructure 
 - **mcp-research**: Research service with GPU access
 - **mcp-context**: Context/embeddings service with GPU and persistent storage
 - **mcp-agents**: Agent coordination service with GPU access
+- **sophia-business**: Business intelligence and CRM integrations (NEW)
+- **sophia-hubspot**: HubSpot CRM integration (NEW)
+- **sophia-github**: GitHub repository and webhook integration (NEW)
+- **sophia-lambda**: Lambda Labs GPU compute orchestration (NEW)
 - **redis**: In-memory cache and session storage
 
 ### Key Features
@@ -117,9 +121,13 @@ ssh ubuntu@192.222.51.223 kubectl logs -n sophia deployment/[service-name]
 ## Service URLs (after DNS propagation)
 
 - **Dashboard**: https://www.sophia-intel.ai
-- **Research API**: https://www.sophia-intel.ai/api/research
-- **Context API**: https://www.sophia-intel.ai/api/context
-- **Agents API**: https://www.sophia-intel.ai/api/agents
+- **Research API**: https://www.sophia-intel.ai/research/
+- **Context API**: https://www.sophia-intel.ai/context/
+- **Agents API**: https://www.sophia-intel.ai/agents/
+- **Business API**: https://www.sophia-intel.ai/business/
+- **HubSpot API**: https://www.sophia-intel.ai/hubspot/
+- **GitHub API**: https://www.sophia-intel.ai/github/
+- **Lambda API**: https://www.sophia-intel.ai/lambda/
 
 ## Resource Allocation
 
@@ -133,6 +141,10 @@ ssh ubuntu@192.222.51.223 kubectl logs -n sophia deployment/[service-name]
 - mcp-research: 8Gi - 16Gi
 - mcp-context: 8Gi - 16Gi
 - mcp-agents: 4Gi - 8Gi
+- sophia-business: 256Mi - 512Mi
+- sophia-hubspot: 128Mi - 256Mi
+- sophia-github: 128Mi - 256Mi
+- sophia-lambda: 128Mi - 256Mi
 - redis: 512Mi - 2Gi
 
 ## Rollback Procedure

@@ -448,7 +448,7 @@ INSERT INTO organizations (name, domain, size, preferences) VALUES
 -- Insert default project
 INSERT INTO projects (name, description, repository_url, tech_stack) VALUES 
 ('sophia-ai-intel', 'Sophia AI Intelligence System', 'https://github.com/ai-cherry/sophia-ai-intel', '[
-    "typescript", "python", "react", "postgresql", "qdrant", "redis", "fly.io"
+    "typescript", "python", "react", "postgresql", "qdrant", "redis", "kubernetes", "lambda-labs"
 ]') ON CONFLICT (name) DO NOTHING;
 
 -- Performance optimization: Create partial indexes for active records

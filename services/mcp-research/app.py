@@ -72,7 +72,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://sophiaai-dashboard.fly.dev", "https://github.com"],
+    allow_origins=["http://sophia-dashboard:3000", "https://github.com"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

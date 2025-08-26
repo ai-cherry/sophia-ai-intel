@@ -18,7 +18,6 @@ import aiohttp
 # Comprehensive list of ALL possible environment variables from GitHub org secrets
 REQUIRED_SECRETS = {
     # Core Infrastructure
-    "FLY_API_TOKEN": "Fly.io deployment and machine management",
     "GH_PAT_TOKEN": "GitHub repository access and automation",
     
     # Lambda Labs GPU Compute

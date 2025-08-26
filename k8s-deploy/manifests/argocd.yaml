@@ -1,0 +1,369 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sophia-core
+  namespace: argocd
+  labels:
+    app: sophia
+    component: core
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/sophia-ai/sophia-ai-intel-1
+    targetRevision: HEAD
+    path: k8s-deploy/manifests
+    kustomize:
+      commonLabels:
+        app.kubernetes.io/managed-by: argocd
+        app.kubernetes.io/part-of: sophia
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: sophia
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sophia-monitoring
+  namespace: argocd
+  labels:
+    app: sophia
+    component: monitoring
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/sophia-ai/sophia-ai-intel-1
+    targetRevision: HEAD
+    path: k8s-deploy/monitoring
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: istio-system
+  namespace: argocd
+  labels:
+    app: istio
+    component: service-mesh
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/sophia-ai/sophia-ai-intel-1
+    targetRevision: HEAD
+    path: k8s-deploy/manifests/istio-control-plane.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: istio-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cert-manager
+  namespace: argocd
+  labels:
+    app: cert-manager
+    component: certificates
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/sophia-ai/sophia-ai-intel-1
+    targetRevision: HEAD
+    path: k8s-deploy/manifests/cert-manager.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cert-manager
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: external-secrets
+  namespace: argocd
+  labels:
+    app: external-secrets
+    component: secrets
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/sophia-ai/sophia-ai-intel-1
+    targetRevision: HEAD
+    path: k8s-deploy/manifests/external-secrets.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: sophia
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: sophia-project
+  namespace: argocd
+spec:
+  description: Sophia AI Platform
+  sourceRepos:
+    - https://github.com/sophia-ai/sophia-ai-intel-1
+    - https://github.com/sophia-ai/sophia-infrastructure
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: '*'
+      name: in-cluster
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  roles:
+    - name: developer
+      description: Developer access
+      policies:
+        - p, proj:sophia-project:developer, applications, get, proj:sophia-project/*, allow
+        - p, proj:sophia-project:developer, applications, sync, proj:sophia-project/*, allow
+        - p, proj:sophia-project:developer, applications, update, proj:sophia-project/*, allow
+      groups:
+        - sophia-developers
+    - name: admin
+      description: Admin access
+      policies:
+        - p, proj:sophia-project:admin, applications, *, proj:sophia-project/*, allow
+      groups:
+        - sophia-admins
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sophia-blue-green
+  namespace: argocd
+  labels:
+    app: sophia
+    deployment: blue-green
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/sophia-ai/sophia-ai-intel-1
+    targetRevision: HEAD
+    path: k8s-deploy/manifests
+    kustomize:
+      commonLabels:
+        version: blue
+        app.kubernetes.io/managed-by: argocd
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: sophia-blue
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - Replace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sophia-green
+  namespace: argocd
+  labels:
+    app: sophia
+    deployment: blue-green
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/sophia-ai/sophia-ai-intel-1
+    targetRevision: HEAD
+    path: k8s-deploy/manifests
+    kustomize:
+      commonLabels:
+        version: green
+        app.kubernetes.io/managed-by: argocd
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: sophia-green
+  syncPolicy:
+    automated: false  # Manual promotion for green deployment
+    syncOptions:
+      - CreateNamespace=true
+      - Replace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: multi-node-setup
+  namespace: argocd
+  labels:
+    app: sophia
+    component: multi-node
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/sophia-ai/sophia-infrastructure
+    targetRevision: HEAD
+    path: multi-node
+  destination:
+    server: https://192.222.50.242:6443  # Second Lambda Labs instance
+    namespace: sophia
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: sophia-services
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - service: mcp-context
+            replicas: 3
+          - service: mcp-research
+            replicas: 2
+          - service: mcp-agents
+            replicas: 5
+          - service: agno-coordinator
+            replicas: 2
+          - service: agno-teams
+            replicas: 3
+          - service: orchestrator
+            replicas: 4
+  template:
+    metadata:
+      name: '{{service}}'
+      labels:
+        app: '{{service}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/sophia-ai/sophia-ai-intel-1
+        targetRevision: HEAD
+        path: services/{{service}}
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: sophia
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-cm
+  namespace: argocd
+data:
+  repositories: |
+    - url: https://github.com/sophia-ai/sophia-ai-intel-1
+      type: git
+      name: sophia-main
+    - url: https://github.com/sophia-ai/sophia-infrastructure
+      type: git
+      name: sophia-infrastructure
+  resource.customizations: |
+    cert-manager.io/Certificate:
+      ignoreDifferences:
+        jsonPointers:
+        - /spec/duration
+        - /spec/renewBefore
+    external-secrets.io/ExternalSecret:
+      ignoreDifferences:
+        jsonPointers:
+        - /spec/target/creationPolicy
+  resource.exclusions: |
+    - apiGroups:
+      - "authentication.k8s.io"
+      kinds:
+      - "TokenReview"
+      clusters:
+      - "*"
+  timeout.reconciliation: 180s
+  timeout.hard: 300s
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-rbac-cm
+  namespace: argocd
+data:
+  policy.csv: |
+    g, sophia-admins, role:admin
+    g, sophia-developers, role:developer
+    p, role:developer, applications, get, */*, allow
+    p, role:developer, applications, sync, */*, allow
+    p, role:developer, applications, update, */*, allow
+    p, role:developer, projects, get, default, allow
+    p, role:readonly, applications, get, */*, allow
+    p, role:readonly, applicationsets, get, */*, allow
+    p, role:readonly, projects, get, default, allow
+    p, role:readonly, logs, get, */*, allow
+  scopes: '[groups,email]'
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argocd-server-ingress
+  namespace: argocd
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - argocd.sophia-intel.ai
+    secretName: argocd-tls
+  rules:
+  - host: argocd.sophia-intel.ai
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: argocd-server
+            port:
+              number: 443

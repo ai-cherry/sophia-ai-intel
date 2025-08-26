@@ -131,7 +131,7 @@ Example from workflow:
     SERPER_API_KEY: ${{ secrets.SERPER_API_KEY }}
   run: |
     if [ "${TAVILY_API_KEY}" != "" ]; then
-      flyctl secrets set TAVILY_API_KEY=${TAVILY_API_KEY} -a ${{ matrix.app }}
+      docker-compose secrets set TAVILY_API_KEY=${TAVILY_API_KEY} -a ${{ matrix.app }}
     fi
 ```
 
@@ -235,7 +235,7 @@ Based on [`proofs/secrets/matrix.json`](../proofs/secrets/matrix.json) and [`.in
 1. Check `proofs/secrets/matrix.json` for missing secrets list
 2. Verify secret is set in GitHub Actions
 3. Check workflow logs to ensure secret was passed to Fly.io
-4. Use `flyctl secrets list -a <app-name>` to verify on Fly.io
+4. Use `docker-compose secrets list -a <app-name>` to verify on Fly.io
 
 ### Authentication failures
 1. Verify token format (e.g., Fly tokens start with `fo1_`)

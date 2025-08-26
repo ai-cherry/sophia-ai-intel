@@ -84,7 +84,6 @@ spec:
       - name: context-storage
         persistentVolumeClaim:
           claimName: mcp-context-storage
-      imagePullPolicy: IfNotPresent
 ---
 apiVersion: v1
 kind: Service

@@ -60,7 +60,7 @@ Multiple deployment attempts have been made:
 ### Likely Causes
 1. **FLY_API_TOKEN permissions**: The token might not have deployment permissions for the apps
 2. **Fly.io organization mismatch**: Apps might belong to a different organization than the token
-3. **Missing flyctl installation**: Although workflow includes `setup-flyctl@master`, it might be failing silently
+3. **Missing docker-compose installation**: Although workflow includes `setup-docker-compose@master`, it might be failing silently
 
 ## Proof Artifacts Created
 
@@ -81,19 +81,19 @@ Multiple deployment attempts have been made:
 ### Immediate Actions Required
 1. **Verify FLY_API_TOKEN permissions**:
    ```bash
-   flyctl auth whoami
-   flyctl apps list
+   docker-compose auth whoami
+   docker-compose apps list
    ```
 
 2. **Check app ownership**:
    ```bash
-   flyctl apps show sophiaai-dashboard
+   docker-compose apps show sophiaai-dashboard
    ```
 
 3. **Manual deployment test**:
    ```bash
    cd apps/dashboard
-   flyctl deploy --local-only
+   docker-compose deploy --local-only
    ```
 
 ### Alternative Approaches
@@ -108,7 +108,7 @@ Multiple deployment attempts have been made:
 1. Regenerate FLY_API_TOKEN with proper permissions
 2. Add debug logging to workflow deployment steps
 3. Test manual deployment locally first
-4. Consider using `flyctl deploy --local-only` to avoid Docker registry issues
+4. Consider using `docker-compose deploy --local-only` to avoid Docker registry issues
 
 ### Long-term (Improve reliability)
 1. Add pre-deployment validation steps

@@ -161,7 +161,7 @@ All sync failures generate standardized proof files:
 After successful sync, the Context MCP is notified to refresh its knowledge cache:
 
 ```bash
-curl -X POST "https://sophiaai-mcp-context-v2.fly.dev/internal/refresh-knowledge" \
+curl -X POST "http://localhost:{port}/internal/refresh-knowledge" \
   -H "Content-Type: application/json" \
   -d '{"source": "notion_sync", "timestamp": "2024-08-22T23:30:00Z"}'
 ```

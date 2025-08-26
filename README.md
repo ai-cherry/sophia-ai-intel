@@ -43,7 +43,7 @@ sophia-ai-intel/
 ## Technology Stack
 
 ### Infrastructure & Orchestration
-- **Fly.io**: Multi-region Docker deployments
+- **Kubernetes + Lambda Labs**: Multi-region Docker deployments with GPU acceleration
 - **Pulumi**: Infrastructure as Code
 - **Docker**: Containerized services
 - **Neon PostgreSQL**: Primary database
@@ -73,7 +73,7 @@ sophia-ai-intel/
 ### Prerequisites
 - Node.js 20+
 - Docker
-- Fly.io CLI
+- kubectl (for Kubernetes deployment)
 - GitHub CLI (optional)
 
 ### Environment Setup
@@ -115,8 +115,10 @@ GITHUB_APP_ID=your_app_id
 GITHUB_INSTALLATION_ID=your_installation_id
 GITHUB_PRIVATE_KEY=your_private_key
 
-# Deployment
-FLY_API_TOKEN=your_fly_token
+# Lambda Labs Configuration
+LAMBDA_API_KEY=your_lambda_api_key
+LAMBDA_PRIVATE_SSH_KEY=your_lambda_private_ssh_key
+LAMBDA_PUBLIC_SSH_KEY=your_lambda_public_ssh_key
 ```
 
 ## Development
@@ -142,13 +144,16 @@ npm run test:dashboard
 
 ## Deployment
 
-### Fly.io Deployment
+### Kubernetes + Lambda Labs Deployment
 ```bash
 # Deploy all services
 npm run deploy
 
 # Deploy specific service
 npm run deploy:dashboard
+
+# Deploy to Lambda Labs GPU instances
+npm run deploy:lambda-labs
 ```
 
 ### Health Checks

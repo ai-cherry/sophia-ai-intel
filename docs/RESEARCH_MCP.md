@@ -1,6 +1,6 @@
 # Research MCP v2 - Multi-Provider Meta-Aggregator
 
-**Service**: [`sophiaai-mcp-research-v2`](https://sophiaai-mcp-research-v2.fly.dev)  
+**Service**: [`sophiaai-mcp-research-v2`](http://localhost:{port})  
 **Version**: 2.0.0  
 **Status**: Production-ready with CEO-gated operations  
 
@@ -269,7 +269,7 @@ All Research MCP v2 operations are controlled through the **Sophia Infrastructur
 2. **CEO Approval**: Use GitHub Actions manually triggered workflow
 3. **Deploy All**: Runs [`deploy_all.yml`](../.github/workflows/deploy_all.yml) with Pay Ready org enforcement
 4. **Proof Generation**: Automatic health checks and operational proofs
-5. **Validation**: Service health confirmed at [`/healthz`](https://sophiaai-mcp-research-v2.fly.dev/healthz)
+5. **Validation**: Service health confirmed at [`/healthz`](http://localhost:{port}/healthz)
 
 ### Sophia Infra Integration
 
@@ -294,15 +294,15 @@ For direct access (debugging/testing only):
 
 ```bash
 # Health check
-curl https://sophiaai-mcp-research-v2.fly.dev/healthz
+curl http://localhost:{port}/healthz
 
 # Search operation
-curl -X POST https://sophiaai-mcp-research-v2.fly.dev/search \
+curl -X POST http://localhost:{port}/search \
   -H "Content-Type: application/json" \
   -d '{"query": "AI research trends", "max_results": 5}'
 
 # Provider status
-curl https://sophiaai-mcp-research-v2.fly.dev/providers
+curl http://localhost:{port}/providers
 ```
 
 ## Compliance & Security
@@ -332,7 +332,7 @@ All operations generate proof artifacts in [`proofs/research/`](../proofs/resear
 
 ### Basic Search
 ```bash
-curl -X POST https://sophiaai-mcp-research-v2.fly.dev/search \
+curl -X POST http://localhost:{port}/search \
   -H "Content-Type: application/json" \
   -d '{
     "query": "latest AI developments 2024",
@@ -345,7 +345,7 @@ curl -X POST https://sophiaai-mcp-research-v2.fly.dev/search \
 
 ### Web Scraping
 ```bash
-curl -X POST https://sophiaai-mcp-research-v2.fly.dev/scrape \
+curl -X POST http://localhost:{port}/scrape \
   -H "Content-Type: application/json" \
   -d '{
     "url": "https://arxiv.org/abs/2401.12345",
@@ -356,7 +356,7 @@ curl -X POST https://sophiaai-mcp-research-v2.fly.dev/scrape \
 
 ### Content Summarization
 ```bash
-curl -X POST https://sophiaai-mcp-research-v2.fly.dev/summarize \
+curl -X POST http://localhost:{port}/summarize \
   -H "Content-Type: application/json" \
   -d '{
     "content": "Long research paper content...",
@@ -370,7 +370,7 @@ curl -X POST https://sophiaai-mcp-research-v2.fly.dev/summarize \
 ### Common Issues
 
 **503 Service Unavailable**
-- Check [`/healthz`](https://sophiaai-mcp-research-v2.fly.dev/healthz) for provider status
+- Check [`/healthz`](http://localhost:{port}/healthz) for provider status
 - Verify required secrets are configured
 - At least one LLM provider (Portkey/OpenRouter) must be available
 
@@ -386,7 +386,7 @@ curl -X POST https://sophiaai-mcp-research-v2.fly.dev/summarize \
 
 ### Support Escalation
 
-1. **Check Service Health**: [`/healthz`](https://sophiaai-mcp-research-v2.fly.dev/healthz)
+1. **Check Service Health**: [`/healthz`](http://localhost:{port}/healthz)
 2. **Review Recent Proofs**: [`proofs/research/`](../proofs/research/)
 3. **Validate Providers**: Run validation via Sophia Infra
 4. **CEO Escalation**: For production issues or secret management

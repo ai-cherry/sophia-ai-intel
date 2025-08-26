@@ -101,7 +101,7 @@ payload_json: '{"required_checks": ["Deploy All"], "require_review": true}'
 **Features**:
 - GraphQL proofs (viewer orgs, app ownership)
 - Automatic Node.js setup for dashboard builds  
-- Explicit `--access-token` and `--org` on all flyctl commands
+- Explicit `--access-token` and `--org` on all docker-compose commands
 - Health verification with retry logic
 - Proof collection: `proofs/fly/`, `proofs/healthz/`
 
@@ -303,7 +303,7 @@ Add secrets via GitHub UI: Settings → Secrets and variables → Actions
 The existing [`deploy_all.yml`](../.github/workflows/deploy_all.yml) workflow has been updated to:
 - Use Pay Ready org (`pay-ready`) exclusively
 - Target canonical `-v2` app names
-- Pass `--access-token` on every flyctl command
+- Pass `--access-token` on every docker-compose command
 - Pass `--org` on app creation
 - Generate comprehensive proofs
 
@@ -340,8 +340,8 @@ Both workflows coexist:
 
 **Emergency Fly Operations**: 
 ```bash
-flyctl status -a sophiaai-dashboard-v2 --access-token "$TOKEN"
-flyctl logs -a sophiaai-dashboard-v2 --access-token "$TOKEN"
+docker-compose status -a sophiaai-dashboard-v2 --access-token "$TOKEN"
+docker-compose logs -a sophiaai-dashboard-v2 --access-token "$TOKEN"
 ```
 
 **Add New Provider**: 

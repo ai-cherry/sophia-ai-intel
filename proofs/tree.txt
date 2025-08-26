@@ -172,7 +172,6 @@
 │   └── settings.json
 ├── CODEOWNERS
 ├── README.md
-├── SETUP_COMPLETION_REPORT.md
 ├── __pycache__
 │   └── set_secrets.cpython-312.pyc
 ├── apps

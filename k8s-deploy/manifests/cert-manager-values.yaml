@@ -1,0 +1,35 @@
+# cert-manager values for Sophia AI
+installCRDs: true
+
+# Enable additional controllers
+extraArgs:
+  - --enable-certificate-owner-ref=true
+
+# Resource limits for main controller
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 10m
+    memory: 32Mi
+
+# Webhook configuration
+webhook:
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 10m
+      memory: 32Mi
+
+# CA injector
+cainjector:
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 10m
+      memory: 32Mi

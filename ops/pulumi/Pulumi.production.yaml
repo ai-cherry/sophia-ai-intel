@@ -1,9 +1,0 @@
-config:
-  sophia-ai-infrastructure:lambda-api-key:
-    secure: AAABADTXGYdGTqojtm91tWigY3Mtsp5RWEpMlrRnEsuXfBV7qfgr6PZ6Ln4zCdBV7XLMLfYgtAyC18n/4Cnk6oF5O0JQF0ASxlby48DWxIeHUitx+4Plep5DyPAUk7m9a5YUugKw5/yOqJ4s/WXjKJUqb8nIHfU=
-  sophia-ai-infrastructure:openai-api-key:
-    secure: AAABAOFuO5Ma3lUVUDcKpSWvwFQUStuR+Ch9PobiATlhClqzLWGBaESerw1wAvp7m7rXFN8rUcEtq+7Up/ZREDG1f3EdjfzkJpTdqy27+PAAu5zRkZpNsWDdFsTSSESUUl5botcJ3wkvN3UR6OBHbGc3mDlwqBjJyHS5yUR3u4XBRJuTKnMX+jQO3zV2K/6bGiKQvWSW0QTjQIN25i8xMuPqFacTqpKGBEJ89MJVchsDaUQrj/X4ncIyats8JIczPEzxhdXL8Q==
-  sophia-ai-infrastructure:neon-database-url:
-    secure: AAABAIR26IwAbBxHLSkfKM/vjmq+o2bkUJzRrirSBRkt7QgfnQSotwZ20PCTSEPFblhV9GdZndJfSxt6VKQMbC2he5Rdad1iMmcM1v3Huv1Qm8Cv0qlUug==
-  sophia-ai-infrastructure:redis-url:
-    secure: AAABAB+DzxRjmi6GxDyZ+4806L9oTKKdXTFQvdhZuY7wmJ6oj/dM+RSnV4HvFuNP1pY/WS+cVqU5+aQ8aqwcAmgyCV+vvLf3ZBFvGSFGsD7N8wLcQy3zfMRP0AstefDYzfbiRakLbpJze2kts2y2KtDyg6pWWW0oK8CmWdBDb5eiiY6WJpGiCFNK8KBXtirFj2ZHOxPL2HliBEyM0v+dZTLGIQ0=

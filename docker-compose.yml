@@ -1,609 +1,380 @@
-# Sophia AI Intel Platform - Pure Pulumi Cloud Deployment
-# Complete containerized microservices stack
-
-
-networks:
-  sophia-network:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.20.0.0/16
-  monitoring:
-    external: true
-    name: monitoring_monitoring
-
-volumes:
-  postgres-data:
-  redis-data:
-  prometheus_data:
-    driver: local
-  grafana_data:
-    driver: local
-  loki_data:
-    driver: local
+version: '3.8'
 
 services:
-  # =============================================================================
-  # FRONTEND - DASHBOARD
-  # =============================================================================
-  
-  sophia-dashboard:
+  # ===========================================
+  # Core AI Orchestration Layer
+  # ===========================================
+
+  agno-coordinator:
     build:
-      context: ./apps/dashboard
+      context: ./services/agno-coordinator
       dockerfile: Dockerfile
-    container_name: sophia-dashboard
+    container_name: agno-coordinator
     ports:
-      - "3000:3000"
+      - "8080:8080"
+      - "9090:9090"
     environment:
       - NODE_ENV=production
-      - VITE_API_BASE_URL=http://sophia-orchestrator:8080
-      - VITE_BUILD_ID=${BUILD_ID:-local}
-      - TENANT=pay-ready
-    networks:
-      - sophia-network
-      - monitoring
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/healthz"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-        reservations:
-          cpus: '0.25'
-          memory: 256M
-    labels:
-      - "prometheus.io/scrape=true"
-      - "prometheus.io/port=3000"
-      - "prometheus.io/path=/metrics"
-
-  # =============================================================================
-  # CORE MCP SERVICES
-  # =============================================================================
-
-  sophia-research:
-    build:
-      context: ./services/mcp-research
-      dockerfile: Dockerfile
-    container_name: sophia-research
-    ports:
-      - "8081:8080"
-    environment:
-      - PORT=8080
-      - PYTHONUNBUFFERED=1
-      - DEFAULT_LLM_MODEL=gpt-4
-      - SERPAPI_API_KEY=${TAVILY_API_KEY}
-      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
-      - TOGETHER_API_KEY=${OPENROUTER_API_KEY}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - VOYAGE_API_KEY=${VOYAGE_API_KEY}
-      - COHERE_API_KEY=${COHERE_API_KEY}
-      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
-      - PORTKEY_API_KEY=${PORTKEY_API_KEY}
-      - REDIS_URL=${REDIS_URL}
-      - NEON_DATABASE_URL=${NEON_DATABASE_URL}
-      - QDRANT_URL=${QDRANT_URL}
-      - QDRANT_API_KEY=${QDRANT_API_KEY}
-      - TENANT=pay-ready
-    networks:
-      - sophia-network
-      - monitoring
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 1G
-        reservations:
-          cpus: '0.5'
-          memory: 512M
-    labels:
-      - "prometheus.io/scrape=true"
-      - "prometheus.io/port=8080"
-      - "prometheus.io/path=/metrics"
-
-  sophia-context:
-    build:
-      context: ./services/mcp-context
-      dockerfile: Dockerfile
-    container_name: sophia-context
-    ports:
-      - "8082:8080"
-    environment:
-      - PORT=8080
-      - PYTHONUNBUFFERED=1
-      - NEON_DATABASE_URL=${NEON_DATABASE_URL}
-      - QDRANT_URL=${QDRANT_URL}
-      - QDRANT_API_KEY=${QDRANT_API_KEY}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - REDIS_URL=${REDIS_URL}
-      - TENANT=pay-ready
-    networks:
-      - sophia-network
-      - monitoring
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 1G
-        reservations:
-          cpus: '0.5'
-          memory: 512M
-    labels:
-      - "prometheus.io/scrape=true"
-      - "prometheus.io/port=8080"
-      - "prometheus.io/path=/metrics"
-
-  sophia-github:
-    build:
-      context: ./services/mcp-github
-      dockerfile: Dockerfile
-    container_name: sophia-github
-    ports:
-      - "8083:8080"
-    environment:
-      - PORT=8080
-      - PYTHONUNBUFFERED=1
-      - GITHUB_APP_ID=${GITHUB_APP_ID}
-      - GITHUB_INSTALLATION_ID=${GITHUB_INSTALLATION_ID}
-      - GITHUB_PRIVATE_KEY=${GITHUB_PRIVATE_KEY}
-      - GITHUB_REPO=ai-cherry/sophia-ai-intel
-      - DASHBOARD_ORIGIN=http://sophia-dashboard:3000
-      - NEON_DATABASE_URL=${NEON_DATABASE_URL}
-      - TENANT=pay-ready
-    networks:
-      - sophia-network
-      - monitoring
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 1G
-        reservations:
-          cpus: '0.5'
-          memory: 512M
-    labels:
-      - "prometheus.io/scrape=true"
-      - "prometheus.io/port=8080"
-      - "prometheus.io/path=/metrics"
-
-  sophia-business:
-    build:
-      context: ./services/mcp-business
-      dockerfile: Dockerfile
-    container_name: sophia-business
-    ports:
-      - "8084:8080"
-    environment:
-      - PORT=8080
-      - PYTHONUNBUFFERED=1
-      - APOLLO_API_KEY=${APOLLO_API_KEY}
-      - USERGEMS_API_KEY=${USERGEMS_API_KEY}
-      - HUBSPOT_ACCESS_TOKEN=${HUBSPOT_ACCESS_TOKEN}
-      - SALESFORCE_CLIENT_ID=${SALESFORCE_CLIENT_ID}
-      - SALESFORCE_CLIENT_SECRET=${SALESFORCE_CLIENT_SECRET}
-      - SALESFORCE_USERNAME=${SALESFORCE_USERNAME}
-      - SALESFORCE_PASSWORD=${SALESFORCE_PASSWORD}
-      - SALESFORCE_SECURITY_TOKEN=${SALESFORCE_SECURITY_TOKEN}
-      - SALESFORCE_DOMAIN=${SALESFORCE_DOMAIN}
-      - GONG_BASE_URL=${GONG_BASE_URL}
-      - GONG_ACCESS_KEY=${GONG_ACCESS_KEY}
-      - GONG_ACCESS_KEY_SECRET=${GONG_ACCESS_KEY_SECRET}
-      - GONG_CLIENT_ACCESS_KEY=${GONG_CLIENT_ACCESS_KEY}
-      - GONG_CLIENT_SECRET=${GONG_CLIENT_SECRET}
-      - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}
-      - SLACK_SIGNING_SECRET=${SLACK_SIGNING_SECRET}
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
-      - ZILLOW_API_KEY=${ZILLOW_API_KEY}
-      - NEON_DATABASE_URL=${NEON_DATABASE_URL}
-      - QDRANT_URL=${QDRANT_URL}
-      - REDIS_URL=${REDIS_URL}
-      - PORTKEY_API_KEY=${PORTKEY_API_KEY}
-      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
-      - TENANT=pay-ready
-    networks:
-      - sophia-network
-      - monitoring
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 1G
-        reservations:
-          cpus: '0.5'
-          memory: 512M
-    labels:
-      - "prometheus.io/scrape=true"
-      - "prometheus.io/port=8080"
-      - "prometheus.io/path=/metrics"
-
-  sophia-lambda:
-    build:
-      context: ./services/mcp-lambda
-      dockerfile: Dockerfile
-    container_name: sophia-lambda
-    ports:
-      - "8085:8080"
-    environment:
-      - PORT=8080
-      - PYTHONUNBUFFERED=1
-      - LAMBDA_API_KEY=${LAMBDA_API_KEY}
-      - LAMBDA_PRIVATE_SSH_KEY=${LAMBDA_PRIVATE_SSH_KEY}
-      - LAMBDA_PUBLIC_SSH_KEY=${LAMBDA_PUBLIC_SSH_KEY}
-      - LAMBDA_API_ENDPOINT=https://cloud.lambdalabs.com/api/v1
-      - DATABASE_URL=${NEON_DATABASE_URL}
-      - REDIS_URL=${REDIS_URL}
-      - TENANT=pay-ready
-    networks:
-      - sophia-network
-      - monitoring
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 1G
-        reservations:
-          cpus: '0.5'
-          memory: 512M
-    labels:
-      - "prometheus.io/scrape=true"
-      - "prometheus.io/port=8080"
-      - "prometheus.io/path=/metrics"
-
-  sophia-hubspot:
-    build:
-      context: ./services/mcp-hubspot
-      dockerfile: Dockerfile
-    container_name: sophia-hubspot
-    ports:
-      - "8086:8080"
-    environment:
-      - PORT=8080
-      - PYTHONUNBUFFERED=1
-      - HUBSPOT_ACCESS_TOKEN=${HUBSPOT_ACCESS_TOKEN}
-      - HUBSPOT_CLIENT_SECRET=${HUBSPOT_CLIENT_SECRET}
-      - TENANT=pay-ready
-    networks:
-      - sophia-network
-      - monitoring
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 1G
-        reservations:
-          cpus: '0.5'
-          memory: 512M
-    labels:
-      - "prometheus.io/scrape=true"
-      - "prometheus.io/port=8080"
-      - "prometheus.io/path=/metrics"
-
-  sophia-agents:
-    build:
-      context: .
-      dockerfile: ./services/mcp-agents/Dockerfile
-    container_name: sophia-agents
-    ports:
-      - "8087:8000"
-    environment:
-      - PORT=8000
-      - PYTHONUNBUFFERED=1
-      - PYTHONPATH=/app/libs:/app
-      - DASHBOARD_ORIGIN=http://sophia-dashboard:3000
-      - GITHUB_MCP_URL=http://sophia-github:8080
-      - CONTEXT_MCP_URL=http://sophia-context:8080
-      - RESEARCH_MCP_URL=http://sophia-research:8080
-      - BUSINESS_MCP_URL=http://sophia-business:8080
-      - GITHUB_APP_ID=${GITHUB_APP_ID}
-      - GITHUB_INSTALLATION_ID=${GITHUB_INSTALLATION_ID}
-      - GITHUB_PRIVATE_KEY=${GITHUB_PRIVATE_KEY}
-      - NEON_DATABASE_URL=${NEON_DATABASE_URL}
-      - PORTKEY_API_KEY=${PORTKEY_API_KEY}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - QDRANT_URL=${QDRANT_URL}
-      - QDRANT_API_KEY=${QDRANT_API_KEY}
-      - REDIS_URL=${REDIS_URL}
-      - TENANT=pay-ready
-    networks:
-      - sophia-network
-      - monitoring
-    restart: unless-stopped
+      - LOG_LEVEL=info
+      - ENABLE_TRACING=true
+      - JAEGER_ENDPOINT=http://jaeger-collector:14268/api/traces
+      - REDIS_URL=redis://redis:6379
+      - QDRANT_URL=http://qdrant:6333
+      - POSTGRES_URL=${POSTGRES_URL}
+      - JWT_SECRET=${JWT_SECRET}
+    volumes:
+      - ./services/agno-coordinator:/app
     depends_on:
-      - sophia-context
-      - sophia-github
-      - sophia-research
-      - sophia-business
+      - redis
+      - qdrant
+      - postgres
+    networks:
+      - sophia-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ===========================================
+  # MCP Services Layer
+  # ===========================================
+
+  mcp-agents:
+    build:
+      context: ./services/mcp-agents
+      dockerfile: Dockerfile
+    container_name: mcp-agents
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - REDIS_URL=redis://redis:6379
+      - QDRANT_URL=http://qdrant:6333
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    volumes:
+      - ./services/mcp-agents:/app
+    depends_on:
+      - redis
+      - qdrant
+    networks:
+      - sophia-network
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
       interval: 30s
       timeout: 10s
       retries: 3
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 1G
-        reservations:
-          cpus: '0.5'
-          memory: 512M
-    labels:
-      - "prometheus.io/scrape=true"
-      - "prometheus.io/port=8000"
-      - "prometheus.io/path=/metrics"
 
-  # sophia-orchestrator: TEMPORARILY DISABLED - TypeScript build issues
-  # Will be re-enabled once dependencies are resolved
-
-  # =============================================================================
-  # BACKGROUND SERVICES
-  # =============================================================================
-
-  sophia-jobs:
+  mcp-context:
     build:
-      context: ./jobs
-      dockerfile: Dockerfile
-    container_name: sophia-jobs
-    environment:
-      - PYTHONUNBUFFERED=1
-      - NEON_DATABASE_URL=${NEON_DATABASE_URL}
-      - REDIS_URL=${REDIS_URL}
-      - TENANT=pay-ready
-    networks:
-      sophia-network:
-        ipv4_address: 172.20.0.30
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
-      interval: 60s
-      timeout: 30s
-      retries: 3
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-        reservations:
-          cpus: '0.25'
-          memory: 256M
-
-  # =============================================================================
-  # REVERSE PROXY & LOAD BALANCER
-  # =============================================================================
-
-  nginx-proxy:
-    image: nginx:alpine
-    container_name: nginx-proxy
+      context: ./services/mcp-context
+      dockerfile: Dockerfile.enhanced
+    container_name: mcp-context
     ports:
-      - "80:80"
-      - "443:443"
+      - "8081:8080"
+    environment:
+      - ENVIRONMENT=production
+      - REDIS_URL=redis://redis:6379
+      - QDRANT_URL=http://qdrant:6333
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - EMBEDDING_MODEL=text-embedding-ada-002
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./ssl:/etc/nginx/ssl:ro
+      - ./services/mcp-context:/app
+      - context-data:/app/data
+    depends_on:
+      - redis
+      - qdrant
     networks:
       - sophia-network
-      - monitoring
     restart: unless-stopped
-    depends_on:
-      - sophia-dashboard
-      - sophia-research
-      - sophia-context
-      - sophia-github
-      - sophia-business
-      - sophia-lambda
-      - sophia-hubspot
     healthcheck:
-      test: ["CMD", "nginx", "-t"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
       interval: 30s
       timeout: 10s
       retries: 3
-    deploy:
-      resources:
-        limits:
-          cpus: '0.25'
-          memory: 256M
-        reservations:
-          cpus: '0.1'
-          memory: 128M
-    labels:
-      - "prometheus.io/scrape=true"
-      - "prometheus.io/port=80"
-      - "prometheus.io/path=/metrics"
 
-  # =============================================================================
-  # MONITORING & OBSERVABILITY - ENABLED FOR PHASE 3
-  # =============================================================================
+  mcp-github:
+    build:
+      context: ./services/mcp-github
+      dockerfile: Dockerfile
+    container_name: mcp-github
+    ports:
+      - "8082:8080"
+    environment:
+      - ENVIRONMENT=production
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - ./services/mcp-github:/app
+    depends_on:
+      - redis
+    networks:
+      - sophia-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  mcp-hubspot:
+    build:
+      context: ./services/mcp-hubspot
+      dockerfile: Dockerfile
+    container_name: mcp-hubspot
+    ports:
+      - "8083:8080"
+    environment:
+      - ENVIRONMENT=production
+      - HUBSPOT_API_KEY=${HUBSPOT_API_KEY}
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - ./services/mcp-hubspot:/app
+    depends_on:
+      - redis
+    networks:
+      - sophia-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  mcp-lambda:
+    build:
+      context: ./services/mcp-lambda
+      dockerfile: Dockerfile
+    container_name: mcp-lambda
+    ports:
+      - "8084:8080"
+    environment:
+      - ENVIRONMENT=production
+      - LAMBDA_API_KEY=${LAMBDA_API_KEY}
+      - LAMBDA_CLOUD_ENDPOINT=${LAMBDA_CLOUD_ENDPOINT}
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - ./services/mcp-lambda:/app
+    depends_on:
+      - redis
+    networks:
+      - sophia-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  mcp-research:
+    build:
+      context: ./services/mcp-research
+      dockerfile: Dockerfile
+    container_name: mcp-research
+    ports:
+      - "8085:8080"
+    environment:
+      - ENVIRONMENT=production
+      - TAVILY_API_KEY=${TAVILY_API_KEY}
+      - SERPAPI_API_KEY=${SERPAPI_API_KEY}
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - ./services/mcp-research:/app
+    depends_on:
+      - redis
+    networks:
+      - sophia-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  mcp-business:
+    build:
+      context: ./services/mcp-business
+      dockerfile: Dockerfile
+    container_name: mcp-business
+    ports:
+      - "8086:8080"
+    environment:
+      - ENVIRONMENT=production
+      - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - ./services/mcp-business:/app
+    depends_on:
+      - redis
+    networks:
+      - sophia-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ===========================================
+  # Infrastructure Services
+  # ===========================================
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - sophia-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  qdrant:
+    image: qdrant/qdrant:v1.7.4
+    container_name: qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant-data:/qdrant/storage
+    networks:
+      - sophia-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=sophia
+      - POSTGRES_USER=sophia
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./scripts/init_database.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - sophia-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sophia -d sophia"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ===========================================
+  # Monitoring Stack
+  # ===========================================
 
   prometheus:
     image: prom/prometheus:latest
-    container_name: sophia-prometheus
+    container_name: prometheus
     ports:
       - "9090:9090"
     volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - prometheus_data:/prometheus
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    networks:
+      - sophia-network
+    restart: unless-stopped
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
       - '--web.console.libraries=/etc/prometheus/console_libraries'
       - '--web.console.templates=/etc/prometheus/consoles'
-      - '--storage.tsdb.retention.time=200h'
-      - '--web.enable-lifecycle'
-    restart: unless-stopped
-    networks:
-      - monitoring
-    depends_on:
-      - cadvisor
-    labels:
-      - "prometheus.io/scrape=true"
-      - "prometheus.io/port=9090"
-      - "prometheus.io/path=/metrics"
 
   grafana:
     image: grafana/grafana:latest
-    container_name: sophia-grafana
+    container_name: grafana
     ports:
-      - "3001:3000"
+      - "3000:3000"
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
       - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_INSTALL_PLUGINS=grafana-piechart-panel
     volumes:
-      - grafana_data:/var/lib/grafana
-      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
-      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
-    restart: unless-stopped
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
     networks:
-      - monitoring
       - sophia-network
+    restart: unless-stopped
     depends_on:
       - prometheus
-    labels:
-      - "prometheus.io/scrape=true"
-      - "prometheus.io/port=3000"
-      - "prometheus.io/path=/metrics"
-
-  cadvisor:
-    image: gcr.io/cadvisor/cadvisor:latest
-    container_name: sophia-cadvisor
-    ports:
-      - "8900:8080"
-    volumes:
-      - /:/rootfs:ro
-      - /var/run:/var/run:ro
-      - /sys:/sys:ro
-      - /var/lib/docker/:/var/lib/docker:ro
-      - /dev/disk/:/dev/disk:ro
-    devices:
-      - /dev/kmsg
-    restart: unless-stopped
-    networks:
-      - monitoring
-    privileged: true
-    labels:
-      - "prometheus.io/scrape=true"
-      - "prometheus.io/port=8080"
-      - "prometheus.io/path=/metrics"
-
-  node-exporter:
-    image: prom/node-exporter:latest
-    container_name: sophia-node-exporter
-    ports:
-      - "9100:9100"
-    volumes:
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
-      - /:/rootfs:ro
-    command:
-      - '--path.procfs=/host/proc'
-      - '--path.rootfs=/rootfs'
-      - '--path.sysfs=/host/sys'
-      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
-    restart: unless-stopped
-    networks:
-      - monitoring
-    labels:
-      - "prometheus.io/scrape=true"
-      - "prometheus.io/port=9100"
-      - "prometheus.io/path=/metrics"
 
   loki:
     image: grafana/loki:latest
-    container_name: sophia-loki
+    container_name: loki
     ports:
       - "3100:3100"
     volumes:
-      - loki_data:/loki
-      - ./monitoring/loki-config.yml:/etc/loki/local-config.yaml:ro
-    command: -config.file=/etc/loki/local-config.yaml
-    restart: unless-stopped
+      - ./monitoring/loki-config.yml:/etc/loki/local-config.yaml
+      - loki-data:/loki
     networks:
-      - monitoring
-    labels:
-      - "prometheus.io/scrape=true"
-      - "prometheus.io/port=3100"
-      - "prometheus.io/path=/metrics"
+      - sophia-network
+    restart: unless-stopped
+    command: -config.file=/etc/loki/local-config.yaml
 
   promtail:
     image: grafana/promtail:latest
-    container_name: sophia-promtail
+    container_name: promtail
     volumes:
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - ./monitoring/promtail-config.yml:/etc/promtail/config.yml:ro
-      - /var/log:/var/log:ro
-    command: -config.file=/etc/promtail/config.yml
-    restart: unless-stopped
-    networks:
-      - monitoring
-    labels:
-      - "prometheus.io/scrape=true"
-      - "prometheus.io/port=9080"
-      - "prometheus.io/path=/metrics"
-
-# =============================================================================
-# HEALTH CHECK ENDPOINT
-# =============================================================================
-
-  health-check:
-    image: curlimages/curl:latest
-    container_name: health-check
+      - ./monitoring/promtail-config.yml:/etc/promtail/config.yml
+      - /var/log:/var/log
     networks:
       - sophia-network
-    restart: "no"
-    command: |
-      sh -c "
-        echo 'Waiting for services to start...'
-        sleep 30
-        echo 'Running health checks...'
-        curl -f http://sophia-dashboard:3000/healthz && echo 'Dashboard: OK' || echo 'Dashboard: FAIL'
-        curl -f http://sophia-research:8080/healthz && echo 'Research: OK' || echo 'Research: FAIL'
-        curl -f http://sophia-context:8080/healthz && echo 'Context: OK' || echo 'Context: FAIL'
-        curl -f http://sophia-github:8080/healthz && echo 'GitHub: OK' || echo 'GitHub: FAIL'
-        curl -f http://sophia-business:8080/healthz && echo 'Business: OK' || echo 'Business: FAIL'
-        curl -f http://sophia-lambda:8080/healthz && echo 'Lambda: OK' || echo 'Lambda: FAIL'
-        curl -f http://sophia-hubspot:8080/healthz && echo 'HubSpot: OK' || echo 'HubSpot: FAIL'
-        curl -f http://sophia-agents:8000/healthz && echo 'Agents: OK' || echo 'Agents: FAIL'
-        echo 'Health check complete!'
-      "
-# Simple trigger - Mon Aug 25 10:24:55 UTC 2025
+    restart: unless-stopped
+    command: -config.file=/etc/promtail/config.yml
+
+  # ===========================================
+  # Load Balancer / Reverse Proxy
+  # ===========================================
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/ssl/certs
+    networks:
+      - sophia-network
+    restart: unless-stopped
+    depends_on:
+      - agno-coordinator
+      - mcp-agents
+      - mcp-context
+      - mcp-github
+      - mcp-hubspot
+      - mcp-lambda
+      - mcp-research
+      - mcp-business
+
+volumes:
+  redis-data:
+  qdrant-data:
+  postgres-data:
+  context-data:
+  prometheus-data:
+  grafana-data:
+  loki-data:
+
+networks:
+  sophia-network:
+    driver: bridge

@@ -30,7 +30,7 @@ The Sophia AI Intel repository demonstrates **above-average documentation maturi
 | Category | Count | Files |
 |----------|-------|-------|
 | **Architecture** | 8 | MEMORY_ARCHITECTURE.md, SCALABLE_MEMORY_DATABASE_ARCHITECTURE.md, UNIFIED_DEPLOYMENT_STRATEGY.md, etc. |
-| **Deployment** | 7 | DEPLOYMENT_PLAN_COMPLETE.md, PRODUCTION_RUNBOOK.md, PULUMI_MIGRATION_COMPLETE.md, etc. |
+| **Deployment** | 6 | docs/DEPLOYMENT_STRATEGY.md, PRODUCTION_RUNBOOK.md, PULUMI_MIGRATION_COMPLETE.md, etc. |
 | **Operations** | 6 | INFRA_OPERATIONS.md, SECRETS.md, PRODUCTION_SLO_MONITORING.md, etc. |
 | **Development** | 5 | CODEBASE_AUDIT.md, PHASE_BC_COMPLETION.md, SOPHIA_UNIFIED_IMPLEMENTATION_PLAN.md, etc. |
 | **Business** | 4 | BUSINESS_MCP.md, SWARM_CHARTER.md, PHASE2_ROADMAP.md, etc. |
@@ -72,8 +72,8 @@ The Sophia AI Intel repository demonstrates **above-average documentation maturi
 - Missing comprehensive API documentation link
 - Development server startup assumes all services available locally
 
-#### **DEPLOYMENT_PLAN_COMPLETE.md** ⭐⭐⭐⭐⭐
-- **Purpose**: ✅ Clear - Complete Lambda Labs deployment strategy
+#### **docs/DEPLOYMENT_STRATEGY.md** ⭐⭐⭐⭐⭐
+- **Purpose**: ✅ Clear - Current deployment strategy guide with Lambda Labs and Fly.io options
 - **Accuracy**: ✅ Current - Matches docker-compose.yml service definitions
 - **Completeness**: ✅ Comprehensive - Step-by-step deployment with troubleshooting
 - **Structure**: ✅ Excellent - Well-organized with clear action items
@@ -114,16 +114,16 @@ The Sophia AI Intel repository demonstrates **above-average documentation maturi
 
 #### **Deployment Strategy Conflict**
 - **Issue**: Multiple deployment strategies documented simultaneously
-- **Evidence**: 
-  - `DEPLOYMENT_PLAN_COMPLETE.md`: Lambda Labs with Pulumi
-  - `PHASE_BC_COMPLETION.md`: Fly.io infrastructure
+- **Evidence**:
+  - `docs/DEPLOYMENT_STRATEGY.md`: Lambda Labs with Pulumi (primary)
+  - `PHASE_BC_COMPLETION.md`: Fly.io infrastructure (legacy)
   - `docker-compose.yml`: Containerized local/Lambda Labs deployment
-  - `package.json`: Fly.io deployment scripts
+  - `package.json`: Fly.io deployment scripts (legacy)
 
 #### **Service Count Discrepancies**
 - **README.md**: Lists 6 core services
 - **docker-compose.yml**: Defines 8 services (including agents and jobs)
-- **DEPLOYMENT_PLAN_COMPLETE.md**: References 9 services total
+- **docs/DEPLOYMENT_STRATEGY.md**: References current service architecture
 
 #### **Recommended Actions**:
 1. **Establish Primary Deployment Strategy**: Document which is current (Lambda Labs vs Fly.io)
@@ -297,7 +297,7 @@ The Sophia AI Intel repository demonstrates **above-average documentation maturi
 
 # Naming Convention
 - Descriptive names: FEATURE_ARCHITECTURE.md
-- Status prefix: DEPLOYMENT_PLAN_COMPLETE.md
+- Status prefix: docs/DEPLOYMENT_STRATEGY.md
 - Version suffix: API_V2_REFERENCE.md
 ```
 
@@ -327,7 +327,7 @@ The Sophia AI Intel repository demonstrates **above-average documentation maturi
 
 ### **Missing Cross-References**
 - MEMORY_ARCHITECTURE.md ↔ SCALABLE_MEMORY_DATABASE_ARCHITECTURE.md
-- DEPLOYMENT_PLAN_COMPLETE.md ↔ PRODUCTION_RUNBOOK.md
+- docs/DEPLOYMENT_STRATEGY.md ↔ PRODUCTION_RUNBOOK.md
 - README.md ↔ Individual service documentation
 
 ### **Conflicting Information**

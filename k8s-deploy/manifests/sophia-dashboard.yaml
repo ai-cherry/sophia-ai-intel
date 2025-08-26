@@ -19,9 +19,9 @@ spec:
     spec:
       containers:
       - name: sophia-dashboard
-        image: sophia-dashboard:latest
+        image: sophia-ai-intel-1-sophia-dashboard:latest
         ports:
-        - containerPort: 3000
+        - containerPort: 8080
           name: http
         env:
         - name: NODE_ENV
@@ -42,16 +42,16 @@ spec:
         livenessProbe:
           httpGet:
             path: /healthz
-            port: 3000
+            port: 8080
           initialDelaySeconds: 30
           periodSeconds: 30
         readinessProbe:
           httpGet:
             path: /healthz
-            port: 3000
+            port: 8080
           initialDelaySeconds: 10
           periodSeconds: 10
-      imagePullPolicy: IfNotPresent
+        imagePullPolicy: IfNotPresent
 ---
 apiVersion: v1
 kind: Service
@@ -66,7 +66,7 @@ spec:
   selector:
     app: sophia-dashboard
   ports:
-  - port: 3000
-    targetPort: 3000
+  - port: 8080
+    targetPort: 8080
     protocol: TCP
     name: http
