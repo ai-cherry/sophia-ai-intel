@@ -1,0 +1,14 @@
+{
+  "status": "success",
+  "action": "incremental",
+  "timestamp": "2025-08-26T02:36:23.312004+00:00",
+  "database_status": "connected",
+  "vector_status": "qdrant_not_configured",
+  "statistics": {
+    "total_entries": 0,
+    "indexed_this_run": 0,
+    "skipped_this_run": 0,
+    "errors_this_run": 100,
+    "files_scanned": 1156
+  }
+}
