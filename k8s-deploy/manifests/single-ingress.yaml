@@ -84,14 +84,14 @@ spec:
           service:
             name: orchestrator
             port:
-       - path: /api/sonic
-         pathType: Prefix
-         backend:
-           service:
-             name: sonic-ai
-             port:
-               number: 8080
-              number: 3001
+              number: 8003
+      - path: /api/sonic
+        pathType: Prefix
+        backend:
+          service:
+            name: sonic-ai
+            port:
+              number: 8080
       # Health check endpoints
       - path: /health
         pathType: Exact
