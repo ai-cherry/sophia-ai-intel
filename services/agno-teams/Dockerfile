@@ -25,7 +25,7 @@ RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -e .
 
 # Copy source code
-COPY src/ ./src/
+COPY services/agno-teams/src/ ./src/
 
 # Create non-root user
 RUN useradd --create-home --shell /bin/bash app \
