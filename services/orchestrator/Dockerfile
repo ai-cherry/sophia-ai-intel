@@ -9,8 +9,8 @@ WORKDIR /app
 # Install dependencies for building
 RUN apk add --no-cache python3 make g++
 
-# Copy package.json and tsconfig.json
-COPY package.json tsconfig.json ./
+# Copy service-specific package.json and tsconfig.json
+COPY services/orchestrator/package.json services/orchestrator/tsconfig.json ./
 
 # Install dependencies
 RUN npm install

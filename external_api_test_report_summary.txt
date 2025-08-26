@@ -1,0 +1,54 @@
+EXTERNAL API CONNECTIVITY TEST RESULTS
+==================================================
+
+Test Timestamp: 2025-08-26T18:09:48.235066+00:00
+Execution Time: 5.00 seconds
+Total Tests: 13
+Successful Tests: 12
+Failed Tests: 1
+Success Rate: 92.3%
+Services Tested: 6
+
+SERVICE BREAKDOWN:
+------------------------------
+
+Lambda Labs:
+  Tests: 2
+  Success Rate: 100.0%
+  Avg Response Time: 0.918s
+
+Qdrant:
+  Tests: 2
+  Success Rate: 50.0%
+  Avg Response Time: 0.169s
+  Errors: HTTP 404: {}
+
+Redis:
+  Tests: 3
+  Success Rate: 100.0%
+  Avg Response Time: 0.287s
+
+OpenRouter:
+  Tests: 2
+  Success Rate: 100.0%
+  Avg Response Time: 0.195s
+
+GitHub:
+  Tests: 2
+  Success Rate: 100.0%
+  Avg Response Time: 0.371s
+
+HubSpot:
+  Tests: 2
+  Success Rate: 100.0%
+  Avg Response Time: 0.364s
+
+
+CONFIGURATION STATUS:
+-------------------------
+lambda_labs: ✓ Configured
+qdrant: ✓ Configured
+redis: ✓ Configured
+openrouter: ✓ Configured
+github: ✓ Configured
+hubspot: ✓ Configured

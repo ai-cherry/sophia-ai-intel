@@ -1,0 +1,52 @@
+{
+  "phase1": {
+    "environment_variables": {},
+    "redis": {
+      "credentials_present": true,
+      "expected_username": true,
+      "expected_password": true,
+      "connectivity_test": false,
+      "error": "invalid username-password pair"
+    },
+    "qdrant": {
+      "url_present": true,
+      "api_key_present": true,
+      "connectivity_test": true,
+      "error": null
+    },
+    "python_dotenv": {},
+    "nodejs_dotenv": {}
+  },
+  "phase2": {
+    "lambda_labs": {
+      "api_key_present": true,
+      "endpoint_present": true,
+      "connectivity_test": true,
+      "error": null
+    },
+    "qdrant": {},
+    "redis": {},
+    "openai": {
+      "api_key_present": true,
+      "connectivity_test": true,
+      "error": null
+    },
+    "openrouter": {
+      "api_key_present": true,
+      "connectivity_test": true,
+      "error": null
+    },
+    "github": {},
+    "hubspot": {},
+    "slack": {},
+    "dnsimple": {}
+  },
+  "summary": {
+    "total_variables": 61,
+    "valid_variables": 61,
+    "invalid_variables": 0,
+    "connectivity_tests": 5,
+    "passed_tests": 4,
+    "failed_tests": 1
+  }
+}

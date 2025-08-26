@@ -39,9 +39,13 @@ from pydantic import BaseModel, Field
 import uuid
 from qdrant_client import QdrantClient
 
+# Load environment variables from .env file
+from dotenv import load_dotenv
+load_dotenv()
+
 # Import real embeddings engine
 from real_embeddings import (
-    embedding_engine, 
+    embedding_engine,
     store_with_real_embedding,
     semantic_search_documents
 )

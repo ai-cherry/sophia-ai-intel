@@ -22,9 +22,7 @@
     "rootDir": "./",
     "baseUrl": ".",
     "paths": {
-      "@sophia/contracts": ["./libs/contracts/src"],
-      "@sophia/clients": ["./libs/clients/src"],
-      "@sophia/ui": ["./libs/ui/src"]
+      "@sophia/contracts": ["./libs/contracts/src"]
     }
   },
   "include": [
@@ -43,12 +41,6 @@
   "references": [
     {
       "path": "./libs/contracts"
-    },
-    {
-      "path": "./libs/clients"
-    },
-    {
-      "path": "./libs/ui"
     },
     {
       "path": "./apps/dashboard"

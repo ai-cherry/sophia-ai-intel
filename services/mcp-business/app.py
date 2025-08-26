@@ -54,6 +54,10 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 import uuid
 
+# Load environment variables from .env file
+from dotenv import load_dotenv
+load_dotenv()
+
 # Import MCP token validation
 from mcp_auth import (
     require_business_auth,

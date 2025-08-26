@@ -1,0 +1,56 @@
+{
+  "lambda_labs": {
+    "status": "ERROR",
+    "message": "Demo API key detected",
+    "timestamp": 1756226116.513802,
+    "details": {}
+  },
+  "qdrant": {
+    "status": "ERROR",
+    "message": "Connection failed: HTTPConnectionPool(host='qdrant', port=6333): Max retries exceeded with url: /health (Caused by NameResolutionError(\"<urllib3.connection.HTTPConnection object at 0x10539e7e0>: Failed to resolve 'qdrant' ([Errno 8] nodename nor servname provided, or not known)\"))",
+    "timestamp": 1756226116.520968,
+    "details": {}
+  },
+  "redis": {
+    "status": "ERROR",
+    "message": "Redis connection failed: Error 8 connecting to redis:6379. nodename nor servname provided, or not known.",
+    "timestamp": 1756226116.523532,
+    "details": {}
+  },
+  "openrouter": {
+    "status": "ERROR",
+    "message": "Demo API key detected",
+    "timestamp": 1756226116.5235891,
+    "details": {}
+  },
+  "postgresql": {
+    "status": "ERROR",
+    "message": "Database connection failed: could not translate host name \"postgres\" to address: nodename nor servname provided, or not known\n",
+    "timestamp": 1756226116.553611,
+    "details": {}
+  },
+  "github": {
+    "status": "ERROR",
+    "message": "Demo token detected",
+    "timestamp": 1756226116.553708,
+    "details": {}
+  },
+  "hubspot": {
+    "status": "ERROR",
+    "message": "Demo API key detected",
+    "timestamp": 1756226116.553728,
+    "details": {}
+  },
+  "slack": {
+    "status": "ERROR",
+    "message": "Demo token detected",
+    "timestamp": 1756226116.5537422,
+    "details": {}
+  },
+  "dnsimple": {
+    "status": "ERROR",
+    "message": "Demo token detected",
+    "timestamp": 1756226116.553757,
+    "details": {}
+  }
+}

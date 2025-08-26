@@ -34,6 +34,10 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from github_app import gh_get, MissingCredentialsError
 
+# Load environment variables from .env file
+from dotenv import load_dotenv
+load_dotenv()
+
 REPO = os.getenv("GITHUB_REPO", "ai-cherry/sophia-ai-intel")
 DASHBOARD_ORIGIN = os.getenv("DASHBOARD_ORIGIN", "http://sophia-dashboard:3000")
 

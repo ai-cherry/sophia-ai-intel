@@ -45,6 +45,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, HttpUrl, Field
 from enum import Enum
 
+# Load environment variables from .env file
+from dotenv import load_dotenv
+load_dotenv()
+
 # Import aggressive cache manager
 from cache_manager import cache_manager, cached_research_query, CacheLevel
 

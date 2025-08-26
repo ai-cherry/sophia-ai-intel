@@ -1,0 +1,47 @@
+2025-08-26 10:12:27,207 - INFO - 🔍 Loading environment variables from .env file...
+2025-08-26 10:12:27,207 - INFO - ✅ Loaded 99 environment variables
+2025-08-26 10:12:27,207 - INFO - ✅ All expected variables present
+2025-08-26 10:12:27,207 - INFO - 🧪 Starting Comprehensive Integration Testing
+2025-08-26 10:12:27,207 - INFO - ============================================================
+2025-08-26 10:12:27,207 - INFO - 🔬 Starting Phase 3 - External API Connectivity Testing
+2025-08-26 10:12:27,207 - INFO - 📊 Environment Variables: 99 loaded
+2025-08-26 10:12:27,207 - INFO - 🚀 Testing Lambda Labs API connectivity...
+2025-08-26 10:12:27,332 - ERROR - ❌ Lambda Labs error: HTTPSConnectionPool(host='cloud.lambdal.com', port=443): Max retries exceeded with url: /api/v1/instances (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x11a07b650>: Failed to resolve 'cloud.lambdal.com' ([Errno 8] nodename nor servname provided, or not known)"))
+2025-08-26 10:12:27,332 - INFO - 🗂️ Testing Qdrant connectivity...
+2025-08-26 10:12:27,752 - ERROR - ❌ Qdrant: HTTP 403
+2025-08-26 10:12:27,752 - INFO - 🔴 Testing Redis connectivity...
+2025-08-26 10:12:27,954 - ERROR - ❌ Redis error: invalid username-password pair
+2025-08-26 10:12:27,954 - INFO - 🤖 Testing OpenRouter and OpenAI APIs...
+2025-08-26 10:12:28,230 - INFO - ✅ OpenRouter: Connected, 317 models available
+2025-08-26 10:12:28,879 - INFO - ✅ OpenAI: Connected, 82 models available
+2025-08-26 10:12:28,879 - INFO - 🔗 Testing GitHub, HubSpot, Slack, and DNSimple APIs...
+2025-08-26 10:12:29,279 - INFO - ✅ GitHub: Connected and authenticated
+2025-08-26 10:12:29,799 - INFO - ✅ HubSpot: Connected and authenticated
+2025-08-26 10:12:30,052 - ERROR - ❌ Slack: account_inactive
+2025-08-26 10:12:30,668 - INFO - ✅ DNSimple: Connected and authenticated
+2025-08-26 10:12:30,668 - INFO - ✅ Phase 3 testing completed
+2025-08-26 10:12:30,668 - INFO - 🚀 Starting Phase 4 - Application Services Testing
+2025-08-26 10:12:30,668 - INFO - 🚀 Deploying MCP and orchestration services...
+2025-08-26 10:12:30,668 - INFO - 📦 Starting docker-compose deployment...
+2025-08-26 10:26:15,896 - ERROR - ❌ Docker Compose deployment failed
+2025-08-26 10:26:15,897 - INFO - 🔗 Testing service-to-service connectivity...
+2025-08-26 10:26:15,904 - ERROR - ❌ Database connectivity failed: could not translate host name "postgres" to address: nodename nor servname provided, or not known
+
+2025-08-26 10:26:15,904 - INFO - ✅ External API connectivity: OK
+2025-08-26 10:26:15,904 - INFO - 🧪 Running comprehensive integration tests...
+2025-08-26 10:26:15,904 - INFO - 📋 Running scripts/test_complete_integration.py...
+2025-08-26 10:26:15,959 - ERROR - ❌ scripts/test_complete_integration.py: Syntax check failed
+2025-08-26 10:26:15,959 - INFO - 📋 Running scripts/load_testing/locustfile.py...
+2025-08-26 10:26:15,985 - INFO - ✅ scripts/load_testing/locustfile.py: Syntax check passed
+2025-08-26 10:26:15,986 - INFO - 📊 Integration tests completed: 1 passed, 1 failed
+2025-08-26 10:26:15,986 - INFO - ✅ Phase 4 testing completed
+2025-08-26 10:26:15,986 - INFO - 📋 Generating comprehensive audit report...
+2025-08-26 10:26:15,986 - INFO - 📋 Audit report saved to SOPHIA_AI_PHASE3_PHASE4_AUDIT_REPORT.md
+2025-08-26 10:26:15,986 - INFO - 
+============================================================
+2025-08-26 10:26:15,986 - INFO - INTEGRATION TESTING COMPLETED
+2025-08-26 10:26:15,986 - INFO - ============================================================
+2025-08-26 10:26:15,986 - INFO - Phase 3 API Tests: 2/5 passed
+2025-08-26 10:26:15,986 - INFO - Phase 4 Services: ❌ Failed
+2025-08-26 10:26:15,986 - INFO - Connectivity Tests: 1/4 passed
+2025-08-26 10:26:15,986 - INFO - ============================================================

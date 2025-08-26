@@ -30,7 +30,7 @@
     "build:dashboard": "cd apps/dashboard && npm run build",
     "build:services": "cd services/mcp-research && npm run build && cd ../mcp-context && npm run build && cd ../mcp-github && npm run build",
     "clean": "rm -rf node_modules apps/*/node_modules services/*/node_modules libs/*/node_modules",
-    "postinstall": "npm run build --workspace=libs/contracts && npm run build --workspace=libs/clients"
+    "postinstall": "npm run build --workspace=libs/contracts"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",

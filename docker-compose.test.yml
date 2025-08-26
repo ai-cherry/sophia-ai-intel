@@ -1,0 +1,222 @@
+services:
+  # ===========================================
+  # Core Infrastructure Services
+  # ===========================================
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+       - "6379:6379"
+    env_file: ./.env
+    environment:
+      - REDIS_USER_KEY=${REDIS_USER_KEY}
+      - REDIS_ACCOUNT_KEY=${REDIS_ACCOUNT_KEY}
+      - REDIS_URL=${REDIS_URL}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+    volumes:
+      - redis-data:/data
+    networks:
+      - sophia-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  qdrant:
+    image: qdrant/qdrant:v1.7.4
+    container_name: qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    env_file: ./.env
+    environment:
+      - QDRANT_API_KEY=${QDRANT_API_KEY}
+      - QDRANT_MANAGEMENT_KEY=${QDRANT_MANAGEMENT_KEY}
+      - QDRANT_URL=${QDRANT_URL}
+      - QDRANT_CLUSTER_API_KEY=${QDRANT_CLUSTER_API_KEY}
+      - QDRANT_ACCOUNT_ID=${QDRANT_ACCOUNT_ID}
+    volumes:
+      - qdrant-data:/qdrant/storage
+    networks:
+      - sophia-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    env_file: ./.env
+    environment:
+      - POSTGRES_DB=sophia
+      - POSTGRES_USER=sophia
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_URL=${POSTGRES_URL}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./scripts/init_database.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - sophia-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sophia -d sophia"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ===========================================
+  # Core MCP Services (Python)
+  # ===========================================
+
+  mcp-agents:
+    build:
+      context: .
+      dockerfile: ./services/mcp-agents/Dockerfile
+    container_name: mcp-agents
+    ports:
+      - "8000:8000"
+    env_file: ./.env
+    environment:
+      - ENVIRONMENT=production
+      - REDIS_URL=redis://redis:6379
+      - QDRANT_URL=http://qdrant:6333
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - POSTGRES_URL=${POSTGRES_URL}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+    volumes:
+      - ./services/mcp-agents:/app
+    depends_on:
+      - redis
+      - qdrant
+      - postgres
+    networks:
+      - sophia-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  mcp-context:
+    build:
+      context: ./services/mcp-context
+      dockerfile: Dockerfile
+    container_name: mcp-context
+    ports:
+      - "8081:8080"
+    env_file: ./.env
+    environment:
+      - ENVIRONMENT=production
+      - REDIS_URL=redis://redis:6379
+      - QDRANT_URL=http://qdrant:6333
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - EMBEDDING_MODEL=text-embedding-ada-002
+      - POSTGRES_URL=${POSTGRES_URL}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+    volumes:
+      - ./services/mcp-context:/app
+      - context-data:/app/data
+    depends_on:
+      - redis
+      - qdrant
+      - postgres
+    networks:
+      - sophia-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  mcp-research:
+    build:
+      context: ./services/mcp-research
+      dockerfile: Dockerfile
+    container_name: mcp-research
+    ports:
+      - "8085:8080"
+    env_file: ./.env
+    environment:
+      - ENVIRONMENT=production
+      - TAVILY_API_KEY=${TAVILY_API_KEY}
+      - SERPAPI_API_KEY=${SERPAPI_API_KEY}
+      - REDIS_URL=redis://redis:6379
+      - POSTGRES_URL=${POSTGRES_URL}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+    volumes:
+      - ./services/mcp-research:/app
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - sophia-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ===========================================
+  # AI Teams Services
+  # ===========================================
+
+  agno-teams:
+    build:
+      context: .
+      dockerfile: ./services/agno-teams/Dockerfile
+    container_name: agno-teams
+    ports:
+      - "8087:8087"
+    env_file: ./.env
+    environment:
+      - ENVIRONMENT=production
+      - LOG_LEVEL=info
+      - REDIS_URL=redis://redis:6379
+      - QDRANT_URL=http://qdrant:6333
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - PORT=8087
+      - HOST=0.0.0.0
+      - POSTGRES_URL=${POSTGRES_URL}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+    volumes:
+      - ./services/agno-teams:/app
+    depends_on:
+      - redis
+      - qdrant
+      - postgres
+    networks:
+      - sophia-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8087/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  redis-data:
+  qdrant-data:
+  postgres-data:
+  context-data:
+
+networks:
+  sophia-network:
+    driver: bridge
