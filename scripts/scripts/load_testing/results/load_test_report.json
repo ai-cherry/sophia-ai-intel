@@ -1,0 +1,39 @@
+{
+  "test_summary": {
+    "timestamp": "2025-08-26T12:21:12.878602",
+    "tests_run": [
+      "endpoint_check",
+      "baseline",
+      "hpa_validation",
+      "stability"
+    ],
+    "overall_success": false
+  },
+  "results": {
+    "endpoint_check": {
+      "results": {
+        "http://localhost:8000/health": {
+          "status_code": "000",
+          "accessible": false
+        },
+        "http://localhost:8000/": {
+          "status_code": "000",
+          "accessible": false
+        }
+      },
+      "timestamp": "2025-08-26T12:21:12.874671"
+    },
+    "baseline": {
+      "success": false,
+      "error": "[Errno 2] No such file or directory: 'locust'"
+    },
+    "hpa_validation": {
+      "success": false,
+      "error": "[Errno 2] No such file or directory: 'locust'"
+    },
+    "stability": {
+      "success": false,
+      "error": "[Errno 2] No such file or directory: 'locust'"
+    }
+  }
+}

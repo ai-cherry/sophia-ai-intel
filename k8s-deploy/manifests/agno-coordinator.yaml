@@ -48,11 +48,11 @@ spec:
           value: "http://mcp-github:8005"
         resources:
           requests:
-            cpu: 2
-            memory: "4Gi"
+            cpu: 500m
+            memory: "1Gi"
           limits:
-            cpu: 4
-            memory: "8Gi"
+            cpu: 1
+            memory: "2Gi"
       imagePullSecrets:
       - name: github-registry
 ---

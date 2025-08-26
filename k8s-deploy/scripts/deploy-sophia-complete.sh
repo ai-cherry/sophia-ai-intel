@@ -84,9 +84,6 @@ remote_exec "kubectl apply -f ~/k8s-deploy/manifests/orchestrator.yaml"
 sleep 10
 
 # Step 8: Deploy Sonic AI
-echo "Step 8: Deploying Sonic AI..."
-remote_exec "kubectl apply -f ~/k8s-deploy/manifests/sonic-ai.yaml"
-sleep 10
 
 # Step 9: Set up ingress controller
 echo "Step 9: Setting up ingress controller..."
@@ -98,7 +95,6 @@ remote_exec "kubectl wait --namespace ingress-nginx --for=condition=ready pod --
 # Step 10: Configure ingress rules
 echo "Step 10: Configuring ingress rules..."
 remote_exec "kubectl apply -f ~/k8s-deploy/manifests/single-ingress.yaml"
-remote_exec "kubectl apply -f ~/k8s-deploy/manifests/sonic-ai-ingress.yaml"
 
 # Step 11: Deploy comprehensive monitoring stack
 echo "Step 11: Deploying monitoring stack..."
@@ -132,7 +128,7 @@ echo "Step 15: Waiting for all services to be ready..."
 sleep 60
 
 # Wait for deployments
-remote_exec "kubectl wait --namespace sophia --for=condition=available --timeout=600s deployment/mcp-research deployment/mcp-context deployment/mcp-agents deployment/mcp-hubspot deployment/mcp-business deployment/mcp-github deployment/agno-coordinator deployment/agno-teams deployment/orchestrator deployment/sonic-ai" || echo "Some deployments may still be starting..."
+remote_exec "kubectl wait --namespace sophia --for=condition=available --timeout=600s deployment/mcp-research deployment/mcp-context deployment/mcp-agents deployment/mcp-hubspot deployment/mcp-business deployment/mcp-github deployment/agno-coordinator deployment/agno-teams deployment/orchestrator" || echo "Some deployments may still be starting..."
 
 # Step 16: Verify deployment status
 echo "Step 16: Verifying deployment status..."

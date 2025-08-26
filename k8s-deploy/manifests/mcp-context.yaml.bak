@@ -21,8 +21,8 @@ spec:
     spec:
       containers:
       - name: mcp-context
-        image: localhost:5000/sophia-context:latest
-        imagePullPolicy: IfNotPresent
+        image: sophia-ai-intel-1-sophia-context:latest
+        imagePullPolicy: Never
         ports:
         - containerPort: 8080
           name: http

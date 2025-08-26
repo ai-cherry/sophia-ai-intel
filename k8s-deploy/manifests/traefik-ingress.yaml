@@ -119,9 +119,6 @@ spec:
         - name: sophia-rate-limit
         - name: sophia-compression
         - name: sophia-cors
-      services:
-        - name: sonic-ai
-          port: 8080
 
     # Health check endpoint
     - match: Host(`www.sophia-intel.ai`) && Path(`/health`)

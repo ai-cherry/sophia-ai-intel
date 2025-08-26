@@ -82,10 +82,19 @@ services:
       dockerfile: Dockerfile
     container_name: mcp-context
     ports:
-      - "8081:8080"
+      - "8081:8081"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: "0.5"
+        reservations:
+          memory: 512M
+          cpus: "0.25"
     env_file: ./.env
     environment:
       - ENVIRONMENT=production
+      - PORT=8081
       - REDIS_URL=redis://redis:6379
       - QDRANT_URL=http://qdrant:6333
       - OPENAI_API_KEY=${OPENAI_API_KEY}
@@ -104,7 +113,7 @@ services:
       - sophia-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      test: ["CMD", "curl", "-f", "http://localhost:8081/healthz"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -115,10 +124,19 @@ services:
       dockerfile: Dockerfile
     container_name: mcp-github
     ports:
-      - "8082:8080"
+      - "8082:8082"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: "0.5"
+        reservations:
+          memory: 512M
+          cpus: "0.25"
     env_file: ./.env
     environment:
       - ENVIRONMENT=production
+      - PORT=8082
       - GITHUB_TOKEN=${GITHUB_TOKEN}
       - REDIS_URL=redis://redis:6379
       - POSTGRES_URL=${POSTGRES_URL}
@@ -133,7 +151,7 @@ services:
       - sophia-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      test: ["CMD", "curl", "-f", "http://localhost:8082/healthz"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -144,10 +162,19 @@ services:
       dockerfile: Dockerfile
     container_name: mcp-hubspot
     ports:
-      - "8083:8080"
+      - "8083:8083"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: "0.5"
+        reservations:
+          memory: 512M
+          cpus: "0.25"
     env_file: ./.env
     environment:
       - ENVIRONMENT=production
+      - PORT=8083
       - HUBSPOT_API_KEY=${HUBSPOT_API_KEY}
       - REDIS_URL=redis://redis:6379
       - POSTGRES_URL=${POSTGRES_URL}
@@ -162,7 +189,7 @@ services:
       - sophia-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      test: ["CMD", "curl", "-f", "http://localhost:8083/healthz"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -173,10 +200,19 @@ services:
       dockerfile: Dockerfile
     container_name: mcp-lambda
     ports:
-      - "8084:8080"
+      - "8084:8084"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: "0.5"
+        reservations:
+          memory: 512M
+          cpus: "0.25"
     env_file: ./.env
     environment:
       - ENVIRONMENT=production
+      - PORT=8084
       - LAMBDA_API_KEY=${LAMBDA_API_KEY}
       - LAMBDA_CLOUD_ENDPOINT=${LAMBDA_CLOUD_ENDPOINT}
       - REDIS_URL=redis://redis:6379
@@ -192,7 +228,7 @@ services:
       - sophia-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      test: ["CMD", "curl", "-f", "http://localhost:8084/healthz"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -292,6 +328,160 @@ services:
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8087/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  agno-wrappers:
+    build:
+      context: .
+      dockerfile: ./services/agno-wrappers/Dockerfile
+    container_name: agno-wrappers
+    ports:
+      - "8089:8080"
+    env_file: ./.env
+    environment:
+      - ENVIRONMENT=production
+      - LOG_LEVEL=info
+      - REDIS_URL=redis://redis:6379
+      - POSTGRES_URL=${POSTGRES_URL}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+    volumes:
+      - ./services/agno-wrappers:/app
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - sophia-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ===========================================
+  # Additional MCP Services
+  # ===========================================
+
+  mcp-apollo:
+    build:
+      context: ./services/mcp-apollo
+      dockerfile: Dockerfile
+    container_name: mcp-apollo
+    ports:
+      - "8090:8080"
+    env_file: ./.env
+    environment:
+      - ENVIRONMENT=production
+      - APOLLO_API_KEY=${APOLLO_API_KEY}
+      - REDIS_URL=redis://redis:6379
+      - POSTGRES_URL=${POSTGRES_URL}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+    volumes:
+      - ./services/mcp-apollo:/app
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - sophia-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  mcp-gong:
+    build:
+      context: ./services/mcp-gong
+      dockerfile: Dockerfile
+    container_name: mcp-gong
+    ports:
+      - "8091:8080"
+    env_file: ./.env
+    environment:
+      - ENVIRONMENT=production
+      - GONG_ACCESS_KEY=${GONG_ACCESS_KEY}
+      - GONG_ACCESS_KEY_SECRET=${GONG_ACCESS_KEY_SECRET}
+      - REDIS_URL=redis://redis:6379
+      - POSTGRES_URL=${POSTGRES_URL}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+    volumes:
+      - ./services/mcp-gong:/app
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - sophia-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  mcp-salesforce:
+    build:
+      context: ./services/mcp-salesforce
+      dockerfile: Dockerfile
+    container_name: mcp-salesforce
+    ports:
+      - "8092:8080"
+    env_file: ./.env
+    environment:
+      - ENVIRONMENT=production
+      - SALESFORCE_CLIENT_ID=${SALESFORCE_CLIENT_ID}
+      - SALESFORCE_CLIENT_SECRET=${SALESFORCE_CLIENT_SECRET}
+      - SALESFORCE_USERNAME=${SALESFORCE_USERNAME}
+      - SALESFORCE_PASSWORD=${SALESFORCE_PASSWORD}
+      - REDIS_URL=redis://redis:6379
+      - POSTGRES_URL=${POSTGRES_URL}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+    volumes:
+      - ./services/mcp-salesforce:/app
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - sophia-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  mcp-slack:
+    build:
+      context: ./services/mcp-slack
+      dockerfile: Dockerfile
+    container_name: mcp-slack
+    ports:
+      - "8093:8080"
+    env_file: ./.env
+    environment:
+      - ENVIRONMENT=production
+      - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}
+      - SLACK_APP_TOKEN=${SLACK_APP_TOKEN}
+      - REDIS_URL=redis://redis:6379
+      - POSTGRES_URL=${POSTGRES_URL}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+    volumes:
+      - ./services/mcp-slack:/app
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - sophia-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
       interval: 30s
       timeout: 10s
       retries: 3

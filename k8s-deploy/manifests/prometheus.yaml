@@ -71,7 +71,7 @@ data:
       relabel_configs:
       - source_labels: [__meta_kubernetes_pod_label_app]
         action: keep
-        regex: (mcp-.*|agno-.*|orchestrator|sonic-ai)
+        regex: (mcp-.*|agno-.*|orchestrator)
       - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
         action: keep
         regex: true
@@ -106,6 +106,69 @@ data:
         target_label: namespace
       - source_labels: [__meta_kubernetes_service_name]
         action: replace
+     # Sonic AI Kubernetes service discovery
+     - job_name: 'sonic-ai-kubernetes'
+       kubernetes_sd_configs:
+       - role: pod
+         namespaces:
+           names: ['sophia']
+       relabel_configs:
+       - source_labels: [__meta_kubernetes_pod_label_app]
+         regex: 'sonic-ai'
+         action: keep
+       - source_labels: [__meta_kubernetes_pod_name]
+         target_label: pod_name
+       - source_labels: [__meta_kubernetes_pod_label_component]
+         target_label: component
+       - target_label: service_name
+         replacement: 'sonic-ai'
+       - source_labels: [__meta_kubernetes_pod_ip]
+         target_label: __address__
+         replacement: '$1:8080'
+       scrape_interval: 5s
+       metrics_path: '/metrics'
+
+     # Sonic AI service metrics
+     - job_name: 'sonic-ai-service'
+       static_configs:
+       - targets: ['sonic-ai.sophia.svc.cluster.local:8080']
+         labels:
+           service: 'sonic-ai'
+           component: 'reasoning-engine'
+       scrape_interval: 5s
+       metrics_path: '/metrics'
+
+     # Sonic AI custom metrics endpoint
+     - job_name: 'sonic-ai-custom-metrics'
+       static_configs:
+       - targets: ['sonic-ai.sophia.svc.cluster.local:8080']
+         labels:
+           service: 'sonic-ai'
+           metrics_type: 'custom'
+       scrape_interval: 10s
+       metrics_path: '/metrics'
+       params:
+         format: ['prometheus']
+
+     # GPU monitoring via DCGM
+     - job_name: 'gpu-metrics'
+       static_configs:
+       - targets: ['localhost:9400']
+         labels:
+           service: 'gpu'
+       scrape_interval: 10s
+       metrics_path: '/metrics'
+
+     # Node exporter for system metrics
+     - job_name: 'node-exporter'
+       kubernetes_sd_configs:
+       - role: node
+       relabel_configs:
+       - action: labelmap
+         regex: __meta_kubernetes_node_label_(.+)
+       - source_labels: [__meta_kubernetes_node_name]
+         target_label: instance
+       scrape_interval: 30s
         target_label: service
 
   alerts.yml: |

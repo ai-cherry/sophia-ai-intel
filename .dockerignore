@@ -1,0 +1,51 @@
+# Git and version control
+.git
+.github
+.gitignore
+
+# Development files
+.env.local
+.env.development
+.env.example
+*.md
+docs/
+README.md
+
+# Build artifacts
+node_modules/
+__pycache__/
+.pytest_cache/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.ruff_cache/
+darwin-arm64/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Test and proof files
+tests/
+proofs/
+backups/
+
+# Logs and temporary files
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# Monitoring and scripts (not needed in container)
+monitoring/grafana/
+monitoring/prometheus/
+scripts/
+
+# Build context optimization
+.dockerignore
+Dockerfile*
+docker-compose*.yml

@@ -1,0 +1,191 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-alerting
+  namespace: monitoring
+data:
+  alerting_channels.yml: |
+    apiVersion: 1
+    contactPoints:
+      - uid: 'sophia-team-email'
+        name: 'Sophia Team Email'
+        type: 'email'
+        disableResolveMessage: false
+        settings:
+          addresses: 'team@sophia-intel.ai'
+          subject: '[SOPHIA] {{ .GroupLabels.alertname }} ({{ .CommonLabels.severity }})'
+          message: |
+            {{ range .Alerts }}
+            Alert: {{ .Annotations.summary }}
+            Description: {{ .Annotations.description }}
+            Service: {{ .Labels.service }}
+            Severity: {{ .Labels.severity }}
+            Instance: {{ .Labels.instance }}
+            Value: {{ .Value }}
+            {{ if .Annotations.runbook_url }}Runbook: {{ .Annotations.runbook_url }}{{ end }}
+            {{ end }}
+
+      - uid: 'sophia-critical-email'
+        name: 'Sophia Critical Email'
+        type: 'email'
+        disableResolveMessage: false
+        settings:
+          addresses: 'critical@sophia-intel.ai'
+          subject: '[CRITICAL] {{ .GroupLabels.alertname }} - IMMEDIATE ACTION REQUIRED'
+          message: |
+            🚨 CRITICAL ALERT - IMMEDIATE ATTENTION REQUIRED 🚨
+
+            {{ range .Alerts }}
+            Alert: {{ .Annotations.summary }}
+            Description: {{ .Annotations.description }}
+            Service: {{ .Labels.service }}
+            Instance: {{ .Labels.instance }}
+            Value: {{ .Value }}
+            {{ if .Annotations.runbook_url }}Runbook: {{ .Annotations.runbook_url }}{{ end }}
+            {{ end }}
+
+      - uid: 'sophia-slack'
+        name: 'Sophia Slack'
+        type: 'slack'
+        disableResolveMessage: false
+        settings:
+          url: '${SLACK_WEBHOOK_URL}'
+          recipient: '#sophia-alerts'
+          username: 'Sophia Alert Manager'
+          icon_emoji: ':warning:'
+          title: '{{ .GroupLabels.alertname }} ({{ .CommonLabels.severity }})'
+          text: |
+            {{ range .Alerts }}
+            *Alert:* {{ .Annotations.summary }}
+            *Description:* {{ .Annotations.description }}
+            *Service:* {{ .Labels.service }}
+            *Severity:* {{ .Labels.severity }}
+            *Instance:* {{ .Labels.instance }}
+            {{ if .Annotations.runbook_url }}*Runbook:* {{ .Annotations.runbook_url }}{{ end }}
+            {{ end }}
+
+      - uid: 'sophia-critical-slack'
+        name: 'Sophia Critical Slack'
+        type: 'slack'
+        disableResolveMessage: false
+        settings:
+          url: '${SLACK_WEBHOOK_URL}'
+          recipient: '#sophia-critical'
+          username: 'Sophia Alert Manager'
+          icon_emoji: ':fire:'
+          title: '🚨 CRITICAL: {{ .GroupLabels.alertname }}'
+          text: |
+            {{ range .Alerts }}
+            *🚨 CRITICAL ALERT*
+            *Alert:* {{ .Annotations.summary }}
+            *Description:* {{ .Annotations.description }}
+            *Service:* {{ .Labels.service }}
+            *Instance:* {{ .Labels.instance }}
+            *Value:* {{ .Value }}
+            {{ if .Annotations.runbook_url }}*Runbook:* {{ .Annotations.runbook_url }}{{ end }}
+            {{ end }}
+
+      - uid: 'gpu-slack'
+        name: 'GPU Monitoring Slack'
+        type: 'slack'
+        disableResolveMessage: false
+        settings:
+          url: '${SLACK_WEBHOOK_URL}'
+          recipient: '#gpu-monitoring'
+          username: 'GPU Alert Manager'
+          icon_emoji: ':gpu:'
+          title: 'GPU Alert: {{ .GroupLabels.alertname }}'
+          text: |
+            {{ range .Alerts }}
+            *GPU Alert:* {{ .Annotations.summary }}
+            *Description:* {{ .Annotations.description }}
+            *Instance:* {{ .Labels.instance }}
+            *Severity:* {{ .Labels.severity }}
+            {{ end }}
+
+      - uid: 'ml-slack'
+        name: 'ML Monitoring Slack'
+        type: 'slack'
+        disableResolveMessage: false
+        settings:
+          url: '${SLACK_WEBHOOK_URL}'
+          recipient: '#ml-monitoring'
+          username: 'ML Alert Manager'
+          icon_emoji: ':robot_face:'
+          title: 'ML Model Alert: {{ .GroupLabels.alertname }}'
+          text: |
+            {{ range .Alerts }}
+            *ML Alert:* {{ .Annotations.summary }}
+            *Description:* {{ .Annotations.description }}
+            *Model:* {{ .Labels.model }}
+            *Severity:* {{ .Labels.severity }}
+            {{ end }}
+
+      - uid: 'sonic-ai-slack'
+        name: 'Sonic AI Slack'
+        type: 'slack'
+        disableResolveMessage: false
+        settings:
+          url: '${SLACK_WEBHOOK_URL}'
+          recipient: '#sonic-ai-monitoring'
+          username: 'Sonic AI Alert Manager'
+          icon_emoji: ':brain:'
+          title: 'Sonic AI Alert: {{ .GroupLabels.alertname }}'
+          text: |
+            {{ range .Alerts }}
+            *Sonic AI Alert:* {{ .Annotations.summary }}
+            *Description:* {{ .Annotations.description }}
+            *Service:* {{ .Labels.service }}
+            *Severity:* {{ .Labels.severity }}
+            *Value:* {{ .Value }}
+            {{ if .Annotations.runbook_url }}*Runbook:* {{ .Annotations.runbook_url }}{{ end }}
+            {{ end }}
+
+      - uid: 'webhook-external'
+        name: 'External Monitoring Webhook'
+        type: 'webhook'
+        disableResolveMessage: false
+        settings:
+          url: '${WEBHOOK_URL}'
+          httpMethod: 'POST'
+          username: '${WEBHOOK_USERNAME}'
+          password: '${WEBHOOK_PASSWORD}'
+          body: |
+            {
+              "alerts": {{ .Alerts | toJson }},
+              "groupLabels": {{ .GroupLabels | toJson }},
+              "commonLabels": {{ .CommonLabels | toJson }}
+            }
+
+    policies:
+      - orgId: 1
+        receiver: 'sophia-team-email'
+        group_by: ['alertname', 'service']
+        group_wait: 30s
+        group_interval: 30s
+        repeat_interval: 1h
+        routes:
+          - receiver: 'sophia-critical-email'
+            matchers:
+              - key: 'severity'
+                value: 'critical'
+          - receiver: 'sophia-critical-slack'
+            matchers:
+              - key: 'severity'
+                value: 'critical'
+          - receiver: 'gpu-slack'
+            matchers:
+              - key: 'service'
+                value: 'gpu'
+          - receiver: 'ml-slack'
+            matchers:
+              - key: 'service'
+                value: 'ai-model'
+          - receiver: 'sonic-ai-slack'
+            matchers:
+              - key: 'service'
+                value: 'sonic-ai'
+          - receiver: 'webhook-external'
+            matchers:
+              - key: 'severity'
+                value: 'critical'

@@ -1,0 +1,199 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-enhanced-dashboards
+  namespace: monitoring
+data:
+  sophia-overview-enhanced.json: |
+    {
+      "dashboard": {
+        "title": "Sophia AI Enhanced Overview",
+        "tags": ["sophia", "ai", "monitoring", "comprehensive"],
+        "timezone": "UTC",
+        "panels": [
+          {
+            "title": "System Health Overview",
+            "type": "row",
+            "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0}
+          },
+          {
+            "title": "Service Health Status",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "up{namespace=\"sophia\"}",
+                "legendFormat": "{{pod}}",
+                "datasource": "Prometheus"
+              }
+            ],
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 1},
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {"color": "red", "value": null},
+                    {"color": "orange", "value": 0.5},
+                    {"color": "green", "value": 1}
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "title": "Active Alerts",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "count(ALERTS{alertstate=\"firing\"})",
+                "legendFormat": "Firing Alerts",
+                "datasource": "Prometheus"
+              }
+            ],
+            "gridPos": {"h": 4, "w": 6, "x": 6, "y": 1}
+          },
+          {
+            "title": "Pod Restarts (Last Hour)",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "sum(increase(kube_pod_container_status_restarts_total{namespace=\"sophia\"}[1h]))",
+                "legendFormat": "Total Restarts",
+                "datasource": "Prometheus"
+              }
+            ],
+            "gridPos": {"h": 4, "w": 6, "x": 12, "y": 1}
+          },
+          {
+            "title": "Average Response Time",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "avg(http_request_duration_seconds{namespace=\"sophia\", quantile=\"0.95\"}) * 1000",
+                "legendFormat": "95th percentile (ms)",
+                "datasource": "Prometheus"
+              }
+            ],
+            "gridPos": {"h": 4, "w": 6, "x": 18, "y": 1}
+          },
+          {
+            "title": "Resource Utilization",
+            "type": "row",
+            "gridPos": {"h": 1, "w": 24, "x": 0, "y": 5}
+          },
+          {
+            "title": "CPU Utilization by Service",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(container_cpu_usage_seconds_total{namespace=\"sophia\"}[5m]) * 100",
+                "legendFormat": "{{pod}}",
+                "datasource": "Prometheus"
+              }
+            ],
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 6},
+            "yAxes": [
+              {"format": "percent", "label": "CPU %"}
+            ]
+          },
+          {
+            "title": "Memory Utilization by Service",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "container_memory_usage_bytes{namespace=\"sophia\"} / container_spec_memory_limit_bytes{namespace=\"sophia\"} * 100",
+                "legendFormat": "{{pod}}",
+                "datasource": "Prometheus"
+              }
+            ],
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 6},
+            "yAxes": [
+              {"format": "percent", "label": "Memory %"}
+            ]
+          },
+          {
+            "title": "Service Performance",
+            "type": "row",
+            "gridPos": {"h": 1, "w": 24, "x": 0, "y": 14}
+          },
+          {
+            "title": "Requests per Second by Service",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(http_requests_total{namespace=\"sophia\"}[1m])",
+                "legendFormat": "{{service}}",
+                "datasource": "Prometheus"
+              }
+            ],
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 15}
+          },
+          {
+            "title": "Error Rate by Service",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(http_requests_total{status=~\"4..|5..\", namespace=\"sophia\"}[5m]) / rate(http_requests_total{namespace=\"sophia\"}[5m]) * 100",
+                "legendFormat": "{{service}}",
+                "datasource": "Prometheus"
+              }
+            ],
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 15},
+            "yAxes": [
+              {"format": "percent", "label": "Error Rate %"}
+            ]
+          },
+          {
+            "title": "Pod Health Monitoring",
+            "type": "row",
+            "gridPos": {"h": 1, "w": 24, "x": 0, "y": 23}
+          },
+          {
+            "title": "Pod Restart Rate",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(kube_pod_container_status_restarts_total{namespace=\"sophia\"}[15m])",
+                "legendFormat": "{{pod}}",
+                "datasource": "Prometheus"
+              }
+            ],
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24}
+          },
+          {
+            "title": "Pod Status Overview",
+            "type": "table",
+            "targets": [
+              {
+                "expr": "kube_pod_info{namespace=\"sophia\"}",
+                "legendFormat": "{{pod}}",
+                "datasource": "Prometheus"
+              }
+            ],
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24}
+          },
+          {
+            "title": "Alert History",
+            "type": "row",
+            "gridPos": {"h": 1, "w": 24, "x": 0, "y": 32}
+          },
+          {
+            "title": "Recent Alerts",
+            "type": "logs",
+            "targets": [
+              {
+                "expr": "ALERTS",
+                "legendFormat": "{{alertname}}",
+                "datasource": "Prometheus"
+              }
+            ],
+            "gridPos": {"h": 8, "w": 24, "x": 0, "y": 33}
+          }
+        ],
+        "time": {"from": "now-1h", "to": "now"},
+        "refresh": "30s"
+      }
+    }

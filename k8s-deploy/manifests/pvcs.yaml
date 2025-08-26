@@ -3,6 +3,10 @@ kind: PersistentVolumeClaim
 metadata:
   name: mcp-research-storage
   namespace: sophia
+  labels:
+    app.kubernetes.io/name: sophia-ai-storage
+    app.kubernetes.io/component: mcp-research
+    app.kubernetes.io/part-of: sophia-ai-intel
 spec:
   accessModes:
     - ReadWriteOnce
@@ -16,6 +20,10 @@ kind: PersistentVolumeClaim
 metadata:
   name: mcp-context-storage
   namespace: sophia
+  labels:
+    app.kubernetes.io/name: sophia-ai-storage
+    app.kubernetes.io/component: mcp-context
+    app.kubernetes.io/part-of: sophia-ai-intel
 spec:
   accessModes:
     - ReadWriteOnce
@@ -29,6 +37,10 @@ kind: PersistentVolumeClaim
 metadata:
   name: mcp-agents-storage
   namespace: sophia
+  labels:
+    app.kubernetes.io/name: sophia-ai-storage
+    app.kubernetes.io/component: mcp-agents
+    app.kubernetes.io/part-of: sophia-ai-intel
 spec:
   accessModes:
     - ReadWriteOnce

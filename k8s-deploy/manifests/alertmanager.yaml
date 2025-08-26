@@ -1,4 +1,9 @@
 apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+---
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: alertmanager-config
@@ -8,69 +13,156 @@ data:
     global:
       smtp_smarthost: 'smtp.gmail.com:587'
       smtp_from: 'alerts@sophia-intel.ai'
-      smtp_auth_username: 'alerts@sophia-intel.ai'
-      smtp_auth_password: 'password'
-      smtp_require_tls: true
+      smtp_auth_username: '${SMTP_USERNAME}'
+      smtp_auth_password: '${SMTP_PASSWORD}'
 
     route:
-      group_by: ['alertname']
-      group_wait: 10s
-      group_interval: 10s
+      group_by: ['alertname', 'service']
+      group_wait: 30s
+      group_interval: 30s
       repeat_interval: 1h
-      receiver: 'sophia-alerts'
+      receiver: 'sophia-team'
       routes:
       - match:
           severity: critical
         receiver: 'sophia-critical'
+        continue: true
       - match:
           severity: warning
-        receiver: 'sophia-warnings'
+        receiver: 'sophia-team'
+        continue: true
+      - match:
+          service: gpu
+        receiver: 'gpu-team'
+      - match:
+          service: ai-model
+        receiver: 'ml-team'
 
     receivers:
-    - name: 'sophia-alerts'
-      slack_configs:
-      - api_url: 'SLACK_WEBHOOK_URL'
-        channel: '#sophia-alerts'
-        title: '{{ .GroupLabels.alertname }}'
-        text: '{{ .CommonAnnotations.summary }}'
-        send_resolved: true
+    - name: 'sophia-team'
       email_configs:
-      - to: 'admin@sophia-intel.ai'
-        subject: '{{ .GroupLabels.alertname }} - {{ .GroupLabels.severity }}'
-        body: '{{ .CommonAnnotations.description }}'
-        send_resolved: true
+      - to: 'team@sophia-intel.ai'
+        subject: '[SOPHIA] {{ .GroupLabels.alertname }} ({{ .CommonLabels.severity }})'
+        body: |
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Service: {{ .Labels.service }}
+          Severity: {{ .Labels.severity }}
+          Instance: {{ .Labels.instance }}
+          Value: {{ .Value }}
+          {{ if .Annotations.runbook_url }}Runbook: {{ .Annotations.runbook_url }}{{ end }}
+          {{ end }}
+      slack_configs:
+      - api_url: '${SLACK_WEBHOOK_URL}'
+        channel: '#sophia-alerts'
+        title: '{{ .GroupLabels.alertname }} ({{ .CommonLabels.severity }})'
+        text: |
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Service:* {{ .Labels.service }}
+          *Severity:* {{ .Labels.severity }}
+          *Instance:* {{ .Labels.instance }}
+          {{ if .Annotations.runbook_url }}*Runbook:* {{ .Annotations.runbook_url }}{{ end }}
+          {{ end }}
+      webhook_configs:
+      - url: '${WEBHOOK_URL}'
+        http_config:
+          basic_auth:
+            username: '${WEBHOOK_USERNAME}'
+            password: '${WEBHOOK_PASSWORD}'
 
     - name: 'sophia-critical'
+      email_configs:
+      - to: 'critical@sophia-intel.ai'
+        subject: '[CRITICAL] {{ .GroupLabels.alertname }} - IMMEDIATE ACTION REQUIRED'
+        body: |
+          🚨 CRITICAL ALERT - IMMEDIATE ATTENTION REQUIRED 🚨
+
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Service: {{ .Labels.service }}
+          Instance: {{ .Labels.instance }}
+          Value: {{ .Value }}
+          {{ if .Annotations.runbook_url }}Runbook: {{ .Annotations.runbook_url }}{{ end }}
+          {{ end }}
       slack_configs:
-      - api_url: 'SLACK_WEBHOOK_URL'
+      - api_url: '${SLACK_WEBHOOK_URL}'
         channel: '#sophia-critical'
         title: '🚨 CRITICAL: {{ .GroupLabels.alertname }}'
-        text: '{{ .CommonAnnotations.summary }}'
-        send_resolved: true
-      email_configs:
-      - to: 'admin@sophia-intel.ai,devops@sophia-intel.ai'
-        subject: '🚨 CRITICAL: {{ .GroupLabels.alertname }}'
-        body: '{{ .CommonAnnotations.description }}'
-        send_resolved: true
+        text: |
+          {{ range .Alerts }}
+          *🚨 CRITICAL ALERT*
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Service:* {{ .Labels.service }}
+          *Instance:* {{ .Labels.instance }}
+          *Value:* {{ .Value }}
+          {{ if .Annotations.runbook_url }}*Runbook:* {{ .Annotations.runbook_url }}{{ end }}
+          {{ end }}
 
-    - name: 'sophia-warnings'
+    - name: 'gpu-team'
       slack_configs:
-      - api_url: 'SLACK_WEBHOOK_URL'
-        channel: '#sophia-warnings'
-        title: '⚠️ WARNING: {{ .GroupLabels.alertname }}'
-        text: '{{ .CommonAnnotations.summary }}'
-        send_resolved: true
+      - api_url: '${SLACK_WEBHOOK_URL}'
+        channel: '#gpu-monitoring'
+        title: 'GPU Alert: {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *GPU Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Instance:* {{ .Labels.instance }}
+          *Severity:* {{ .Labels.severity }}
+          {{ end }}
+
+    - name: 'ml-team'
+      slack_configs:
+      - api_url: '${SLACK_WEBHOOK_URL}'
+        channel: '#ml-monitoring'
+        title: 'ML Model Alert: {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *ML Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Model:* {{ .Labels.model }}
+          *Severity:* {{ .Labels.severity }}
+          {{ end }}
+
+    - name: 'sonic-ai-team'
+      slack_configs:
+      - api_url: '${SLACK_WEBHOOK_URL}'
+        channel: '#sonic-ai-monitoring'
+        title: 'Sonic AI Alert: {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *Sonic AI Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Service:* {{ .Labels.service }}
+          *Severity:* {{ .Labels.severity }}
+          *Value:* {{ .Value }}
+          {{ if .Annotations.runbook_url }}*Runbook:* {{ .Annotations.runbook_url }}{{ end }}
+          {{ end }}
       email_configs:
-      - to: 'admin@sophia-intel.ai'
-        subject: '⚠️ WARNING: {{ .GroupLabels.alertname }}'
-        body: '{{ .CommonAnnotations.description }}'
-        send_resolved: true
+      - to: 'sonic-ai@sophia-intel.ai'
+        subject: '[Sonic AI] {{ .GroupLabels.alertname }} ({{ .CommonLabels.severity }})'
+        body: |
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Service: {{ .Labels.service }}
+          Severity: {{ .Labels.severity }}
+          Value: {{ .Value }}
+          {{ if .Annotations.runbook_url }}Runbook: {{ .Annotations.runbook_url }}{{ end }}
+          {{ end }}
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: alertmanager
   namespace: monitoring
+  labels:
+    app: alertmanager
 spec:
   replicas: 1
   selector:
@@ -87,9 +179,6 @@ spec:
         ports:
         - containerPort: 9093
           name: http
-        args:
-        - --config.file=/etc/alertmanager/alertmanager.yml
-        - --storage.path=/alertmanager
         volumeMounts:
         - name: config
           mountPath: /etc/alertmanager
@@ -107,13 +196,13 @@ spec:
             path: /-/healthy
             port: 9093
           initialDelaySeconds: 30
-          periodSeconds: 10
+          periodSeconds: 30
         readinessProbe:
           httpGet:
             path: /-/ready
             port: 9093
-          initialDelaySeconds: 3
-          periodSeconds: 5
+          initialDelaySeconds: 5
+          periodSeconds: 10
       volumes:
       - name: config
         configMap:
@@ -127,12 +216,15 @@ kind: Service
 metadata:
   name: alertmanager
   namespace: monitoring
+  labels:
+    app: alertmanager
 spec:
   selector:
     app: alertmanager
   ports:
   - port: 9093
     targetPort: 9093
+    name: http
   type: ClusterIP
 ---
 apiVersion: v1
@@ -145,4 +237,19 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 5Gi
+      storage: 10Gi
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: monitoring-secrets
+  namespace: monitoring
+type: Opaque
+data:
+  # These need to be populated with actual values
+  SMTP_USERNAME: <base64-encoded-smtp-username>
+  SMTP_PASSWORD: <base64-encoded-smtp-password>
+  SLACK_WEBHOOK_URL: <base64-encoded-slack-webhook-url>
+  WEBHOOK_URL: <base64-encoded-webhook-url>
+  WEBHOOK_USERNAME: <base64-encoded-webhook-username>
+  WEBHOOK_PASSWORD: <base64-encoded-webhook-password>

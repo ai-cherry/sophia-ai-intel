@@ -21,8 +21,8 @@ spec:
     spec:
       containers:
       - name: mcp-research
-        image: sophia-ai-intel-1-sophia-research:latest
-        imagePullPolicy: Never
+        image: localhost:5000/sophia-research:latest
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
           name: http

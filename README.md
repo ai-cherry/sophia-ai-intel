@@ -1,196 +1,401 @@
-# Sophia AI Intel
+# Sophia AI Intel Platform
 
-An autonomous AI intelligence platform built with a microservices architecture using Model Context Protocol (MCP) for seamless integration across business systems.
+**Production Status:** ✅ **95% Ready** | **Domain:** www.sophia-intel.ai | **Infrastructure:** Lambda Labs GH200
 
-## Architecture Overview
+An enterprise-grade autonomous AI intelligence platform built with microservices architecture using Model Context Protocol (MCP) for seamless business system integration. Currently deployed on Lambda Labs GH200 infrastructure with 15 microservices and comprehensive monitoring stack.
 
-Sophia AI Intel is designed as a monorepo with the following structure:
+## 🚀 Quick Start (5 Minutes)
 
-```
-sophia-ai-intel/
-├── apps/
-│   └── dashboard/                 # CEO chat UI (React + TypeScript)
-├── services/
-│   ├── mcp-research/              # Web research meta-aggregator
-│   ├── mcp-context/               # Neon-backed index registry
-│   ├── mcp-github/                # GitHub App integration (READ-ONLY)
-│   ├── mcp-business/              # Business intelligence & CRM integrations
-│   ├── mcp-lambda/                # Lambda Labs infrastructure management
-│   ├── mcp-hubspot/               # HubSpot CRM integration
-│   ├── mcp-agents/                # AI Agent Swarm orchestration
-│   └── orchestrator/              # Cross-service coordination
-├── jobs/                          # Background processing tasks
-├── libs/
-│   ├── contracts/                 # Zod/JSON Schema definitions
-│   ├── clients/                   # TypeScript clients
-│   ├── agents/                    # AI agent implementations
-│   └── memory/                    # Memory architecture components
-├── ops/
-│   ├── workflows/                 # GitHub Actions
-│   ├── infra/                     # Infrastructure manifests
-│   ├── pulumi/                    # Pulumi Infrastructure as Code
-│   └── playbooks/                 # Runbooks and guides
-└── proofs/                        # CI/Actions proof artifacts
-```
-
-## Default LLM Configuration
-
-**Primary Model**: ChatGPT-5 (GPT-5)
-- Used as the default model for all AI operations
-- Configured through Portkey router for optimal performance
-- Fallback models: Claude 3.5 Sonnet, GPT-4o
-
-## Technology Stack
-
-### Infrastructure & Orchestration
-- **Kubernetes + Lambda Labs**: Multi-region Docker deployments with GPU acceleration
-- **Pulumi**: Infrastructure as Code
-- **Docker**: Containerized services
-- **Neon PostgreSQL**: Primary database
-- **Redis**: Caching and rate limiting
-
-### AI & LLM Stack
-- **Portkey**: Primary LLM router with ChatGPT-5 default
-- **OpenAI API**: ChatGPT-5, GPT-4o access
-- **Anthropic**: Claude 3.5 Sonnet backup
-- **DeepSeek**: Code assistance
-- **Groq**: Low-latency inference
-
-### Research & Data
-- **Tavily API**: Web search and research
-- **Serper API**: Search results aggregation
-- **Exa API**: Semantic search
-- **Perplexity API**: AI-powered search
-
-### Business Integrations
-- **GitHub App**: Repository access (read-only)
-- **Slack API**: Team communication
-- **Salesforce API**: CRM integration
-- **Notion API**: Knowledge management
-
-## Quick Start
-
-### Prerequisites
-- Node.js 20+
-- Docker
-- kubectl (for Kubernetes deployment)
-- GitHub CLI (optional)
-
-### Environment Setup
-
-1. Clone the repository:
 ```bash
+# 1. Clone and setup
 git clone https://github.com/ai-cherry/sophia-ai-intel.git
 cd sophia-ai-intel
+
+# 2. Configure environment (copy production template)
+cp .env.production.template .env
+# Add your OpenAI API key to .env
+
+# 3. Start infrastructure services
+docker-compose up -d postgres redis qdrant
+sleep 30
+
+# 4. Start all services
+docker-compose up -d
+
+# 5. Verify deployment
+curl http://localhost:8080/health  # agno-coordinator
+curl http://localhost:8000/healthz  # mcp-agents
 ```
 
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Set up environment variables:
-```bash
-cp .env.example .env
-# Edit .env with your API keys
-```
-
-### Required Environment Variables
-
-```bash
-# LLM Configuration (ChatGPT-5 Default)
-PORTKEY_API_KEY=your_portkey_key
-OPENAI_API_KEY=your_openai_key
-ANTHROPIC_API_KEY=your_anthropic_key
-
-# Research APIs
-TAVILY_API_KEY=your_tavily_key
-SERPER_API_KEY=your_serper_key
-
-# Database
-NEON_DATABASE_URL=your_neon_url
-
-# GitHub Integration
-GITHUB_APP_ID=your_app_id
-GITHUB_INSTALLATION_ID=your_installation_id
-GITHUB_PRIVATE_KEY=your_private_key
-
-# Lambda Labs Configuration
-LAMBDA_API_KEY=your_lambda_api_key
-LAMBDA_PRIVATE_SSH_KEY=your_lambda_private_ssh_key
-LAMBDA_PUBLIC_SSH_KEY=your_lambda_public_ssh_key
-```
-
-## Development
-
-### Local Development
-```bash
-# Start all services
-npm run dev
-
-# Start specific service
-npm run dev:dashboard
-npm run dev:mcp-research
-```
-
-### Testing
-```bash
-# Run all tests
-npm test
-
-# Run specific service tests
-npm run test:dashboard
-```
-
-## Deployment
-
-### Kubernetes + Lambda Labs Deployment
-```bash
-# Deploy all services
-npm run deploy
-
-# Deploy specific service
-npm run deploy:dashboard
-
-# Deploy to Lambda Labs GPU instances
-npm run deploy:lambda-labs
-```
-
-### Health Checks
-All services expose health check endpoints:
-- `/healthz` - Basic health status
-- `/__build` - Build information (dashboard only)
-
-## Security & Compliance
-
-- All secrets managed via GitHub Organization Secrets → Pulumi ESC
-- Read-only access for external integrations by default
-- Write operations require explicit approval workflows
-- Comprehensive audit logging for all operations
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feat/your-feature`
-3. Make your changes and add tests
-4. Submit a pull request
-
-All pull requests require:
-- CODEOWNERS approval
-- Passing CI/CD checks
-- Security scan approval
-
-## License
-
-MIT License - see [LICENSE](LICENSE) for details.
-
-## Support
-
-For questions or issues, please:
-1. Check the [documentation](docs/)
-2. Search existing [issues](https://github.com/ai-cherry/sophia-ai-intel/issues)
-3. Create a new issue if needed
+**📋 For complete deployment guide:** See [`SOPHIA_AI_COMPLETE_DEPLOYMENT_GUIDE.md`](SOPHIA_AI_COMPLETE_DEPLOYMENT_GUIDE.md)
 
 ---
 
-Built with ❤️ by the AI Cherry team
+## 🏗️ Production Architecture
+
+### **15 Microservices + Infrastructure**
+
+```
+                        www.sophia-intel.ai (SSL/HTTPS)
+                                    ↓
+                    ┌───────────────────────────────────┐
+                    │        nginx (Load Balancer)      │
+                    │         80,443 → Services         │
+                    └───────────────┬───────────────────┘
+                                    ↓
+        ┌─────────────────────────────────────────────────────────┐
+        │              CORE AI ORCHESTRATION                      │
+        │  agno-coordinator:8080  │  orchestrator:8088            │
+        │  agno-teams:8087        │  agno-wrappers:8089           │
+        └─────────────────┬───────────────────────────────────────┘
+                          ↓
+        ┌─────────────────────────────────────────────────────────┐
+        │              MCP SERVICES LAYER                         │
+        │  mcp-agents:8000        │  mcp-context:8081             │
+        │  mcp-github:8082        │  mcp-hubspot:8083             │
+        │  mcp-lambda:8084        │  mcp-research:8085            │
+        │  mcp-business:8086      │                               │
+        └─────────────────┬───────────────────────────────────────┘
+                          ↓
+        ┌─────────────────────────────────────────────────────────┐
+        │           BUSINESS INTEGRATIONS                         │
+        │  mcp-apollo:8090        │  mcp-gong:8091                │
+        │  mcp-salesforce:8092    │  mcp-slack:8093               │
+        └─────────────────┬───────────────────────────────────────┘
+                          ↓
+        ┌─────────────────────────────────────────────────────────┐
+        │           INFRASTRUCTURE & MONITORING                   │
+        │  PostgreSQL:5432  │  Redis:6379      │  Qdrant:6333    │
+        │  Prometheus:9090  │  Grafana:3000    │  Loki:3100      │
+        └─────────────────────────────────────────────────────────┘
+```
+
+### **Current Production Infrastructure**
+
+- **Server:** Lambda Labs GH200 (ARM 64-core, 525GB RAM, 480GB GPU)
+- **IP:** 192.222.51.223
+- **Domain:** www.sophia-intel.ai (SSL/HTTPS enabled)
+- **Current Usage:** 3% CPU, 3% Memory (497GB available)
+- **Container Runtime:** Docker Compose with Kubernetes manifests ready
+
+---
+
+## 📦 Service Inventory
+
+### **Core AI Orchestration (4 services)**
+| Service | Port | Purpose | Dependencies |
+|---------|------|---------|--------------|
+| [`agno-coordinator`](services/agno-coordinator/) | 8080,9090 | AI orchestration hub | Redis, Qdrant, PostgreSQL |
+| [`agno-teams`](services/agno-teams/) | 8087 | AI agent teams | Redis, Qdrant, PostgreSQL |
+| [`agno-wrappers`](services/agno-wrappers/) | 8089 | Service adapters | Redis, PostgreSQL |
+| [`orchestrator`](services/orchestrator/) | 8088 | Cross-service coordination | All MCP services |
+
+### **MCP Services Layer (7 services)**
+| Service | Port | Purpose | API Integration |
+|---------|------|---------|-----------------|
+| [`mcp-agents`](services/mcp-agents/) | 8000 | AI agent swarm | OpenAI, Anthropic |
+| [`mcp-context`](services/mcp-context/) | 8081 | Context management | OpenAI Embeddings |
+| [`mcp-github`](services/mcp-github/) | 8082 | GitHub integration | GitHub App (READ-ONLY) |
+| [`mcp-hubspot`](services/mcp-hubspot/) | 8083 | HubSpot CRM | HubSpot API |
+| [`mcp-lambda`](services/mcp-lambda/) | 8084 | Infrastructure mgmt | Lambda Labs API |
+| [`mcp-research`](services/mcp-research/) | 8085 | Web research | Tavily, SerpAPI |
+| [`mcp-business`](services/mcp-business/) | 8086 | Business intelligence | Slack, Telegram |
+
+### **Business Integration Layer (4 services)**
+| Service | Port | Purpose | CRM/Platform |
+|---------|------|---------|--------------|
+| [`mcp-apollo`](services/mcp-apollo/) | 8090 | Apollo.io integration | Sales intelligence |
+| [`mcp-gong`](services/mcp-gong/) | 8091 | Call recording | Gong platform |
+| [`mcp-salesforce`](services/mcp-salesforce/) | 8092 | Salesforce CRM | SF API |
+| [`mcp-slack`](services/mcp-slack/) | 8093 | Team communication | Slack Bot |
+
+---
+
+## 🔐 Environment Configuration
+
+### **Required API Keys (Minimum Setup)**
+
+```bash
+# Core LLM APIs (Required)
+OPENAI_API_KEY=sk-your-openai-api-key
+ANTHROPIC_API_KEY=sk-ant-your-anthropic-key
+
+# Database & Infrastructure (Required)  
+DATABASE_URL=postgresql://user:pass@host:port/db
+POSTGRES_PASSWORD=your_secure_postgres_password
+REDIS_URL=redis://localhost:6379
+QDRANT_URL=http://localhost:6333
+
+# Security (Required - generate with: openssl rand -base64 32)
+JWT_SECRET=your_secure_jwt_secret_32_chars_minimum
+GRAFANA_ADMIN_PASSWORD=your_secure_grafana_password
+```
+
+### **Business Integrations (Optional)**
+
+```bash
+# GitHub Integration
+GITHUB_TOKEN=ghp_your_github_token
+GITHUB_APP_ID=your_github_app_id
+GITHUB_INSTALLATION_ID=your_installation_id
+
+# Research APIs
+TAVILY_API_KEY=tvly-your-tavily-api-key
+SERPAPI_API_KEY=your_serpapi_key
+
+# CRM Platforms
+HUBSPOT_API_KEY=your_hubspot_api_key
+SALESFORCE_CLIENT_ID=your_salesforce_client_id
+SALESFORCE_CLIENT_SECRET=your_salesforce_client_secret
+SLACK_BOT_TOKEN=xoxb-your-slack-bot-token
+
+# Sales Intelligence  
+APOLLO_API_KEY=your_apollo_api_key
+GONG_ACCESS_KEY=your_gong_access_key
+```
+
+**📋 Complete Environment Template:** [`cp .env.production.template .env`](.env.production.template) (316 variables)
+
+---
+
+## 🚀 Deployment Options
+
+### **1. Local Development (Docker Compose)**
+
+```bash
+# Quick development setup
+git clone https://github.com/ai-cherry/sophia-ai-intel.git
+cd sophia-ai-intel
+cp .env.production.template .env
+
+# Add your OpenAI API key to .env
+echo "OPENAI_API_KEY=sk-your-key" >> .env
+
+# Start infrastructure first
+docker-compose up -d postgres redis qdrant
+sleep 30
+
+# Start all services
+docker-compose up -d
+
+# Health checks
+./scripts/comprehensive-health-check.sh
+```
+
+### **2. Production Deployment (Lambda Labs)**
+
+```bash
+# SSH to production server
+ssh ubuntu@192.222.51.223
+
+# Deploy to production
+cd sophia-ai-intel
+git pull origin main
+cp .env.production.template .env
+# Configure production environment variables
+
+# Stop system nginx (conflicts with container nginx)
+sudo systemctl stop nginx && sudo systemctl disable nginx
+
+# Deploy with Docker Compose
+docker-compose up -d
+
+# Setup SSL certificates
+sudo certbot certonly --webroot -w ./acme-challenge -d www.sophia-intel.ai
+sudo cp /etc/letsencrypt/live/www.sophia-intel.ai/*.pem ./ssl/
+docker-compose restart nginx
+
+# Verify deployment
+curl -k https://www.sophia-intel.ai/health
+```
+
+### **3. Kubernetes Deployment**
+
+```bash
+# Setup Kubernetes namespace
+kubectl create namespace sophia
+
+# Deploy configurations
+kubectl apply -f k8s-deploy/manifests/configmap-production.yaml
+
+# Deploy services
+find k8s-deploy/manifests -name "sophia-*.yaml" -exec kubectl apply -f {} \;
+
+# Setup ingress and SSL
+kubectl apply -f k8s-deploy/manifests/ingress-enhanced-ssl.yaml
+
+# Monitor deployment
+kubectl get pods -n sophia --watch
+```
+
+---
+
+## 📈 Monitoring & Observability
+
+### **Monitoring Stack**
+- **Prometheus** (`:9090`) - Metrics collection from all 15 services
+- **Grafana** (`:3000`) - Visualization dashboards and alerts  
+- **Loki** (`:3100`) - Centralized log aggregation
+- **Promtail** - Log collection agent
+
+### **Available Dashboards**
+- **System Overview:** CPU, Memory, Disk, Network for all services
+- **AI Performance:** Model inference times, token usage, API costs
+- **Business Metrics:** CRM integration success rates, user interactions
+- **Infrastructure:** Database performance, cache hit rates, queue depths
+
+### **Health Check Endpoints**
+```bash
+# Service health checks
+curl http://localhost:8080/health      # agno-coordinator
+curl http://localhost:8000/healthz     # mcp-agents  
+curl http://localhost:8081/healthz     # mcp-context
+
+# Infrastructure health
+curl http://localhost:9090/-/healthy   # prometheus
+curl http://localhost:3000/api/health  # grafana
+curl http://localhost:6333/health      # qdrant
+```
+
+---
+
+## 🔒 Security & Compliance
+
+### **Security Features**
+- ✅ **SSL/TLS Encryption** - Full HTTPS with Let's Encrypt
+- ✅ **JWT Authentication** - Secure service-to-service communication  
+- ✅ **Environment Isolation** - Containerized services with network isolation
+- ✅ **Secret Management** - GitHub Organization Secrets → Pulumi ESC
+- ✅ **Audit Logging** - Comprehensive logging for all operations
+- ✅ **Read-Only Integrations** - External APIs default to read-only access
+
+### **Security Headers**
+```nginx
+# Implemented in nginx.conf.ssl
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+X-Frame-Options: DENY
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+```
+
+### **Secrets Exclusion**
+- **39 security patterns** in [`.gitignore`](.gitignore)
+- **SSH keys, SSL certificates, deployment keys** never committed
+- **Environment files (`.env`, `.env.vault`)** excluded
+- **Private keys (`*.pem`, `*.key`, `*_rsa`)** excluded
+
+---
+
+## 🛠️ Development & Testing
+
+### **Local Development**
+
+```bash
+# Install dependencies (if using Node.js tooling)
+npm install
+
+# Start specific service for development
+docker-compose up -d postgres redis qdrant  # Infrastructure
+docker-compose up mcp-context               # Single service
+
+# View logs
+docker-compose logs -f mcp-context
+docker-compose logs -f agno-coordinator
+```
+
+### **Service Testing**
+
+```bash
+# Individual service health checks
+curl -f http://localhost:8081/healthz  # Should return 200 OK
+
+# Integration testing
+./scripts/test_complete_integration.py
+
+# Load testing  
+cd scripts/load_testing/
+locust -f locustfile.py --host http://localhost:8080
+```
+
+### **Development Tools**
+
+- **Health Checks:** [`./scripts/comprehensive-health-check.sh`](scripts/comprehensive-health-check.sh)
+- **Load Testing:** [`./scripts/load_testing/`](scripts/load_testing/) with Locust
+- **Integration Tests:** [`./scripts/test_complete_integration.py`](scripts/test_complete_integration.py)
+- **Emergency Recovery:** [`./scripts/emergency-recovery.sh`](SOPHIA_AI_COMPLETE_DEPLOYMENT_GUIDE.md#emergency-recovery-procedures)
+
+---
+
+## 📊 Resource Usage & Scaling
+
+### **Current Production Usage (Lambda Labs GH200)**
+- **CPU Usage:** 3% of 64 cores (61 cores available)
+- **Memory Usage:** 3% of 525GB (497GB available)  
+- **Storage Usage:** 1% (1.2TB available)
+- **Projected Service Memory:** 38-61GB total across all services
+- **Scaling Headroom:** 800%+ capacity available
+
+### **Service Resource Limits**
+```yaml
+# Example resource constraints in Docker Compose
+deploy:
+  resources:
+    limits: { memory: 1G, cpus: "0.5" }      # MCP services
+    limits: { memory: 2G, cpus: "1.0" }      # Core AI services
+    limits: { memory: 4G, cpus: "2.0" }      # Infrastructure
+```
+
+---
+
+## 🤝 Contributing & Support
+
+### **Contributing**
+1. Fork the repository
+2. Create feature branch: `git checkout -b feat/your-feature`
+3. Follow [Conventional Commits](https://conventionalcommits.org/)
+4. Submit pull request
+
+**All PRs require:**
+- [`CODEOWNERS`](CODEOWNERS) approval (CEO: @scoobyjava)
+- Passing CI/CD checks
+- Security scan approval
+
+### **Code Review Process**
+- **Global ownership** requires CEO approval for all changes
+- **Automated testing** via GitHub Actions
+- **Security scanning** for vulnerabilities and secret detection
+- **Conventional commit** messages for semantic versioning
+
+### **Support Resources**
+- 📋 **Deployment Guide:** [`SOPHIA_AI_COMPLETE_DEPLOYMENT_GUIDE.md`](SOPHIA_AI_COMPLETE_DEPLOYMENT_GUIDE.md)
+- 🔍 **Repository Audit:** [`proofs/REPOSITORY_AUDIT_REPORT_20250826.md`](proofs/REPOSITORY_AUDIT_REPORT_20250826.md)
+- 📊 **System Baseline:** [`proofs/LAMBDA_LABS_SYSTEM_BASELINE_20250826.md`](proofs/LAMBDA_LABS_SYSTEM_BASELINE_20250826.md)
+- ✅ **Service Inventory:** [`proofs/STABILITY_CHECKPOINT_20250826.md`](proofs/STABILITY_CHECKPOINT_20250826.md)
+
+### **Emergency Contacts**
+- **Production Issues:** Run health checks: `./scripts/comprehensive-health-check.sh`
+- **Infrastructure:** Lambda Labs server 192.222.51.223
+- **Monitoring:** https://www.sophia-intel.ai:3000 (Grafana)
+
+---
+
+## 📜 License & Acknowledgments
+
+**License:** MIT License - see [LICENSE](LICENSE) for details.
+
+**Built with:**
+- 🐳 **Docker** - Containerization
+- ☸️ **Kubernetes** - Orchestration  
+- 🔧 **Lambda Labs** - GPU infrastructure
+- 📊 **Prometheus/Grafana** - Monitoring
+- 🤖 **OpenAI/Anthropic** - AI models
+- 🔍 **MCP Protocol** - Service integration
+
+---
+
+**Production Status:** ✅ **Ready for immediate deployment**  
+**Documentation:** Complete with executable deployment workflows  
+**Monitoring:** Full observability stack operational  
+**Security:** Enterprise-grade with comprehensive audit trails
+
+Built with ❤️ by the AI Cherry team | **Version 1.1.0** | **Updated:** 2025-08-26

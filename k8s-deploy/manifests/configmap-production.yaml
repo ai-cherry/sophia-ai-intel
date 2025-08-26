@@ -101,9 +101,9 @@ data:
   # Multi-tenant Support
   TENANT: "production"
 
-  # Default Integration Endpoints
-  MCP_INTERCOM_URL: "http://mcp-intercom:8080"
-  MCP_SUPPORT_URL: "http://mcp-support:8080"
-  MCP_USAGE_URL: "http://mcp-usage:8080"
-  MCP_FINANCIAL_URL: "http://mcp-financial:8080"
-  MCP_ENGAGEMENT_URL: "http://mcp-engagement:8080"
+  # Additional MCP Service Endpoints (when implemented)
+  # MCP_INTERCOM_URL: "http://mcp-intercom:8080"
+  # MCP_SUPPORT_URL: "http://mcp-support:8080"
+  # MCP_USAGE_URL: "http://mcp-usage:8080"
+  # MCP_FINANCIAL_URL: "http://mcp-financial:8080"
+  # MCP_ENGAGEMENT_URL: "http://mcp-engagement:8080"

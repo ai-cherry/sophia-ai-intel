@@ -1,28 +1,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mcp-context
+  name: mcp-research
   namespace: sophia
   labels:
-    app: mcp-context
+    app: mcp-research
     component: backend
-    service: context
+    service: research
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: mcp-context
+      app: mcp-research
   template:
     metadata:
       labels:
-        app: mcp-context
+        app: mcp-research
         component: backend
-        service: context
+        service: research
     spec:
       containers:
-      - name: mcp-context
-        image: localhost:5000/sophia-context:latest
-        imagePullPolicy: IfNotPresent
+      - name: mcp-research
+        image: sophia-ai-intel-1-sophia-research:latest
+        imagePullPolicy: Never
         ports:
         - containerPort: 8080
           name: http
@@ -31,6 +31,8 @@ spec:
           value: "8080"
         - name: PYTHONUNBUFFERED
           value: "1"
+        - name: DEFAULT_LLM_MODEL
+          value: "gpt-4"
         - name: TENANT
           value: "pay-ready"
         - name: OPENAI_API_KEY
@@ -38,6 +40,31 @@ spec:
             secretKeyRef:
               name: sophia-secrets
               key: OPENAI_API_KEY
+        - name: TAVILY_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: sophia-secrets
+              key: TAVILY_API_KEY
+        - name: PERPLEXITY_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: sophia-secrets
+              key: PERPLEXITY_API_KEY
+        - name: ANTHROPIC_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: sophia-secrets
+              key: ANTHROPIC_API_KEY
+        - name: OPENROUTER_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: sophia-secrets
+              key: OPENROUTER_API_KEY
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: sophia-secrets
+              key: REDIS_URL
         - name: NEON_DATABASE_URL
           valueFrom:
             secretKeyRef:
@@ -53,11 +80,6 @@ spec:
             secretKeyRef:
               name: sophia-secrets
               key: QDRANT_API_KEY
-        - name: REDIS_URL
-          valueFrom:
-            secretKeyRef:
-              name: sophia-secrets
-              key: REDIS_URL
         resources:
           limits:
             cpu: 1
@@ -78,26 +100,26 @@ spec:
           initialDelaySeconds: 10
           periodSeconds: 10
         volumeMounts:
-        - name: context-storage
+        - name: research-storage
           mountPath: /data
       volumes:
-      - name: context-storage
+      - name: research-storage
         persistentVolumeClaim:
-          claimName: mcp-context-storage
+          claimName: mcp-research-storage
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: mcp-context
+  name: mcp-research
   namespace: sophia
   labels:
-    app: mcp-context
+    app: mcp-research
     component: backend
-    service: context
+    service: research
 spec:
   type: ClusterIP
   selector:
-    app: mcp-context
+    app: mcp-research
   ports:
   - port: 8080
     targetPort: 8080

@@ -88,9 +88,6 @@ spec:
       - path: /api/sonic
         pathType: Prefix
         backend:
-          service:
-            name: sonic-ai
-            port:
               number: 8080
       # Health check endpoints
       - path: /health

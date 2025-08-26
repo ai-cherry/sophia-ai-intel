@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
       - name: mcp-agents
-        image: localhost:5000/sophia-agents:latest
-        imagePullPolicy: IfNotPresent
+        image: sophia-ai-intel-1-sophia-agents:latest
+        imagePullPolicy: Never
         ports:
         - containerPort: 8002
         env:

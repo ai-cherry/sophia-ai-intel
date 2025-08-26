@@ -35,7 +35,7 @@ metadata:
     app: mcp-agents
     component: pdb
 spec:
-  minAvailable: 1
+  minAvailable: 3
   selector:
     matchLabels:
       app: mcp-agents
@@ -77,7 +77,7 @@ metadata:
     app: orchestrator
     component: pdb
 spec:
-  minAvailable: 1
+  minAvailable: 2
   selector:
     matchLabels:
       app: orchestrator
@@ -91,7 +91,7 @@ metadata:
     app: sophia-dashboard
     component: pdb
 spec:
-  minAvailable: 1
+  minAvailable: 2
   selector:
     matchLabels:
       app: sophia-dashboard
