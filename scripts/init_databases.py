@@ -12,8 +12,9 @@ from datetime import datetime
 from typing import Dict, Optional
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from qdrant_client import QdrantClient
-from qdrant_client.http import models
+import weaviate
+from weaviate.classes.init import Auth
+import weaviate.classes as wvc
 import redis
 from dotenv import load_dotenv
 
@@ -32,8 +33,8 @@ class DatabaseInitializer:
     
     def __init__(self):
         self.neon_url = os.getenv('NEON_DATABASE_URL')
-        self.qdrant_url = os.getenv('QDRANT_URL', 'http://localhost:6333')
-        self.qdrant_api_key = os.getenv('QDRANT_API_KEY')
+        self.weaviate_url = os.getenv('WEAVIATE_URL', '')
+        self.weaviate_api_key = os.getenv('WEAVIATE_API_KEY', '')
         self.redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379')
         
         # Validate required credentials
@@ -150,81 +151,93 @@ class DatabaseInitializer:
             logger.error(f"❌ Failed to initialize Neon: {str(e)}")
             return False
     
-    def init_qdrant(self) -> bool:
-        """Initialize Qdrant vector collections"""
-        logger.info("Initializing Qdrant collections...")
+    def init_weaviate(self) -> bool:
+        """Initialize Weaviate vector collections"""
+        logger.info("Initializing Weaviate collections...")
         
         try:
-            # Connect to Qdrant
-            if self.qdrant_api_key:
-                client = QdrantClient(
-                    url=self.qdrant_url,
-                    api_key=self.qdrant_api_key
-                )
-            else:
-                client = QdrantClient(url=self.qdrant_url)
+            # Connect to Weaviate
+            if not self.weaviate_url or not self.weaviate_api_key:
+                logger.warning("⚠️ Weaviate credentials not configured, skipping")
+                return True
+                
+            client = weaviate.connect_to_wcs(
+                cluster_url=self.weaviate_url,
+                auth_credentials=weaviate.auth.AuthApiKey(self.weaviate_api_key)
+            )
             
-            # Define collections with 3072 dimensions (OpenAI embedding size)
-            collections = [
-                'slack_messages_vec',
-                'gong_transcripts_vec',
-                'notion_pages_vec'
+            # Define collections
+            collections_config = [
+                {
+                    'name': 'SlackMessages',
+                    'properties': [
+                        wvc.config.Property(name="message_id", data_type=wvc.config.DataType.TEXT),
+                        wvc.config.Property(name="content", data_type=wvc.config.DataType.TEXT),
+                        wvc.config.Property(name="timestamp", data_type=wvc.config.DataType.DATE)
+                    ]
+                },
+                {
+                    'name': 'GongTranscripts',
+                    'properties': [
+                        wvc.config.Property(name="call_id", data_type=wvc.config.DataType.TEXT),
+                        wvc.config.Property(name="content", data_type=wvc.config.DataType.TEXT),
+                        wvc.config.Property(name="timestamp", data_type=wvc.config.DataType.DATE)
+                    ]
+                },
+                {
+                    'name': 'NotionPages',
+                    'properties': [
+                        wvc.config.Property(name="page_id", data_type=wvc.config.DataType.TEXT),
+                        wvc.config.Property(name="content", data_type=wvc.config.DataType.TEXT),
+                        wvc.config.Property(name="timestamp", data_type=wvc.config.DataType.DATE)
+                    ]
+                }
             ]
             
-            for collection_name in collections:
+            for collection_config in collections_config:
                 try:
-                    # Check if collection exists
-                    collections_list = client.get_collections()
-                    exists = any(c.name == collection_name for c in collections_list.collections)
+                    collection_name = collection_config['name']
                     
-                    if not exists:
+                    # Check if collection exists
+                    if not client.collections.exists(collection_name):
                         # Create collection
-                        client.create_collection(
-                            collection_name=collection_name,
-                            vectors_config=models.VectorParams(
-                                size=3072,  # OpenAI text-embedding-3-large dimension
-                                distance=models.Distance.COSINE
-                            )
+                        client.collections.create(
+                            name=collection_name,
+                            properties=collection_config['properties'],
+                            vectorizer_config=wvc.config.Configure.Vectorizer.none()
                         )
                         logger.info(f"✅ Created collection: {collection_name}")
                     else:
                         logger.info(f"ℹ️ Collection already exists: {collection_name}")
                     
                     # Test insertion to verify connectivity
-                    test_point = models.PointStruct(
-                        id=999999,
-                        vector=[0.1] * 3072,  # Dummy vector
-                        payload={
-                            "test": True,
-                            "timestamp": datetime.utcnow().isoformat(),
-                            "source": "init_script"
-                        }
-                    )
+                    collection = client.collections.get(collection_name)
+                    test_uuid = f"test-{collection_name}-999999"
                     
-                    client.upsert(
-                        collection_name=collection_name,
-                        points=[test_point]
+                    collection.data.insert(
+                        uuid=test_uuid,
+                        properties={
+                            "test": True,
+                            "timestamp": datetime.utcnow(),
+                            "content": f"Test content for {collection_name}"
+                        },
+                        vector=[0.1] * 1536  # Standard embedding dimension
                     )
                     logger.info(f"✅ Test insertion successful for {collection_name}")
                     
                     # Clean up test data
-                    client.delete(
-                        collection_name=collection_name,
-                        points_selector=models.PointIdsList(
-                            points=[999999]
-                        )
-                    )
+                    collection.data.delete_by_id(test_uuid)
                     logger.info(f"✅ Test data cleaned up for {collection_name}")
                     
                 except Exception as e:
                     logger.error(f"❌ Failed to initialize collection {collection_name}: {str(e)}")
                     return False
             
-            logger.info("✅ Qdrant collections initialized successfully")
+            logger.info("✅ Weaviate collections initialized successfully")
             return True
             
         except Exception as e:
-            logger.error(f"❌ Failed to connect to Qdrant: {str(e)}")
+            logger.error(f"❌ Failed to connect to Weaviate: {str(e)}")
             return False
     
     def init_redis(self) -> bool:
@@ -303,8 +316,8 @@ class DatabaseInitializer:
         # Initialize Neon
         results['neon'] = self.init_neon()
         
-        # Initialize Qdrant
-        results['qdrant'] = self.init_qdrant()
+        # Initialize Weaviate
+        results['weaviate'] = self.init_weaviate()
         
         # Initialize Redis
         results['redis'] = self.init_redis()

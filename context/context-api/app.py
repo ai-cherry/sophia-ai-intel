@@ -10,12 +10,15 @@ Provides access to vector storage, conversation history, and contextual informat
 import os
 import logging
 import uuid
+import time
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 import uvicorn
 from fastapi import HTTPException
 from pydantic import BaseModel
+import weaviate
+from weaviate.classes.init import Auth
 
 # Import shared platform libraries
 try:
@@ -35,10 +38,10 @@ logger = logging.getLogger(__name__)
 # Environment configuration
 SERVICE_NAME = "Sophia AI Context API"
 SERVICE_DESCRIPTION = "Context and memory management service"
-SERVICE_VERSION = "1.0.0"
+SERVICE_VERSION = "2.0.0"
 NEON_DATABASE_URL = os.getenv("NEON_DATABASE_URL", "")
-QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
-QDRANT_API_KEY = os.getenv("QDRANT_API_KEY", "")
+WEAVIATE_URL = os.getenv("WEAVIATE_URL", "w6bigpoxsrwvq7wlgmmdva.c0.us-west3.gcp.weaviate.cloud")
+WEAVIATE_API_KEY = os.getenv("WEAVIATE_API_KEY", "VMKjGMQUnXQIDiFOciZZOhr7amBfCHMh7hNf")
 
 # In-memory document store (for staging before vector processing)
 _document_store = {}
@@ -64,6 +67,12 @@ app = create_app(
     desc=SERVICE_DESCRIPTION,
     version=SERVICE_VERSION
 )
+
+# Initialize Weaviate client using official cloud connection pattern
+weaviate_client = weaviate.connect_to_weaviate_cloud(
+    cluster_url=WEAVIATE_URL,
+    auth_credentials=Auth.api_key(WEAVIATE_API_KEY),
+) if WEAVIATE_URL and WEAVIATE_API_KEY else None
 
 # Service-specific endpoints
 
@@ -140,34 +149,80 @@ async def get_conversation_messages(conversation_id: str, limit: int = 100):
 
 @app.get("/search")
 async def search_context(query: str, user_id: Optional[str] = None, limit: int = 10):
-    """Search through context and conversation history"""
+    """Search through context and conversation history using Weaviate"""
     try:
-        # Placeholder for search results
-        results = [
-            {
-                "id": "result_001",
-                "type": "conversation",
-                "title": "Q4 Strategy Discussion",
-                "content": "Our Q4 priorities include market expansion...",
-                "relevance_score": 0.95,
-                "source": "conversation_001",
-                "timestamp": datetime.now(timezone.utc).isoformat()
-            },
-            {
-                "id": "result_002",
-                "type": "document",
-                "title": "Market Analysis Report",
-                "content": "Competitor analysis shows significant opportunities...",
-                "relevance_score": 0.87,
-                "source": "market_report.pdf",
+        if not weaviate_client:
+            return {
+                "query": query,
+                "results": [],
+                "count": 0,
+                "service": SERVICE_NAME,
+                "error": "Weaviate not configured",
                 "timestamp": datetime.now(timezone.utc).isoformat()
             }
-        ]
 
+        # Perform semantic search across different classes
+        search_results = []
+        
+        # Search in Documents class if it exists
+        try:
+            documents_result = (
+                weaviate_client.query
+                .get("Documents", ["content", "source", "metadata"])
+                .with_near_text({"concepts": [query]})
+                .with_limit(limit)
+                .with_additional(["certainty", "id"])
+                .do()
+            )
+            
+            if "data" in documents_result and "Get" in documents_result["data"] and "Documents" in documents_result["data"]["Get"]:
+                for doc in documents_result["data"]["Get"]["Documents"]:
+                    search_results.append({
+                        "id": doc["_additional"]["id"],
+                        "type": "document",
+                        "title": doc.get("source", "Unknown Document"),
+                        "content": doc["content"][:500] + "..." if len(doc["content"]) > 500 else doc["content"],
+                        "relevance_score": doc["_additional"]["certainty"],
+                        "source": doc.get("source", "weaviate"),
+                        "metadata": doc.get("metadata", {}),
+                        "timestamp": datetime.now(timezone.utc).isoformat()
+                    })
+        except Exception as doc_e:
+            logger.warning(f"Documents search failed: {doc_e}")
+
+        # Search in Conversations class if it exists
+        try:
+            conversations_result = (
+                weaviate_client.query
+                .get("Conversations", ["content", "title", "metadata"])
+                .with_near_text({"concepts": [query]})
+                .with_limit(limit // 2 if search_results else limit)
+                .with_additional(["certainty", "id"])
+                .do()
+            )
+            
+            if "data" in conversations_result and "Get" in conversations_result["data"] and "Conversations" in conversations_result["data"]["Get"]:
+                for conv in conversations_result["data"]["Get"]["Conversations"]:
+                    search_results.append({
+                        "id": conv["_additional"]["id"],
+                        "type": "conversation",
+                        "title": conv.get("title", "Conversation"),
+                        "content": conv["content"][:500] + "..." if len(conv["content"]) > 500 else conv["content"],
+                        "relevance_score": conv["_additional"]["certainty"],
+                        "source": "conversation",
+                        "metadata": conv.get("metadata", {}),
+                        "timestamp": datetime.now(timezone.utc).isoformat()
+                    })
+        except Exception as conv_e:
+            logger.warning(f"Conversations search failed: {conv_e}")
+
+        # Sort by relevance score
+        search_results.sort(key=lambda x: x["relevance_score"], reverse=True)
+        
         return {
             "query": query,
-            "results": results[:limit],
-            "count": len(results[:limit]),
+            "results": search_results[:limit],
+            "count": len(search_results[:limit]),
             "service": SERVICE_NAME,
             "timestamp": datetime.now(timezone.utc).isoformat()
         }
@@ -179,16 +234,48 @@ async def search_context(query: str, user_id: Optional[str] = None, limit: int =
 async def get_vector_stats():
     """Get vector database statistics"""
     try:
-        # Placeholder for vector stats
+        if not weaviate_client:
+            return {
+                "stats": {
+                    "total_vectors": 0,
+                    "collections": {},
+                    "dimensions": 0,
+                    "index_type": "Weaviate HNSW",
+                    "last_updated": datetime.now(timezone.utc).isoformat(),
+                    "status": "not_configured"
+                },
+                "service": SERVICE_NAME,
+                "timestamp": datetime.now(timezone.utc).isoformat()
+            }
+
+        # Get real Weaviate stats
+        cluster_stats = weaviate_client.cluster.get_nodes_status()
+        
+        # Get schema information
+        schema = weaviate_client.schema.get()
+        collections = {}
+        total_vectors = 0
+        
+        for cls in schema.get("classes", []):
+            class_name = cls["class"]
+            try:
+                # Get object count for each class
+                result = weaviate_client.query.aggregate(class_name).with_meta_count().do()
+                count = result.get("data", {}).get("Aggregate", {}).get(class_name, [{}])[0].get("meta", {}).get("count", 0)
+                collections[class_name] = count
+                total_vectors += count
+            except Exception as class_e:
+                logger.warning(f"Could not get count for class {class_name}: {class_e}")
+                collections[class_name] = 0
+
         stats = {
-            "total_vectors": 125000,
-            "collections": {
-                "conversations": 45000,
-                "documents": 80000
-            },
-            "dimensions": 1536,
-            "index_type": "HNSW",
-            "last_updated": datetime.now(timezone.utc).isoformat()
+            "total_vectors": total_vectors,
+            "collections": collections,
+            "dimensions": 1536,  # OpenAI embedding dimensions
+            "index_type": "Weaviate HNSW",
+            "cluster_status": cluster_stats,
+            "last_updated": datetime.now(timezone.utc).isoformat(),
+            "status": "connected"
         }
 
         return {
@@ -276,35 +363,76 @@ async def get_documents(user_id: Optional[str] = None, limit: int = 20):
 @app.post("/doc/upsert", response_model=DocumentResponse)
 async def upsert_document(document: DocumentUpsert):
     """
-    Document staging endpoint for upserting documents.
-    Accepts documents for staging before vector processing.
+    Document upsert endpoint for storing documents in Weaviate.
+    Stores documents with vector embeddings in Weaviate Cloud.
     """
     try:
         # Generate document ID if not provided
         doc_id = document.id or str(uuid.uuid4())
         
-        # Store document in staging area
+        # Store document in staging area (in-memory for now)
         doc_data = {
             "doc_id": doc_id,
             "account_id": document.account_id,
             "content": document.content,
             "url": document.url,
             "metadata": document.metadata or {},
-            "status": "staged",
+            "status": "processing",
             "staged_at": datetime.now(timezone.utc).isoformat(),
             "vector_indexed": False
         }
         
-        # Store in memory (in production, this would be stored in Neon DB)
         _document_store[doc_id] = doc_data
         
-        logger.info(f"Document {doc_id} staged successfully for account {document.account_id}")
-        
-        return DocumentResponse(
-            doc_id=doc_id,
-            status="staged",
-            timestamp=datetime.now(timezone.utc).isoformat()
-        )
+        # Store in Weaviate if configured
+        if weaviate_client:
+            try:
+                # Prepare data object
+                data_object = {
+                    "content": document.content,
+                    "source": document.url or f"account_{document.account_id}",
+                    "account_id": document.account_id,
+                    "doc_id": doc_id,
+                    "metadata": document.metadata or {},
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                }
+                
+                # Store in Documents class
+                weaviate_client.data_object.create(
+                    data_object=data_object,
+                    class_name="Documents",
+                    uuid=doc_id
+                )
+                
+                # Update status
+                _document_store[doc_id]["status"] = "indexed"
+                _document_store[doc_id]["vector_indexed"] = True
+                
+                logger.info(f"Document {doc_id} indexed in Weaviate for account {document.account_id}")
+                
+                return DocumentResponse(
+                    doc_id=doc_id,
+                    status="indexed",
+                    timestamp=datetime.now(timezone.utc).isoformat()
+                )
+                
+            except Exception as weaviate_e:
+                logger.error(f"Failed to store in Weaviate: {weaviate_e}")
+                _document_store[doc_id]["status"] = "staged"
+                
+                return DocumentResponse(
+                    doc_id=doc_id,
+                    status="staged",
+                    timestamp=datetime.now(timezone.utc).isoformat()
+                )
+        else:
+            logger.warning("Weaviate not configured, document staged only")
+            return DocumentResponse(
+                doc_id=doc_id,
+                status="staged",
+                timestamp=datetime.now(timezone.utc).isoformat()
+            )
+            
     except Exception as e:
         logger.error(f"Failed to upsert document: {e}")
         raise HTTPException(status_code=500, detail=str(e))

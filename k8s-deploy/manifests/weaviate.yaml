@@ -1,0 +1,285 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sophia-ai
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: weaviate-storage
+  namespace: sophia-ai
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+  storageClassName: local-path  # For K3s default storage
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weaviate
+  namespace: sophia-ai
+  labels:
+    app: weaviate
+    component: vector-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: weaviate
+  template:
+    metadata:
+      labels:
+        app: weaviate
+        component: vector-db
+    spec:
+      containers:
+      - name: weaviate
+        image: semitechnologies/weaviate:1.24.1
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        - name: grpc
+          containerPort: 50051
+          protocol: TCP
+        env:
+        # Basic Configuration
+        - name: PERSISTENCE_DATA_PATH
+          value: "/var/lib/weaviate"
+        - name: AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED
+          value: "true"
+        - name: DEFAULT_VECTORIZER_MODULE
+          value: "none"
+        - name: CLUSTER_HOSTNAME
+          value: "weaviate"
+        
+        # Performance Settings for ARM64
+        - name: GOMAXPROCS
+          value: "2"
+        - name: LIMIT_RESOURCES
+          value: "true"
+        
+        # Disable modules we don't need
+        - name: ENABLE_MODULES
+          value: ""
+        
+        # Query defaults
+        - name: QUERY_DEFAULTS_LIMIT
+          value: "100"
+        - name: QUERY_MAXIMUM_RESULTS
+          value: "10000"
+        
+        # Logging
+        - name: LOG_LEVEL
+          value: "info"
+        
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        
+        volumeMounts:
+        - name: weaviate-data
+          mountPath: /var/lib/weaviate
+        
+        livenessProbe:
+          httpGet:
+            path: /v1/.well-known/live
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+        
+        readinessProbe:
+          httpGet:
+            path: /v1/.well-known/ready
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        
+        startupProbe:
+          httpGet:
+            path: /v1/.well-known/ready
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 30
+      
+      volumes:
+      - name: weaviate-data
+        persistentVolumeClaim:
+          claimName: weaviate-storage
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: weaviate
+  namespace: sophia-ai
+  labels:
+    app: weaviate
+    component: vector-db
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+  - name: grpc
+    port: 50051
+    targetPort: 50051
+    protocol: TCP
+  selector:
+    app: weaviate
+---
+# Create an alias service for compatibility with existing code
+apiVersion: v1
+kind: Service
+metadata:
+  name: vector-db
+  namespace: sophia-ai
+  labels:
+    app: weaviate
+    component: vector-db
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+  selector:
+    app: weaviate
+---
+# ConfigMap for Weaviate schema initialization
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: weaviate-schema
+  namespace: sophia-ai
+data:
+  init-schema.py: |
+    #!/usr/bin/env python3
+    import time
+    import requests
+    import json
+    import sys
+    
+    WEAVIATE_URL = "http://weaviate:8080"
+    MAX_RETRIES = 30
+    RETRY_DELAY = 2
+    
+    # Wait for Weaviate to be ready
+    for i in range(MAX_RETRIES):
+        try:
+            response = requests.get(f"{WEAVIATE_URL}/v1/.well-known/ready")
+            if response.status_code == 200:
+                print("Weaviate is ready!")
+                break
+        except:
+            pass
+        print(f"Waiting for Weaviate... ({i+1}/{MAX_RETRIES})")
+        time.sleep(RETRY_DELAY)
+    else:
+        print("Weaviate failed to become ready")
+        sys.exit(1)
+    
+    # Define schema for Sophia AI documents
+    schema = {
+        "class": "Document",
+        "description": "A document in the Sophia AI knowledge base",
+        "vectorizer": "none",  # We'll provide our own vectors
+        "properties": [
+            {
+                "name": "content",
+                "dataType": ["text"],
+                "description": "The content of the document"
+            },
+            {
+                "name": "title",
+                "dataType": ["string"],
+                "description": "Document title"
+            },
+            {
+                "name": "source",
+                "dataType": ["string"],
+                "description": "Source of the document"
+            },
+            {
+                "name": "metadata",
+                "dataType": ["text"],
+                "description": "Additional metadata as JSON"
+            },
+            {
+                "name": "timestamp",
+                "dataType": ["date"],
+                "description": "When the document was created"
+            },
+            {
+                "name": "embedding_model",
+                "dataType": ["string"],
+                "description": "Model used to create embeddings"
+            }
+        ]
+    }
+    
+    # Create the schema
+    try:
+        response = requests.post(
+            f"{WEAVIATE_URL}/v1/schema",
+            json=schema
+        )
+        if response.status_code in [200, 201]:
+            print("Schema created successfully!")
+        else:
+            print(f"Schema creation response: {response.status_code}")
+            print(response.text)
+    except Exception as e:
+        print(f"Error creating schema: {e}")
+    
+    # Verify schema
+    try:
+        response = requests.get(f"{WEAVIATE_URL}/v1/schema")
+        if response.status_code == 200:
+            print("Current schema:")
+            print(json.dumps(response.json(), indent=2))
+    except Exception as e:
+        print(f"Error retrieving schema: {e}")
+---
+# Job to initialize Weaviate schema
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: weaviate-init
+  namespace: sophia-ai
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: init
+        image: python:3.11-slim
+        command: ["/bin/bash", "-c"]
+        args:
+          - |
+            pip install requests
+            python /scripts/init-schema.py
+        volumeMounts:
+        - name: init-script
+          mountPath: /scripts
+      volumes:
+      - name: init-script
+        configMap:
+          name: weaviate-schema
+          defaultMode: 0755

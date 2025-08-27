@@ -38,47 +38,47 @@ spec:
         - name: OPENAI_API_KEY
           valueFrom:
             secretKeyRef:
-              name: sophia-secrets
+              name: sophia-llm-secrets
               key: OPENAI_API_KEY
         - name: TAVILY_API_KEY
           valueFrom:
             secretKeyRef:
-              name: sophia-secrets
+              name: sophia-research-secrets
               key: TAVILY_API_KEY
         - name: PERPLEXITY_API_KEY
           valueFrom:
             secretKeyRef:
-              name: sophia-secrets
+              name: sophia-llm-secrets
               key: PERPLEXITY_API_KEY
         - name: ANTHROPIC_API_KEY
           valueFrom:
             secretKeyRef:
-              name: sophia-secrets
+              name: sophia-llm-secrets
               key: ANTHROPIC_API_KEY
         - name: OPENROUTER_API_KEY
           valueFrom:
             secretKeyRef:
-              name: sophia-secrets
+              name: sophia-llm-secrets
               key: OPENROUTER_API_KEY
         - name: REDIS_URL
           valueFrom:
             secretKeyRef:
-              name: sophia-secrets
+              name: sophia-redis-secrets
               key: REDIS_URL
         - name: NEON_DATABASE_URL
           valueFrom:
             secretKeyRef:
-              name: sophia-secrets
+              name: sophia-database-secrets
               key: NEON_DATABASE_URL
         - name: QDRANT_URL
           valueFrom:
             secretKeyRef:
-              name: sophia-secrets
+              name: sophia-vector-secrets
               key: QDRANT_URL
         - name: QDRANT_API_KEY
           valueFrom:
             secretKeyRef:
-              name: sophia-secrets
+              name: sophia-vector-secrets
               key: QDRANT_API_KEY
         resources:
           limits:

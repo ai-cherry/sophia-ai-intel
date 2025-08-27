@@ -24,8 +24,9 @@ import re
 import aiohttp
 import asyncpg
 import redis.asyncio as redis
-from qdrant_client import QdrantClient
-from qdrant_client.http import models
+import weaviate
+from weaviate.classes.init import Auth
+import weaviate.classes as wvc
 import tiktoken
 
 # Configure logging
@@ -38,8 +39,8 @@ logger = logging.getLogger(__name__)
 
 # Environment configuration - OpenRouter removed
 PORTKEY_API_KEY = os.getenv("PORTKEY_API_KEY", "")
-QDRANT_URL = os.getenv("QDRANT_URL", "")
-QDRANT_API_KEY = os.getenv("QDRANT_API_KEY", "")
+WEAVIATE_URL = os.getenv("WEAVIATE_URL", "")
+WEAVIATE_API_KEY = os.getenv("WEAVIATE_API_KEY", "")
 DATABASE_URL = os.getenv("DATABASE_URL", "")
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
 TENANT = os.getenv("TENANT", "pay-ready")
@@ -231,7 +232,7 @@ class KnowledgeStack:
     """Multi-layer knowledge storage and retrieval system"""
 
     def __init__(self):
-        self.qdrant_client: Optional[QdrantClient] = None
+        self.weaviate_client: Optional[weaviate.WeaviateClient] = None
         self.db_pool: Optional[asyncpg.Pool] = None
         self.redis_client: Optional[redis.Redis] = None
         self.embedding_client: Optional[EmbeddingClient] = None
@@ -240,30 +241,31 @@ class KnowledgeStack:
         """Initialize all storage connections"""
         logger.info("🔌 Initializing knowledge stack connections...")
 
-        # Initialize Qdrant
-        if QDRANT_URL and QDRANT_API_KEY:
+        # Initialize Weaviate
+        if WEAVIATE_URL and WEAVIATE_API_KEY:
             try:
-                self.qdrant_client = QdrantClient(
-                    url=QDRANT_URL,
-                    api_key=QDRANT_API_KEY
+                self.weaviate_client = weaviate.connect_to_weaviate_cloud(
+                    cluster_url=WEAVIATE_URL,
+                    auth_credentials=Auth.api_key(WEAVIATE_API_KEY)
                 )
 
                 # Create collection if it doesn't exist
                 try:
-                    self.qdrant_client.create_collection(
-                        collection_name=COLLECTION_NAME,
-                        vectors_config=models.VectorParams(
-                            size=1536,  # text-embedding-3-large dimensions
-                            distance=models.Distance.COSINE
+                    if not self.weaviate_client.collections.exists(COLLECTION_NAME):
+                        self.weaviate_client.collections.create(
+                            name=COLLECTION_NAME,
+                            vectorizer_config=wvc.config.Configure.Vectorizer.none()
                         )
-                    )
-                    logger.info(f"✅ Created Qdrant collection: {COLLECTION_NAME}")
-                except Exception:
-                    logger.info(f"✅ Qdrant collection {COLLECTION_NAME} already exists")
+                        logger.info(f"✅ Created Weaviate collection: {COLLECTION_NAME}")
+                    else:
+                        logger.info(f"✅ Weaviate collection {COLLECTION_NAME} already exists")
+
+                except Exception as e:
+                    logger.warning(f"⚠️ Collection creation failed: {e}")
 
             except Exception as e:
-                logger.warning(f"⚠️ Qdrant initialization failed: {e}")
-                self.qdrant_client = None
+                logger.warning(f"⚠️ Weaviate initialization failed: {e}")
+                self.weaviate_client = None
 
         # Initialize Neon database
         if DATABASE_URL:
@@ -351,21 +353,21 @@ class KnowledgeStack:
                     embedding = await emb_client.create_embedding(chunk["content"])
                     embeddings_created += 1
 
-                    # Store in Qdrant (vector search)
-                    if self.qdrant_client:
+                    # Store in Weaviate (vector search)
+                    if self.weaviate_client:
                         try:
-                            self.qdrant_client.upsert(
-                                collection_name=COLLECTION_NAME,
-                                points=[
-                                    models.PointStruct(
-                                        id=chunk["chunk_id"],
-                                        vector=embedding,
-                                        payload=chunk["metadata"]
-                                    )
-                                ]
+                            coll = self.weaviate_client.collections.get(COLLECTION_NAME)
+                            coll.data.insert(
+                                uuid=chunk["chunk_id"],
+                                properties={
+                                    "content": chunk["content"],
+                                    "metadata": chunk["metadata"],
+                                    "created_at": chunk["metadata"]["created_at"]
+                                },
+                                vector=embedding
                             )
                         except Exception as e:
-                            logger.error(f"Qdrant storage failed for {chunk['chunk_id']}: {e}")
+                            logger.error(f"Weaviate storage failed for {chunk['chunk_id']}: {e}")
 
                     # Store in Neon (structured data)
                     if self.db_pool:
@@ -448,12 +450,12 @@ class KnowledgeStack:
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "results": {
                 "redis": None,
-                "qdrant": None,
+                "weaviate": None,
                 "neon": None
             },
             "performance": {
                 "redis_ms": 0,
-                "qdrant_ms": 0,
+                "weaviate_ms": 0,
                 "neon_ms": 0,
                 "total_ms": 0
             }
@@ -478,33 +480,36 @@ class KnowledgeStack:
             except Exception as e:
                 logger.error(f"Redis retrieval test failed: {e}")
 
-        # Test Qdrant vector search
-        if self.qdrant_client and self.embedding_client:
-            qdrant_start = datetime.now()
+        # Test Weaviate vector search
+        if self.weaviate_client and self.embedding_client:
+            weaviate_start = datetime.now()
             try:
                 async with self.embedding_client as emb_client:
                     query_embedding = await emb_client.create_embedding(query)
 
-                search_results = self.qdrant_client.search(
-                    collection_name=COLLECTION_NAME,
-                    query_vector=query_embedding,
-                    limit=5,
-                    score_threshold=0.7
-                )
+                if self.weaviate_client.collections.exists(COLLECTION_NAME):
+                    coll = self.weaviate_client.collections.get(COLLECTION_NAME)
+                    search_results = coll.query.near_vector(
+                        near_vector=query_embedding,
+                        limit=5,
+                        return_metadata=wvc.query.MetadataQuery(score=True)
+                    )
 
-                retrieval_results["results"]["qdrant"] = [
-                    {
-                        "score": hit.score,
-                        "chunk_id": hit.id,
-                        "metadata": hit.payload
-                    } for hit in search_results
-                ]
+                    retrieval_results["results"]["weaviate"] = [
+                        {
+                            "score": obj.metadata.score,
+                            "chunk_id": str(obj.uuid),
+                            "metadata": obj.properties.get("metadata", {})
+                        } for obj in search_results.objects
+                    ]
+                else:
+                    retrieval_results["results"]["weaviate"] = []
 
-                retrieval_results["performance"]["qdrant_ms"] = (datetime.now() - qdrant_start).total_seconds() * 1000
+                retrieval_results["performance"]["weaviate_ms"] = (datetime.now() - weaviate_start).total_seconds() * 1000
                 logger.info(".2f")
 
             except Exception as e:
-                logger.error(f"Qdrant retrieval test failed: {e}")
+                logger.error(f"Weaviate retrieval test failed: {e}")
 
         # Test Neon structured query
         if self.db_pool:
@@ -623,7 +628,7 @@ async def main():
                 "success_rate": ".1f" if all_chunks else "0%"
             },
             "storage_layers": {
-                "qdrant_available": knowledge_stack.qdrant_client is not None,
+                "weaviate_available": knowledge_stack.weaviate_client is not None,
                 "neon_available": knowledge_stack.db_pool is not None,
                 "redis_available": knowledge_stack.redis_client is not None
             },
@@ -631,7 +636,7 @@ async def main():
             "retrieval_tests": retrieval_tests,
             "infrastructure": {
                 "portkey_configured": bool(PORTKEY_API_KEY),
-                "qdrant_configured": bool(QDRANT_URL and QDRANT_API_KEY),
+                "weaviate_configured": bool(WEAVIATE_URL and WEAVIATE_API_KEY),
                 "database_configured": bool(DATABASE_URL),
                 "redis_configured": bool(REDIS_URL)
             }

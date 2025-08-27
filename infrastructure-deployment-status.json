@@ -1,0 +1,12 @@
+{
+  "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "status": "infrastructure_deployed",
+  "services": {
+    "redis": {"port": 6380, "status": "deployed"},
+    "qdrant": {"port": 6333, "status": "deployed"},
+    "postgres": {"port": 5432, "status": "deployed"},
+    "prometheus": {"port": 9090, "status": "deployed"},
+    "grafana": {"port": 3000, "status": "deployed"},
+    "nginx": {"port": 80, "status": "deployed"}
+  }
+}

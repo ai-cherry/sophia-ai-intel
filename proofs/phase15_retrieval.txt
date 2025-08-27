@@ -1,0 +1,5 @@
+SOPHIA AI KNOWLEDGE STACK RETRIEVAL TEST RESULTS
+==================================================
+
+Query: prompt pipeline stages
+.2fTotal Time: 44.44ms

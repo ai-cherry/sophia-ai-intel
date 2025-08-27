@@ -8,7 +8,7 @@ Key Features:
 - Standardized Portkey routing for embeddings (OpenRouter removed)
 - Redis-based embedding caching for performance
 - Batch processing for efficient embedding generation
-- Semantic similarity search with Qdrant integration
+- Semantic similarity search with Weaviate integration
 - Comprehensive error handling and fallback mechanisms
 
 Version: 2.0.0 - Standardized Routing
@@ -24,22 +24,23 @@ import aiohttp
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 
-from qdrant_client import QdrantClient, models
-from qdrant_client.models import PointStruct, Distance, VectorParams
+import weaviate
+from weaviate.classes.init import Auth
+from weaviate.classes.config import Configure, Property, DataType
 
 logger = logging.getLogger(__name__)
 
 # Configuration - Updated for standardized routing
 PORTKEY_API_KEY = os.getenv("PORTKEY_API_KEY")
 REDIS_URL = os.getenv("REDIS_URL")
-QDRANT_URL = os.getenv("QDRANT_ENDPOINT")
-QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
+WEAVIATE_URL = os.getenv("WEAVIATE_URL")
+WEAVIATE_API_KEY = os.getenv("WEAVIATE_API_KEY")
 
 # Constants
 EMBEDDING_MODEL = "text-embedding-3-large"
 EMBEDDING_DIMENSION = 3072  # text-embedding-3-large dimensions
 CACHE_TTL = 86400  # 24 hours
-COLLECTION_NAME = "sophia_code_intelligence"
+CLASS_NAME = "SophiaCodeIntelligence"
 
 
 @dataclass
@@ -76,19 +77,22 @@ class StandardizedEmbeddingEngine:
         # TODO: Fix Redis URL configuration once service is stable
         self.redis_client = None
         logger.info("Redis temporarily disabled - running without cache")
-        self.qdrant_client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY) if QDRANT_URL else None
+        self.weaviate_client = weaviate.connect_to_weaviate_cloud(
+            cluster_url=WEAVIATE_URL,
+            auth_credentials=Auth.api_key(WEAVIATE_API_KEY),
+        ) if WEAVIATE_URL and WEAVIATE_API_KEY else None
 
         # Validation
         if not self.portkey_available:
             logger.warning("Portkey API key not configured - embeddings will fail")
         if not self.redis_client:
             logger.warning("Redis not configured - no caching available")
-        if not self.qdrant_client:
-            logger.warning("Qdrant not configured - vector search unavailable")
+        if not self.weaviate_client:
+            logger.warning("Weaviate not configured - vector search unavailable")
 
-        # Initialize collection
-        if self.qdrant_client:
-            self._ensure_collection_exists()
+        # Initialize schema
+        if self.weaviate_client:
+            self._ensure_schema_exists()
 
     async def __aenter__(self):
         self.session = aiohttp.ClientSession(
@@ -101,35 +105,73 @@ class StandardizedEmbeddingEngine:
         if self.session:
             await self.session.close()
 
-    def _ensure_collection_exists(self):
-        """Ensure Qdrant collection exists with proper configuration"""
+    def _ensure_schema_exists(self):
+        """Ensure Weaviate schema/class exists with proper configuration"""
         try:
-            collections = self.qdrant_client.get_collections()
-            collection_exists = any(c.name == COLLECTION_NAME for c in collections.collections)
+            schema = self.weaviate_client.schema.get()
+            class_exists = any(c['class'] == CLASS_NAME for c in schema.get('classes', []))
 
-            if not collection_exists:
-                self.qdrant_client.create_collection(
-                    collection_name=COLLECTION_NAME,
-                    vectors_config=VectorParams(
-                        size=EMBEDDING_DIMENSION,
-                        distance=Distance.COSINE
-                    ),
-                    optimizers_config=models.OptimizersConfig(
-                        default_segment_number=2,
-                        max_optimization_threads=2
-                    ),
-                    hnsw_config=models.HnswConfig(
-                        ef_construct=200,
-                        m=16,
-                        full_scan_threshold=10000
-                    )
-                )
-                logger.info(f"Created Qdrant collection: {COLLECTION_NAME}")
+            if not class_exists:
+                class_definition = {
+                    "class": CLASS_NAME,
+                    "description": "Sophia AI code intelligence documents with embeddings",
+                    "vectorizer": "none",  # We provide our own vectors
+                    "properties": [
+                        {
+                            "name": "content",
+                            "dataType": ["text"],
+                            "description": "Document content"
+                        },
+                        {
+                            "name": "source",
+                            "dataType": ["string"],
+                            "description": "Document source"
+                        },
+                        {
+                            "name": "metadata",
+                            "dataType": ["object"],
+                            "description": "Additional metadata"
+                        },
+                        {
+                            "name": "embeddingModel",
+                            "dataType": ["string"],
+                            "description": "Embedding model used"
+                        },
+                        {
+                            "name": "embeddingProvider",
+                            "dataType": ["string"],
+                            "description": "Embedding provider"
+                        },
+                        {
+                            "name": "contentLength",
+                            "dataType": ["int"],
+                            "description": "Content length"
+                        },
+                        {
+                            "name": "createdAt",
+                            "dataType": ["date"],
+                            "description": "Creation timestamp"
+                        },
+                        {
+                            "name": "generationTimeMs",
+                            "dataType": ["int"],
+                            "description": "Embedding generation time in ms"
+                        },
+                        {
+                            "name": "cached",
+                            "dataType": ["boolean"],
+                            "description": "Whether embedding was cached"
+                        }
+                    ]
+                }
+                
+                self.weaviate_client.schema.create_class(class_definition)
+                logger.info(f"Created Weaviate class: {CLASS_NAME}")
             else:
-                logger.info(f"Qdrant collection {COLLECTION_NAME} already exists")
+                logger.info(f"Weaviate class {CLASS_NAME} already exists")
 
         except Exception as e:
-            logger.error(f"Failed to ensure collection exists: {e}")
+            logger.error(f"Failed to ensure schema exists: {e}")
 
     def _generate_cache_key(self, content: str) -> str:
         """Generate cache key for content"""
@@ -351,7 +393,7 @@ class StandardizedEmbeddingEngine:
         metadata: Dict[str, Any]
     ) -> bool:
         """
-        Store document with real embedding in Qdrant using standardized routing
+        Store document with real embedding in Weaviate using standardized routing
 
         Args:
             doc_id: Unique document identifier
@@ -362,33 +404,32 @@ class StandardizedEmbeddingEngine:
         Returns:
             True if successful, False otherwise
         """
-        if not self.qdrant_client:
-            logger.error("Qdrant client not configured")
+        if not self.weaviate_client:
+            logger.error("Weaviate client not configured")
             return False
 
         try:
             # Generate embedding using standardized routing
             embedding_result = await self.generate_embedding(content)
 
-            # Store in Qdrant with metadata
-            self.qdrant_client.upsert(
-                collection_name=COLLECTION_NAME,
-                wait=True,
-                points=[PointStruct(
-                    id=doc_id,
-                    vector=embedding_result.embedding,
-                    payload={
-                        "content": content,
-                        "source": source,
-                        "metadata": metadata,
-                        "embedding_model": embedding_result.model,
-                        "embedding_provider": embedding_result.provider,
-                        "content_length": len(content),
-                        "created_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-                        "generation_time_ms": embedding_result.generation_time_ms,
-                        "cached": embedding_result.cached
-                    }
-                )]
+            # Store in Weaviate with metadata
+            data_object = {
+                "content": content,
+                "source": source,
+                "metadata": metadata,
+                "embeddingModel": embedding_result.model,
+                "embeddingProvider": embedding_result.provider,
+                "contentLength": len(content),
+                "createdAt": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                "generationTimeMs": embedding_result.generation_time_ms,
+                "cached": embedding_result.cached
+            }
+
+            self.weaviate_client.data_object.create(
+                data_object=data_object,
+                class_name=CLASS_NAME,
+                uuid=doc_id,
+                vector=embedding_result.embedding
             )
 
             logger.info(f"Stored document {doc_id} with embedding (cached: {embedding_result.cached}, provider: {embedding_result.provider})")
@@ -415,34 +456,43 @@ class StandardizedEmbeddingEngine:
         Returns:
             List of SearchResult objects ranked by similarity
         """
-        if not self.qdrant_client:
-            logger.error("Qdrant client not configured")
+        if not self.weaviate_client:
+            logger.error("Weaviate client not configured")
             return []
 
         try:
             # Generate query embedding using standardized routing
             query_embedding_result = await self.generate_embedding(query)
 
-            # Search in Qdrant
-            search_results = self.qdrant_client.search(
-                collection_name=COLLECTION_NAME,
-                query_vector=query_embedding_result.embedding,
-                limit=limit,
-                score_threshold=similarity_threshold,
-                with_payload=True,
-                with_vectors=False
+            # Search in Weaviate
+            near_vector = {"vector": query_embedding_result.embedding}
+            
+            response = (
+                self.weaviate_client.query
+                .get(CLASS_NAME, ["content", "source", "metadata"])
+                .with_near_vector(near_vector)
+                .with_limit(limit)
+                .with_additional(["id", "distance"])
+                .do()
             )
 
             # Convert to SearchResult objects
             results = []
-            for hit in search_results:
-                results.append(SearchResult(
-                    id=str(hit.id),
-                    content=hit.payload.get("content", ""),
-                    similarity_score=hit.score,
-                    metadata=hit.payload.get("metadata", {}),
-                    source=hit.payload.get("source", "unknown")
-                ))
+            if 'data' in response and 'Get' in response['data'] and CLASS_NAME in response['data']['Get']:
+                for item in response['data']['Get'][CLASS_NAME]:
+                    # Convert Weaviate distance to similarity score (1 - distance for cosine)
+                    distance = item['_additional']['distance']
+                    similarity_score = 1.0 - distance if distance is not None else 0.0
+                    
+                    # Only include results above similarity threshold
+                    if similarity_score >= similarity_threshold:
+                        results.append(SearchResult(
+                            id=item['_additional']['id'],
+                            content=item.get("content", ""),
+                            similarity_score=similarity_score,
+                            metadata=item.get("metadata", {}),
+                            source=item.get("source", "unknown")
+                        ))
 
             logger.info(f"Semantic search for '{query[:50]}...' returned {len(results)} results")
             return results
@@ -505,7 +555,7 @@ class StandardizedEmbeddingEngine:
         status = {
             "portkey_configured": bool(PORTKEY_API_KEY),
             "redis_configured": bool(REDIS_URL),
-            "qdrant_configured": bool(QDRANT_URL and QDRANT_API_KEY),
+            "weaviate_configured": bool(WEAVIATE_URL and WEAVIATE_API_KEY),
             "embedding_model": EMBEDDING_MODEL,
             "embedding_dimension": EMBEDDING_DIMENSION,
             "cache_ttl_hours": CACHE_TTL / 3600,
@@ -522,12 +572,11 @@ class StandardizedEmbeddingEngine:
             status["redis_connected"] = False
 
         try:
-            if self.qdrant_client:
-                health = self.qdrant_client.health_check()
-                status["qdrant_connected"] = health.status == "ok"
+            if self.weaviate_client:
+                status["weaviate_connected"] = self.weaviate_client.is_ready()
         except Exception as e:
-            logger.warning(f"Qdrant connection test failed: {e}")
-            status["qdrant_connected"] = False
+            logger.warning(f"Weaviate connection test failed: {e}")
+            status["weaviate_connected"] = False
 
         return status
 

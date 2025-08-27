@@ -1,0 +1,20 @@
+# Sophia AI Vector Indexer Worker - Requirements
+# ==============================================
+
+# Core async HTTP and web framework support
+aiohttp==3.9.3
+asyncio-mqtt==0.16.2
+
+# Vector database - migrated to Weaviate
+weaviate-client==4.4.1
+
+# Database drivers for PostgreSQL
+psycopg2-binary==2.9.9
+
+# Utilities
+python-dotenv==1.0.1
+python-json-logger==2.0.7
+
+# Development and testing
+pytest==7.4.0
+pytest-asyncio==0.21.1

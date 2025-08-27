@@ -1,5 +1,5 @@
-# AGNO Coordinator Service Dockerfile
-FROM node:18-alpine
+# AGNO Coordinator Service Dockerfile - Multi-stage build
+FROM node:18-alpine AS builder
 
 # Set working directory
 WORKDIR /app
@@ -22,8 +22,26 @@ COPY . .
 # Build the application
 RUN npm run build
 
-# Remove dev dependencies after build
-RUN npm prune --production
+# Production stage
+FROM node:18-alpine AS production
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apk add --no-cache \
+    dumb-init \
+    curl \
+    && rm -rf /var/cache/apk/*
+
+# Copy built application from builder stage
+COPY --from=builder /app/dist ./dist
+
+# Copy package.json for npm start
+COPY --from=builder /app/package*.json ./
+
+# Copy node_modules from builder stage to ensure all dependencies are available
+COPY --from=builder /app/node_modules ./node_modules
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \

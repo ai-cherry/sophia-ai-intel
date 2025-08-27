@@ -20,9 +20,9 @@ interface DependencyResult {
   error?: string;
 }
 
-class HealthChecker {
+export class HealthChecker {
   
-  static async checkRedis(redisUrl: string): Promise<DependencyResult> {
+  async checkRedis(_redisUrl: string): Promise<DependencyResult> {
     try {
       const startTime = Date.now();
       // TODO: Implement Redis client check
@@ -42,7 +42,7 @@ class HealthChecker {
     }
   }
   
-  static async checkHttpService(serviceUrl: string): Promise<DependencyResult> {
+  async checkHttpService(serviceUrl: string): Promise<DependencyResult> {
     try {
       const startTime = Date.now();
       const response = await axios.get(`${serviceUrl}/health`, { timeout: 5000 });
@@ -69,7 +69,7 @@ class HealthChecker {
     }
   }
   
-  static async performComprehensiveCheck(): Promise<HealthStatus> {
+  async performComprehensiveCheck(): Promise<HealthStatus> {
     const startTime = Date.now();
     let serviceHealthy = true;
     const dependencies: Record<string, any> = {};
@@ -92,7 +92,7 @@ class HealthChecker {
     
     for (const [serviceName, serviceUrl] of dependentServices) {
       if (serviceUrl && serviceName !== 'agno-coordinator') {
-        dependencies[serviceName] = await this.checkHttpService(serviceUrl);
+        dependencies[serviceName as string] = await this.checkHttpService(serviceUrl as string);
       }
     }
     
@@ -111,14 +111,25 @@ class HealthChecker {
       }
     };
   }
+
+  // Instance methods for compatibility
+  async getHealthStatus(): Promise<HealthStatus> {
+    return await this.performComprehensiveCheck();
+  }
+
+  async getDetailedHealthReport(): Promise<{ status: HealthStatus }> {
+    const status = await this.performComprehensiveCheck();
+    return { status };
+  }
 }
 
 export function registerHealthEndpoints(app: FastifyInstance) {
   
   // Comprehensive health check
-  app.get('/health', async (request, reply) => {
+  app.get('/health', async (_request, reply) => {
     try {
-      const healthStatus = await HealthChecker.performComprehensiveCheck();
+      const healthChecker = new HealthChecker();
+      const healthStatus = await healthChecker.performComprehensiveCheck();
       
       if (healthStatus.status === 'unhealthy') {
         reply.code(503);
@@ -136,17 +147,18 @@ export function registerHealthEndpoints(app: FastifyInstance) {
   });
   
   // Quick health check for load balancers
-  app.get('/health/quick', async (request, reply) => {
+  app.get('/health/quick', async (_request, _reply) => {
     return { status: 'healthy', service: 'agno-coordinator' };
   });
   
   // Readiness probe for Kubernetes
-  app.get('/health/ready', async (request, reply) => {
-    const healthStatus = await HealthChecker.performComprehensiveCheck();
+  app.get('/health/ready', async (_request, reply) => {
+    const healthChecker = new HealthChecker();
+    const healthStatus = await healthChecker.performComprehensiveCheck();
     
     // Check if core dependencies are ready
     const coreDeps = ['redis'];
-    const ready = coreDeps.every(dep => 
+    const ready = coreDeps.every(dep =>
       !healthStatus.dependencies[dep] || healthStatus.dependencies[dep].status === 'healthy'
     );
     
@@ -159,7 +171,7 @@ export function registerHealthEndpoints(app: FastifyInstance) {
   });
   
   // Liveness probe for Kubernetes
-  app.get('/health/live', async (request, reply) => {
+  app.get('/health/live', async (_request, _reply) => {
     return { status: 'alive', service: 'agno-coordinator' };
   });
 }

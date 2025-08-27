@@ -17,7 +17,7 @@ llama-index-llms-openai==0.1.15
 llama-index-readers-file==0.1.12
 llama-index-node-parser-semantic==0.1.0
 llama-index-extractors-keyword==0.1.0
-llama-index-vector-stores-qdrant==0.2.8
+# Removed qdrant vector store - using Weaviate instead
 
 # File processing and readers
 PyPDF2==3.0.1
@@ -26,7 +26,7 @@ unstructured==0.11.2
 python-magic==0.4.27
 
 # Vector database
-qdrant-client==1.7.0
+weaviate-client==4.4.1
 
 # OpenAI integration
 openai==1.12.0

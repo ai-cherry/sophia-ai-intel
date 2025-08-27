@@ -46,7 +46,7 @@ http {
 
     # Upstream servers
     upstream agno_coordinator {
-        server agno-coordinator:8080;
+        server agno-coordinator:3001;
         keepalive 32;
     }
 

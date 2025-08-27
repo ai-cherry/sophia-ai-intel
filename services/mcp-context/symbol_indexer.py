@@ -2,7 +2,8 @@ import os
 import uuid
 from typing import List, Dict
 import asyncpg
-from qdrant_client import QdrantClient, models
+import weaviate
+from weaviate.classes.init import Auth
 from openai import OpenAI
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
@@ -16,8 +17,8 @@ logger = logging.getLogger(__name__)
 
 # Environment Variables
 NEON_DATABASE_URL = os.getenv("NEON_DATABASE_URL")
-QDRANT_URL = os.getenv("QDRANT_URL")
-QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
+WEAVIATE_URL = os.getenv("WEAVIATE_URL")
+WEAVIATE_API_KEY = os.getenv("WEAVIATE_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")  # Consistent with other MCPs
 
 # Initialize OpenAI client only if API key is set
@@ -41,11 +42,11 @@ async def get_db_pool():
     return db_pool
 
 
-# Qdrant client
-qdrant_client = QdrantClient(
-    url=QDRANT_URL,
-    api_key=QDRANT_API_KEY,  # Check if QDRANT_API_KEY is available
-)
+# Weaviate client using official cloud connection pattern
+weaviate_client = weaviate.connect_to_weaviate_cloud(
+    cluster_url=WEAVIATE_URL,
+    auth_credentials=Auth.api_key(WEAVIATE_API_KEY),
+) if WEAVIATE_URL and WEAVIATE_API_KEY else None
 
 
 async def create_embedding(
@@ -63,54 +64,56 @@ async def create_embedding(
 
 async def retrieve_relevant_symbols(query: str, limit: int = 5) -> List[Dict]:
     """
-    Retrieves relevant symbols from Qdrant based on a query embedding.
+    Retrieves relevant symbols from Weaviate based on a query embedding.
     """
-    if not QDRANT_URL or not QDRANT_API_KEY:
-        logger.warning("Qdrant not configured, cannot retrieve symbols.")
+    if not WEAVIATE_URL or not WEAVIATE_API_KEY or not weaviate_client:
+        logger.warning("Weaviate not configured, cannot retrieve symbols.")
         return []
 
     query_embedding = await create_embedding(query)
 
-    search_result = qdrant_client.search(
-        collection_name="sophia_code_symbols",
-        query_vector=query_embedding,
-        limit=limit,
-        query_params=models.QueryParams(
-            hnsw_ef=128, exact=False
-        ),  # Parameters adjusted for better search quality
+    near_vector = {"vector": query_embedding}
+    
+    response = (
+        weaviate_client.query
+        .get("SophiaCodeSymbols", ["name", "kind", "file", "line", "snippet"])
+        .with_near_vector(near_vector)
+        .with_limit(limit)
+        .with_additional(["id", "distance"])
+        .do()
     )
 
     symbols = []
-    for hit in search_result:
-        symbols.append(
-            {
-                "name": hit.payload.get("name"),
-                "kind": hit.payload.get("kind"),
-                "file": hit.payload.get("file"),
-                "line": hit.payload.get("line"),
-                "score": hit.score,
-                "snippet": hit.payload.get("snippet", ""),  # Include snippet
-            }
-        )
+    if 'data' in response and 'Get' in response['data'] and 'SophiaCodeSymbols' in response['data']['Get']:
+        for item in response['data']['Get']['SophiaCodeSymbols']:
+            # Convert distance to score (higher score = better match)
+            distance = item['_additional']['distance']
+            score = 1.0 - distance if distance is not None else 0.0
+            
+            symbols.append({
+                "name": item.get("name"),
+                "kind": item.get("kind"),
+                "file": item.get("file"),
+                "line": item.get("line"),
+                "score": score,
+                "snippet": item.get("snippet", ""),
+            })
     return symbols
 
 
 async def index_repository_symbols(repo_path: str):
     """
-    Indexes code symbols from a given repository path into Qdrant.
-    This function will scan files, extract symbols, create embeddings, and upsert them into Qdrant.
+    Indexes code symbols from a given repository path into Weaviate.
+    This function will scan files, extract symbols, create embeddings, and store them in Weaviate.
     """
-    if not QDRANT_URL or not QDRANT_API_KEY:
-        logger.warning("Qdrant not configured, skipping repository indexing.")
+    if not WEAVIATE_URL or not WEAVIATE_API_KEY or not weaviate_client:
+        logger.warning("Weaviate not configured, skipping repository indexing.")
         return
 
-    # Ensure the collection exists
-    qdrant_client.recreate_collection(
-        collection_name="sophia_code_symbols",
-        vectors_config=models.VectorParams(size=1536, distance=models.Distance.COSINE),
-    )
+    # Ensure the schema exists
+    _ensure_symbols_schema_exists()
 
-    points = []
+    data_objects = []
     for root, _, files in os.walk(repo_path):
         for file_name in files:
             if file_name.endswith(
@@ -145,30 +148,33 @@ async def index_repository_symbols(repo_path: str):
                                 f"{symbol_kind} {symbol_name} in {relative_file_path}: {snippet}"
                             )
 
-                            points.append(
-                                models.PointStruct(
-                                    id=str(uuid.uuid4()),
-                                    vector=vector,
-                                    payload={
-                                        "name": symbol_name,
-                                        "kind": symbol_kind,
-                                        "file": relative_file_path,
-                                        "line": line_number,
-                                        "snippet": snippet,
-                                    },
-                                )
-                            )
+                            data_objects.append({
+                                "data_object": {
+                                    "name": symbol_name,
+                                    "kind": symbol_kind,
+                                    "file": relative_file_path,
+                                    "line": line_number,
+                                    "snippet": snippet,
+                                },
+                                "vector": vector
+                            })
                 except Exception as e:
                     logger.warning(f"Failed to process {file_path}: {e}")
 
-    if points:
-        qdrant_client.upsert(
-            collection_name="sophia_code_symbols",
-            wait=True,
-            points=points,
-        )
+    if data_objects:
+        # Batch create objects in Weaviate
+        for obj in data_objects:
+            try:
+                weaviate_client.data_object.create(
+                    data_object=obj["data_object"],
+                    class_name="SophiaCodeSymbols",
+                    vector=obj["vector"]
+                )
+            except Exception as e:
+                logger.warning(f"Failed to create symbol object: {e}")
+        
         logger.info(
-            f"Indexed {len(points)} symbols into Qdrant collection 'sophia_code_symbols'"
+            f"Indexed {len(data_objects)} symbols into Weaviate class 'SophiaCodeSymbols'"
         )
     else:
         logger.info("No symbols found or indexed.")
@@ -211,7 +217,60 @@ async def shutdown_event():
         logger.info("Database pool closed")
 
 
-qdrant_client.close()  # Ensure qdrant client is closed properly
+def _ensure_symbols_schema_exists():
+    """Ensure Weaviate schema for code symbols exists"""
+    if not weaviate_client:
+        return
+        
+    try:
+        schema = weaviate_client.schema.get()
+        class_exists = any(c['class'] == "SophiaCodeSymbols" for c in schema.get('classes', []))
+
+        if not class_exists:
+            class_definition = {
+                "class": "SophiaCodeSymbols",
+                "description": "Code symbols indexed for semantic search",
+                "vectorizer": "none",  # We provide our own vectors
+                "properties": [
+                    {
+                        "name": "name",
+                        "dataType": ["string"],
+                        "description": "Symbol name"
+                    },
+                    {
+                        "name": "kind",
+                        "dataType": ["string"],
+                        "description": "Symbol kind (function, class, etc.)"
+                    },
+                    {
+                        "name": "file",
+                        "dataType": ["string"],
+                        "description": "File path"
+                    },
+                    {
+                        "name": "line",
+                        "dataType": ["int"],
+                        "description": "Line number"
+                    },
+                    {
+                        "name": "snippet",
+                        "dataType": ["text"],
+                        "description": "Code snippet"
+                    }
+                ]
+            }
+            
+            weaviate_client.schema.create_class(class_definition)
+            logger.info("Created Weaviate class: SophiaCodeSymbols")
+        else:
+            logger.info("Weaviate class SophiaCodeSymbols already exists")
+
+    except Exception as e:
+        logger.error(f"Failed to ensure symbols schema exists: {e}")
+
+
+if weaviate_client:
+    weaviate_client.close()  # Ensure Weaviate client is closed properly
 
 if __name__ == "__main__":
     import uvicorn

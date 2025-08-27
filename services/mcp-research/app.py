@@ -39,6 +39,8 @@ import logging
 from typing import List, Dict, Any, Optional
 import httpx
 import asyncpg
+import weaviate
+from weaviate.classes.init import Auth
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -64,8 +66,8 @@ ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 VOYAGE_API_KEY = os.getenv("VOYAGE_API_KEY")
 COHERE_API_KEY = os.getenv("COHERE_API_KEY")
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-QDRANT_URL = os.getenv("QDRANT_ENDPOINT")
-QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
+WEAVIATE_URL = os.getenv("WEAVIATE_URL")
+WEAVIATE_API_KEY = os.getenv("WEAVIATE_API_KEY")
 NEON_DATABASE_URL = os.getenv("NEON_DATABASE_URL")
 
 app = FastAPI(
@@ -175,7 +177,7 @@ def get_provider_status():
         "voyage": "ready" if VOYAGE_API_KEY else "missing_secret",
         "cohere": "ready" if COHERE_API_KEY else "missing_secret",
         "google": "ready" if GOOGLE_API_KEY else "missing_secret",
-        "qdrant": "ready" if (QDRANT_URL and QDRANT_API_KEY) else "missing_secret",
+        "weaviate": "ready" if (WEAVIATE_URL and WEAVIATE_API_KEY) else "missing_secret",
         "storage": "ready" if NEON_DATABASE_URL else "missing_secret",
     }
 
@@ -248,6 +250,13 @@ class ProviderEnum(str, Enum):
     voyage = "voyage"
     cohere = "cohere"
     google = "google"
+
+
+# Weaviate client initialization using official cloud connection pattern
+weaviate_client = weaviate.connect_to_weaviate_cloud(
+    cluster_url=WEAVIATE_URL,
+    auth_credentials=Auth.api_key(WEAVIATE_API_KEY),
+) if WEAVIATE_URL and WEAVIATE_API_KEY else None
 
 
 # Provider Implementations
@@ -357,6 +366,19 @@ async def healthz():
     else:
         db_status = "not_configured"
 
+    # Check Weaviate connectivity
+    weaviate_status = "unknown"
+    if WEAVIATE_URL and WEAVIATE_API_KEY:
+        try:
+            if weaviate_client and weaviate_client.is_ready():
+                weaviate_status = "connected"
+            else:
+                weaviate_status = "error"
+        except Exception as e:
+            weaviate_status = f"error: {str(e)[:50]}"
+    else:
+        weaviate_status = "not_configured"
+
     ready_providers = [k for k, v in providers.items() if v == "ready"]
     missing_providers = [k for k, v in providers.items() if v == "missing_secret"]
 
@@ -370,6 +392,7 @@ async def healthz():
                 "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
                 "providers": providers,
                 "database": db_status,
+                "vector_database": weaviate_status,
                 "capabilities": {
                     "search": len(
                         [
@@ -408,6 +431,7 @@ async def healthz():
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "providers": providers,
         "database": db_status,
+        "vector_database": weaviate_status,
         "capabilities": {
             "search": len(
                 [
@@ -508,6 +532,34 @@ async def research_query(request: ResearchQuery):
             providers_failed.append(
                 {"provider": "together_summarization", "error": str(e)}
             )
+
+    # Store research results in Weaviate for semantic search
+    if research_vector_store and results:
+        try:
+            # Store each significant result in vector database
+            for i, result in enumerate(results[:3]):  # Store top 3 results
+                content = result.get("snippet", result.get("content", ""))
+                source = result.get("link", result.get("title", f"result_{i}"))
+                provider = result.get("type", "unknown")
+                
+                if content and len(content.strip()) > 20:  # Only store meaningful content
+                    await research_vector_store.store_research_result(
+                        query=request.query,
+                        content=content,
+                        source=source,
+                        provider=provider,
+                        confidence=0.8,
+                        metadata={
+                            "depth": request.depth,
+                            "max_results": request.max_results,
+                            "time_range": request.time_range,
+                            "providers_used": providers_used
+                        }
+                    )
+            logger.info(f"Stored research results in Weaviate for query: {request.query}")
+        except Exception as e:
+            logger.warning(f"Failed to store research results in Weaviate: {e}")
+            # Don't fail the request if vector storage fails
 
     return ResearchResult(
         status="success" if results else "partial" if providers_failed else "failed",
@@ -641,6 +693,53 @@ async def startup_event():
         except Exception as e:
             logger.warning(f"Database connection failed at startup: {e}. Service will start without initial DB connection.")
     else:
+
+
+@app.post("/research/search")
+async def semantic_search_research(request: DocumentSearchRequest):
+    """
+    Performs semantic search on previously stored research results using Weaviate.
+    """
+    start_time = time.time()
+
+    if not research_vector_store:
+        raise HTTPException(
+            status_code=503,
+            detail=normalized_error(
+                "weaviate", "missing-vector-store", "Research vector store not configured"
+            ),
+        )
+
+    try:
+        # Perform semantic search on stored research results
+        search_results = await research_vector_store.semantic_search_research(
+            query=request.query,
+            limit=request.k,
+            confidence_threshold=0.5
+        )
+
+        return {
+            "status": "success",
+            "query": request.query,
+            "results": search_results,
+            "summary": {
+                "text": f"Found {len(search_results)} semantically relevant research results for '{request.query}'",
+                "confidence": sum(r["similarity_score"] for r in search_results) / len(search_results) if search_results else 0,
+                "model": "weaviate_semantic_search",
+                "sources": ["weaviate_vector_store"]
+            },
+            "providers_used": ["weaviate"],
+            "providers_failed": [],
+            "execution_time_ms": int((time.time() - start_time) * 1000),
+            "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        }
+
+    except Exception as e:
+        logger.error(f"Semantic research search failed: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=normalized_error("weaviate", "search-failed", str(e)),
+        )
         logger.warning("Research MCP v2 started without database - storage disabled")
     
     # Initialize aggressive cache manager
@@ -750,3 +849,178 @@ if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")
+
+
+
+# Research Vector Operations with Weaviate
+class ResearchVectorStore:
+    """
+    Weaviate-based vector storage for research results and semantic search.
+    Provides research-specific vector operations following proven patterns.
+    """
+    
+    def __init__(self, client):
+        self.client = client
+        self.class_name = "ResearchResult"
+        self._initialize_schema()
+    
+    def _initialize_schema(self):
+        """Initialize Weaviate schema for research results"""
+        if not self.client:
+            return
+        
+        try:
+            # Check if class already exists
+            existing_classes = self.client.schema.get()["classes"]
+            class_names = [cls["class"] for cls in existing_classes]
+            
+            if self.class_name not in class_names:
+                # Create the ResearchResult class schema
+                research_class = {
+                    "class": self.class_name,
+                    "description": "Research results with semantic search capabilities",
+                    "properties": [
+                        {
+                            "name": "query",
+                            "dataType": ["text"],
+                            "description": "Original research query"
+                        },
+                        {
+                            "name": "content",
+                            "dataType": ["text"],
+                            "description": "Research result content"
+                        },
+                        {
+                            "name": "source",
+                            "dataType": ["text"],
+                            "description": "Source of the research result"
+                        },
+                        {
+                            "name": "provider",
+                            "dataType": ["text"],
+                            "description": "Research provider used"
+                        },
+                        {
+                            "name": "confidence",
+                            "dataType": ["number"],
+                            "description": "Confidence score of the result"
+                        },
+                        {
+                            "name": "metadata",
+                            "dataType": ["text"],
+                            "description": "Additional metadata as JSON string"
+                        },
+                        {
+                            "name": "created_at",
+                            "dataType": ["date"],
+                            "description": "Creation timestamp"
+                        }
+                    ],
+                    "vectorizer": "text2vec-openai",
+                    "moduleConfig": {
+                        "text2vec-openai": {
+                            "model": "text-embedding-3-large",
+                            "modelVersion": "003",
+                            "type": "text"
+                        }
+                    }
+                }
+                
+                self.client.schema.create_class(research_class)
+                logger.info(f"Created Weaviate class: {self.class_name}")
+                
+        except Exception as e:
+            logger.warning(f"Failed to initialize Weaviate schema: {e}")
+    
+    async def store_research_result(
+        self,
+        query: str,
+        content: str,
+        source: str,
+        provider: str,
+        confidence: float = 0.8,
+        metadata: dict = None
+    ) -> bool:
+        """Store a research result with vector embedding"""
+        if not self.client:
+            return False
+        
+        try:
+            data_object = {
+                "query": query,
+                "content": content,
+                "source": source,
+                "provider": provider,
+                "confidence": confidence,
+                "metadata": json.dumps(metadata or {}),
+                "created_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+            }
+            
+            # Store with automatic vectorization
+            result = self.client.data_object.create(
+                data_object=data_object,
+                class_name=self.class_name
+            )
+            
+            logger.info(f"Stored research result: {result}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to store research result: {e}")
+            return False
+    
+    async def semantic_search_research(
+        self,
+        query: str,
+        limit: int = 5,
+        confidence_threshold: float = 0.5
+    ) -> List[Dict[str, Any]]:
+        """Perform semantic search on stored research results"""
+        if not self.client:
+            return []
+        
+        try:
+            # Perform semantic search using Weaviate's vector search
+            result = (
+                self.client.query
+                .get(self.class_name, [
+                    "query", "content", "source", "provider", 
+                    "confidence", "metadata", "created_at"
+                ])
+                .with_near_text({"concepts": [query]})
+                .with_additional(["certainty", "id"])
+                .with_limit(limit)
+                .do()
+            )
+            
+            # Process results
+            search_results = []
+            if result.get("data", {}).get("Get", {}).get(self.class_name):
+                for item in result["data"]["Get"][self.class_name]:
+                    # Convert certainty to similarity score
+                    certainty = item.get("_additional", {}).get("certainty", 0)
+                    
+                    # Filter by confidence threshold
+                    if certainty >= confidence_threshold:
+                        search_results.append({
+                            "id": item.get("_additional", {}).get("id"),
+                            "query": item.get("query", ""),
+                            "content": item.get("content", ""),
+                            "source": item.get("source", ""),
+                            "provider": item.get("provider", ""),
+                            "confidence": item.get("confidence", 0),
+                            "metadata": json.loads(item.get("metadata", "{}")),
+                            "created_at": item.get("created_at", ""),
+                            "similarity_score": certainty
+                        })
+            
+            logger.info(f"Found {len(search_results)} relevant research results for: {query}")
+            return search_results
+            
+        except Exception as e:
+            logger.error(f"Semantic search failed: {e}")
+            return []
+
+
+# Initialize research vector store
+research_vector_store = ResearchVectorStore(weaviate_client) if weaviate_client else None

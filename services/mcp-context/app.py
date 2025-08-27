@@ -6,7 +6,7 @@ vector search, and knowledge retrieval capabilities. It serves as the central co
 management system for the Sophia AI intelligence platform.
 
 Key Features:
-- Document creation and storage in PostgreSQL and Qdrant vector database
+- Document creation and storage in PostgreSQL and Weaviate vector database
 - Semantic document search using vector embeddings
 - Unified context provider abstraction
 - Health monitoring and provider status tracking
@@ -14,13 +14,13 @@ Key Features:
 
 Architecture:
 - PostgreSQL for structured document metadata and content storage
-- Qdrant vector database for semantic search and similarity matching
+- Weaviate vector database for semantic search and similarity matching
 - FastAPI async REST API with comprehensive error handling
 - Database connection pooling for high-performance operations
 
 Provider Integrations:
 - PostgreSQL (Neon): Primary document and metadata storage
-- Qdrant: Vector database for embedding storage and semantic search
+- Weaviate: Vector database for embedding storage and semantic search
 
 Version: 2.0.0
 Author: Sophia AI Intelligence Team
@@ -36,7 +36,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 import uuid
-from qdrant_client import QdrantClient
+import weaviate
+from weaviate.classes.init import Auth
 
 # Import shared platform libraries
 from platform.common.logging import get_logger
@@ -54,8 +55,8 @@ logger = get_logger(__name__)
 
 # Environment Variables
 NEON_DATABASE_URL = settings.neon_database_url
-QDRANT_URL = settings.qdrant_url
-QDRANT_API_KEY = settings.qdrant_api_key
+WEAVIATE_URL = os.getenv("WEAVIATE_URL", "w6bigpoxsrwvq7wlgmmdva.c0.us-west3.gcp.weaviate.cloud")
+WEAVIATE_API_KEY = os.getenv("WEAVIATE_API_KEY", "VMKjGMQUnXQIDiFOciZZOhr7amBfCHMh7hNf")
 
 app = FastAPI(
     title="sophia-mcp-context-v2",
@@ -105,7 +106,7 @@ def normalized_error(
     debugging and error handling capabilities throughout the system.
     
     Args:
-        provider (str): Context provider that generated the error (storage/qdrant)
+        provider (str): Context provider that generated the error (storage/weaviate)
         code (str): Error code identifier for programmatic error handling
         message (str): Human-readable error message describing the issue
         details (Optional[Dict]): Additional error context and debugging information
@@ -114,7 +115,7 @@ def normalized_error(
         Dict[str, Any]: Normalized error object with standard MCP structure
         
     Example:
-        >>> normalized_error("qdrant", "connection_failed", "Vector database unavailable")
+        >>> normalized_error("weaviate", "connection_failed", "Vector database unavailable")
     """
     error_obj = {
         "status": "failure",
@@ -144,14 +145,14 @@ def get_provider_status():
             
     Context Providers:
         - storage: PostgreSQL database for document and metadata storage
-        - qdrant: Vector database for semantic search and embeddings
+        - weaviate: Vector database for semantic search and embeddings
         
     Note:
         Use the /healthz endpoint for comprehensive connectivity testing
     """
     return {
         "storage": "ready" if NEON_DATABASE_URL else "missing_secret",
-        "qdrant": "ready" if QDRANT_URL else "missing_secret",
+        "weaviate": "ready" if WEAVIATE_URL and WEAVIATE_API_KEY else "missing_secret",
     }
 
 
@@ -188,8 +189,11 @@ class DocumentSearchResponse(BaseModel):
     timestamp: str
 
 
-# Qdrant client
-qdrant_client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
+# Weaviate client using official cloud connection pattern
+weaviate_client = weaviate.connect_to_weaviate_cloud(
+    cluster_url=WEAVIATE_URL,
+    auth_credentials=Auth.api_key(WEAVIATE_API_KEY),
+) if WEAVIATE_URL and WEAVIATE_API_KEY else None
 
 
 # API Endpoints
@@ -214,16 +218,18 @@ async def healthz():
     else:
         db_status = "not_configured"
 
-    # Check Qdrant connectivity
-    qdrant_status = "unknown"
-    if QDRANT_URL and QDRANT_API_KEY:
+    # Check Weaviate connectivity
+    weaviate_status = "unknown"
+    if WEAVIATE_URL and WEAVIATE_API_KEY:
         try:
-            health = qdrant_client.health_check()
-            qdrant_status = "connected" if health["status"] == "ok" else "error"
+            if weaviate_client and weaviate_client.is_ready():
+                weaviate_status = "connected"
+            else:
+                weaviate_status = "error"
         except Exception as e:
-            qdrant_status = f"error: {str(e)[:50]}"
+            weaviate_status = f"error: {str(e)[:50]}"
     else:
-        qdrant_status = "not_configured"
+        weaviate_status = "not_configured"
 
     ready_providers = [k for k, v in providers.items() if v == "ready"]
     missing_providers = [k for k, v in providers.items() if v == "missing_secret"]
@@ -238,7 +244,7 @@ async def healthz():
                 "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
                 "providers": providers,
                 "database": db_status,
-                "vector_database": qdrant_status,
+                "vector_database": weaviate_status,
                 "error": normalized_error(
                     "context",
                     "no-providers",
@@ -254,7 +260,7 @@ async def healthz():
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "providers": providers,
         "database": db_status,
-        "vector_database": qdrant_status,
+        "vector_database": weaviate_status,
         "ready_providers": ready_providers,
         "missing_providers": missing_providers,
     }
@@ -299,8 +305,8 @@ async def create_document(request: DocumentCreateRequest):
             detail=normalized_error("storage", "database-error", str(e)),
         )
 
-    # Store in Qdrant with real embeddings
-    if QDRANT_URL and QDRANT_API_KEY:
+    # Store in Weaviate with real embeddings
+    if WEAVIATE_URL and WEAVIATE_API_KEY:
         try:
             # Use real embedding engine to store document
             success = await store_with_real_embedding(
@@ -313,14 +319,14 @@ async def create_document(request: DocumentCreateRequest):
             if not success:
                 raise HTTPException(
                     status_code=500,
-                    detail=normalized_error("qdrant", "embedding-failed", "Failed to generate or store embedding")
+                    detail=normalized_error("weaviate", "embedding-failed", "Failed to generate or store embedding")
                 )
                 
         except Exception as e:
             logger.error(f"Real embedding storage failed: {e}")
             raise HTTPException(
                 status_code=500,
-                detail=normalized_error("qdrant", "qdrant-error", str(e)),
+                detail=normalized_error("weaviate", "weaviate-error", str(e)),
             )
 
     return {
@@ -344,11 +350,11 @@ async def search_documents(request: DocumentSearchRequest):
     """
     start_time = time.time()
 
-    if not (QDRANT_URL and QDRANT_API_KEY):
+    if not (WEAVIATE_URL and WEAVIATE_API_KEY):
         raise HTTPException(
             status_code=503,
             detail=normalized_error(
-                "qdrant", "missing-qdrant", "Qdrant not configured for search"
+                "weaviate", "missing-weaviate", "Weaviate not configured for search"
             ),
         )
 
@@ -381,11 +387,11 @@ async def search_documents(request: DocumentSearchRequest):
                 "text": f"Found {len(documents)} semantically relevant documents for '{request.query}'",
                 "confidence": sum(r.similarity_score for r in search_results) / len(search_results) if search_results else 0,
                 "model": "real_embeddings_v2",
-                "sources": ["qdrant_real_embeddings", "storage"],
+                "sources": ["weaviate_real_embeddings", "storage"],
                 "cache_hit_ratio": cache_stats.get("cache_hit_ratio", "N/A"),
                 "embedding_model": "text-embedding-3-large"
             },
-            providers_used=["qdrant_real_embeddings", "storage"],
+            providers_used=["weaviate_real_embeddings", "storage"],
             providers_failed=[],
             execution_time_ms=int((time.time() - start_time) * 1000),
             timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
@@ -395,7 +401,7 @@ async def search_documents(request: DocumentSearchRequest):
         logger.error(f"Semantic search failed: {e}")
         raise HTTPException(
             status_code=500,
-            detail=normalized_error("qdrant", "search-failed", str(e)),
+            detail=normalized_error("weaviate", "search-failed", str(e)),
         )
 
 
@@ -418,7 +424,8 @@ async def shutdown_event():
         logger.info("Database pool closed")
 
 
-qdrant_client.close()
+if weaviate_client:
+    weaviate_client.close()
 
 
 if __name__ == "__main__":

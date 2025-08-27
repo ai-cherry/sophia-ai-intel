@@ -4,7 +4,8 @@ Sophia AI Vector Indexer Worker
 ================================
 
 Offline vector processing worker for document indexing.
-Processes staged documents, creates embeddings via standardized Portkey routing, and upserts to Qdrant.
+Processes staged documents, creates embeddings via standardized Portkey routing, and upserts to Weaviate Cloud.
+Migrated from Qdrant to Weaviate Cloud for enhanced scalability and performance.
 OpenRouter removed - using standardized LLM routing.
 """
 
@@ -18,8 +19,8 @@ from typing import Any, Dict, List, Optional
 import uuid
 
 import aiohttp
-from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, VectorParams, PointStruct
+import weaviate
+from weaviate.classes.init import Auth
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
@@ -27,22 +28,25 @@ from psycopg2.extras import RealDictCursor
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
-# Environment configuration - OpenRouter removed, using standardized routing
-QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
-QDRANT_API_KEY = os.getenv("QDRANT_API_KEY", "")
+# Environment configuration - Using official Weaviate Cloud connection pattern
+WEAVIATE_URL = os.getenv("WEAVIATE_URL", "w6bigpoxsrwvq7wlgmmdva.c0.us-west3.gcp.weaviate.cloud")
+WEAVIATE_API_KEY = os.getenv("WEAVIATE_API_KEY", "VMKjGMQUnXQIDiFOciZZOhr7amBfCHMh7hNf")
 PORTKEY_API_KEY = os.getenv("PORTKEY_API_KEY", "")  # Use Portkey for standardized routing
 NEON_DATABASE_URL = os.getenv("NEON_DATABASE_URL", "")
-COLLECTION_NAME = os.getenv("QDRANT_COLLECTION", "sophia_documents")
+CLASS_NAME = os.getenv("WEAVIATE_CLASS", "SophiaDocuments")
 CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "1000"))
 CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "200"))
 BATCH_SIZE = int(os.getenv("BATCH_SIZE", "10"))
 
-# Qdrant client initialization
-qdrant_client = None
-if QDRANT_API_KEY:
-    qdrant_client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
+# Weaviate client initialization using official cloud connection pattern
+weaviate_client = None
+if WEAVIATE_URL and WEAVIATE_API_KEY:
+    weaviate_client = weaviate.connect_to_weaviate_cloud(
+        cluster_url=WEAVIATE_URL,
+        auth_credentials=Auth.api_key(WEAVIATE_API_KEY),
+    )
 else:
-    qdrant_client = QdrantClient(url=QDRANT_URL)
+    logger.error("Weaviate URL and API key must be configured")
 
 
 def dedupe_hash(text: str) -> str:
@@ -106,54 +110,129 @@ async def compute_embedding(session: aiohttp.ClientSession, text: str) -> Option
         return None
 
 
-async def upsert_qdrant(session: aiohttp.ClientSession, collection: str, points: List[Dict[str, Any]]) -> bool:
+async def upsert_weaviate(session: aiohttp.ClientSession, class_name: str, points: List[Dict[str, Any]]) -> bool:
     """
-    Upsert vectors to Qdrant with proper metadata.
+    Upsert vectors to Weaviate Cloud with proper metadata.
 
     Args:
-        session: aiohttp session (for consistency, though Qdrant client handles its own)
-        collection: Collection name in Qdrant
-        points: List of point data with id, vector, and payload
+        session: aiohttp session (for consistency)
+        class_name: Class name in Weaviate
+        points: List of point data with id, vector, and properties
 
     Returns:
         True if successful, False otherwise
     """
     try:
-        # Ensure collection exists with proper configuration
-        collections = qdrant_client.get_collections().collections
-        collection_exists = any(c.name == collection for c in collections)
+        if not weaviate_client:
+            logger.error("Weaviate client not initialized")
+            return False
 
-        if not collection_exists:
-            # Create collection with appropriate vector size
+        # Ensure class/schema exists with proper configuration
+        schema = weaviate_client.schema.get()
+        class_exists = any(c['class'] == class_name for c in schema.get('classes', []))
+
+        if not class_exists:
+            # Create class with appropriate vector configuration
             vector_size = len(points[0]["vector"]) if points else 3072  # Default for text-embedding-3-large
-            qdrant_client.create_collection(
-                collection_name=collection,
-                vectors_config=VectorParams(size=vector_size, distance=Distance.COSINE)
-            )
-            logger.info(f"Created Qdrant collection: {collection}")
+            class_definition = {
+                "class": class_name,
+                "description": f"Sophia AI vector indexer documents - {class_name}",
+                "vectorizer": "none",  # We provide our own vectors
+                "properties": [
+                    {
+                        "name": "content",
+                        "dataType": ["text"],
+                        "description": "Document content"
+                    },
+                    {
+                        "name": "docId",
+                        "dataType": ["string"],
+                        "description": "Document ID"
+                    },
+                    {
+                        "name": "accountId",
+                        "dataType": ["string"],
+                        "description": "Account ID"
+                    },
+                    {
+                        "name": "chunkIndex",
+                        "dataType": ["int"],
+                        "description": "Chunk index"
+                    },
+                    {
+                        "name": "chunkHash",
+                        "dataType": ["string"],
+                        "description": "Chunk hash for deduplication"
+                    },
+                    {
+                        "name": "url",
+                        "dataType": ["string"],
+                        "description": "Source URL"
+                    },
+                    {
+                        "name": "neonRowPk",
+                        "dataType": ["string"],
+                        "description": "Neon database row primary key"
+                    },
+                    {
+                        "name": "timestamp",
+                        "dataType": ["date"],
+                        "description": "Creation timestamp"
+                    },
+                    {
+                        "name": "embeddingModel",
+                        "dataType": ["string"],
+                        "description": "Embedding model used"
+                    },
+                    {
+                        "name": "embeddingProvider",
+                        "dataType": ["string"],
+                        "description": "Embedding provider"
+                    },
+                    {
+                        "name": "metadataJson",
+                        "dataType": ["string"],
+                        "description": "Additional metadata as JSON string"
+                    }
+                ]
+            }
+            
+            weaviate_client.schema.create_class(class_definition)
+            logger.info(f"Created Weaviate class: {class_name}")
 
-        # Convert points to Qdrant format
-        qdrant_points = []
-        for point in points:
-            qdrant_point = PointStruct(
-                id=point["id"],
-                vector=point["vector"],
-                payload=point["payload"]
-            )
-            qdrant_points.append(qdrant_point)
+        # Use batch operations for efficient upload
+        with weaviate_client.batch as batch:
+            batch.batch_size = min(len(points), 100)  # Weaviate batch size limit
+            
+            for point in points:
+                # Convert point data to Weaviate format
+                properties = {
+                    "content": point["payload"].get("content", ""),
+                    "docId": point["payload"].get("doc_id", ""),
+                    "accountId": point["payload"].get("account_id", ""),
+                    "chunkIndex": point["payload"].get("chunk_index", 0),
+                    "chunkHash": point["payload"].get("chunk_hash", ""),
+                    "url": point["payload"].get("url", ""),
+                    "neonRowPk": str(point["payload"].get("neon_row_pk", "")),
+                    "timestamp": point["payload"].get("ts", datetime.now(timezone.utc).isoformat()),
+                    "embeddingModel": point["payload"].get("embedding_model", "text-embedding-3-large"),
+                    "embeddingProvider": point["payload"].get("embedding_provider", "standardized_portkey_routing"),
+                    "metadataJson": json.dumps(point["payload"].get("metadata", {}))
+                }
 
-        # Upsert points
-        operation_info = qdrant_client.upsert(
-            collection_name=collection,
-            wait=True,
-            points=qdrant_points
-        )
+                # Add object with vector to batch
+                batch.add_data_object(
+                    data_object=properties,
+                    class_name=class_name,
+                    uuid=point["id"],
+                    vector=point["vector"]
+                )
 
-        logger.info(f"Successfully upserted {len(qdrant_points)} points to Qdrant collection {collection}")
+        logger.info(f"Successfully upserted {len(points)} points to Weaviate class {class_name}")
         return True
 
     except Exception as e:
-        logger.error(f"Error upserting to Qdrant: {e}")
+        logger.error(f"Error upserting to Weaviate: {e}")
         return False
 
 
@@ -224,10 +303,12 @@ async def process_document(session: aiohttp.ClientSession, doc: Dict[str, Any]) 
                 logger.warning(f"Failed to get embedding for chunk {i} of document {doc_id}")
                 continue
 
-            # Create point for Qdrant
-            point_id = f"{doc_id}_chunk_{i}"
+            # Create point for Weaviate with proper UUID
+            # Generate deterministic UUID based on doc_id and chunk index
+            point_id_string = f"{doc_id}_chunk_{i}"
+            point_uuid = str(uuid.uuid5(uuid.NAMESPACE_DNS, point_id_string))
             point = {
-                "id": point_id,
+                "id": point_uuid,
                 "vector": embedding,
                 "payload": {
                     "doc_id": doc_id,
@@ -247,7 +328,7 @@ async def process_document(session: aiohttp.ClientSession, doc: Dict[str, Any]) 
 
         # Upsert all points for this document
         if points:
-            success = await upsert_qdrant(session, COLLECTION_NAME, points)
+            success = await upsert_weaviate(session, CLASS_NAME, points)
             if success:
                 logger.info(f"Successfully indexed {len(points)} chunks for document {doc_id}")
                 return True
@@ -361,9 +442,9 @@ def mark_document_indexed(doc_id: str) -> bool:
 async def run_once():
     """
     Main worker function for processing documents.
-    Fetches staged documents and processes them for vector indexing using standardized routing.
+    Fetches staged documents and processes them for vector indexing using Weaviate Cloud and standardized routing.
     """
-    logger.info("Starting vector indexer run with standardized Portkey routing")
+    logger.info("Starting vector indexer run with Weaviate Cloud and standardized Portkey routing")
 
     # Create aiohttp session
     async with aiohttp.ClientSession() as session:

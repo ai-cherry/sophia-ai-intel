@@ -36,27 +36,27 @@ spec:
         - name: OPENAI_API_KEY
           valueFrom:
             secretKeyRef:
-              name: sophia-secrets
+              name: sophia-llm-secrets
               key: OPENAI_API_KEY
         - name: NEON_DATABASE_URL
           valueFrom:
             secretKeyRef:
-              name: sophia-secrets
+              name: sophia-database-secrets
               key: NEON_DATABASE_URL
         - name: QDRANT_URL
           valueFrom:
             secretKeyRef:
-              name: sophia-secrets
+              name: sophia-vector-secrets
               key: QDRANT_URL
         - name: QDRANT_API_KEY
           valueFrom:
             secretKeyRef:
-              name: sophia-secrets
+              name: sophia-vector-secrets
               key: QDRANT_API_KEY
         - name: REDIS_URL
           valueFrom:
             secretKeyRef:
-              name: sophia-secrets
+              name: sophia-redis-secrets
               key: REDIS_URL
         resources:
           limits:

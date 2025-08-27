@@ -43,8 +43,8 @@ class SophiaAI:
             'xai_api_key': os.getenv('XAI_API_KEY'),
             'portkey_api_key': os.getenv('PORTKEY_API_KEY'),
             'mem0_api_key': os.getenv('MEM0_API_KEY'),
-            'qdrant_url': os.getenv('QDRANT_URL'),
-            'qdrant_api_key': os.getenv('QDRANT_API_KEY'),
+            'weaviate_url': os.getenv('WEAVIATE_URL'),
+            'weaviate_api_key': os.getenv('WEAVIATE_API_KEY'),
             'redis_url': os.getenv('REDIS_URL'),
             'database_url': os.getenv('DATABASE_URL'),
         }
@@ -104,9 +104,9 @@ class SophiaAI:
 
     async def _init_vector_store(self):
         """Initialize vector store"""
-        self.vector_store = QdrantVectorStore(
-            url=self.config['qdrant_url'],
-            api_key=self.config['qdrant_api_key']
+        self.vector_store = WeaviateVectorStore(
+            url=self.config['weaviate_url'],
+            api_key=self.config['weaviate_api_key']
         )
         await self.vector_store.initialize()
         logger.info("✅ Vector store initialized")
@@ -548,57 +548,59 @@ class XAIProvider(LLMProvider):
 # OpenRouterProvider REMOVED - Using standardized Portkey routing instead
 
 
-class QdrantVectorStore:
-    """Qdrant vector store integration"""
+class WeaviateVectorStore:
+    """Weaviate vector store integration"""
 
     def __init__(self, url: str, api_key: str):
         self.url = url
         self.api_key = api_key
-        self.headers = {
-            'Content-Type': 'application/json',
-            'api-key': api_key
-        }
+        self.client = None
 
     async def initialize(self):
         """Initialize vector store connection"""
         try:
-            import requests
-            response = requests.get(f"{self.url}/health", headers=self.headers)
-            if response.status_code == 200:
-                logger.info("✅ Qdrant vector store initialized")
+            import weaviate
+            from weaviate.classes.init import Auth
+            self.client = weaviate.connect_to_weaviate_cloud(
+                cluster_url=self.url,
+                auth_credentials=Auth.api_key(self.api_key)
+            )
+            # Test connection
+            if self.client.is_ready():
+                logger.info("✅ Weaviate vector store initialized")
             else:
-                logger.warning(f"⚠️ Qdrant health check returned {response.status_code}")
+                logger.warning("⚠️ Weaviate connection not ready")
         except Exception as e:
-            logger.error(f"❌ Qdrant initialization failed: {e}")
+            logger.error(f"❌ Weaviate initialization failed: {e}")
 
     async def store_document(self, doc_id: str, content: str, embedding: List[float],
                             metadata: Dict[str, Any], collection: str):
         """Store document in vector database"""
         try:
-            import requests
-            payload = {
-                "points": [{
-                    "id": doc_id,
-                    "vector": embedding,
-                    "payload": {
-                        "content": content,
-                        "metadata": metadata,
-                        "created_at": datetime.now().isoformat()
-                    }
-                }]
-            }
-
-            response = requests.put(
-                f"{self.url}/collections/{collection}/points",
-                headers=self.headers,
-                json=payload
+            import weaviate.classes as wvc
+            
+            # Get or create collection
+            if not self.client.collections.exists(collection):
+                self.client.collections.create(
+                    name=collection,
+                    vectorizer_config=wvc.config.Configure.Vectorizer.none()
+                )
+            
+            coll = self.client.collections.get(collection)
+            
+            # Store document with vector
+            coll.data.insert(
+                uuid=doc_id,
+                properties={
+                    "content": content,
+                    "metadata": metadata,
+                    "created_at": datetime.now().isoformat()
+                },
+                vector=embedding
             )
-
-            if response.status_code in [200, 201]:
-                logger.info(f"✅ Stored document {doc_id} in {collection}")
-            else:
-                logger.error(f"❌ Failed to store document: {response.text}")
-
+            
+            logger.info(f"✅ Stored document {doc_id} in {collection}")
+            
         except Exception as e:
             logger.error(f"❌ Error storing document: {e}")
 
@@ -606,32 +608,32 @@ class QdrantVectorStore:
                             limit: int = 10) -> List[Dict[str, Any]]:
         """Search for similar documents"""
         try:
-            import requests
-            payload = {
-                "vector": query_embedding,
-                "limit": limit,
-                "with_payload": True,
-                "with_vectors": False
-            }
-
-            response = requests.post(
-                f"{self.url}/collections/{collection}/points/search",
-                headers=self.headers,
-                json=payload
-            )
-
-            if response.status_code == 200:
-                results = response.json().get('result', [])
-                return [{
-                    'id': result['id'],
-                    'score': result['score'],
-                    'content': result['payload'].get('content', ''),
-                    'metadata': result['payload'].get('metadata', {})
-                } for result in results]
-            else:
-                logger.error(f"❌ Search failed: {response.text}")
+            import weaviate.classes as wvc
+            
+            if not self.client.collections.exists(collection):
+                logger.warning(f"Collection {collection} does not exist")
                 return []
-
+                
+            coll = self.client.collections.get(collection)
+            
+            # Perform vector search
+            response = coll.query.near_vector(
+                near_vector=query_embedding,
+                limit=limit,
+                return_metadata=wvc.query.MetadataQuery(score=True)
+            )
+            
+            results = []
+            for obj in response.objects:
+                results.append({
+                    'id': str(obj.uuid),
+                    'score': obj.metadata.score,
+                    'content': obj.properties.get('content', ''),
+                    'metadata': obj.properties.get('metadata', {})
+                })
+            
+            return results
+            
         except Exception as e:
             logger.error(f"❌ Error searching: {e}")
             return []

@@ -1,0 +1,85 @@
+{
+  "execution_id": "knowledge_seed_1756313843",
+  "timestamp": "2025-08-27T16:57:23.674843+00:00",
+  "processing_summary": {
+    "total_documents": 0,
+    "total_chunks": 0,
+    "success_count": 2,
+    "error_count": 49,
+    "success_rate": ".1f"
+  },
+  "storage_layers": {
+    "weaviate_available": true,
+    "neon_available": false,
+    "redis_available": true
+  },
+  "processed_documents": [],
+  "retrieval_tests": [
+    {
+      "query": "prompt pipeline stages",
+      "timestamp": "2025-08-27T16:57:23.446548+00:00",
+      "results": {
+        "redis": null,
+        "weaviate": [],
+        "neon": null
+      },
+      "performance": {
+        "redis_ms": 0.186,
+        "weaviate_ms": 44.202,
+        "neon_ms": 0,
+        "total_ms": 44.439
+      }
+    },
+    {
+      "query": "swarm charter principles",
+      "timestamp": "2025-08-27T16:57:23.491028+00:00",
+      "results": {
+        "redis": null,
+        "weaviate": [],
+        "neon": null
+      },
+      "performance": {
+        "redis_ms": 0.272,
+        "weaviate_ms": 64.00999999999999,
+        "neon_ms": 0,
+        "total_ms": 64.393
+      }
+    },
+    {
+      "query": "deployment strategy",
+      "timestamp": "2025-08-27T16:57:23.555491+00:00",
+      "results": {
+        "redis": null,
+        "weaviate": [],
+        "neon": null
+      },
+      "performance": {
+        "redis_ms": 0.565,
+        "weaviate_ms": 64.94999999999999,
+        "neon_ms": 0,
+        "total_ms": 65.63900000000001
+      }
+    },
+    {
+      "query": "MCP service architecture",
+      "timestamp": "2025-08-27T16:57:23.621182+00:00",
+      "results": {
+        "redis": null,
+        "weaviate": [],
+        "neon": null
+      },
+      "performance": {
+        "redis_ms": 0.19799999999999998,
+        "weaviate_ms": 53.405,
+        "neon_ms": 0,
+        "total_ms": 53.638999999999996
+      }
+    }
+  ],
+  "infrastructure": {
+    "portkey_configured": false,
+    "weaviate_configured": true,
+    "database_configured": false,
+    "redis_configured": true
+  }
+}

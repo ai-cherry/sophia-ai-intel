@@ -24,8 +24,8 @@ logger = logging.getLogger(__name__)
 
 # Environment Variables
 NEON_DATABASE_URL = os.getenv("NEON_DATABASE_URL")
-QDRANT_URL = os.getenv("QDRANT_ENDPOINT")
-QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
+WEAVIATE_URL = os.getenv("WEAVIATE_URL")
+WEAVIATE_API_KEY = os.getenv("WEAVIATE_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 app = FastAPI(
@@ -571,7 +571,7 @@ async def upload_document(file: UploadFile = File(...), metadata: str = Form(...
                 "promotion_eligible": sum(
                     1 for doc in processed_docs if doc.promotion_eligible
                 ),
-                "storage_locations": ["postgresql", "qdrant"],
+                "storage_locations": ["postgresql", "weaviate"],
             },
             "errors": [],
         }

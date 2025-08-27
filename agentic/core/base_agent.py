@@ -14,9 +14,9 @@ from agno.models.cohere import CohereChat
 from agno.models.together import Together
 from agno.memory import AgentMemory
 from agno.storage.redis import RedisMemory
-from agno.storage.qdrant import QdrantMemory
 from agno.knowledge import AgentKnowledge
-from agno.vectordb.qdrant import Qdrant
+import weaviate
+from weaviate.classes.init import Auth
 from .config import get_config, get_model_catalog
 
 logger = logging.getLogger(__name__)
@@ -158,22 +158,16 @@ class SophiaAgentFactory:
         if memory_key in self._memory_instances:
             return self._memory_instances[memory_key]
 
-        # Create combined Redis + Qdrant memory
+        # Create Redis memory for agent storage
         redis_memory = RedisMemory(
             url=self.config.redis_url,
             db=0,
             collection_name=f"agent_memory_{agent_name}"
         )
 
-        qdrant_memory = QdrantMemory(
-            url=self.config.qdrant_url,
-            api_key=self.config.qdrant_api_key,
-            collection=self.config.qdrant_collection_research,
-            storage=redis_memory
-        )
-
+        # Use Redis memory directly for agent memory
         memory = AgentMemory(
-            db=qdrant_memory,
+            db=redis_memory,
             create_user_memories=True,
             create_session_summaries=True,
             update_user_memories_after_run=True
@@ -184,14 +178,13 @@ class SophiaAgentFactory:
 
     def _create_knowledge_base(self) -> AgentKnowledge:
         """Create knowledge base configuration"""
-        qdrant_vdb = Qdrant(
-            url=self.config.qdrant_url,
-            api_key=self.config.qdrant_api_key,
-            collection=self.config.qdrant_collection_research,
+        weaviate_client = weaviate.connect_to_weaviate_cloud(
+            cluster_url=self.config.weaviate_url,
+            auth_credentials=Auth.api_key(self.config.weaviate_api_key)
         )
 
         return AgentKnowledge(
-            vector_db=qdrant_vdb,
+            vector_db=weaviate_client,
             num_documents=10,
             optimizer={"chunk_size": 1500, "overlap": 100}
         )

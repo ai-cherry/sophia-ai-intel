@@ -52,3 +52,7 @@ __pycache__/
 # Temporary or generated files
 # Assuming _new.py files are temporary or should be renamed, but will be cautious for now.
 *.new
+-e 
+# Production secrets and sensitive files
+*.env.production.real
+update_secrets.py
