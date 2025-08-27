@@ -1,0 +1,7 @@
+README.md
+pyproject.toml
+src/sophia_ai_intel.egg-info/PKG-INFO
+src/sophia_ai_intel.egg-info/SOURCES.txt
+src/sophia_ai_intel.egg-info/dependency_links.txt
+src/sophia_ai_intel.egg-info/requires.txt
+src/sophia_ai_intel.egg-info/top_level.txt

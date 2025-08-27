@@ -1,0 +1,67 @@
+
+# Event Bus Service for Breaking Circular Dependencies
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sophia-event-bus
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: sophia-event-bus
+  template:
+    metadata:
+      labels:
+        app: sophia-event-bus
+    spec:
+      containers:
+      - name: event-bus
+        image: redis:7-alpine
+        ports:
+        - containerPort: 6379
+        env:
+        - name: REDIS_CONFIG_FILE
+          value: /etc/redis/redis.conf
+        volumeMounts:
+        - name: config
+          mountPath: /etc/redis
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+      volumes:
+      - name: config
+        configMap:
+          name: event-bus-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sophia-event-bus
+  namespace: default
+spec:
+  selector:
+    app: sophia-event-bus
+  ports:
+  - port: 6379
+    targetPort: 6379
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: event-bus-config
+  namespace: default
+data:
+  redis.conf: |
+    bind 0.0.0.0
+    port 6379
+    timeout 0
+    tcp-keepalive 300
+    maxmemory 200mb
+    maxmemory-policy allkeys-lru
+    save ""

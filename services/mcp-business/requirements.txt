@@ -1,5 +1,0 @@
--r ../../platform/common/base-requirements.txt
-python-multipart==0.0.9
-aiofiles==23.2.1
-PyJWT==2.8.0
-cryptography==41.0.7

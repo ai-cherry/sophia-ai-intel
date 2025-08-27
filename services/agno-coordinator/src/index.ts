@@ -3,6 +3,9 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
+import * as codingSwarm from './swarms/coding_swarm.js';
+import * as researchSwarm from './swarms/research_swarm.js';
+import * as biSwarm from './swarms/bi_swarm.js';
 import { agnosticCoordinator } from './coordinator/coordinator';
 import { healthChecker } from './health/healthChecker';
 import { configManager } from './config/config';
@@ -196,6 +199,52 @@ class Server {
           error: 'Failed to get statistics',
           timestamp: new Date().toISOString()
         });
+    // Swarm invocation endpoint
+    this.app.post('/api/v1/swarms/invoke', async (req, res) => {
+      try {
+        const { swarm, task } = req.body;
+
+        if (!swarm || !task) {
+          return res.status(400).json({
+            error: 'Invalid request: swarm and task are required',
+            timestamp: new Date().toISOString()
+          });
+        }
+
+        let result;
+        switch (swarm) {
+          case 'coding':
+            result = await codingSwarm.run(task);
+            break;
+          case 'research':
+            result = await researchSwarm.run(task);
+            break;
+          case 'bi':
+            result = await biSwarm.run(task);
+            break;
+          default:
+            return res.status(400).json({
+              error: `Invalid swarm: ${swarm}`,
+              timestamp: new Date().toISOString()
+            });
+        }
+
+        res.json({
+          swarm,
+          task,
+          result,
+          timestamp: new Date().toISOString()
+        });
+      } catch (error) {
+        console.error('Swarm invocation error:', error);
+        res.status(500).json({
+          error: 'Internal server error during swarm invocation',
+          message: error instanceof Error ? error.message : 'Unknown error',
+          timestamp: new Date().toISOString()
+        });
+      }
+    });
+
       }
     });
 

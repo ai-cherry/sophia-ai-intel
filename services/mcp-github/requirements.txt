@@ -1,3 +1,0 @@
--r ../../platform/common/base-requirements.txt
-PyJWT[crypto]>=2.4.0
-cryptography>=3.4.8

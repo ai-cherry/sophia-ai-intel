@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sophia AI - Agentic Swarms Dashboard</title>
+    <style>
+        body { font-family: sans-serif; margin: 2em; }
+        h1, h2 { color: #333; }
+        .swarm { border: 1px solid #ccc; padding: 1em; margin-bottom: 1em; border-radius: 5px; }
+        .results { background-color: #f0f0f0; padding: 1em; margin-top: 1em; border-radius: 5px; }
+        form { display: flex; flex-direction: column; }
+        textarea, input { margin-bottom: 0.5em; padding: 0.5em; }
+        button { padding: 0.7em; background-color: #007bff; color: white; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Agentic Swarms Dashboard</h1>
+
+    <div class="swarm">
+        <h2>Coding Swarm</h2>
+        <form id="coding-form">
+            <label for="coding-task">Task Description:</label>
+            <textarea id="coding-task" name="task" rows="4"></textarea>
+            <button type="submit">Run Coding Swarm</button>
+        </form>
+    </div>
+
+    <div class="swarm">
+        <h2>Research Swarm</h2>
+        <form id="research-form">
+            <label for="research-topic">Topic:</label>
+            <input type="text" id="research-topic" name="topic">
+            <button type="submit">Run Research Swarm</button>
+        </form>
+    </div>
+
+    <div class="swarm">
+        <h2>Business Intelligence Swarm</h2>
+        <form id="business-form">
+            <label for="business-query">Query:</label>
+            <input type="text" id="business-query" name="query">
+            <button type="submit">Run Business Intelligence Swarm</button>
+        </form>
+    </div>
+
+    <h2>Results</h2>
+    <div id="results-display" class="results">
+        <p>Results will be displayed here.</p>
+    </div>
+
+</body>
+</html>

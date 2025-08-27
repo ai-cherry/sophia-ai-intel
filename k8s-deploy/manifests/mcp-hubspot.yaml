@@ -19,6 +19,36 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 8004
+        # Health probes for mcp-hubspot
+        livenessProbe:
+        httpGet:
+        path: /health/live
+        port: 8080
+        initialDelaySeconds: 30
+        periodSeconds: 10
+        timeoutSeconds: 5
+        successThreshold: 1
+        failureThreshold: 3
+        readinessProbe:
+        httpGet:
+        path: /health/ready
+        port: 8080
+        initialDelaySeconds: 10
+        periodSeconds: 5
+        timeoutSeconds: 3
+        successThreshold: 1
+        failureThreshold: 3
+        # Startup probe for slower services
+        startupProbe:
+        httpGet:
+        path: /health/live
+        port: 8080
+        initialDelaySeconds: 10
+        periodSeconds: 5
+        timeoutSeconds: 3
+        successThreshold: 1
+        failureThreshold: 30  # Allow up to 150 seconds for startup
+        - containerPort: 8004
         env:
         - name: HUBSPOT_API_KEY
           valueFrom:

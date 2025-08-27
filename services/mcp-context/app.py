@@ -29,7 +29,6 @@ Author: Sophia AI Intelligence Team
 import os
 import time
 import json
-import logging
 from typing import List, Optional, Dict, Any
 import asyncpg
 from fastapi import FastAPI, HTTPException
@@ -39,9 +38,9 @@ from pydantic import BaseModel, Field
 import uuid
 from qdrant_client import QdrantClient
 
-# Load environment variables from .env file
-from dotenv import load_dotenv
-load_dotenv()
+# Import shared platform libraries
+from platform.common.logging import get_logger
+from platform.common.config import settings
 
 # Import real embeddings engine
 from real_embeddings import (
@@ -51,13 +50,12 @@ from real_embeddings import (
 )
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 # Environment Variables
-NEON_DATABASE_URL = os.getenv("NEON_DATABASE_URL")
-QDRANT_URL = os.getenv("QDRANT_ENDPOINT")
-QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
+NEON_DATABASE_URL = settings.neon_database_url
+QDRANT_URL = settings.qdrant_url
+QDRANT_API_KEY = settings.qdrant_api_key
 
 app = FastAPI(
     title="sophia-mcp-context-v2",

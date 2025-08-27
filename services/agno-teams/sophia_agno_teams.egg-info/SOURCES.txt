@@ -1,0 +1,8 @@
+README.md
+pyproject.toml
+./src/main.py
+sophia_agno_teams.egg-info/PKG-INFO
+sophia_agno_teams.egg-info/SOURCES.txt
+sophia_agno_teams.egg-info/dependency_links.txt
+sophia_agno_teams.egg-info/requires.txt
+sophia_agno_teams.egg-info/top_level.txt

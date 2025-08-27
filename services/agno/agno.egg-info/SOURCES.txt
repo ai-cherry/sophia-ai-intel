@@ -1,0 +1,6 @@
+README.md
+setup.py
+agno.egg-info/PKG-INFO
+agno.egg-info/SOURCES.txt
+agno.egg-info/dependency_links.txt
+agno.egg-info/top_level.txt

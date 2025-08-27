@@ -1,0 +1,20 @@
+app = "sophia-agentic-service"
+primary_region = "lax"
+
+[build]
+  dockerfile = "agentic/Dockerfile"
+
+[http_service]
+  internal_port = 80
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+
+[[checks]]
+  port = 80
+  type = "http"
+  interval = "15s"
+  timeout = "5s"
+  grace_period = "30s"
+  path = "/healthz"

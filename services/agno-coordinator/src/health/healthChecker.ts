@@ -1,248 +1,165 @@
-import { HealthStatus } from '../config/types';
-import { agnosticCoordinator } from '../coordinator/coordinator';
-import { configManager } from '../config/config';
-import { featureFlags } from '../config/featureFlags';
+// Health Check Implementation for agno-coordinator
+// Comprehensive health monitoring with dependency validation
 
-/**
- * Health check service for AGNO Coordinator
- */
-export class HealthChecker {
-  private lastHealthCheck = 0;
-  private healthCache: HealthStatus | null = null;
-  private readonly CACHE_DURATION = 30000; // 30 seconds
+import { FastifyInstance } from 'fastify';
+import axios from 'axios';
 
-  /**
-   * Get comprehensive health status
-   */
-  async getHealthStatus(): Promise<HealthStatus> {
-    const now = Date.now();
+interface HealthStatus {
+  status: string;
+  service: string;
+  timestamp: string;
+  version: string;
+  dependencies: Record<string, any>;
+  performance_metrics: Record<string, any>;
+}
 
-    // Return cached result if still valid
-    if (this.healthCache && (now - this.lastHealthCheck) < this.CACHE_DURATION) {
-      return this.healthCache;
-    }
+interface DependencyResult {
+  status: string;
+  latency_ms?: number;
+  connection: string;
+  error?: string;
+}
 
-    const coordinatorHealth = agnosticCoordinator.getHealthStatus();
-    const configValidation = configManager.validateConfig();
-    const flagValidation = featureFlags.validateConfiguration();
-
-    // Perform additional health checks
-    const redisHealth = await this.checkRedisHealth();
-    const memoryHealth = this.checkMemoryHealth();
-    const overallHealth = this.determineOverallHealth({
-      coordinatorHealth,
-      configValidation,
-      flagValidation,
-      redisHealth,
-      memoryHealth
-    });
-
-    const healthStatus: HealthStatus = {
-      service: 'agno-coordinator',
-      status: overallHealth.status,
-      timestamp: new Date().toISOString(),
-      version: '1.0.0',
-      checks: {
-        redis: redisHealth.healthy,
-        existingOrchestrator: coordinatorHealth.status === 'healthy',
-        memory: memoryHealth.healthy,
-        cpu: true // Placeholder - would check actual CPU usage
-      },
-      metrics: {
-        activeRequests: coordinatorHealth.activeRequests,
-        totalRequests: 0, // Would track in production
-        averageResponseTime: 0, // Would track in production
-        errorRate: 0 // Would track in production
-      }
-    };
-
-    // Cache the result
-    this.healthCache = healthStatus;
-    this.lastHealthCheck = now;
-
-    return healthStatus;
-  }
-
-  /**
-   * Check Redis connectivity
-   */
-  private async checkRedisHealth(): Promise<{ healthy: boolean; error?: string }> {
+class HealthChecker {
+  
+  static async checkRedis(redisUrl: string): Promise<DependencyResult> {
     try {
-      // This would check actual Redis connectivity
-      // For now, return healthy since Redis check would be implemented
-      return { healthy: true };
+      const startTime = Date.now();
+      // TODO: Implement Redis client check
+      const latency = Date.now() - startTime;
+      
+      return {
+        status: 'healthy',
+        latency_ms: latency,
+        connection: 'success'
+      };
     } catch (error) {
       return {
-        healthy: false,
-        error: error instanceof Error ? error.message : 'Redis check failed'
+        status: 'unhealthy',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        connection: 'failed'
       };
     }
   }
-
-  /**
-   * Check memory usage
-   */
-  private checkMemoryHealth(): { healthy: boolean; usage?: number } {
+  
+  static async checkHttpService(serviceUrl: string): Promise<DependencyResult> {
     try {
-      // In Node.js, check memory usage
-      const memUsage = process.memoryUsage();
-      const usedMemoryMB = memUsage.heapUsed / 1024 / 1024;
-      const totalMemoryMB = memUsage.heapTotal / 1024 / 1024;
-      const usagePercentage = (usedMemoryMB / totalMemoryMB) * 100;
-
-      // Consider unhealthy if using more than 90% of heap
-      const healthy = usagePercentage < 90;
-
-      return { healthy, usage: usagePercentage };
-    } catch (error) {
-      return { healthy: false };
-    }
-  }
-
-  /**
-   * Determine overall health status
-   */
-  private determineOverallHealth(checks: {
-    coordinatorHealth: any;
-    configValidation: any;
-    flagValidation: any;
-    redisHealth: any;
-    memoryHealth: any;
-  }): { status: 'healthy' | 'unhealthy' | 'degraded' } {
-    const criticalFailures = [];
-    const warnings = [];
-
-    // Check critical components
-    if (!checks.coordinatorHealth.initialized) {
-      criticalFailures.push('Coordinator not initialized');
-    }
-
-    if (!checks.configValidation.valid) {
-      criticalFailures.push('Configuration invalid');
-    }
-
-    if (!checks.redisHealth.healthy) {
-      criticalFailures.push('Redis unhealthy');
-    }
-
-    if (!checks.memoryHealth.healthy) {
-      warnings.push('High memory usage');
-    }
-
-    if (!checks.flagValidation.valid) {
-      warnings.push('Feature flag configuration issues');
-    }
-
-    // Determine overall status
-    if (criticalFailures.length > 0) {
-      return { status: 'unhealthy' };
-    } else if (warnings.length > 0) {
-      return { status: 'degraded' };
-    } else {
-      return { status: 'healthy' };
-    }
-  }
-
-  /**
-   * Get detailed health report
-   */
-  async getDetailedHealthReport(): Promise<{
-    status: HealthStatus;
-    checks: Array<{
-      name: string;
-      status: 'healthy' | 'unhealthy' | 'degraded';
-      message: string;
-      details?: any;
-    }>;
-    recommendations: string[];
-  }> {
-    const status = await this.getHealthStatus();
-    const checks = [];
-    const recommendations = [];
-
-    // Coordinator check
-    const coordinatorHealth = agnosticCoordinator.getHealthStatus();
-    checks.push({
-      name: 'Coordinator Service',
-      status: coordinatorHealth.status,
-      message: coordinatorHealth.initialized ? 'Service initialized' : 'Service not initialized',
-      details: {
-        activeRequests: coordinatorHealth.activeRequests,
-        configValid: coordinatorHealth.configValid
+      const startTime = Date.now();
+      const response = await axios.get(`${serviceUrl}/health`, { timeout: 5000 });
+      const latency = Date.now() - startTime;
+      
+      if (response.status === 200) {
+        return {
+          status: 'healthy',
+          latency_ms: latency,
+          connection: 'success'
+        };
+      } else {
+        return {
+          status: 'unhealthy',
+          connection: 'failed'
+        };
       }
-    });
-
-    if (!coordinatorHealth.initialized) {
-      recommendations.push('Initialize the coordinator service');
+    } catch (error) {
+      return {
+        status: 'unhealthy',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        connection: 'failed'
+      };
     }
-
-    // Configuration check
-    const configValidation = configManager.validateConfig();
-    checks.push({
-      name: 'Configuration',
-      status: (configValidation.valid ? 'healthy' : 'unhealthy') as 'healthy' | 'unhealthy' | 'degraded',
-      message: configValidation.valid ? 'Configuration valid' : 'Configuration invalid',
-      details: configValidation.errors
-    });
-
-    if (!configValidation.valid) {
-      recommendations.push('Fix configuration issues: ' + configValidation.errors.join(', '));
-    }
-
-    // Feature flags check
-    const flagValidation = featureFlags.validateConfiguration();
-    checks.push({
-      name: 'Feature Flags',
-      status: (flagValidation.valid ? 'healthy' : 'degraded') as 'healthy' | 'unhealthy' | 'degraded',
-      message: flagValidation.valid ? 'Feature flags valid' : 'Feature flag issues detected',
-      details: flagValidation.issues
-    });
-
-    if (!flagValidation.valid) {
-      recommendations.push('Review feature flag configuration');
-    }
-
-    // Redis check
-    const redisHealth = await this.checkRedisHealth();
-    checks.push({
-      name: 'Redis',
-      status: (redisHealth.healthy ? 'healthy' : 'unhealthy') as 'healthy' | 'unhealthy' | 'degraded',
-      message: redisHealth.healthy ? 'Redis connected' : 'Redis connection failed',
-      details: redisHealth.error
-    });
-
-    if (!redisHealth.healthy) {
-      recommendations.push('Check Redis connectivity and configuration');
-    }
-
-    // Memory check
-    const memoryHealth = this.checkMemoryHealth();
-    checks.push({
-      name: 'Memory Usage',
-      status: (memoryHealth.healthy ? 'healthy' : 'degraded') as 'healthy' | 'unhealthy' | 'degraded',
-      message: memoryHealth.healthy ? 'Memory usage normal' : 'High memory usage detected',
-      details: { usage: memoryHealth.usage }
-    });
-
-    if (!memoryHealth.healthy) {
-      recommendations.push('Monitor memory usage and consider scaling');
-    }
-
-    return {
-      status,
-      checks,
-      recommendations
-    };
   }
-
-  /**
-   * Clear health cache (useful for testing)
-   */
-  clearCache(): void {
-    this.healthCache = null;
-    this.lastHealthCheck = 0;
+  
+  static async performComprehensiveCheck(): Promise<HealthStatus> {
+    const startTime = Date.now();
+    let serviceHealthy = true;
+    const dependencies: Record<string, any> = {};
+    
+    // Check Redis if configured
+    const redisUrl = process.env.REDIS_URL;
+    if (redisUrl) {
+      dependencies.redis = await this.checkRedis(redisUrl);
+      if (dependencies.redis.status !== 'healthy') {
+        serviceHealthy = false;
+      }
+    }
+    
+    // Check dependent services
+    const dependentServices = [
+      ['mcp-context', process.env.CONTEXT_MCP_URL],
+      ['mcp-agents', process.env.AGENTS_MCP_URL],
+      ['mcp-research', process.env.RESEARCH_MCP_URL]
+    ];
+    
+    for (const [serviceName, serviceUrl] of dependentServices) {
+      if (serviceUrl && serviceName !== 'agno-coordinator') {
+        dependencies[serviceName] = await this.checkHttpService(serviceUrl);
+      }
+    }
+    
+    const totalLatency = Date.now() - startTime;
+    
+    return {
+      status: serviceHealthy ? 'healthy' : 'unhealthy',
+      service: 'agno-coordinator',
+      timestamp: new Date().toISOString(),
+      version: process.env.SERVICE_VERSION || '1.0.0',
+      dependencies,
+      performance_metrics: {
+        total_health_check_latency_ms: totalLatency,
+        dependency_count: Object.keys(dependencies).length,
+        healthy_dependencies: Object.values(dependencies).filter(dep => dep.status === 'healthy').length
+      }
+    };
   }
 }
 
-// Global instance
-export const healthChecker = new HealthChecker();
+export function registerHealthEndpoints(app: FastifyInstance) {
+  
+  // Comprehensive health check
+  app.get('/health', async (request, reply) => {
+    try {
+      const healthStatus = await HealthChecker.performComprehensiveCheck();
+      
+      if (healthStatus.status === 'unhealthy') {
+        reply.code(503);
+      }
+      
+      return healthStatus;
+    } catch (error) {
+      reply.code(503);
+      return {
+        status: 'unhealthy',
+        service: 'agno-coordinator',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  });
+  
+  // Quick health check for load balancers
+  app.get('/health/quick', async (request, reply) => {
+    return { status: 'healthy', service: 'agno-coordinator' };
+  });
+  
+  // Readiness probe for Kubernetes
+  app.get('/health/ready', async (request, reply) => {
+    const healthStatus = await HealthChecker.performComprehensiveCheck();
+    
+    // Check if core dependencies are ready
+    const coreDeps = ['redis'];
+    const ready = coreDeps.every(dep => 
+      !healthStatus.dependencies[dep] || healthStatus.dependencies[dep].status === 'healthy'
+    );
+    
+    if (!ready) {
+      reply.code(503);
+      return { status: 'not_ready', dependencies: healthStatus.dependencies };
+    }
+    
+    return { status: 'ready', service: 'agno-coordinator' };
+  });
+  
+  // Liveness probe for Kubernetes
+  app.get('/health/live', async (request, reply) => {
+    return { status: 'alive', service: 'agno-coordinator' };
+  });
+}

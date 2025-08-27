@@ -1,9 +1,0 @@
--r ../../platform/common/base-requirements.txt
-sqlalchemy==2.0.25
-qdrant-client==1.7.0
-openai==1.6.1
-ujson==5.9.0
-numpy==1.24.4
-structlog==23.2.0
-pytest==7.4.4
-pytest-asyncio==0.23.2
