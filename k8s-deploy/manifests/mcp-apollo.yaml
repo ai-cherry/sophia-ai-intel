@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-apollo
+  namespace: sophia
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-apollo
+  template:
+    metadata:
+      labels:
+        app: mcp-apollo
+    spec:
+      containers:
+      - name: mcp-apollo
+        image: localhost:5000/sophia-apollo:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+        env:
+        - name: APOLLO_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: sophia-secrets
+              key: APOLLO_API_KEY
+        - name: TENANT
+          valueFrom:
+            configMapKeyRef:
+              name: sophia-config
+              key: tenant
+        resources:
+          requests:
+            cpu: 100m
+            memory: "128Mi"
+          limits:
+            cpu: 500m
+            memory: "512Mi"
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-apollo
+  namespace: sophia
+spec:
+  selector:
+    app: mcp-apollo
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: ClusterIP

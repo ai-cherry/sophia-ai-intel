@@ -6,8 +6,8 @@ ARG PYTHON_VERSION=3.11-slim
 
 # --- Builder Stage ---
 # This stage is responsible for installing all build-time dependencies and Python packages.
-# It uses `python:PYTHON_VERSION-buster` to ensure `apt-get` and build tools are available.
-FROM python:${PYTHON_VERSION}-buster AS builder
+# It uses `python:PYTHON_VERSION` to ensure `apt-get` and build tools are available.
+FROM python:${PYTHON_VERSION} AS builder
 
 # Set environment variables for non-interactive installation and immediate output for Python applications.
 ENV DEBIAN_FRONTEND=noninteractive
@@ -49,8 +49,8 @@ COPY ${SERVICE_SOURCE_PATH} ./app
 
 # --- Runtime Stage ---
 # This stage creates a minimal production image, copying only essential artifacts from the builder stage.
-# It uses the `python:PYTHON_VERSION-buster` image for a smaller footprint.
-FROM python:${PYTHON_VERSION}-buster AS runtime
+# It uses the `python:PYTHON_VERSION` image for a smaller footprint.
+FROM python:${PYTHON_VERSION} AS runtime
 
 # Set environment variables for runtime, including unbuffered Python output and application port.
 ENV PYTHONUNBUFFERED=1
@@ -59,6 +59,7 @@ ENV PORT=8000
 # Create a dedicated non-root user (`appuser`) for enhanced security.
 # The application will run as this user, limiting potential damage in case of a security breach.
 RUN adduser --system --group appuser && \
+    mkdir -p /app && \
     chown -R appuser:appuser /app
 USER appuser
 
@@ -67,7 +68,7 @@ WORKDIR /app
 
 # Copy only the installed Python packages from the builder stage.
 # This significantly reduces the final image size by excluding build dependents.
-COPY --from=builder /usr/local/lib/python${PYTHON_VERSION%.*}/site-packages /usr/local/lib/python${PYTHON_VERSION%.*}/site-packages
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copy the application code from the builder stage.
@@ -84,4 +85,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 
 # Define the default command to run the application using uvicorn.
 # This assumes the main FastAPI application instance is located at `app.main:app`.
-CMD ["uvicorn", "app.app:app", "--host", "0.0.0.0", "--port", "${PORT}"]
+CMD uvicorn app.app:app --host 0.0.0.0 --port ${PORT}

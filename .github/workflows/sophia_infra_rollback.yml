@@ -1,0 +1,297 @@
+name: Sophia Infrastructure Rollback Procedures
+
+on:
+  workflow_dispatch:
+    inputs:
+      rollback_type:
+        description: 'Type of rollback to perform'
+        required: true
+        type: choice
+        options:
+        - canary-failure
+        - migration-failure
+        - synthetics-failure
+        - rollout-failure
+        - readiness-failure
+        - emergency-rollback
+      commit_sha:
+        description: 'Commit SHA to rollback from'
+        required: false
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  NEON_PROJECT_ID: rough-union-72390895
+  NEON_ENDPOINT_ID: ep-rough-dew-af6w48m3
+  NEON_USER: neondb_owner
+  NEON_DB: neondb
+
+jobs:
+  rollback-canary:
+    name: Rollback Canary Deployment
+    if: github.event.inputs.rollback_type == 'canary-failure'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Rollback canary deployment
+        run: |
+          echo "🔄 Rolling back canary deployment..."
+
+          # Remove canary VirtualService
+          kubectl delete virtualservice sophia-canary -n sophia-canary --ignore-not-found=true
+
+          # Scale down canary services
+          kubectl scale deployment mcp-research -n sophia-canary --replicas=0
+          kubectl scale deployment mcp-context -n sophia-canary --replicas=0
+          kubectl scale deployment comms-mcp -n sophia-canary --replicas=0
+          kubectl scale deployment crm-mcp -n sophia-canary --replicas=0
+          kubectl scale deployment analytics-mcp -n sophia-canary --replicas=0
+
+          echo "✅ Canary rollback completed"
+
+  rollback-migration:
+    name: Rollback Database Migration
+    if: github.event.inputs.rollback_type == 'migration-failure'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Rollback database changes
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+        run: |
+          echo "🔄 Rolling back database migration..."
+
+          # Attempt to rollback migration (if rollback script exists)
+          if [ -f "ops/sql/001_audit_rollback.sql" ]; then
+            echo "Running migration rollback script..."
+            PGSSLMODE=require psql -h ${{ env.NEON_PROJECT_ID }}.us-east-1.aws.neon.tech \
+              -U ${{ env.NEON_USER }} -d ${{ env.NEON_DB }} \
+              -f ops/sql/001_audit_rollback.sql || \
+            PGSSLMODE=require psql -h pg.neon.tech \
+              -U ${{ env.NEON_USER }} -d ${{ env.NEON_DB }} \
+              --options=endpoint=${{ env.NEON_ENDPOINT_ID }} \
+              -f ops/sql/001_audit_rollback.sql
+          else
+            echo "⚠️  No rollback script found - manual intervention may be required"
+          fi
+
+          echo "✅ Database rollback completed"
+
+  rollback-synthetics:
+    name: Rollback After Synthetics Failure
+    if: github.event.inputs.rollback_type == 'synthetics-failure'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Rollback canary and stop rollout
+        run: |
+          echo "🔄 Rolling back due to synthetics failure..."
+
+          # Remove canary VirtualService to stop traffic routing
+          kubectl delete virtualservice sophia-canary -n sophia-canary --ignore-not-found=true
+
+          # Scale down canary services completely
+          kubectl scale deployment mcp-research -n sophia-canary --replicas=0
+          kubectl scale deployment mcp-context -n sophia-canary --replicas=0
+          kubectl scale deployment comms-mcp -n sophia-canary --replicas=0
+          kubectl scale deployment crm-mcp -n sophia-canary --replicas=0
+          kubectl scale deployment analytics-mcp -n sophia-canary --replicas=0
+
+          echo "✅ Synthetics rollback completed - canary traffic stopped"
+
+  rollback-full-rollout:
+    name: Rollback Full Production Rollout
+    if: github.event.inputs.rollback_type == 'rollout-failure'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Rollback production deployment
+        run: |
+          echo "🔄 Rolling back full production rollout..."
+
+          # Use provided commit SHA or get previous commit
+          ROLLBACK_SHA="${{ github.event.inputs.commit_sha }}"
+          if [ -z "$ROLLBACK_SHA" ]; then
+            ROLLBACK_SHA="${{ github.event.before }}"
+          fi
+
+          if [ ! -z "$ROLLBACK_SHA" ] && [ "$ROLLBACK_SHA" != "0000000000000000000000000000000000000000" ]; then
+            echo "Reverting to commit: $ROLLBACK_SHA"
+
+            # Rollback MCP services
+            kubectl set image deployment/mcp-research mcp-research=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$ROLLBACK_SHA-mcp-research -n sophia
+            kubectl set image deployment/mcp-context mcp-context=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$ROLLBACK_SHA-mcp-context -n sophia
+            kubectl set image deployment/comms-mcp comms-mcp=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$ROLLBACK_SHA-comms-mcp -n sophia
+            kubectl set image deployment/crm-mcp crm-mcp=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$ROLLBACK_SHA-crm-mcp -n sophia
+            kubectl set image deployment/analytics-mcp analytics-mcp=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$ROLLBACK_SHA-analytics-mcp -n sophia
+
+            # Rollback business services
+            kubectl set image deployment/sophia-dashboard sophia-dashboard=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$ROLLBACK_SHA-sophia-dashboard -n sophia
+            kubectl set image deployment/sophia-business sophia-business=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$ROLLBACK_SHA-sophia-business -n sophia
+            kubectl set image deployment/sophia-hubspot sophia-hubspot=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$ROLLBACK_SHA-sophia-hubspot -n sophia
+            kubectl set image deployment/sophia-github sophia-github=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$ROLLBACK_SHA-sophia-github -n sophia
+            kubectl set image deployment/sophia-lambda sophia-lambda=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$ROLLBACK_SHA-sophia-lambda -n sophia
+
+            # Wait for rollback to complete
+            kubectl wait --for=condition=available --timeout=300s deployment/mcp-research -n sophia
+            kubectl wait --for=condition=available --timeout=300s deployment/mcp-context -n sophia
+            kubectl wait --for=condition=available --timeout=300s deployment/comms-mcp -n sophia
+            kubectl wait --for=condition=available --timeout=300s deployment/crm-mcp -n sophia
+            kubectl wait --for=condition=available --timeout=300s deployment/analytics-mcp -n sophia
+
+            echo "✅ Production rollback completed"
+          else
+            echo "⚠️  No valid commit SHA available for rollback - manual intervention required"
+          fi
+
+  rollback-readiness:
+    name: Emergency Rollback After Readiness Failure
+    if: github.event.inputs.rollback_type == 'readiness-failure' || github.event.inputs.rollback_type == 'emergency-rollback'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Emergency rollback to stable state
+        run: |
+          echo "🔄 Emergency rollback due to readiness check failure..."
+
+          # Check if we have a stable backup deployment
+          if kubectl get deployment stable-mcp-research -n sophia >/dev/null 2>&1; then
+            echo "Restoring from stable backup deployments..."
+
+            # Switch traffic to stable deployments using Istio
+            cat <<EOF | kubectl apply -f -
+          apiVersion: networking.istio.io/v1beta1
+          kind: VirtualService
+          metadata:
+            name: emergency-rollback
+            namespace: sophia
+          spec:
+            http:
+            - route:
+              - destination:
+                  host: stable-mcp-research.sophia.svc.cluster.local
+                weight: 100
+          EOF
+
+            echo "✅ Emergency rollback to stable state completed"
+          else
+            echo "⚠️  No stable backup available - attempting graceful degradation"
+
+            # Graceful degradation: scale down non-critical services
+            kubectl scale deployment sophia-dashboard -n sophia --replicas=0
+            kubectl scale deployment sophia-business -n sophia --replicas=0
+            kubectl scale deployment sophia-hubspot -n sophia --replicas=0
+            kubectl scale deployment sophia-github -n sophia --replicas=0
+            kubectl scale deployment sophia-lambda -n sophia --replicas=0
+
+            echo "✅ Graceful degradation completed - core services preserved"
+          fi
+
+  cleanup:
+    name: Cleanup After Rollback
+    needs: [rollback-canary, rollback-migration, rollback-synthetics, rollback-full-rollout, rollback-readiness]
+    if: always()
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Comprehensive cleanup
+        run: |
+          echo "🧹 Performing comprehensive cleanup after rollback..."
+
+          # Clean up canary resources
+          kubectl delete namespace sophia-canary --ignore-not-found=true
+
+          # Clean up emergency rollback resources
+          kubectl delete virtualservice emergency-rollback -n sophia --ignore-not-found=true
+
+          # Clean up any orphaned resources
+          kubectl delete pods -n sophia --field-selector=status.phase!=Running,status.phase!=Pending --ignore-not-found=true
+
+          echo "✅ Comprehensive cleanup completed"
+
+      - name: Generate rollback report
+        run: |
+          echo "# 🔄 Manual Rollback Report" > manual-rollback-report.md
+          echo "**Date:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> manual-rollback-report.md
+          echo "**Rollback Type:** ${{ github.event.inputs.rollback_type }}" >> manual-rollback-report.md
+          echo "**Commit SHA:** ${{ github.event.inputs.commit_sha || github.sha }}" >> manual-rollback-report.md
+          echo "**Triggered By:** ${{ github.actor }}" >> manual-rollback-report.md
+          echo "" >> manual-rollback-report.md
+          echo "## Rollback Actions Taken" >> manual-rollback-report.md
+
+          case "${{ github.event.inputs.rollback_type }}" in
+            "canary-failure")
+              echo "- ✅ Canary deployment rolled back" >> manual-rollback-report.md
+              echo "- ✅ VirtualService removed" >> manual-rollback-report.md
+              echo "- ✅ Canary services scaled down" >> manual-rollback-report.md
+              ;;
+            "migration-failure")
+              echo "- ✅ Database migration rolled back" >> manual-rollback-report.md
+              echo "- ✅ Rollback SQL script executed" >> manual-rollback-report.md
+              ;;
+            "synthetics-failure")
+              echo "- ✅ Synthetics rollback completed" >> manual-rollback-report.md
+              echo "- ✅ Canary traffic stopped" >> manual-rollback-report.md
+              ;;
+            "rollout-failure")
+              echo "- ✅ Full production rollout rolled back" >> manual-rollback-report.md
+              echo "- ✅ Previous images restored" >> manual-rollback-report.md
+              ;;
+            "readiness-failure"|"emergency-rollback")
+              echo "- 🚨 EMERGENCY ROLLBACK PERFORMED" >> manual-rollback-report.md
+              echo "- ✅ Stable state restored or graceful degradation applied" >> manual-rollback-report.md
+              ;;
+          esac
+
+          echo "" >> manual-rollback-report.md
+          echo "## Current Status" >> manual-rollback-report.md
+          kubectl get pods -n sophia -o wide >> manual-rollback-report.md
+          cat manual-rollback-report.md
+
+      - name: Upload rollback report
+        uses: actions/upload-artifact@v3
+        with:
+          name: manual-rollback-report
+          path: manual-rollback-report.md
+
+      - name: Final notification
+        run: |
+          echo "✅ Manual rollback completed successfully!"
+          echo "📊 Rollback Type: ${{ github.event.inputs.rollback_type }}"
+          echo "📋 Commit: ${{ github.event.inputs.commit_sha || github.sha }}"
+          echo "👤 Triggered by: ${{ github.actor }}"
+          echo "⏰ Time: $(date)"

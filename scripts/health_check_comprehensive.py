@@ -2,6 +2,7 @@
 """
 Comprehensive Health Check Script for Sophia AI Ecosystem
 Tests all deployed services and provides detailed validation report
+Verifies both /healthz and /readyz endpoints where available
 """
 
 import requests
@@ -32,15 +33,42 @@ class SophiaHealthChecker:
 
     def check_service_health(self, service_name, port):
         """Check if a service is responding to health requests"""
-        url = f"{self.base_url}:{port}/healthz"
+        results = {}
+
+        # Check /healthz endpoint
+        healthz_url = f"{self.base_url}:{port}/healthz"
         try:
-            response = requests.get(url, timeout=10)
+            response = requests.get(healthz_url, timeout=10)
             if response.status_code == 200:
-                return {"status": "healthy", "response_time": response.elapsed.total_seconds() * 1000}
+                results['healthz'] = {"status": "healthy", "response_time": response.elapsed.total_seconds() * 1000}
             else:
-                return {"status": "unhealthy", "error": f"HTTP {response.status_code}"}
+                results['healthz'] = {"status": "unhealthy", "error": f"HTTP {response.status_code}"}
         except requests.exceptions.RequestException as e:
-            return {"status": "unhealthy", "error": str(e)}
+            results['healthz'] = {"status": "unhealthy", "error": str(e)}
+
+        # Check /readyz endpoint
+        readyz_url = f"{self.base_url}:{port}/readyz"
+        try:
+            response = requests.get(readyz_url, timeout=10)
+            if response.status_code == 200:
+                results['readyz'] = {"status": "ready", "response_time": response.elapsed.total_seconds() * 1000}
+            else:
+                results['readyz'] = {"status": "not_ready", "error": f"HTTP {response.status_code}"}
+        except requests.exceptions.RequestException as e:
+            results['readyz'] = {"status": "not_ready", "error": str(e)}
+
+        # Overall status
+        healthz_healthy = results['healthz'].get('status') == 'healthy'
+        readyz_ready = results['readyz'].get('status') == 'ready'
+
+        if healthz_healthy and readyz_ready:
+            results['overall'] = 'healthy'
+        elif healthz_healthy:
+            results['overall'] = 'healthy_not_ready'
+        else:
+            results['overall'] = 'unhealthy'
+
+        return results
 
     def check_infrastructure_health(self, service_name, port):
         """Check infrastructure services (TCP connectivity)"""
@@ -138,28 +166,44 @@ class SophiaHealthChecker:
 
         # Summary
         summary = report['summary']
-        print("
-✅ OVERALL STATUS:"        print(f"   Services Healthy: {summary['healthy_services']}/{summary['total_services']}")
+        print("\n✅ OVERALL STATUS:")
+        print(f"   Services Healthy: {summary['healthy_services']}/{summary['total_services']}")
         print(f"   Infrastructure Healthy: {summary['healthy_infrastructure']}/{summary['total_infrastructure']}")
         print(f"   Overall Health: {summary['overall_health']}")
 
         # Detailed results
-        print("
-📋 DETAILED RESULTS:"        print("
-🏗️ INFRASTRUCTURE:"        for service, result in self.results.get('infrastructure', {}).items():
+        print("\n📋 DETAILED RESULTS:")
+        print("\n🏗️ INFRASTRUCTURE:")
+        for service, result in self.results.get('infrastructure', {}).items():
             status = "✅" if result.get('status') == 'healthy' else "❌"
             print(f"   {status} {service}: {result.get('message', result.get('error', 'unknown'))}")
 
-        print("
-🚀 APPLICATION SERVICES:"        for service, result in self.results.get('services', {}).items():
-            status = "✅" if result.get('status') == 'healthy' else "❌"
-            if result.get('status') == 'healthy':
-                print(".2f")
+        print("\n🚀 APPLICATION SERVICES:")
+        for service, result in self.results.get('services', {}).items():
+            overall_status = result.get('overall', 'unknown')
+            if overall_status == 'healthy':
+                status = "✅"
+                detail = ".2f"
+            elif overall_status == 'healthy_not_ready':
+                status = "⚠️"
+                detail = ".2f"
             else:
-                print(f"   {status} {service}: {result.get('error', 'unknown')}")
+                status = "❌"
+                detail = f"{result.get('healthz', {}).get('error', 'unknown')}"
 
-        print("
-🔗 INTER-SERVICE COMMUNICATION:"        for test, result in self.results.get('communication', {}).items():
+            print(f"   {status} {service}: {detail}")
+
+            # Show readiness status
+            readyz_status = result.get('readyz', {}).get('status', 'unknown')
+            if readyz_status == 'ready':
+                print("      └─ Readiness: ✅ Ready")
+            elif readyz_status == 'not_ready':
+                print("      └─ Readiness: ❌ Not Ready")
+            else:
+                print("      └─ Readiness: ❓ No /readyz endpoint")
+
+        print("\n🔗 INTER-SERVICE COMMUNICATION:")
+        for test, result in self.results.get('communication', {}).items():
             if 'error' not in result:
                 coord_status = "✅" if result.get('coordinator') else "❌"
                 teams_status = "✅" if result.get('teams') else "❌"
@@ -175,7 +219,7 @@ class SophiaHealthChecker:
         service_results = self.results.get('services', {})
 
         healthy_infra = sum(1 for r in infra_results.values() if r.get('status') == 'healthy')
-        healthy_services = sum(1 for r in service_results.values() if r.get('status') == 'healthy')
+        healthy_services = sum(1 for r in service_results.values() if r.get('overall') == 'healthy')
 
         total_infra = len(infra_results)
         total_services = len(service_results)
@@ -211,7 +255,7 @@ def main():
     with open('health_check_report.json', 'w') as f:
         json.dump(report, f, indent=2)
 
-    print(f"\n📄 Detailed report saved to: health_check_report.json")
+    print("\n📄 Detailed report saved to: health_check_report.json")
 
     # Exit with appropriate code
     summary = report['summary']

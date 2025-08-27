@@ -1,1 +1,1 @@
--r ../../platform/common/base-requirements.txt
+-r ./platform/common/base-requirements.txt

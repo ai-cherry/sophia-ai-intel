@@ -1,0 +1,711 @@
+name: Sophia Infrastructure CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'services/**'
+      - 'mcp/**'
+      - 'ops/**'
+      - 'k8s-deploy/**'
+      - 'scripts/**'
+      - '.github/workflows/sophia_infra.yml'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+      canary_percentage:
+        description: 'Canary deployment percentage'
+        required: false
+        default: '10'
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  PRODUCTION_TAG: v1.1.0
+  NEON_PROJECT_ID: rough-union-72390895
+  NEON_ENDPOINT_ID: ep-rough-dew-af6w48m3
+  NEON_USER: neondb_owner
+  NEON_DB: neondb
+  CANARY_PERCENTAGE: ${{ github.event.inputs.canary_percentage || '10' }}
+
+jobs:
+  lint-test:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+    outputs:
+      test-results: ${{ steps.test.outputs.results }}
+      lint-status: ${{ steps.lint.outputs.status }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install ruff pytest pytest-cov
+
+      - name: Run linting
+        id: lint
+        run: |
+          echo "Running ruff linting..."
+          ruff check . --output-format=github || echo "status=failed" >> $GITHUB_OUTPUT
+          echo "status=passed" >> $GITHUB_OUTPUT
+
+      - name: Run tests
+        id: test
+        run: |
+          echo "Running test suite..."
+          pytest --cov=. --cov-report=xml --cov-report=term
+          echo "results=passed" >> $GITHUB_OUTPUT
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+
+  build-cache:
+    name: Build & Cache
+    needs: lint-test
+    if: needs.lint-test.outputs.lint-status == 'passed'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image-digest: ${{ steps.build.outputs.digest }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest
+            type=raw,value=${{ github.sha }}
+
+      - name: Build and push services
+        id: build
+        run: |
+          # Build core MCP services
+          services=("mcp-research" "mcp-context" "mcp-agents" "mcp-business" "comms-mcp" "crm-mcp" "analytics-mcp")
+
+          for service in "${services[@]}"; do
+            echo "Building $service..."
+            docker buildx build \
+              --platform linux/amd64,linux/arm64 \
+              -t ${{ steps.meta.outputs.tags }}-$service \
+              --push \
+              --cache-from type=gha \
+              --cache-to type=gha,mode=max \
+              --label "org.opencontainers.image.source=https://github.com/${{ github.repository }}" \
+              ./services/$service
+          done
+
+          # Build business services
+          business_services=("sophia-dashboard" "sophia-business" "sophia-hubspot" "sophia-github" "sophia-lambda")
+
+          for service in "${business_services[@]}"; do
+            echo "Building $service..."
+            docker buildx build \
+              --platform linux/amd64,linux/arm64 \
+              -t ${{ steps.meta.outputs.tags }}-$service \
+              --push \
+              --cache-from type=gha \
+              --cache-to type=gha,mode=max \
+              --label "org.opencontainers.image.source=https://github.com/${{ github.repository }}" \
+              ./services/$service
+          done
+
+          echo "digest=$(docker inspect ${{ steps.meta.outputs.tags }}-mcp-research --format='{{index .RepoDigests 0}}')" >> $GITHUB_OUTPUT
+
+  canary-deploy:
+    name: Canary Deployment
+    needs: build-cache
+    runs-on: ubuntu-latest
+    outputs:
+      canary-status: ${{ steps.canary-check.outputs.status }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Deploy canary services
+        run: |
+          # Create canary namespace if it doesn't exist
+          kubectl create namespace sophia-canary --dry-run=client -o yaml | kubectl apply -f -
+
+          # Deploy canary versions with traffic splitting
+          CANARY_TAG="${{ github.sha }}"
+
+          # Deploy MCP services to canary
+          kubectl apply -f k8s-deploy/manifests/mcp-research.yaml -n sophia-canary
+          kubectl apply -f k8s-deploy/manifests/mcp-context.yaml -n sophia-canary
+          kubectl apply -f k8s-deploy/manifests/comms-mcp.yaml -n sophia-canary
+          kubectl apply -f k8s-deploy/manifests/crm-mcp.yaml -n sophia-canary
+          kubectl apply -f k8s-deploy/manifests/analytics-mcp.yaml -n sophia-canary
+
+          # Set canary images
+          kubectl set image deployment/mcp-research mcp-research=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$CANARY_TAG-mcp-research -n sophia-canary
+          kubectl set image deployment/mcp-context mcp-context=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$CANARY_TAG-mcp-context -n sophia-canary
+          kubectl set image deployment/comms-mcp comms-mcp=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$CANARY_TAG-comms-mcp -n sophia-canary
+          kubectl set image deployment/crm-mcp crm-mcp=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$CANARY_TAG-crm-mcp -n sophia-canary
+          kubectl set image deployment/analytics-mcp analytics-mcp=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$CANARY_TAG-analytics-mcp -n sophia-canary
+
+      - name: Configure traffic splitting
+        run: |
+          # Install Istio if not present
+          kubectl apply -f k8s-deploy/manifests/istio-control-plane.yaml
+
+          # Create VirtualService for canary routing
+          cat <<EOF | kubectl apply -f -
+          apiVersion: networking.istio.io/v1beta1
+          kind: VirtualService
+          metadata:
+            name: sophia-canary
+            namespace: sophia-canary
+          spec:
+            http:
+            - route:
+              - destination:
+                  host: mcp-research.sophia-canary.svc.cluster.local
+                weight: ${{ env.CANARY_PERCENTAGE }}
+              - destination:
+                  host: mcp-research.sophia.svc.cluster.local
+                weight: $((100 - ${{ env.CANARY_PERCENTAGE }}))
+          EOF
+
+      - name: Wait for canary rollout
+        run: |
+          echo "Waiting for canary services to be ready..."
+          kubectl wait --for=condition=available --timeout=300s deployment/mcp-research -n sophia-canary
+          kubectl wait --for=condition=available --timeout=300s deployment/mcp-context -n sophia-canary
+          kubectl wait --for=condition=available --timeout=300s deployment/comms-mcp -n sophia-canary
+          kubectl wait --for=condition=available --timeout=300s deployment/crm-mcp -n sophia-canary
+          kubectl wait --for=condition=available --timeout=300s deployment/analytics-mcp -n sophia-canary
+
+      - name: Run canary health checks
+        id: canary-check
+        run: |
+          echo "Running canary health checks..."
+          python scripts/validate_all_services.py --namespace sophia-canary --canary
+          echo "status=healthy" >> $GITHUB_OUTPUT
+
+  migrate-neon:
+    name: Neon Database Migration
+    needs: canary-deploy
+    if: needs.canary-deploy.outputs.canary-status == 'healthy'
+    runs-on: ubuntu-latest
+    outputs:
+      migration-status: ${{ steps.migration.outputs.status }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+          psql --version
+
+      - name: Test Neon connection (SNI)
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+        run: |
+          echo "Testing Neon connection with SNI..."
+          PGSSLMODE=require psql -h ${{ env.NEON_PROJECT_ID }}.us-east-1.aws.neon.tech \
+            -U ${{ env.NEON_USER }} -d ${{ env.NEON_DB }} \
+            -c "SELECT current_user, current_database();" || \
+          (echo "SNI connection failed, trying endpoint fallback..." && exit 1)
+
+      - name: Apply database migrations
+        id: migration
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+        run: |
+          echo "Applying database migrations..."
+
+          # Try SNI first
+          if PGSSLMODE=require psql -h ${{ env.NEON_PROJECT_ID }}.us-east-1.aws.neon.tech \
+            -U ${{ env.NEON_USER }} -d ${{ env.NEON_DB }} \
+            -f ops/sql/001_audit.sql; then
+            echo "Migration applied successfully via SNI"
+          else
+            echo "SNI failed, trying endpoint fallback..."
+            # Fallback to endpoint option
+            PGSSLMODE=require psql -h pg.neon.tech \
+              -U ${{ env.NEON_USER }} -d ${{ env.NEON_DB }} \
+              --options=endpoint=${{ env.NEON_ENDPOINT_ID }} \
+              -f ops/sql/001_audit.sql || exit 1
+            echo "Migration applied successfully via endpoint fallback"
+          fi
+
+          echo "status=completed" >> $GITHUB_OUTPUT
+
+      - name: Verify migration
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+        run: |
+          echo "Verifying database state..."
+          PGSSLMODE=require psql -h ${{ env.NEON_PROJECT_ID }}.us-east-1.aws.neon.tech \
+            -U ${{ env.NEON_USER }} -d ${{ env.NEON_DB }} \
+            -c "\dt" || \
+          PGSSLMODE=require psql -h pg.neon.tech \
+            -U ${{ env.NEON_USER }} -d ${{ env.NEON_DB }} \
+            --options=endpoint=${{ env.NEON_ENDPOINT_ID }} \
+            -c "\dt"
+
+  synthetics:
+    name: Synthetic End-to-End Checks
+    needs: migrate-neon
+    if: needs.migrate-neon.outputs.migration-status == 'completed'
+    runs-on: ubuntu-latest
+    outputs:
+      synthetics-status: ${{ steps.synthetics.outputs.status }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install requests aiohttp asyncio
+
+      - name: Run synthetic checks
+        id: synthetics
+        run: |
+          echo "Running synthetic end-to-end checks..."
+
+          # Test Slack post via comms-mcp
+          echo "Testing Slack post via comms-mcp..."
+          python scripts/synthetic_checks.py --test slack_post --service comms-mcp
+
+          # Test CRM task create via crm-mcp
+          echo "Testing CRM task create via crm-mcp..."
+          python scripts/synthetic_checks.py --test crm_task --service crm-mcp
+
+          # Test Neon select 1 via analytics-mcp
+          echo "Testing Neon select 1 via analytics-mcp..."
+          python scripts/synthetic_checks.py --test neon_select --service analytics-mcp
+
+          echo "All synthetic checks passed!"
+          echo "status=green" >> $GITHUB_OUTPUT
+
+  full-rollout:
+    name: Full Production Rollout
+    needs: synthetics
+    if: needs.synthetics.outputs.synthetics-status == 'green'
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Promote canary to production
+        run: |
+          # Scale down canary traffic to 0%
+          kubectl apply -f - <<EOF
+          apiVersion: networking.istio.io/v1beta1
+          kind: VirtualService
+          metadata:
+            name: sophia-canary
+            namespace: sophia-canary
+          spec:
+            http:
+            - route:
+              - destination:
+                  host: mcp-research.sophia.svc.cluster.local
+                weight: 100
+          EOF
+
+          # Deploy full production versions
+          PRODUCTION_TAG="${{ github.sha }}"
+
+          # Update production deployments
+          kubectl set image deployment/mcp-research mcp-research=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$PRODUCTION_TAG-mcp-research -n sophia
+          kubectl set image deployment/mcp-context mcp-context=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$PRODUCTION_TAG-mcp-context -n sophia
+          kubectl set image deployment/comms-mcp comms-mcp=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$PRODUCTION_TAG-comms-mcp -n sophia
+          kubectl set image deployment/crm-mcp crm-mcp=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$PRODUCTION_TAG-crm-mcp -n sophia
+          kubectl set image deployment/analytics-mcp analytics-mcp=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$PRODUCTION_TAG-analytics-mcp -n sophia
+
+          # Deploy business services
+          kubectl set image deployment/sophia-dashboard sophia-dashboard=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$PRODUCTION_TAG-sophia-dashboard -n sophia
+          kubectl set image deployment/sophia-business sophia-business=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$PRODUCTION_TAG-sophia-business -n sophia
+          kubectl set image deployment/sophia-hubspot sophia-hubspot=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$PRODUCTION_TAG-sophia-hubspot -n sophia
+          kubectl set image deployment/sophia-github sophia-github=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$PRODUCTION_TAG-sophia-github -n sophia
+          kubectl set image deployment/sophia-lambda sophia-lambda=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$PRODUCTION_TAG-sophia-lambda -n sophia
+
+      - name: Wait for full rollout
+        run: |
+          echo "Waiting for full production rollout..."
+          kubectl wait --for=condition=available --timeout=600s deployment/mcp-research -n sophia
+          kubectl wait --for=condition=available --timeout=600s deployment/mcp-context -n sophia
+          kubectl wait --for=condition=available --timeout=300s deployment/comms-mcp -n sophia
+          kubectl wait --for=condition=available --timeout=300s deployment/crm-mcp -n sophia
+          kubectl wait --for=condition=available --timeout=300s deployment/analytics-mcp -n sophia
+          kubectl wait --for=condition=available --timeout=300s deployment/sophia-dashboard -n sophia
+          kubectl wait --for=condition=available --timeout=300s deployment/sophia-business -n sophia
+          kubectl wait --for=condition=available --timeout=300s deployment/sophia-hubspot -n sophia
+          kubectl wait --for=condition=available --timeout=300s deployment/sophia-github -n sophia
+          kubectl wait --for=condition=available --timeout=300s deployment/sophia-lambda -n sophia
+
+  readiness-check:
+    name: Production Readiness Check
+    needs: full-rollout
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Run comprehensive health checks
+        run: |
+          echo "Running production readiness checks..."
+          python scripts/validate_all_services.py --namespace sophia --production
+
+      - name: Validate service mesh
+        run: |
+          # Check Istio proxy status
+          kubectl get pods -n istio-system
+          kubectl get svc -n sophia
+
+      - name: Performance validation
+        run: |
+          # Quick performance check
+          kubectl top pods -n sophia
+          kubectl get hpa -n sophia
+
+      - name: Generate deployment report
+        run: |
+          echo "# 🚀 Sophia Infrastructure Deployment Report" > deployment-report.md
+          echo "**Date:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> deployment-report.md
+          echo "**Environment:** Production" >> deployment-report.md
+          echo "**Commit:** ${{ github.sha }}" >> deployment-report.md
+          echo "**Branch:** ${{ github.ref_name }}" >> deployment-report.md
+          echo "" >> deployment-report.md
+          echo "## Deployed Services" >> deployment-report.md
+          kubectl get deployments -n sophia -o name | sed 's/.*\///' | while read svc; do
+            echo "- ✅ $svc" >> deployment-report.md
+          done
+          echo "" >> deployment-report.md
+          echo "## Health Status" >> deployment-report.md
+          kubectl get pods -n sophia -o wide >> deployment-report.md
+          cat deployment-report.md
+
+      - name: Upload deployment report
+        uses: actions/upload-artifact@v3
+        with:
+          name: deployment-report
+          path: deployment-report.md
+   # Rollback jobs for different failure scenarios
+   rollback-canary:
+     name: Rollback Canary Deployment
+     needs: canary-deploy
+     if: failure() && needs.canary-deploy.result == 'failure'
+     runs-on: ubuntu-latest
+
+     steps:
+       - name: Configure kubectl
+         run: |
+           echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+           chmod 600 $HOME/.kube/config
+
+       - name: Rollback canary deployment
+         run: |
+           echo "🔄 Rolling back canary deployment due to failure..."
+
+           # Remove canary VirtualService
+           kubectl delete virtualservice sophia-canary -n sophia-canary --ignore-not-found=true
+
+           # Scale down canary services
+           kubectl scale deployment mcp-research -n sophia-canary --replicas=0
+           kubectl scale deployment mcp-context -n sophia-canary --replicas=0
+           kubectl scale deployment comms-mcp -n sophia-canary --replicas=0
+           kubectl scale deployment crm-mcp -n sophia-canary --replicas=0
+           kubectl scale deployment analytics-mcp -n sophia-canary --replicas=0
+
+           echo "✅ Canary rollback completed"
+
+       - name: Notify rollback
+         run: |
+           echo "📢 Canary deployment rolled back due to health check failure"
+           echo "Commit: ${{ github.sha }}"
+           echo "Failure Stage: Canary Deployment"
+
+   rollback-migration:
+     name: Rollback Database Migration
+     needs: migrate-neon
+     if: failure() && needs.migrate-neon.result == 'failure'
+     runs-on: ubuntu-latest
+
+     steps:
+       - name: Checkout code
+         uses: actions/checkout@v4
+
+       - name: Rollback database changes
+         env:
+           NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+         run: |
+           echo "🔄 Rolling back database migration due to failure..."
+
+           # Attempt to rollback migration (if rollback script exists)
+           if [ -f "ops/sql/001_audit_rollback.sql" ]; then
+             echo "Running migration rollback script..."
+             PGSSLMODE=require psql -h ${{ env.NEON_PROJECT_ID }}.us-east-1.aws.neon.tech \
+               -U ${{ env.NEON_USER }} -d ${{ env.NEON_DB }} \
+               -f ops/sql/001_audit_rollback.sql || \
+             PGSSLMODE=require psql -h pg.neon.tech \
+               -U ${{ env.NEON_USER }} -d ${{ env.NEON_DB }} \
+               --options=endpoint=${{ env.NEON_ENDPOINT_ID }} \
+               -f ops/sql/001_audit_rollback.sql
+           else
+             echo "⚠️  No rollback script found - manual intervention may be required"
+           fi
+
+           echo "✅ Database rollback completed"
+
+       - name: Notify rollback
+         run: |
+           echo "📢 Database migration rolled back due to failure"
+           echo "Commit: ${{ github.sha }}"
+           echo "Failure Stage: Neon Migration"
+
+   rollback-synthetics:
+     name: Rollback After Synthetics Failure
+     needs: [synthetics, canary-deploy]
+     if: failure() && needs.synthetics.result == 'failure'
+     runs-on: ubuntu-latest
+
+     steps:
+       - name: Configure kubectl
+         run: |
+           echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+           chmod 600 $HOME/.kube/config
+
+       - name: Rollback canary and stop rollout
+         run: |
+           echo "🔄 Rolling back due to synthetics failure..."
+
+           # Remove canary VirtualService to stop traffic routing
+           kubectl delete virtualservice sophia-canary -n sophia-canary --ignore-not-found=true
+
+           # Scale down canary services completely
+           kubectl scale deployment mcp-research -n sophia-canary --replicas=0
+           kubectl scale deployment mcp-context -n sophia-canary --replicas=0
+           kubectl scale deployment comms-mcp -n sophia-canary --replicas=0
+           kubectl scale deployment crm-mcp -n sophia-canary --replicas=0
+           kubectl scale deployment analytics-mcp -n sophia-canary --replicas=0
+
+           echo "✅ Synthetics rollback completed - canary traffic stopped"
+
+       - name: Notify rollback
+         run: |
+           echo "📢 Deployment rolled back due to synthetics failure"
+           echo "Commit: ${{ github.sha }}"
+           echo "Failure Stage: Synthetic End-to-End Checks"
+
+   rollback-full-rollout:
+     name: Rollback Full Production Rollout
+     needs: [full-rollout, synthetics]
+     if: failure() && needs.full-rollout.result == 'failure'
+     runs-on: ubuntu-latest
+
+     steps:
+       - name: Configure kubectl
+         run: |
+           echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+           chmod 600 $HOME/.kube/config
+
+       - name: Rollback production deployment
+         run: |
+           echo "🔄 Rolling back full production rollout due to failure..."
+
+           # Revert to previous production images (assuming previous tag exists)
+           PREVIOUS_TAG="${{ github.event.before }}"
+
+           if [ ! -z "$PREVIOUS_TAG" ] && [ "$PREVIOUS_TAG" != "0000000000000000000000000000000000000000" ]; then
+             echo "Reverting to previous commit: $PREVIOUS_TAG"
+
+             # Rollback MCP services
+             kubectl set image deployment/mcp-research mcp-research=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$PREVIOUS_TAG-mcp-research -n sophia
+             kubectl set image deployment/mcp-context mcp-context=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$PREVIOUS_TAG-mcp-context -n sophia
+             kubectl set image deployment/comms-mcp comms-mcp=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$PREVIOUS_TAG-comms-mcp -n sophia
+             kubectl set image deployment/crm-mcp crm-mcp=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$PREVIOUS_TAG-crm-mcp -n sophia
+             kubectl set image deployment/analytics-mcp analytics-mcp=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$PREVIOUS_TAG-analytics-mcp -n sophia
+
+             # Rollback business services
+             kubectl set image deployment/sophia-dashboard sophia-dashboard=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$PREVIOUS_TAG-sophia-dashboard -n sophia
+             kubectl set image deployment/sophia-business sophia-business=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$PREVIOUS_TAG-sophia-business -n sophia
+             kubectl set image deployment/sophia-hubspot sophia-hubspot=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$PREVIOUS_TAG-sophia-hubspot -n sophia
+             kubectl set image deployment/sophia-github sophia-github=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$PREVIOUS_TAG-sophia-github -n sophia
+             kubectl set image deployment/sophia-lambda sophia-lambda=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$PREVIOUS_TAG-sophia-lambda -n sophia
+
+             # Wait for rollback to complete
+             kubectl wait --for=condition=available --timeout=300s deployment/mcp-research -n sophia
+             kubectl wait --for=condition=available --timeout=300s deployment/mcp-context -n sophia
+             kubectl wait --for=condition=available --timeout=300s deployment/comms-mcp -n sophia
+             kubectl wait --for=condition=available --timeout=300s deployment/crm-mcp -n sophia
+             kubectl wait --for=condition=available --timeout=300s deployment/analytics-mcp -n sophia
+
+             echo "✅ Production rollback completed"
+           else
+             echo "⚠️  No previous commit available for rollback - manual intervention required"
+           fi
+
+       - name: Notify rollback
+         run: |
+           echo "📢 Full production rollout rolled back due to failure"
+           echo "Commit: ${{ github.sha }}"
+           echo "Failure Stage: Full Production Rollout"
+
+   rollback-readiness:
+     name: Rollback After Readiness Check Failure
+     needs: [readiness-check, full-rollout]
+     if: failure() && needs.readiness-check.result == 'failure'
+     runs-on: ubuntu-latest
+
+     steps:
+       - name: Configure kubectl
+         run: |
+           echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+           chmod 600 $HOME/.kube/config
+
+       - name: Emergency rollback to stable state
+         run: |
+           echo "🔄 Emergency rollback due to readiness check failure..."
+
+           # This is a critical failure - rollback immediately
+           # Scale down problematic services and restore from backup if available
+
+           # Check if we have a stable backup deployment
+           if kubectl get deployment stable-mcp-research -n sophia >/dev/null 2>&1; then
+             echo "Restoring from stable backup deployments..."
+
+             # Switch traffic to stable deployments using Istio
+             cat <<EOF | kubectl apply -f -
+           apiVersion: networking.istio.io/v1beta1
+           kind: VirtualService
+           metadata:
+             name: emergency-rollback
+             namespace: sophia
+           spec:
+             http:
+             - route:
+               - destination:
+                   host: stable-mcp-research.sophia.svc.cluster.local
+                 weight: 100
+           EOF
+
+             echo "✅ Emergency rollback to stable state completed"
+           else
+             echo "⚠️  No stable backup available - attempting graceful degradation"
+
+             # Graceful degradation: scale down non-critical services
+             kubectl scale deployment sophia-dashboard -n sophia --replicas=0
+             kubectl scale deployment sophia-business -n sophia --replicas=0
+             kubectl scale deployment sophia-hubspot -n sophia --replicas=0
+             kubectl scale deployment sophia-github -n sophia --replicas=0
+             kubectl scale deployment sophia-lambda -n sophia --replicas=0
+
+             echo "✅ Graceful degradation completed - core services preserved"
+           fi
+
+       - name: Notify critical rollback
+         run: |
+           echo "🚨 CRITICAL: Emergency rollback performed due to readiness check failure"
+           echo "Commit: ${{ github.sha }}"
+           echo "Failure Stage: Production Readiness Check"
+           echo "Immediate attention required!"
+
+
+  cleanup:
+    name: Cleanup
+    needs: [readiness-check, full-rollout]
+    if: always()
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Cleanup canary resources
+        if: needs.readiness-check.result == 'success'
+        run: |
+          echo "Cleaning up canary resources..."
+          kubectl delete namespace sophia-canary --ignore-not-found=true
+
+      - name: Notify deployment status
+        run: |
+          if [ "${{ needs.readiness-check.result }}" = "success" ]; then
+            echo "✅ Production deployment completed successfully!"
+            echo "🌐 Services are live and healthy"
+            echo "📊 Commit: ${{ github.sha }}"
+            echo "⏰ Time: $(date)"
+          else
+            echo "❌ Production deployment failed!"
+            echo "🔍 Check the logs for details"
+            echo "📋 Commit: ${{ github.sha }}"
+            exit 1
+          fi

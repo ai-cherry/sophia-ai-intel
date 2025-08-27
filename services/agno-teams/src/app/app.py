@@ -1,21 +1,9 @@
-#!/usr/bin/env python3
-"""
-Sophia AI Intel - AGNO Teams Service
-Main entry point for the teams service
-"""
-
 import os
 import sys
 import logging
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
-
-# Add the current directory to the Python path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
-# from business.sales_intelligence.sales_intelligence_team import SalesIntelligenceTeam
-# from business.client_health.client_health_team import ClientHealthTeam
 
 # Configure logging
 logging.basicConfig(
@@ -130,16 +118,3 @@ async def metrics():
         "service": "sophia-teams",
         "version": "1.0.0"
     }
-
-if __name__ == "__main__":
-    port = int(os.getenv("PORT", "8087"))
-    host = os.getenv("HOST", "0.0.0.0")
-
-    logger.info(f"Starting Sophia AI Teams Service on {host}:{port}")
-    uvicorn.run(
-        "main:app",
-        host=host,
-        port=port,
-        reload=False,
-        log_level="info"
-    )

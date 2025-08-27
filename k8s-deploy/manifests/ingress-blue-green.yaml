@@ -31,7 +31,7 @@ spec:
           service:
             name: sophia-dashboard
             port:
-              number: 3000
+              number: 8080
       # API routes - Blue environment (Kubernetes)
       - path: /api/research
         pathType: Prefix
@@ -39,14 +39,14 @@ spec:
           service:
             name: mcp-research
             port:
-              number: 8000
+              number: 8080
       - path: /api/context
         pathType: Prefix
         backend:
           service:
             name: mcp-context
             port:
-              number: 8001
+              number: 8080
       - path: /api/github
         pathType: Prefix
         backend:
@@ -96,7 +96,7 @@ spec:
           service:
             name: sophia-dashboard
             port:
-              number: 3000
+              number: 8080
       - path: /api/health
         pathType: Prefix
         backend:

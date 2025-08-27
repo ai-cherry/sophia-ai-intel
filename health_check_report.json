@@ -1,12 +1,102 @@
 {
-  "timestamp": "2025-08-26T07:25:03-07:00",
+  "timestamp": "2025-08-27T02:03:39.914859",
   "summary": {
-    "infrastructure_healthy": 3,
-    "infrastructure_total": 3,
-    "services_healthy": 1,
-    "services_total": 6,
-    "infrastructure_percent": 100,
-    "services_percent": 16,
-    "overall_result": 0
+    "healthy_infrastructure": 1,
+    "total_infrastructure": 3,
+    "healthy_services": 0,
+    "total_services": 6,
+    "infrastructure_health_percent": 33.33333333333333,
+    "service_health_percent": 0.0,
+    "overall_health": "CRITICAL"
+  },
+  "details": {
+    "docker_containers": [],
+    "infrastructure": {
+      "postgres": {
+        "status": "healthy",
+        "message": "TCP connection successful"
+      },
+      "redis": {
+        "status": "unhealthy",
+        "error": "TCP connection failed"
+      },
+      "qdrant": {
+        "status": "unhealthy",
+        "error": "TCP connection failed"
+      }
+    },
+    "services": {
+      "mcp-github": {
+        "healthz": {
+          "status": "unhealthy",
+          "error": "HTTPConnectionPool(host='localhost', port=8082): Max retries exceeded with url: /healthz (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x108fb90d0>: Failed to establish a new connection: [Errno 61] Connection refused'))"
+        },
+        "readyz": {
+          "status": "not_ready",
+          "error": "HTTPConnectionPool(host='localhost', port=8082): Max retries exceeded with url: /readyz (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x108fb97f0>: Failed to establish a new connection: [Errno 61] Connection refused'))"
+        },
+        "overall": "unhealthy"
+      },
+      "mcp-hubspot": {
+        "healthz": {
+          "status": "unhealthy",
+          "error": "HTTPConnectionPool(host='localhost', port=8083): Max retries exceeded with url: /healthz (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x108f866f0>: Failed to establish a new connection: [Errno 61] Connection refused'))"
+        },
+        "readyz": {
+          "status": "not_ready",
+          "error": "HTTPConnectionPool(host='localhost', port=8083): Max retries exceeded with url: /readyz (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x108fb91c0>: Failed to establish a new connection: [Errno 61] Connection refused'))"
+        },
+        "overall": "unhealthy"
+      },
+      "mcp-business": {
+        "healthz": {
+          "status": "unhealthy",
+          "error": "HTTPConnectionPool(host='localhost', port=8086): Max retries exceeded with url: /healthz (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x108fb9e20>: Failed to establish a new connection: [Errno 61] Connection refused'))"
+        },
+        "readyz": {
+          "status": "not_ready",
+          "error": "HTTPConnectionPool(host='localhost', port=8086): Max retries exceeded with url: /readyz (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x108fba870>: Failed to establish a new connection: [Errno 61] Connection refused'))"
+        },
+        "overall": "unhealthy"
+      },
+      "agno-coordinator": {
+        "healthz": {
+          "status": "unhealthy",
+          "error": "HTTPConnectionPool(host='localhost', port=8080): Max retries exceeded with url: /healthz (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x108fbb0b0>: Failed to establish a new connection: [Errno 61] Connection refused'))"
+        },
+        "readyz": {
+          "status": "not_ready",
+          "error": "HTTPConnectionPool(host='localhost', port=8080): Max retries exceeded with url: /readyz (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x108fbb9e0>: Failed to establish a new connection: [Errno 61] Connection refused'))"
+        },
+        "overall": "unhealthy"
+      },
+      "agno-teams": {
+        "healthz": {
+          "status": "unhealthy",
+          "error": "HTTPConnectionPool(host='localhost', port=8087): Max retries exceeded with url: /healthz (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x108fbadb0>: Failed to establish a new connection: [Errno 61] Connection refused'))"
+        },
+        "readyz": {
+          "status": "not_ready",
+          "error": "HTTPConnectionPool(host='localhost', port=8087): Max retries exceeded with url: /readyz (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x108fba300>: Failed to establish a new connection: [Errno 61] Connection refused'))"
+        },
+        "overall": "unhealthy"
+      },
+      "orchestrator": {
+        "healthz": {
+          "status": "unhealthy",
+          "error": "HTTPConnectionPool(host='localhost', port=8088): Max retries exceeded with url: /healthz (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x108fb9850>: Failed to establish a new connection: [Errno 61] Connection refused'))"
+        },
+        "readyz": {
+          "status": "not_ready",
+          "error": "HTTPConnectionPool(host='localhost', port=8088): Max retries exceeded with url: /readyz (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x108fbbb00>: Failed to establish a new connection: [Errno 61] Connection refused'))"
+        },
+        "overall": "unhealthy"
+      }
+    },
+    "communication": {
+      "coordinator_teams": {
+        "error": "HTTPConnectionPool(host='localhost', port=8080): Max retries exceeded with url: /health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x108ff0590>: Failed to establish a new connection: [Errno 61] Connection refused'))"
+      }
+    }
   }
 }

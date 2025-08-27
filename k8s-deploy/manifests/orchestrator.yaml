@@ -23,9 +23,9 @@ spec:
         - name: REDIS_URL
           value: "redis://redis-service:6379"
         - name: MCP_RESEARCH_URL
-          value: "http://mcp-research:8000"
+          value: "http://mcp-research:8080"
         - name: MCP_CONTEXT_URL
-          value: "http://mcp-context:8001"
+          value: "http://mcp-context:8080"
         - name: MCP_AGENTS_URL
           value: "http://mcp-agents:8002"
         - name: MCP_HUBSPOT_URL
