@@ -29,9 +29,10 @@ logger = logging.getLogger(__name__)
 # Environment configuration
 QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
 QDRANT_API_KEY = os.getenv("QDRANT_API_KEY", "")
-EMBED_ENDPOINT = os.getenv("EMBED_ENDPOINT", "https://openrouter.ai/api/v1/embeddings")
+# Use native OpenAI endpoint for embeddings
+EMBED_ENDPOINT = os.getenv("EMBED_ENDPOINT", "https://api.openai.com/v1/embeddings")
 EMBED_MODEL = os.getenv("EMBED_MODEL", "text-embedding-3-large")
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")  # Use OpenAI API key directly
 NEON_DATABASE_URL = os.getenv("NEON_DATABASE_URL", "")
 COLLECTION_NAME = os.getenv("QDRANT_COLLECTION", "sophia_documents")
 CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "1000"))
@@ -61,7 +62,7 @@ def dedupe_hash(text: str) -> str:
 
 async def compute_embedding(session: aiohttp.ClientSession, text: str) -> Optional[List[float]]:
     """
-    Get embeddings from OpenRouter-compatible endpoint.
+    Get embeddings from native OpenAI API endpoint.
     
     Args:
         session: aiohttp session for making requests
@@ -71,8 +72,9 @@ async def compute_embedding(session: aiohttp.ClientSession, text: str) -> Option
         Embedding vector or None if failed
     """
     try:
+        # Use OpenAI API key directly
         headers = {
-            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+            "Authorization": f"Bearer {OPENAI_API_KEY}",
             "Content-Type": "application/json"
         }
         
@@ -84,11 +86,9 @@ async def compute_embedding(session: aiohttp.ClientSession, text: str) -> Option
         async with session.post(EMBED_ENDPOINT, json=payload, headers=headers) as resp:
             if resp.status == 200:
                 data = await resp.json()
-                # Handle different response formats
+                # OpenAI standard response format
                 if "data" in data and len(data["data"]) > 0:
                     return data["data"][0]["embedding"]
-                elif "embeddings" in data and len(data["embeddings"]) > 0:
-                    return data["embeddings"][0]
                 else:
                     logger.error(f"Unexpected embedding response format: {data}")
                     return None

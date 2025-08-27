@@ -8,44 +8,37 @@ Provides access to vector storage, conversation history, and contextual informat
 """
 
 import os
-import asyncio
 import logging
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 import uvicorn
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
-from sse_starlette.sse import EventSourceResponse
+from fastapi import HTTPException
 from pydantic import BaseModel
 
 # Import shared platform libraries
 try:
+    from platform.common.service_base import create_app, ok, err, raise_http_error
     from platform.auth.jwt import validate_token
     from platform.common.errors import ServiceError, ValidationError
 except ImportError:
     # Fallback for development
+    from platform.common.service_base import create_app, ok, err, raise_http_error
     validate_token = None
     ServiceError = Exception
     ValidationError = Exception
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 # Environment configuration
-CORS_ORIGINS = os.getenv("CORS_ORIGINS", "*").split(",")
 SERVICE_NAME = "Sophia AI Context API"
 SERVICE_DESCRIPTION = "Context and memory management service"
 SERVICE_VERSION = "1.0.0"
 NEON_DATABASE_URL = os.getenv("NEON_DATABASE_URL", "")
 QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
 QDRANT_API_KEY = os.getenv("QDRANT_API_KEY", "")
-
-# Global readiness flag
-_ready = False
 
 # In-memory document store (for staging before vector processing)
 _document_store = {}
@@ -65,83 +58,14 @@ class DocumentResponse(BaseModel):
     status: str
     timestamp: str
 
-app = FastAPI(
-    title=SERVICE_NAME,
-    description=SERVICE_DESCRIPTION,
+# Create FastAPI app using the shared service base
+app = create_app(
+    name=SERVICE_NAME,
+    desc=SERVICE_DESCRIPTION,
     version=SERVICE_VERSION
 )
 
-# CORS middleware with configurable origins
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=CORS_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-@app.on_event("startup")
-async def startup_event():
-    """Set readiness flag on startup"""
-    global _ready
-    _ready = True
-    logger.info(f"{SERVICE_NAME} v{SERVICE_VERSION} started and ready")
-
-@app.get("/healthz")
-async def health_check():
-    """Health check endpoint"""
-    return {
-        "status": "healthy",
-        "service": SERVICE_NAME,
-        "version": SERVICE_VERSION,
-        "timestamp": datetime.now(timezone.utc).isoformat()
-    }
-
-@app.get("/readyz")
-async def readiness_check():
-    """Readiness check endpoint"""
-    if not _ready:
-        raise HTTPException(status_code=503, detail="Service not ready")
-
-    return {
-        "status": "ready",
-        "service": SERVICE_NAME,
-        "version": SERVICE_VERSION,
-        "timestamp": datetime.now(timezone.utc).isoformat()
-    }
-
-@app.get("/stream")
-async def stream_endpoint(request: Request):
-    """SSE keep-alive endpoint"""
-
-    async def event_generator():
-        """Generate SSE events with keep-alive pings"""
-        while True:
-            if await request.is_disconnected():
-                break
-
-            # Send keep-alive ping every 25 seconds
-            yield ": ping\n\n"
-            await asyncio.sleep(25)
-
-    return EventSourceResponse(event_generator())
-
-@app.get("/")
-async def root():
-    """Root endpoint"""
-    return {
-        "service": SERVICE_NAME,
-        "version": SERVICE_VERSION,
-        "description": SERVICE_DESCRIPTION,
-        "status": "operational",
-        "endpoints": {
-            "health": "/healthz",
-            "ready": "/readyz",
-            "stream": "/stream",
-            "docs": "/docs"
-        },
-        "timestamp": datetime.now(timezone.utc).isoformat()
-    }
+# Service-specific endpoints
 
 @app.get("/conversations")
 async def get_conversations(user_id: Optional[str] = None, limit: int = 50):

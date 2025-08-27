@@ -97,15 +97,18 @@ class LLMSmokeTester:
         if result.details:
             print(f"  Details: {json.dumps(result.details, indent=2)}")
     
-    async def test_openrouter_embeddings(self) -> TestResult:
-        """Test OpenRouter embeddings API"""
-        service = "OpenRouter Embeddings (text-embedding-3-large)"
+    async def test_openai_embeddings(self) -> TestResult:
+        """Test native OpenAI embeddings API"""
+        service = "OpenAI Embeddings (text-embedding-3-large)"
         
-        if not self.openrouter_key:
+        # Use OpenAI API key directly
+        openai_key = os.getenv("OPENAI_API_KEY")
+        
+        if not openai_key:
             return TestResult(
                 service=service,
                 success=False,
-                message="OPENROUTER_API_KEY not found in environment",
+                message="OPENAI_API_KEY not found in environment",
                 response_time=0.0
             )
         
@@ -114,15 +117,15 @@ class LLMSmokeTester:
         try:
             async with aiohttp.ClientSession() as session:
                 headers = {
-                    "Authorization": f"Bearer {self.openrouter_key}",
+                    "Authorization": f"Bearer {openai_key}",
                     "Content-Type": "application/json"
                 }
                 
-                # OpenRouter embeddings endpoint
-                url = f"{self.openrouter_base}/embeddings"
+                # Native OpenAI embeddings endpoint
+                url = "https://api.openai.com/v1/embeddings"
                 
                 payload = {
-                    "model": "openai/text-embedding-3-large",
+                    "model": "text-embedding-3-large",
                     "input": self.test_embedding_text,
                     "encoding_format": "float"
                 }
@@ -201,10 +204,18 @@ class LLMSmokeTester:
         
         try:
             async with aiohttp.ClientSession() as session:
+                # Proper Portkey headers configuration
                 headers = {
-                    "x-portkey-api-key": self.portkey_key,
+                    "x-portkey-api-key": self.portkey_key,  # Portkey API key
+                    "x-portkey-provider": "openai",  # Provider name for OpenAI
+                    "Authorization": f"Bearer {os.getenv('OPENAI_API_KEY', '')}",  # Provider API key
                     "Content-Type": "application/json"
                 }
+                
+                # Optional: Add config ID if available
+                portkey_config_id = os.getenv("PORTKEY_CONFIG_ID", "")
+                if portkey_config_id:
+                    headers["x-portkey-config"] = portkey_config_id
                 
                 # Portkey chat completions endpoint
                 url = f"{self.portkey_base}/chat/completions"
@@ -303,9 +314,9 @@ class LLMSmokeTester:
         """Run all LLM service tests"""
         self.print_header()
         
-        # Test OpenRouter Embeddings
-        print(f"\n{Style.BRIGHT}Testing OpenRouter Embeddings...")
-        result = await self.run_tests_with_retry(self.test_openrouter_embeddings)
+        # Test OpenAI Embeddings (replacing OpenRouter)
+        print(f"\n{Style.BRIGHT}Testing OpenAI Embeddings...")
+        result = await self.run_tests_with_retry(self.test_openai_embeddings)
         self.results.append(result)
         self.print_result(result)
         

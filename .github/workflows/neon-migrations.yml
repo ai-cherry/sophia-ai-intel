@@ -1,0 +1,154 @@
+name: Neon Database Migrations
+
+on:
+  push:
+    paths:
+      - 'ops/sql/*.sql'
+      - 'libs/memory/schema.sql'
+      - '.github/workflows/neon-migrations.yml'
+  workflow_dispatch:
+    inputs:
+      force_migrate:
+        description: 'Force migration even without SQL changes'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  NEON_PROJECT_ID: rough-union-72390895
+  NEON_ENDPOINT_ID: ep-rough-dew-af6w48m3
+  NEON_USER: neondb_owner
+  NEON_DB: neondb
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    name: Apply Database Migrations
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+          psql --version
+      
+      - name: Test Neon connection
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+        run: |
+          echo "Testing Neon connection..."
+          PGSSLMODE=require psql -h pg.neon.tech -U ${{ env.NEON_USER }} -d ${{ env.NEON_DB }} \
+            --options=endpoint=${{ env.NEON_ENDPOINT_ID }} \
+            -c "SELECT current_user, current_database();" || \
+          (echo "Failed to connect to Neon" && exit 1)
+      
+      - name: Apply migrations from ops/sql
+        if: hashFiles('ops/sql/*.sql') != ''
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+        run: |
+          echo "Found migration files in ops/sql/"
+          for sql in ops/sql/*.sql; do
+            echo "Applying $sql..."
+            PGSSLMODE=require psql -h pg.neon.tech -U ${{ env.NEON_USER }} -d ${{ env.NEON_DB }} \
+              --options=endpoint=${{ env.NEON_ENDPOINT_ID }} \
+              -f "$sql" || exit 1
+          done
+          echo "✅ All migrations from ops/sql applied successfully"
+      
+      - name: Apply schema from libs/memory
+        if: hashFiles('libs/memory/schema.sql') != ''
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+        run: |
+          echo "Applying libs/memory/schema.sql..."
+          PGSSLMODE=require psql -h pg.neon.tech -U ${{ env.NEON_USER }} -d ${{ env.NEON_DB }} \
+            --options=endpoint=${{ env.NEON_ENDPOINT_ID }} \
+            -f libs/memory/schema.sql || exit 1
+          echo "✅ Schema applied successfully"
+      
+      - name: Verify migration
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+        run: |
+          echo "Verifying database state..."
+          PGSSLMODE=require psql -h pg.neon.tech -U ${{ env.NEON_USER }} -d ${{ env.NEON_DB }} \
+            --options=endpoint=${{ env.NEON_ENDPOINT_ID }} \
+            -c "\dt" || exit 1
+          echo "✅ Migration verification complete"
+      
+      - name: Create migration report
+        if: always()
+        run: |
+          echo "# Migration Report" > migration-report.md
+          echo "**Date:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> migration-report.md
+          echo "**Branch:** ${{ github.ref_name }}" >> migration-report.md
+          echo "**Commit:** ${{ github.sha }}" >> migration-report.md
+          echo "" >> migration-report.md
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "✅ **Status:** Success" >> migration-report.md
+          else
+            echo "❌ **Status:** Failed" >> migration-report.md
+          fi
+      
+      - name: Upload migration report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: migration-report
+          path: migration-report.md
+
+  backup:
+    runs-on: ubuntu-latest
+    name: Backup Database
+    needs: migrate
+    if: success() && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+      
+      - name: Create backup
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+        run: |
+          echo "Creating database backup..."
+          BACKUP_FILE="neon_backup_$(date +%Y%m%d_%H%M%S).sql"
+          PGSSLMODE=require pg_dump -h pg.neon.tech -U ${{ env.NEON_USER }} -d ${{ env.NEON_DB }} \
+            --options=endpoint=${{ env.NEON_ENDPOINT_ID }} \
+            > "$BACKUP_FILE"
+          echo "✅ Backup created: $BACKUP_FILE"
+          echo "BACKUP_FILE=$BACKUP_FILE" >> $GITHUB_ENV
+      
+      - name: Upload backup
+        uses: actions/upload-artifact@v3
+        with:
+          name: database-backup
+          path: ${{ env.BACKUP_FILE }}
+          retention-days: 7
+
+  notify:
+    runs-on: ubuntu-latest
+    name: Notify Status
+    needs: [migrate, backup]
+    if: always()
+    
+    steps:
+      - name: Prepare notification
+        run: |
+          if [ "${{ needs.migrate.result }}" = "success" ]; then
+            echo "✅ Database migration completed successfully" >> $GITHUB_STEP_SUMMARY
+            echo "📅 Date: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_STEP_SUMMARY
+            echo "🔗 Commit: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+            if [ "${{ needs.backup.result }}" = "success" ]; then
+              echo "💾 Backup created successfully" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "❌ Database migration failed" >> $GITHUB_STEP_SUMMARY
+            echo "Please check the logs for details" >> $GITHUB_STEP_SUMMARY
+          fi

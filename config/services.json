@@ -1,0 +1,59 @@
+{
+  "generated_at": "2025-08-26T22:48:50.611101",
+  "services": {
+    "analytics-mcp": {
+      "name": "analytics-mcp",
+      "app": "sophia-analytics-mcp",
+      "url": "https://sophia-analytics-mcp.fly.dev",
+      "health_check": "https://sophia-analytics-mcp.fly.dev/health"
+    },
+    "crm-mcp": {
+      "name": "crm-mcp",
+      "app": "sophia-crm-mcp",
+      "url": "https://sophia-crm-mcp.fly.dev",
+      "health_check": "https://sophia-crm-mcp.fly.dev/health"
+    },
+    "comms-mcp": {
+      "name": "comms-mcp",
+      "app": "sophia-comms-mcp",
+      "url": "https://sophia-comms-mcp.fly.dev",
+      "health_check": "https://sophia-comms-mcp.fly.dev/health"
+    },
+    "projects-mcp": {
+      "name": "projects-mcp",
+      "app": "sophia-projects-mcp",
+      "url": "https://sophia-projects-mcp.fly.dev",
+      "health_check": "https://sophia-projects-mcp.fly.dev/health"
+    },
+    "gong-mcp": {
+      "name": "gong-mcp",
+      "app": "sophia-gong-mcp",
+      "url": "https://sophia-gong-mcp.fly.dev",
+      "health_check": "https://sophia-gong-mcp.fly.dev/health"
+    },
+    "context-api": {
+      "name": "context-api",
+      "app": "sophia-context-api",
+      "url": "https://sophia-context-api.fly.dev",
+      "health_check": "https://sophia-context-api.fly.dev/health"
+    },
+    "agents-swarm": {
+      "name": "agents-swarm",
+      "app": "sophia-agents-swarm",
+      "url": "https://sophia-agents-swarm.fly.dev",
+      "health_check": "https://sophia-agents-swarm.fly.dev/health"
+    },
+    "support-mcp": {
+      "name": "support-mcp",
+      "app": "sophia-support-mcp",
+      "url": "https://sophia-support-mcp.fly.dev",
+      "health_check": "https://sophia-support-mcp.fly.dev/health"
+    },
+    "enrichment-mcp": {
+      "name": "enrichment-mcp",
+      "app": "sophia-enrichment-mcp",
+      "url": "https://sophia-enrichment-mcp.fly.dev",
+      "health_check": "https://sophia-enrichment-mcp.fly.dev/health"
+    }
+  }
+}

@@ -7,14 +7,21 @@ import os
 import logging
 from typing import Dict, Any, Optional, List
 from datetime import datetime
-from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, Request, Response, Header, Depends
+from fastapi import HTTPException, Request, Response, Header, Depends
 from fastapi.responses import JSONResponse
-from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import httpx
 import json
+
+# Try to import from platform.common, fall back to local if not available
+try:
+    from platform.common.service_base import create_app
+except ImportError:
+    # Fallback for development without platform package
+    import sys
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+    from platform.common.service_base import create_app
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -37,28 +44,22 @@ SEARCH_API_KEY = os.getenv("SEARCH_API_KEY", "")  # Generic search API key
 SERVICE_NAME = "enrichment-mcp"
 SERVICE_VERSION = "1.0.0"
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """FastAPI lifespan event handler"""
+# Startup and shutdown handlers
+async def startup_handler():
+    """Startup event handler"""
     logger.info(f"Starting {SERVICE_NAME} v{SERVICE_VERSION}")
-    yield
+
+async def shutdown_handler():
+    """Shutdown event handler"""
     logger.info(f"Shutting down {SERVICE_NAME}")
 
-# Initialize FastAPI app
-app = FastAPI(
-    title="Enrichment MCP Service",
-    description="MCP service for data enrichment from multiple providers",
+# Initialize FastAPI app using factory
+app = create_app(
+    name="Enrichment MCP Service",
+    desc="MCP service for data enrichment from multiple providers",
     version=SERVICE_VERSION,
-    lifespan=lifespan
-)
-
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    startup_handler=startup_handler,
+    shutdown_handler=shutdown_handler
 )
 
 # Request/Response models
@@ -103,42 +104,6 @@ class SearchRequest(BaseModel):
     limit: int = 25
     offset: int = 0
 
-# Health check endpoints
-@app.get("/health")
-async def health_check():
-    """Basic health check endpoint"""
-    return {
-        "status": "healthy",
-        "service": SERVICE_NAME,
-        "version": SERVICE_VERSION,
-        "timestamp": datetime.utcnow().isoformat()
-    }
-
-@app.get("/health/ready")
-async def readiness_check():
-    """Readiness check endpoint"""
-    checks = {
-        "portkey_configured": bool(PORTKEY_API_KEY),
-        "usergems_configured": bool(USERGEMS_API_KEY),
-        "apollo_configured": bool(APOLLO_API_KEY),
-        "salesnav_configured": bool(SALESNAV_ACCESS_TOKEN),
-        "phantombuster_configured": bool(PHANTOMBUSTER_API_KEY),
-        "costar_configured": bool(COSTAR_API_KEY)
-    }
-    
-    is_ready = checks["portkey_configured"] and any([
-        checks["usergems_configured"],
-        checks["apollo_configured"],
-        checks["salesnav_configured"],
-        checks["phantombuster_configured"],
-        checks["costar_configured"]
-    ])
-    
-    return {
-        "ready": is_ready,
-        "checks": checks,
-        "timestamp": datetime.utcnow().isoformat()
-    }
 
 # Person Enrichment endpoints
 @app.post("/api/enrich/person")
