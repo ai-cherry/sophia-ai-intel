@@ -41,7 +41,6 @@ class SophiaAI:
             'togetherai_api_key': os.getenv('TOGETHERAI_API_KEY'),
             'venice_ai_api_key': os.getenv('VENICE_AI_API_KEY'),
             'xai_api_key': os.getenv('XAI_API_KEY'),
-            'openrouter_api_key': os.getenv('OPENROUTER_API_KEY'),
             'portkey_api_key': os.getenv('PORTKEY_API_KEY'),
             'mem0_api_key': os.getenv('MEM0_API_KEY'),
             'qdrant_url': os.getenv('QDRANT_URL'),
@@ -88,7 +87,7 @@ class SophiaAI:
         logger.info(f"✅ Initialized {len(self.embedding_providers)} embedding providers")
 
     async def _init_llm_providers(self):
-        """Initialize LLM providers"""
+        """Initialize LLM providers - OpenRouter removed, using standardized routing"""
         self.llm_providers = {
             'openai': OpenAIProvider(self.config['openai_api_key']),
             'anthropic': AnthropicProvider(self.config['anthropic_api_key']),
@@ -99,7 +98,7 @@ class SophiaAI:
             'togetherai': TogetherAIProvider(self.config['togetherai_api_key']),
             'venice': VeniceProvider(self.config['venice_ai_api_key']),
             'xai': XAIProvider(self.config['xai_api_key']),
-            'openrouter': OpenRouterProvider(self.config['openrouter_api_key']),
+            # OpenRouter removed - using standardized Portkey routing instead
         }
         logger.info(f"✅ Initialized {len(self.llm_providers)} LLM providers")
 
@@ -139,7 +138,7 @@ class SophiaAI:
         return await self.embedding_providers[provider].generate_embedding(text)
 
     async def search_similar(self, query: str, collection: str = 'sophia-knowledge-base',
-                           limit: int = 10) -> List[Dict[str, Any]]:
+                            limit: int = 10) -> List[Dict[str, Any]]:
         """Search for similar content using vector similarity"""
         if not self.initialized:
             raise RuntimeError("Sophia AI not initialized")
@@ -546,32 +545,7 @@ class XAIProvider(LLMProvider):
             return "I apologize, but I'm having trouble generating a response right now."
 
 
-class OpenRouterProvider(LLMProvider):
-    """OpenRouter LLM provider"""
-
-    async def generate_response(self, prompt: str, context: Optional[List[Dict]] = None) -> str:
-        try:
-            import openai
-            client = openai.AsyncOpenAI(
-                api_key=self.api_key,
-                base_url="https://openrouter.ai/api/v1"
-            )
-
-            messages = []
-            if context:
-                messages.extend(context)
-            messages.append({"role": "user", "content": prompt})
-
-            response = await client.chat.completions.create(
-                model="auto",  # Let OpenRouter choose the best model
-                messages=messages,
-                max_tokens=1000,
-                temperature=0.7
-            )
-            return response.choices[0].message.content
-        except Exception as e:
-            logger.error(f"OpenRouter error: {e}")
-            return "I apologize, but I'm having trouble generating a response right now."
+# OpenRouterProvider REMOVED - Using standardized Portkey routing instead
 
 
 class QdrantVectorStore:
@@ -598,7 +572,7 @@ class QdrantVectorStore:
             logger.error(f"❌ Qdrant initialization failed: {e}")
 
     async def store_document(self, doc_id: str, content: str, embedding: List[float],
-                           metadata: Dict[str, Any], collection: str):
+                            metadata: Dict[str, Any], collection: str):
         """Store document in vector database"""
         try:
             import requests
@@ -629,7 +603,7 @@ class QdrantVectorStore:
             logger.error(f"❌ Error storing document: {e}")
 
     async def search_similar(self, query_embedding: List[float], collection: str,
-                           limit: int = 10) -> List[Dict[str, Any]]:
+                            limit: int = 10) -> List[Dict[str, Any]]:
         """Search for similar documents"""
         try:
             import requests

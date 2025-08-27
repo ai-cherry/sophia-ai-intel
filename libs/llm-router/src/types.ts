@@ -59,6 +59,8 @@ export interface ModelConfig {
   cost_per_token: number;
   enabled: boolean;
   fallback_order: number;
+  type?: string; // e.g., 'completion', 'embedding', 'vision'
+  purpose?: string[]; // e.g., 'code_writing', 'general', 'embeddings', 'business_strategy'
 }
 
 export interface RouterOptions {

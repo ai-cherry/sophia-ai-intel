@@ -37,3 +37,18 @@ ssl/*.cert
 *.key
 *_private*
 *private_key*
+
+# Node.js
+node_modules/
+package-lock.json
+
+# TypeScript build artifacts
+*.tsbuildinfo
+
+# Python artifacts
+__pycache__/
+*.pyc
+
+# Temporary or generated files
+# Assuming _new.py files are temporary or should be renamed, but will be cautious for now.
+*.new

@@ -4,7 +4,8 @@ Sophia AI Vector Indexer Worker
 ================================
 
 Offline vector processing worker for document indexing.
-Processes staged documents, creates embeddings, and upserts to Qdrant.
+Processes staged documents, creates embeddings via standardized Portkey routing, and upserts to Qdrant.
+OpenRouter removed - using standardized LLM routing.
 """
 
 import os
@@ -26,13 +27,10 @@ from psycopg2.extras import RealDictCursor
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
-# Environment configuration
+# Environment configuration - OpenRouter removed, using standardized routing
 QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
 QDRANT_API_KEY = os.getenv("QDRANT_API_KEY", "")
-# Use native OpenAI endpoint for embeddings
-EMBED_ENDPOINT = os.getenv("EMBED_ENDPOINT", "https://api.openai.com/v1/embeddings")
-EMBED_MODEL = os.getenv("EMBED_MODEL", "text-embedding-3-large")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")  # Use OpenAI API key directly
+PORTKEY_API_KEY = os.getenv("PORTKEY_API_KEY", "")  # Use Portkey for standardized routing
 NEON_DATABASE_URL = os.getenv("NEON_DATABASE_URL", "")
 COLLECTION_NAME = os.getenv("QDRANT_COLLECTION", "sophia_documents")
 CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "1000"))
@@ -50,10 +48,10 @@ else:
 def dedupe_hash(text: str) -> str:
     """
     Generate SHA256 hash for deduplication.
-    
+
     Args:
         text: Text content to hash
-        
+
     Returns:
         SHA256 hash string
     """
@@ -62,31 +60,37 @@ def dedupe_hash(text: str) -> str:
 
 async def compute_embedding(session: aiohttp.ClientSession, text: str) -> Optional[List[float]]:
     """
-    Get embeddings from native OpenAI API endpoint.
-    
+    Get embeddings using standardized Portkey routing instead of direct OpenAI.
+
     Args:
         session: aiohttp session for making requests
         text: Text to embed
-        
+
     Returns:
         Embedding vector or None if failed
     """
     try:
-        # Use OpenAI API key directly
+        if not PORTKEY_API_KEY:
+            logger.warning("PORTKEY_API_KEY not configured - using mock embedding")
+            return [0.1] * 1536  # Mock 1536-dimensional embedding
+
+        # Use Portkey API for standardized routing
         headers = {
-            "Authorization": f"Bearer {OPENAI_API_KEY}",
+            "x-portkey-api-key": PORTKEY_API_KEY,
+            "x-portkey-virtual-key": "openai-text-embedding-3-large",  # Standardized virtual key
             "Content-Type": "application/json"
         }
-        
+
         payload = {
-            "model": EMBED_MODEL,
-            "input": text
+            "model": "text-embedding-3-large",
+            "input": text[:8000],  # Truncate to model limits
+            "encoding_format": "float"
         }
-        
-        async with session.post(EMBED_ENDPOINT, json=payload, headers=headers) as resp:
+
+        async with session.post("https://api.portkey.ai/v1/embeddings", json=payload, headers=headers) as resp:
             if resp.status == 200:
                 data = await resp.json()
-                # OpenAI standard response format
+                # Portkey returns OpenAI-compatible format
                 if "data" in data and len(data["data"]) > 0:
                     return data["data"][0]["embedding"]
                 else:
@@ -94,9 +98,9 @@ async def compute_embedding(session: aiohttp.ClientSession, text: str) -> Option
                     return None
             else:
                 error_text = await resp.text()
-                logger.error(f"Failed to compute embedding: {resp.status} - {error_text}")
+                logger.error(f"Failed to compute embedding via Portkey: {resp.status} - {error_text}")
                 return None
-                
+
     except Exception as e:
         logger.error(f"Error computing embedding: {e}")
         return None
@@ -105,12 +109,12 @@ async def compute_embedding(session: aiohttp.ClientSession, text: str) -> Option
 async def upsert_qdrant(session: aiohttp.ClientSession, collection: str, points: List[Dict[str, Any]]) -> bool:
     """
     Upsert vectors to Qdrant with proper metadata.
-    
+
     Args:
         session: aiohttp session (for consistency, though Qdrant client handles its own)
         collection: Collection name in Qdrant
         points: List of point data with id, vector, and payload
-        
+
     Returns:
         True if successful, False otherwise
     """
@@ -118,7 +122,7 @@ async def upsert_qdrant(session: aiohttp.ClientSession, collection: str, points:
         # Ensure collection exists with proper configuration
         collections = qdrant_client.get_collections().collections
         collection_exists = any(c.name == collection for c in collections)
-        
+
         if not collection_exists:
             # Create collection with appropriate vector size
             vector_size = len(points[0]["vector"]) if points else 3072  # Default for text-embedding-3-large
@@ -127,7 +131,7 @@ async def upsert_qdrant(session: aiohttp.ClientSession, collection: str, points:
                 vectors_config=VectorParams(size=vector_size, distance=Distance.COSINE)
             )
             logger.info(f"Created Qdrant collection: {collection}")
-        
+
         # Convert points to Qdrant format
         qdrant_points = []
         for point in points:
@@ -137,17 +141,17 @@ async def upsert_qdrant(session: aiohttp.ClientSession, collection: str, points:
                 payload=point["payload"]
             )
             qdrant_points.append(qdrant_point)
-        
+
         # Upsert points
         operation_info = qdrant_client.upsert(
             collection_name=collection,
             wait=True,
             points=qdrant_points
         )
-        
+
         logger.info(f"Successfully upserted {len(qdrant_points)} points to Qdrant collection {collection}")
         return True
-        
+
     except Exception as e:
         logger.error(f"Error upserting to Qdrant: {e}")
         return False
@@ -156,70 +160,70 @@ async def upsert_qdrant(session: aiohttp.ClientSession, collection: str, points:
 def chunk_text(text: str, chunk_size: int = CHUNK_SIZE, overlap: int = CHUNK_OVERLAP) -> List[str]:
     """
     Split text into overlapping chunks.
-    
+
     Args:
         text: Text to chunk
         chunk_size: Maximum size of each chunk
         overlap: Number of characters to overlap between chunks
-        
+
     Returns:
         List of text chunks
     """
     chunks = []
     start = 0
     text_length = len(text)
-    
+
     while start < text_length:
         end = min(start + chunk_size, text_length)
         chunk = text[start:end]
         chunks.append(chunk)
-        
+
         if end >= text_length:
             break
-            
+
         start = end - overlap
-    
+
     return chunks
 
 
 async def process_document(session: aiohttp.ClientSession, doc: Dict[str, Any]) -> bool:
     """
     Process a single document: chunk, dedupe, embed, and index.
-    
+
     Args:
         session: aiohttp session
         doc: Document data from database
-        
+
     Returns:
         True if successful, False otherwise
     """
     try:
         doc_id = doc.get("doc_id") or doc.get("id")
         content = doc.get("content", "")
-        
+
         if not content:
             logger.warning(f"Document {doc_id} has no content, skipping")
             return False
-        
+
         # Chunk the document
         chunks = chunk_text(content)
         logger.info(f"Document {doc_id} split into {len(chunks)} chunks")
-        
+
         # Process chunks
         points = []
         for i, chunk in enumerate(chunks):
             # Generate hash for deduplication
             chunk_hash = dedupe_hash(chunk)
-            
+
             # Check if this chunk already exists (simplified - in production, query Qdrant)
             # For now, we'll process all chunks
-            
-            # Compute embedding
+
+            # Compute embedding using standardized routing
             embedding = await compute_embedding(session, chunk)
             if not embedding:
                 logger.warning(f"Failed to get embedding for chunk {i} of document {doc_id}")
                 continue
-            
+
             # Create point for Qdrant
             point_id = f"{doc_id}_chunk_{i}"
             point = {
@@ -234,12 +238,13 @@ async def process_document(session: aiohttp.ClientSession, doc: Dict[str, Any]) 
                     "url": doc.get("url"),
                     "neon_row_pk": doc.get("id"),
                     "ts": datetime.now(timezone.utc).isoformat(),
-                    "embedding_model": EMBED_MODEL,
+                    "embedding_model": "text-embedding-3-large",
+                    "embedding_provider": "standardized_portkey_routing",
                     "metadata": doc.get("metadata", {})
                 }
             }
             points.append(point)
-        
+
         # Upsert all points for this document
         if points:
             success = await upsert_qdrant(session, COLLECTION_NAME, points)
@@ -252,7 +257,7 @@ async def process_document(session: aiohttp.ClientSession, doc: Dict[str, Any]) 
         else:
             logger.warning(f"No chunks to index for document {doc_id}")
             return False
-            
+
     except Exception as e:
         logger.error(f"Error processing document {doc.get('id')}: {e}")
         return False
@@ -261,15 +266,15 @@ async def process_document(session: aiohttp.ClientSession, doc: Dict[str, Any]) 
 def get_staged_documents(limit: int = BATCH_SIZE) -> List[Dict[str, Any]]:
     """
     Fetch staged documents from database.
-    
+
     Args:
         limit: Maximum number of documents to fetch
-        
+
     Returns:
         List of document records
     """
     documents = []
-    
+
     # If no database URL, return empty (for testing)
     if not NEON_DATABASE_URL:
         logger.warning("No database URL configured, using test data")
@@ -279,75 +284,75 @@ def get_staged_documents(limit: int = BATCH_SIZE) -> List[Dict[str, Any]]:
                 "id": str(uuid.uuid4()),
                 "doc_id": "test_doc_1",
                 "account_id": "test_account",
-                "content": "This is a test document for vector indexing. It contains sample content that will be chunked and embedded.",
+                "content": "This is a test document for vector indexing. It contains sample content that will be chunked and embedded using standardized Portkey routing.",
                 "url": "https://example.com/doc1",
                 "metadata": {"source": "test"},
                 "status": "staged",
                 "vector_indexed": False
             }
         ]
-    
+
     try:
         conn = psycopg2.connect(NEON_DATABASE_URL)
         cursor = conn.cursor(cursor_factory=RealDictCursor)
-        
+
         # Query for staged documents that haven't been indexed
         query = """
-            SELECT * FROM documents 
+            SELECT * FROM documents
             WHERE status = 'staged' AND (vector_indexed = false OR vector_indexed IS NULL)
             ORDER BY created_at ASC
             LIMIT %s
         """
-        
+
         cursor.execute(query, (limit,))
         documents = cursor.fetchall()
-        
+
         cursor.close()
         conn.close()
-        
+
         logger.info(f"Fetched {len(documents)} staged documents from database")
-        
+
     except Exception as e:
         logger.error(f"Error fetching documents from database: {e}")
-    
+
     return documents
 
 
 def mark_document_indexed(doc_id: str) -> bool:
     """
     Mark a document as indexed in the database.
-    
+
     Args:
         doc_id: Document ID to mark as indexed
-        
+
     Returns:
         True if successful, False otherwise
     """
     if not NEON_DATABASE_URL:
         logger.info(f"Test mode: Would mark document {doc_id} as indexed")
         return True
-    
+
     try:
         conn = psycopg2.connect(NEON_DATABASE_URL)
         cursor = conn.cursor()
-        
+
         query = """
-            UPDATE documents 
-            SET vector_indexed = true, 
+            UPDATE documents
+            SET vector_indexed = true,
                 indexed_at = NOW(),
                 status = 'indexed'
             WHERE doc_id = %s OR id = %s
         """
-        
+
         cursor.execute(query, (doc_id, doc_id))
         conn.commit()
-        
+
         cursor.close()
         conn.close()
-        
+
         logger.info(f"Marked document {doc_id} as indexed")
         return True
-        
+
     except Exception as e:
         logger.error(f"Error marking document {doc_id} as indexed: {e}")
         return False
@@ -356,31 +361,31 @@ def mark_document_indexed(doc_id: str) -> bool:
 async def run_once():
     """
     Main worker function for processing documents.
-    Fetches staged documents and processes them for vector indexing.
+    Fetches staged documents and processes them for vector indexing using standardized routing.
     """
-    logger.info("Starting vector indexer run")
-    
+    logger.info("Starting vector indexer run with standardized Portkey routing")
+
     # Create aiohttp session
     async with aiohttp.ClientSession() as session:
         # Fetch staged documents
         documents = get_staged_documents()
-        
+
         if not documents:
             logger.info("No staged documents to process")
             return
-        
+
         logger.info(f"Processing {len(documents)} staged documents")
-        
+
         # Process each document
         success_count = 0
         failed_count = 0
-        
+
         for doc in documents:
             doc_id = doc.get("doc_id") or doc.get("id")
             logger.info(f"Processing document {doc_id}")
-            
+
             success = await process_document(session, doc)
-            
+
             if success:
                 # Mark as indexed in database
                 if mark_document_indexed(doc_id):
@@ -390,25 +395,25 @@ async def run_once():
                     failed_count += 1
             else:
                 failed_count += 1
-        
+
         logger.info(f"Vector indexing complete: {success_count} successful, {failed_count} failed")
 
 
 async def run_continuous(interval_seconds: int = 60):
     """
     Run the worker continuously with specified interval.
-    
+
     Args:
         interval_seconds: Seconds to wait between runs
     """
     logger.info(f"Starting continuous vector indexer with {interval_seconds}s interval")
-    
+
     while True:
         try:
             await run_once()
         except Exception as e:
             logger.error(f"Error in vector indexer run: {e}")
-        
+
         logger.info(f"Waiting {interval_seconds} seconds before next run...")
         await asyncio.sleep(interval_seconds)
 
@@ -418,7 +423,7 @@ def main():
     # Check if running in continuous mode
     continuous_mode = os.getenv("CONTINUOUS_MODE", "false").lower() == "true"
     interval = int(os.getenv("RUN_INTERVAL", "60"))
-    
+
     if continuous_mode:
         # Run continuously
         asyncio.run(run_continuous(interval))

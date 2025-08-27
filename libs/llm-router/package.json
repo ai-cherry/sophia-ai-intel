@@ -12,7 +12,7 @@
   "dependencies": {
     "portkey-ai": "^0.1.11",
     "openai": "^4.20.0",
-    "@sophia/contracts": "workspace:*"
+    "@sophia/contracts": "file:../contracts"
   },
   "devDependencies": {
     "typescript": "^5.2.2",

@@ -6,7 +6,7 @@ export const LLMModelSchema = z.enum([
   'gpt-5',                    // Default primary model
   'gpt-4o',                   // OpenAI fallback
   'gpt-4-turbo',              // OpenAI alternative
-  'claude-3-5-sonnet-20241022', // Anthropic primary
+  'claude-opus-4.1',          // Anthropic primary
   'claude-3-haiku-20240307',  // Anthropic fast
   'deepseek-coder',           // Code assistance
   'groq-llama-3-70b',         // Fast inference
@@ -104,20 +104,14 @@ export const LLMRouterConfigSchema = z.object({
 export const DEFAULT_LLM_ROUTER_CONFIG: z.infer<typeof LLMRouterConfigSchema> = {
   strategy: 'fallback',
   targets: [
-    {
-      provider: 'openai',
-      model: 'gpt-5',
-      weight: 1,
+    {provider: "openai", model: "gpt-5",
+      weight: 1, // Retain local weighting
     },
-    {
-      provider: 'anthropic',
-      model: 'claude-3-5-sonnet-20241022',
-      weight: 0.8,
+    {provider: "openai", model: "gpt-5",
+      weight: 0.8, // Retain local weighting
     },
-    {
-      provider: 'openai',
-      model: 'gpt-4o',
-      weight: 0.6,
+    {provider: "openai", model: "gpt-5",
+      weight: 0.6, // Retain local weighting
     },
   ],
   retry_settings: {

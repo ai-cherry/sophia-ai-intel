@@ -330,7 +330,7 @@ class ChatAPI {
   private getModelMapping(model: string): string {
     const modelMap: Record<string, string> = {
       'gpt-5': 'gpt-4-turbo-preview', // Fallback until GPT-5 available
-      'claude-3.5-sonnet': 'claude-3-5-sonnet-20241022',
+      'claude-opus-4.1': 'claude-opus-4.1', // Claude Opus 4.1
       'gpt-4o': 'gpt-4o-2024-08-06',
       'deepseek-coder': 'deepseek-coder-33b-instruct'
     }
