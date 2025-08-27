@@ -12,35 +12,24 @@ import logging
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-import uvicorn
 from fastapi import Header, Query
 from pydantic import BaseModel
 
 # Import shared platform libraries
-try:
-    from platform.common.service_base import create_app, ok, err, raise_http_error
-    from platform.auth.jwt import validate_token
-    from platform.common.errors import ServiceError, ValidationError
-    from platform.common.audit import log_tool_invocation, cleanup_connection_pool
-except ImportError:
-    # Fallback for development
-    from platform.common.service_base import create_app, ok, err, raise_http_error
-    validate_token = None
-    ServiceError = Exception
-    ValidationError = Exception
-    # Mock audit functions for development
-    async def log_tool_invocation(*args, **kwargs):
-        return None
-    async def cleanup_connection_pool():
-        pass
+from platform.common.service_base import create_app, ServiceConfig
+from platform.auth.jwt import validate_token
+from platform.common.errors import ServiceError, ValidationError, ok, err, raise_http_error
+from platform.common.audit import log_tool_invocation, cleanup_connection_pool
 
 # Configure logging
 logger = logging.getLogger(__name__)
 
-# Environment configuration
-SERVICE_NAME = "Sophia AI Projects MCP"
-SERVICE_DESCRIPTION = "Project management and collaboration integration"
-SERVICE_VERSION = "1.0.0"
+# Service configuration using ServiceConfig
+SERVICE_CONFIG = ServiceConfig(
+    name="projects-mcp",
+    version="1.0.0",  # This should ideally come from a package version
+    description="Project management and collaboration integration for Sophia AI platform."
+)
 
 # Pydantic models for request/response validation
 class CreateIssueRequest(BaseModel):
@@ -52,22 +41,25 @@ class CreateIssueRequest(BaseModel):
     due_date: Optional[str] = None
 
 # Startup and shutdown handlers
-async def startup_handler():
+# These will be passed to ServiceConfig
+async def startup_event():
     """Initialize resources on startup"""
-    logger.info(f"{SERVICE_NAME} starting...")
+    logger.info(f"{SERVICE_CONFIG.name} starting...")
 
-async def shutdown_handler():
+async def shutdown_event():
     """Clean up resources on shutdown"""
     await cleanup_connection_pool()
-    logger.info(f"{SERVICE_NAME} shutting down")
+    logger.info(f"{SERVICE_CONFIG.name} shutting down")
 
 # Create FastAPI app using the shared service base
 app = create_app(
-    name=SERVICE_NAME,
-    desc=SERVICE_DESCRIPTION,
-    version=SERVICE_VERSION,
-    startup_handler=startup_handler,
-    shutdown_handler=shutdown_handler
+    config=ServiceConfig(
+        name=SERVICE_CONFIG.name,
+        version=SERVICE_CONFIG.version,
+        description=SERVICE_CONFIG.description,
+        startup_event=startup_event,
+        shutdown_event=shutdown_event
+    )
 )
 
 # Service-specific endpoints

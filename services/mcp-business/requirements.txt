@@ -1,9 +1,4 @@
-fastapi==0.111.0
-uvicorn[standard]==0.30.1
-httpx==0.27.2
-pydantic==2.8.2
-python-dotenv==1.0.1
-asyncpg==0.29.0
+-r ../../platform/common/base-requirements.txt
 python-multipart==0.0.9
 aiofiles==23.2.1
 PyJWT==2.8.0

@@ -1,0 +1,8 @@
+aiohttp==3.9.5
+asyncpg==0.29.0
+fastapi==0.111.0
+httpx==0.26.0
+pydantic==2.8.2
+python-dotenv==1.0.1
+redis==5.0.1
+uvicorn[standard]==0.30.1
