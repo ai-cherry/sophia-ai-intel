@@ -1,0 +1,31 @@
+# Sophia AI Context API Requirements
+# ====================================
+
+# Web Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+
+# SSE Support
+sse-starlette==1.8.2
+
+# Database
+psycopg2-binary==2.9.9
+
+# Vector Database
+qdrant-client==1.7.0
+
+# Async HTTP
+aiohttp==3.9.1
+
+# CORS and Security
+python-multipart==0.0.6
+
+# Logging and Monitoring
+python-json-logger==2.0.7
+
+# Environment Management
+python-dotenv==1.0.0
+
+# Date/Time utilities
+python-dateutil==2.8.2

@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Connection
+metadata:
+  name: gong_to_neon
+spec:
+  source:
+    name: Gong API
+    sourceId: gong-source
+    configuration:
+      api_key: "{{ env:GONG_API_KEY }}"
+      start_date: "2024-01-01"
+  
+  destination:
+    name: Neon Postgres
+    destinationId: neon-destination
+    configuration:
+      host: "{{ env:NEON_HOST }}"
+      port: 5432
+      database: "{{ env:NEON_DATABASE }}"
+      username: "{{ env:NEON_USER }}"
+      password: "{{ env:NEON_PASSWORD }}"
+      ssl: true
+      schema: raw
+  
+  schedule:
+    type: cron
+    cronExpression: "0 */6 * * *"  # Every 6 hours
+  
+  syncCatalog:
+    streams:
+      - stream:
+          name: calls
+          jsonSchema:
+            type: object
+            properties:
+              call_id: { type: string }
+              call_date: { type: string }
+              duration: { type: string }
+          supportedSyncModes:
+            - full_refresh
+            - incremental
+        config:
+          syncMode: incremental
+          destinationSyncMode: append_dedup
+          primaryKey: [call_id]
+          cursorField: updated_at

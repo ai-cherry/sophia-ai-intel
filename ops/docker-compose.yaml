@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  # Mem0 Short-term Memory Service
+  mem0:
+    build: ../memory/mem0
+    ports:
+      - "8009:8000"
+    environment:
+      - REDIS_URL=redis://mem0-redis:6379
+    depends_on:
+      - mem0-redis
+    networks:
+      - sophia-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8000/health').raise_for_status()"]
+      interval: 30s
+      timeout: 3s
+      start_period: 5s
+      retries: 3
+
+  # Redis for Mem0 Storage
+  mem0-redis:
+    image: redis:7-alpine
+    volumes:
+      - ../memory/redis/redis.conf:/usr/local/etc/redis/redis.conf
+      - mem0_data:/data
+    command: redis-server /usr/local/etc/redis/redis.conf
+    ports:
+      - "6379:6379"
+    networks:
+      - sophia-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+networks:
+  sophia-network:
+    driver: bridge
+
+volumes:
+  mem0_data:
+    driver: local

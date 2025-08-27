@@ -1,0 +1,83 @@
+{
+  "analytics-mcp": {
+    "app": "sophia-analytics-mcp",
+    "config": "ops/fly/analytics-mcp.toml",
+    "domain": "https://sophia-analytics-mcp.fly.dev",
+    "secrets": {
+      "keys": ["NEON_DATABASE_URL", "PORTKEY_API_KEY", "PORTKEY_DEFAULT_MODEL"],
+      "prefixes": ["LOOKER_", "QDRANT_", "OPENROUTER_"]
+    }
+  },
+  "crm-mcp": {
+    "app": "sophia-crm-mcp",
+    "config": "ops/fly/crm-mcp.toml",
+    "domain": "https://sophia-crm-mcp.fly.dev",
+    "secrets": {
+      "keys": ["PORTKEY_API_KEY", "HUBSPOT_ACCESS_TOKEN", "SALESFORCE_CLIENT_ID", "SALESFORCE_CLIENT_SECRET", "SALESFORCE_USERNAME", "SALESFORCE_PASSWORD"],
+      "prefixes": []
+    }
+  },
+  "comms-mcp": {
+    "app": "sophia-comms-mcp",
+    "config": "ops/fly/comms-mcp.toml",
+    "domain": "https://sophia-comms-mcp.fly.dev",
+    "secrets": {
+      "keys": ["SLACK_BOT_TOKEN", "PORTKEY_API_KEY"],
+      "prefixes": []
+    }
+  },
+  "projects-mcp": {
+    "app": "sophia-projects-mcp",
+    "config": "ops/fly/projects-mcp.toml",
+    "domain": "https://sophia-projects-mcp.fly.dev",
+    "secrets": {
+      "keys": ["PORTKEY_API_KEY"],
+      "prefixes": ["ASANA_", "LINEAR_", "NOTION_"]
+    }
+  },
+  "gong-mcp": {
+    "app": "sophia-gong-mcp",
+    "config": "ops/fly/gong-mcp.toml",
+    "domain": "https://sophia-gong-mcp.fly.dev",
+    "secrets": {
+      "keys": ["PORTKEY_API_KEY", "GONG_ACCESS_KEY", "GONG_ACCESS_TOKEN"],
+      "prefixes": []
+    }
+  },
+  "context-api": {
+    "app": "sophia-context-api",
+    "config": "ops/fly/context-api.toml",
+    "domain": "https://sophia-context-api.fly.dev",
+    "secrets": {
+      "keys": ["NEON_DATABASE_URL", "OPENROUTER_API_KEY", "EMBED_MODEL"],
+      "prefixes": ["QDRANT_"]
+    }
+  },
+  "agents-swarm": {
+    "app": "sophia-agents-swarm",
+    "config": "ops/fly/agents-swarm.toml",
+    "domain": "https://sophia-agents-swarm.fly.dev",
+    "secrets": {
+      "keys": ["PORTKEY_API_KEY", "SWARM_INTERNAL_JWT"],
+      "prefixes": []
+    }
+  },
+  "support-mcp": {
+    "app": "sophia-support-mcp",
+    "config": "ops/fly/support-mcp.toml",
+    "domain": "https://sophia-support-mcp.fly.dev",
+    "secrets": {
+      "keys": ["PORTKEY_API_KEY"],
+      "prefixes": ["INTERCOM_"]
+    }
+  },
+  "enrichment-mcp": {
+    "app": "sophia-enrichment-mcp",
+    "config": "ops/fly/enrichment-mcp.toml",
+    "domain": "https://sophia-enrichment-mcp.fly.dev",
+    "secrets": {
+      "keys": ["PORTKEY_API_KEY"],
+      "prefixes": ["USERGEMS_", "APOLLO_", "SALESNAV_", "PHANTOMBUSTER_", "COSTAR_", "SEARCH_"]
+    }
+  }
+}

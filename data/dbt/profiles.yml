@@ -1,0 +1,27 @@
+sophia_analytics:
+  outputs:
+    dev:
+      type: postgres
+      host: "{{ env_var('NEON_HOST') }}"
+      port: 5432
+      user: "{{ env_var('NEON_USER') }}"
+      pass: "{{ env_var('NEON_PASSWORD') }}"
+      dbname: "{{ env_var('NEON_DATABASE') }}"
+      schema: analytics
+      threads: 4
+      keepalives_idle: 0
+      sslmode: require
+    
+    prod:
+      type: postgres
+      host: "{{ env_var('NEON_HOST') }}"
+      port: 5432
+      user: "{{ env_var('NEON_USER') }}"
+      pass: "{{ env_var('NEON_PASSWORD') }}"
+      dbname: "{{ env_var('NEON_DATABASE') }}"
+      schema: analytics
+      threads: 8
+      keepalives_idle: 0
+      sslmode: require
+  
+  target: dev

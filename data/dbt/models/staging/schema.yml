@@ -1,0 +1,42 @@
+version: 2
+
+sources:
+  - name: raw
+    database: "{{ env_var('NEON_DATABASE') }}"
+    schema: public
+    tables:
+      - name: gong_calls
+        description: "Raw Gong call data"
+        columns:
+          - name: call_id
+            tests:
+              - unique
+              - not_null
+      
+      - name: salesforce_opportunities
+        description: "Raw Salesforce opportunity data"
+        columns:
+          - name: opportunity_id
+            tests:
+              - unique
+              - not_null
+      
+      - name: slack_messages
+        description: "Raw Slack message data"
+        columns:
+          - name: message_id
+            tests:
+              - unique
+              - not_null
+
+models:
+  - name: stg_gong_calls
+    description: "Staged Gong calls with cleaned data"
+    columns:
+      - name: call_id
+        tests:
+          - unique
+          - not_null
+      - name: call_date
+      - name: duration_minutes
+      - name: participant_count

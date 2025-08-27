@@ -487,6 +487,74 @@ services:
       retries: 3
 
   # ===========================================
+  # LLM Services
+  # ===========================================
+
+  portkey-llm:
+    build:
+      context: ./llm/portkey-llm
+      dockerfile: Dockerfile
+    container_name: portkey-llm
+    ports:
+      - "8007:8000"
+    env_file: ./.env
+    environment:
+      - ENVIRONMENT=production
+      - PORTKEY_API_KEY=${PORTKEY_API_KEY}
+      - REDIS_URL=redis://redis:6379
+      - POSTGRES_URL=${POSTGRES_URL}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+    volumes:
+      - ./llm/portkey-llm:/app
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - sophia-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ===========================================
+  # Agents Swarm Service
+  # ===========================================
+
+  agents-swarm:
+    build:
+      context: ./agents/swarm
+      dockerfile: Dockerfile
+    container_name: agents-swarm
+    ports:
+      - "8008:8000"
+    env_file: ./.env
+    environment:
+      - ENVIRONMENT=production
+      - PORTKEY_LLM_URL=http://portkey-llm:8000
+      - NEON_DATABASE_URL=${NEON_DATABASE_URL}
+      - REDIS_URL=redis://redis:6379
+      - POSTGRES_URL=${POSTGRES_URL}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+    volumes:
+      - ./agents/swarm:/app
+    depends_on:
+      - redis
+      - postgres
+      - portkey-llm
+    networks:
+      - sophia-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ===========================================
   # Orchestrator Service
   # ===========================================
 

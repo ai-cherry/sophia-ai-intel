@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  # Context API Service
+  context-api:
+    build:
+      context: ./context-api
+      dockerfile: Dockerfile
+    container_name: sophia-context-api
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - SERVICE_NAME=context-api
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - CORS_ORIGINS=${CORS_ORIGINS:-*}
+      - NEON_DATABASE_URL=${NEON_DATABASE_URL}
+      - QDRANT_URL=${QDRANT_URL:-http://qdrant:6333}
+      - QDRANT_API_KEY=${QDRANT_API_KEY}
+    depends_on:
+      - qdrant
+    networks:
+      - sophia-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Vector Indexer Worker
+  vector-indexer:
+    build:
+      context: ./vector-indexer
+      dockerfile: Dockerfile
+    container_name: sophia-vector-indexer
+    environment:
+      - SERVICE_NAME=vector-indexer
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - CONTINUOUS_MODE=${CONTINUOUS_MODE:-true}
+      - RUN_INTERVAL=${RUN_INTERVAL:-60}
+      - BATCH_SIZE=${BATCH_SIZE:-10}
+      - CHUNK_SIZE=${CHUNK_SIZE:-1000}
+      - CHUNK_OVERLAP=${CHUNK_OVERLAP:-200}
+      - NEON_DATABASE_URL=${NEON_DATABASE_URL}
+      - QDRANT_URL=${QDRANT_URL:-http://qdrant:6333}
+      - QDRANT_API_KEY=${QDRANT_API_KEY}
+      - QDRANT_COLLECTION=${QDRANT_COLLECTION:-sophia_documents}
+      - EMBED_ENDPOINT=${EMBED_ENDPOINT:-https://openrouter.ai/api/v1/embeddings}
+      - EMBED_MODEL=${EMBED_MODEL:-text-embedding-3-large}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+    depends_on:
+      - qdrant
+    networks:
+      - sophia-network
+    restart: unless-stopped
+
+  # Qdrant Vector Database
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: sophia-qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"  # gRPC port
+    volumes:
+      - qdrant_storage:/qdrant/storage
+    environment:
+      - QDRANT__SERVICE__HTTP_PORT=6333
+      - QDRANT__SERVICE__GRPC_PORT=6334
+      - QDRANT__LOG_LEVEL=${LOG_LEVEL:-INFO}
+    networks:
+      - sophia-network
+    restart: unless-stopped
+
+networks:
+  sophia-network:
+    driver: bridge
+
+volumes:
+  qdrant_storage:
+    driver: local

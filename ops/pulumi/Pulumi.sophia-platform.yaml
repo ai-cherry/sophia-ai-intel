@@ -1,0 +1,59 @@
+config:
+  aws:region: us-east-1
+  sophia-platform:
+    environment: production
+    
+values:
+  # Infrastructure
+  infrastructure:
+    provider: "lambda-labs"
+    region: "us-east-1"
+    gpu_type: "gh200"
+    
+  # Neon Database
+  database:
+    host: ${env.NEON_HOST}
+    database: ${env.NEON_DATABASE}
+    user: ${env.NEON_USER}
+    password:
+      secure: ${env.NEON_PASSWORD}
+  
+  # External Services
+  services:
+    gong:
+      api_key:
+        secure: ${env.GONG_API_KEY}
+    salesforce:
+      client_id: ${env.SALESFORCE_CLIENT_ID}
+      client_secret:
+        secure: ${env.SALESFORCE_CLIENT_SECRET}
+    slack:
+      bot_token:
+        secure: ${env.SLACK_BOT_TOKEN}
+    portkey:
+      api_key:
+        secure: ${env.PORTKEY_API_KEY}
+  
+  # JWT Configuration
+  auth:
+    jwt_private_key:
+      secure: ${env.JWT_PRIVATE_KEY}
+    jwt_public_key: ${env.JWT_PUBLIC_KEY}
+  
+  # Deployment
+  deployment:
+    docker_registry: "ghcr.io"
+    image_prefix: "sophia-ai"
+    auto_scaling:
+      enabled: true
+      min_replicas: 2
+      max_replicas: 10
+    health_check:
+      path: "/health"
+      interval: 30
+      timeout: 5
+
+environments:
+  - production
+  - staging
+  - development

@@ -1,0 +1,37 @@
+# Sophia MCP Platform Environment Variables
+# Copy this file to .env and fill in your values
+
+# Database
+NEON_HOST=
+NEON_DATABASE=
+NEON_USER=
+NEON_PASSWORD=
+
+# External Services
+GONG_API_KEY=
+SALESFORCE_CLIENT_ID=
+SALESFORCE_CLIENT_SECRET=
+SLACK_BOT_TOKEN=
+PORTKEY_API_KEY=
+
+# Authentication
+JWT_PRIVATE_KEY=
+JWT_PUBLIC_KEY=
+
+# Redis
+REDIS_URL=redis://localhost:6379
+
+# Qdrant
+QDRANT_URL=http://localhost:6333
+QDRANT_API_KEY=
+
+# OpenRouter (for embeddings)
+OPENROUTER_API_KEY=
+
+# Airbyte
+AIRBYTE_DB_USER=airbyte
+AIRBYTE_DB_PASSWORD=
+
+# Deployment
+FLY_APP_NAME=sophia-mcp-platform
+FLY_REGION=iad

@@ -1,0 +1,23 @@
+# Sophia AI Vector Indexer Requirements
+# ======================================
+
+# Async HTTP Client
+aiohttp==3.9.1
+
+# Vector Database Client
+qdrant-client==1.7.0
+
+# PostgreSQL Database
+psycopg2-binary==2.9.9
+
+# Environment Management
+python-dotenv==1.0.0
+
+# Logging
+python-json-logger==2.0.7
+
+# Date/Time utilities
+python-dateutil==2.8.2
+
+# For hash generation
+hashlib  # Built-in, no need to install
