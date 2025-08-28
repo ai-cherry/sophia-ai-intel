@@ -1,0 +1,111 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sophia-infrastructure
+  namespace: sophia
+  labels:
+    app: sophia-infrastructure
+    tier: infrastructure-services
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sophia-infrastructure
+  template:
+    metadata:
+      labels:
+        app: sophia-infrastructure
+        tier: infrastructure-services
+    spec:
+      containers:
+      - name: sophia-infrastructure
+        image: sophia-registry/sophia-infrastructure:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 15
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 12
+        env:
+        - name: SERVICE_NAME
+          value: "sophia-infrastructure"
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: sophia-redis-secrets
+              key: REDIS_URL
+        - name: PROMETHEUS_URL
+          value: "http://prometheus:9090"
+        - name: GRAFANA_URL
+          value: "http://grafana:3000"
+        - name: MODE
+          value: "production"
+        resources:
+          requests:
+            cpu: 200m
+            memory: "256Mi"
+          limits:
+            cpu: 500m
+            memory: "512Mi"
+        volumeMounts:
+        - name: infra-storage
+          mountPath: /data
+        - name: monitoring-cache
+          mountPath: /tmp/monitoring
+      volumes:
+      - name: infra-storage
+        persistentVolumeClaim:
+          claimName: sophia-infrastructure-storage
+      - name: monitoring-cache
+        emptyDir:
+          sizeLimit: 500Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sophia-infrastructure
+  namespace: sophia
+  labels:
+    app: sophia-infrastructure
+    tier: infrastructure-services
+spec:
+  selector:
+    app: sophia-infrastructure
+  ports:
+    - port: 8000
+      targetPort: 8000
+      name: http
+  type: ClusterIP
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sophia-infrastructure-storage
+  namespace: sophia
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi

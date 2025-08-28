@@ -144,7 +144,7 @@ class DemoAgentFactory:
         for agent_name, role in agents:
             print(f"   🤖 {agent_name}: {role}")
             print("     • Model: GPT-4o with Claude fallback")
-            print("     • Memory: Redis + Qdrant enabled")
+            print("     • Memory: Redis + Weaviate enabled")
             print("     • Knowledge: Vector DB with 1500 chunk size")
             print()
 
@@ -179,7 +179,7 @@ def run_enhanced_infrastructure_demo():
     capabilities_demo = [
         "🔗 Multi-connector research (10+ research tools)",
         "🤖 Specialized agent coordination (6 agent types)",
-        "💾 Advanced memory management (Redis + Qdrant)",
+        "💾 Advanced memory management (Redis + Weaviate)",
         "🧠 Model ranking with failover (8 LLM providers)",
         "📊 Structured research outputs",
         "🔍 Web scraping with anti-detection (ZenRows, BrightData)",

@@ -1,0 +1,148 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: www-sophia-intel-ai-ingress
+  namespace: sophia
+  labels:
+    app: sophia-platform
+    tier: frontend
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true" 
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "300"
+spec:
+  tls:
+  - hosts:
+    - www.sophia-intel.ai
+    secretName: www-sophia-intel-ai-tls
+  rules:
+  - host: www.sophia-intel.ai
+    http:
+      paths:
+      # API Routes - Backend Services
+      - path: /api/chat
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-ai-core
+            port:
+              number: 8000
+              
+      - path: /api/ai
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-ai-core
+            port:
+              number: 8000
+              
+      - path: /api/agents
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-ai-core
+            port:
+              number: 8000
+              
+      - path: /api/context
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-ai-core
+            port:
+              number: 8000
+              
+      - path: /api/research
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-ai-core
+            port:
+              number: 8000
+              
+      - path: /api/business
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-business-intel
+            port:
+              number: 8000
+              
+      - path: /api/communications
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-communications
+            port:
+              number: 8000
+              
+      - path: /api/development
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-development
+            port:
+              number: 8000
+              
+      - path: /api/orchestration
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-orchestration
+            port:
+              number: 8000
+              
+      - path: /api/infrastructure
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-infrastructure
+            port:
+              number: 8000
+      
+      # Health check endpoints
+      - path: /health
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-infrastructure
+            port:
+              number: 8000
+      
+      - path: /healthz
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-infrastructure
+            port:
+              number: 8000
+      
+      # Next.js static assets
+      - path: /_next
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-dashboard
+            port:
+              number: 3000
+              
+      - path: /static
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-dashboard
+            port:
+              number: 3000
+      
+      # Frontend Dashboard - Root path (MUST BE LAST)
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-dashboard
+            port:
+              number: 3000

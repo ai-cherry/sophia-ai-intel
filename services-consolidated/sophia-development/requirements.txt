@@ -1,0 +1,6 @@
+# Development service - GitHub & Lambda integrations
+# Base ML requirements (torch, transformers, etc.) pre-installed in base image
+
+# Development specific
+PyGithub==2.1.1
+boto3==1.34.162

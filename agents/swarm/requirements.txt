@@ -1,0 +1,13 @@
+# Sophia AI Agents Swarm MCP Service Requirements
+# FastAPI web framework and ASGI server
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# HTTP client for external API calls
+httpx==0.25.2
+
+# Type hints and data validation
+typing-extensions==4.8.0
+
+# Standard logging and datetime utilities (built-in)
+# Custom platform modules (relative imports from ../platform/)

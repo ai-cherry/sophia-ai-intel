@@ -1,0 +1,6 @@
+# Infrastructure service - monitoring & health checks
+# Base ML requirements (torch, transformers, etc.) pre-installed in base image
+
+# Infrastructure specific
+prometheus-client==0.20.0
+psutil==6.1.0

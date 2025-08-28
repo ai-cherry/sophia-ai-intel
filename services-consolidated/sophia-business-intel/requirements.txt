@@ -1,0 +1,6 @@
+# Business Intelligence service - CRM integrations
+# Base ML requirements (torch, transformers, etc.) pre-installed in base image
+
+# Business Intelligence specific
+salesforce-bulk==2.2.0
+hubspot-api-client==12.0.0

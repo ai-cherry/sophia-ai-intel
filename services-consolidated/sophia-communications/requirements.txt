@@ -1,0 +1,6 @@
+# Communications service - Slack & Gong integrations
+# Base ML requirements (torch, transformers, etc.) pre-installed in base image
+
+# Communications specific
+slack-sdk==3.31.0
+requests==2.31.0

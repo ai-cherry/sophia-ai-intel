@@ -9,7 +9,7 @@ Key Features:
 - Multi-provider research query execution across search engines and AI services
 - Web scraping and data ingestion capabilities
 - LLM-powered content summarization and analysis
-- Vector database storage with Qdrant integration
+- Vector database storage with Weaviate Cloud integration
 - Comprehensive error handling and provider failover
 
 Provider Integrations:
@@ -24,7 +24,7 @@ Provider Integrations:
 Architecture:
 - FastAPI-based async REST API
 - PostgreSQL database integration for persistent storage
-- Qdrant vector database for semantic search capabilities
+- Weaviate Cloud vector database for semantic search capabilities
 - Multi-provider failover and cost optimization
 - Comprehensive health monitoring and provider status tracking
 
@@ -163,7 +163,7 @@ def get_provider_status():
         - voyage: Voyage AI embedding models for semantic search
         - cohere: Cohere embedding and reranking services
         - google: Google AI Platform services
-        - qdrant: Vector database for semantic storage and retrieval
+        - weaviate: Vector database for semantic storage and retrieval
         - storage: PostgreSQL database for persistent data storage
         
     Note:

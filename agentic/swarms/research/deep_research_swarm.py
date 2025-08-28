@@ -11,7 +11,7 @@ from agno.tools.tavily import TavilyTools
 from agno.tools.youtube import YouTubeTools
 from agno.tools.finance import FinanceTools
 from agno.storage.redis import RedisMemory
-from agno.storage.qdrant import QdrantMemory
+from agno.storage.weaviate import WeaviateMemory
 from agno.memory import AgentMemory
 
 from ...core.config import get_config, get_model_catalog

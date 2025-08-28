@@ -1,4 +1,4 @@
-import JobsPanel from '@/components/JobsPanel';
+import JobsPanel from '../../../components/JobsPanel';
 
 export default function JobsPage() {
   return (

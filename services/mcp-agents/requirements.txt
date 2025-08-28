@@ -1,0 +1,15 @@
+# Sophia AI Agent Swarm MCP Service Requirements
+# FastAPI web framework and ASGI server
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# HTTP client and async support
+httpx==0.25.2
+asyncio-compat==0.1.2
+
+# Data validation and type hints
+pydantic==2.5.0
+typing-extensions==4.8.0
+
+# CORS middleware (included with FastAPI)
+# Standard libraries (built-in): asyncio, os, logging, datetime

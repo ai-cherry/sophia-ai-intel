@@ -1,0 +1,6 @@
+# Core AI service - agents, context, research
+# Base ML requirements (torch, transformers, etc.) pre-installed in base image
+
+# Additional AI-specific packages
+agno==1.8.1
+chromadb==0.4.24

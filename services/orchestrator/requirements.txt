@@ -1,0 +1,8 @@
+# Sophia AI Orchestrator Service Requirements
+# Temporary requirements.txt for Node.js service using Python Dockerfile template
+# This is a quick fix to unblock deployment - service should use Node.js template
+fastapi==0.111.1
+uvicorn[standard]==0.30.1
+pydantic==2.8.2
+httpx==0.27.0
+python-dotenv==1.0.1

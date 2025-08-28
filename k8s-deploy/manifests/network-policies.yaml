@@ -99,10 +99,10 @@ spec:
   - to:
     - podSelector:
         matchLabels:
-          app: qdrant
+          app: weaviate
     ports:
     - protocol: TCP
-      port: 6333
+      port: 8080
   - to: []
     ports:
     - protocol: TCP
@@ -224,10 +224,10 @@ spec:
   - to:
     - podSelector:
         matchLabels:
-          app: qdrant
+          app: weaviate
     ports:
     - protocol: TCP
-      port: 6333
+      port: 8080
   - to: []
     ports:
     - protocol: TCP
@@ -277,10 +277,10 @@ spec:
   - to:
     - podSelector:
         matchLabels:
-          app: qdrant
+          app: weaviate
     ports:
     - protocol: TCP
-      port: 6333
+      port: 8080
   - to: []
     ports:
     - protocol: TCP

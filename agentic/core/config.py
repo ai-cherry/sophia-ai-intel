@@ -34,10 +34,10 @@ class SophiaAgentConfig(BaseSettings):
     redis_password: Optional[str] = Field(default=None, env="REDIS_PASSWORD")
 
     # Vector Database Configuration
-    qdrant_url: str = Field(default="http://localhost:6333", env="QDRANT_URL")
-    qdrant_api_key: Optional[str] = Field(default=None, env="QDRANT_API_KEY")
-    qdrant_collection_research: str = "research_docs"
-    qdrant_collection_embeddings: str = "embeddings"
+    weaviate_url: str = Field(default="https://w6bigpoxsrwvq7wlgmmdva.c0.us-west3.gcp.weaviate.cloud", env="WEAVIATE_URL")
+    weaviate_api_key: Optional[str] = Field(default=None, env="WEAVIATE_API_KEY")
+    weaviate_class_research: str = "ResearchDocs"
+    weaviate_class_embeddings: str = "Embeddings"
 
     # OpenAI Configuration
     openai_api_key: Optional[str] = Field(default=None, env="OPENAI_API_KEY")
@@ -314,7 +314,7 @@ def validate_environment_setup() -> Dict[str, Any]:
         "api_keys_validation": catalog.validate_api_keys(),
         "available_models": catalog.get_available_models(),
         "redis_connection": bool(config.redis_url),
-        "vector_database": bool(config.qdrant_url),
+        "vector_database": bool(config.weaviate_url),
         "database_connection": bool(config.postgres_url)
     }
 

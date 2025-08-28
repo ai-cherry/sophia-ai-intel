@@ -1,0 +1,14 @@
+# Sophia AI Standardized LLM Service Requirements
+# FastAPI web framework and ASGI server
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# HTTP client for external API calls
+httpx==0.25.2
+
+# Data validation and type hints
+pydantic==2.5.0
+typing-extensions==4.8.0
+
+# Standard libraries (built-in)
+# - asyncio, json, os, logging, time, datetime

@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import AgentManagement from '@/components/AgentManagement';
-import SwarmCreator from '@/components/SwarmCreator';
-import AgentMonitoring from '@/components/AgentMonitoring';
+import AgentManagement from '../../../components/AgentManagement';
+import SwarmCreator from '../../../components/SwarmCreator';
+import AgentMonitoring from '../../../components/AgentMonitoring';
 
 export default function AgentFactoryPage() {
   const [activeTab, setActiveTab] = useState('agents');

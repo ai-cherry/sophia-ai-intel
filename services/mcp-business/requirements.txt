@@ -1,0 +1,23 @@
+# Sophia AI Business Intelligence MCP Service Requirements
+# FastAPI web framework and ASGI server
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# HTTP client for external API integrations
+httpx==0.25.2
+
+# Data validation and type hints
+pydantic==2.5.0
+typing-extensions==4.8.0
+
+# PostgreSQL async database driver
+asyncpg==0.29.0
+
+# Environment variable management
+python-dotenv==1.0.0
+
+# File upload support (included with FastAPI)
+python-multipart==0.0.6
+
+# Standard libraries (built-in): 
+# os, time, json, logging, datetime, uuid

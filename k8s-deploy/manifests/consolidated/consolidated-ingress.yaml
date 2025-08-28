@@ -1,0 +1,176 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sophia-consolidated-ingress
+  namespace: sophia
+  labels:
+    app: sophia-platform
+    tier: ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  tls:
+  - hosts:
+    - api.sophia-ai.com
+    secretName: sophia-api-tls
+  rules:
+  - host: api.sophia-ai.com
+    http:
+      paths:
+      # AI Core Services - agents, context, research
+      - path: /ai/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-ai-core
+            port:
+              number: 8000
+      - path: /agents/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-ai-core
+            port:
+              number: 8000
+      - path: /context/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-ai-core
+            port:
+              number: 8000
+      - path: /research/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-ai-core
+            port:
+              number: 8000
+      
+      # Business Intelligence Services
+      - path: /business/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-business-intel
+            port:
+              number: 8000
+      - path: /crm/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-business-intel
+            port:
+              number: 8000
+      - path: /salesforce/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-business-intel
+            port:
+              number: 8000
+      - path: /hubspot/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-business-intel
+            port:
+              number: 8000
+      
+      # Communications Services  
+      - path: /communications/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-communications
+            port:
+              number: 8000
+      - path: /slack/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-communications
+            port:
+              number: 8000
+      - path: /gong/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-communications
+            port:
+              number: 8000
+      
+      # Development Services
+      - path: /development/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-development
+            port:
+              number: 8000
+      - path: /github/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-development
+            port:
+              number: 8000
+      - path: /lambda/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-development
+            port:
+              number: 8000
+      
+      # Orchestration Services
+      - path: /orchestration/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-orchestration
+            port:
+              number: 8000
+      - path: /workflows/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-orchestration
+            port:
+              number: 8000
+      
+      # Infrastructure Services
+      - path: /infrastructure/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-infrastructure
+            port:
+              number: 8000
+      - path: /health/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-infrastructure
+            port:
+              number: 8000
+      - path: /metrics/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-infrastructure
+            port:
+              number: 8000
+      
+      # Default fallback to orchestration
+      - path: /(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: sophia-orchestration
+            port:
+              number: 8000

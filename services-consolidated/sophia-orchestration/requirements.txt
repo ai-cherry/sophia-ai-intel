@@ -1,0 +1,6 @@
+# Orchestration service - workflow management
+# Base ML requirements (torch, transformers, etc.) pre-installed in base image
+
+# Orchestration specific
+celery==5.3.4
+kubernetes==29.0.0

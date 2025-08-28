@@ -101,7 +101,8 @@ ZILLOW_API_KEY = os.getenv("ZILLOW_API_KEY")
 
 # Storage
 NEON_DATABASE_URL = os.getenv("NEON_DATABASE_URL")
-QDRANT_URL = os.getenv("QDRANT_ENDPOINT")  # GitHub org secret name
+WEAVIATE_URL = os.getenv("WEAVIATE_URL")
+WEAVIATE_API_KEY = os.getenv("WEAVIATE_API_KEY")
 REDIS_URL = os.getenv("REDIS_URL")
 
 # LLM Router
@@ -177,7 +178,7 @@ def get_provider_status():
         else "missing_secret",
         "zillow": "ready" if ZILLOW_API_KEY else "missing_secret",
         "storage": "ready" if NEON_DATABASE_URL else "missing_secret",
-        "qdrant": "ready" if QDRANT_URL else "missing_secret",
+        "weaviate": "ready" if WEAVIATE_URL else "missing_secret",
         "redis": "ready" if REDIS_URL else "missing_secret",
         "llm_router": "ready"
         if (PORTKEY_API_KEY or OPENROUTER_API_KEY)

@@ -1,0 +1,69 @@
+{
+  "pages": {
+    "/_not-found/page": [
+      "static/chunks/webpack-4b67e01f4360ea9d.js",
+      "static/chunks/1dd3208c-7627ab90ada94d06.js",
+      "static/chunks/286-af1ba11c47ee1f28.js",
+      "static/chunks/main-app-f76579af2775bb69.js",
+      "static/chunks/app/_not-found/page-be3c667ae091904b.js"
+    ],
+    "/layout": [
+      "static/chunks/webpack-4b67e01f4360ea9d.js",
+      "static/chunks/1dd3208c-7627ab90ada94d06.js",
+      "static/chunks/286-af1ba11c47ee1f28.js",
+      "static/chunks/main-app-f76579af2775bb69.js",
+      "static/css/c73216d273e3b3d4.css",
+      "static/chunks/app/layout-2ee12d2daa62b5b1.js"
+    ],
+    "/page": [
+      "static/chunks/webpack-4b67e01f4360ea9d.js",
+      "static/chunks/1dd3208c-7627ab90ada94d06.js",
+      "static/chunks/286-af1ba11c47ee1f28.js",
+      "static/chunks/main-app-f76579af2775bb69.js",
+      "static/chunks/app/page-a8d47f2df41d8b48.js"
+    ],
+    "/(dashboard)/chat/page": [
+      "static/chunks/webpack-4b67e01f4360ea9d.js",
+      "static/chunks/1dd3208c-7627ab90ada94d06.js",
+      "static/chunks/286-af1ba11c47ee1f28.js",
+      "static/chunks/main-app-f76579af2775bb69.js",
+      "static/chunks/app/(dashboard)/chat/page-2604510b29f272dc.js"
+    ],
+    "/(dashboard)/layout": [
+      "static/chunks/webpack-4b67e01f4360ea9d.js",
+      "static/chunks/1dd3208c-7627ab90ada94d06.js",
+      "static/chunks/286-af1ba11c47ee1f28.js",
+      "static/chunks/main-app-f76579af2775bb69.js",
+      "static/chunks/33-390e54801b12a9ea.js",
+      "static/chunks/app/(dashboard)/layout-0a0a1907a188758e.js"
+    ],
+    "/(dashboard)/settings/page": [
+      "static/chunks/webpack-4b67e01f4360ea9d.js",
+      "static/chunks/1dd3208c-7627ab90ada94d06.js",
+      "static/chunks/286-af1ba11c47ee1f28.js",
+      "static/chunks/main-app-f76579af2775bb69.js",
+      "static/chunks/app/(dashboard)/settings/page-60cedabe6721d558.js"
+    ],
+    "/(dashboard)/agent-swarm/page": [
+      "static/chunks/webpack-4b67e01f4360ea9d.js",
+      "static/chunks/1dd3208c-7627ab90ada94d06.js",
+      "static/chunks/286-af1ba11c47ee1f28.js",
+      "static/chunks/main-app-f76579af2775bb69.js",
+      "static/chunks/app/(dashboard)/agent-swarm/page-37dac7683b2358ae.js"
+    ],
+    "/(dashboard)/jobs/page": [
+      "static/chunks/webpack-4b67e01f4360ea9d.js",
+      "static/chunks/1dd3208c-7627ab90ada94d06.js",
+      "static/chunks/286-af1ba11c47ee1f28.js",
+      "static/chunks/main-app-f76579af2775bb69.js",
+      "static/chunks/app/(dashboard)/jobs/page-799ff57c45de3db2.js"
+    ],
+    "/(dashboard)/agent-factory/page": [
+      "static/chunks/webpack-4b67e01f4360ea9d.js",
+      "static/chunks/1dd3208c-7627ab90ada94d06.js",
+      "static/chunks/286-af1ba11c47ee1f28.js",
+      "static/chunks/main-app-f76579af2775bb69.js",
+      "static/chunks/app/(dashboard)/agent-factory/page-e9385ab0daa00f04.js"
+    ]
+  }
+}

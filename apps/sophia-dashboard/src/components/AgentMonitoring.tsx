@@ -2,8 +2,41 @@
 
 import React, { useState, useEffect } from 'react';
 
+interface Agent {
+  id: string;
+  name: string;
+  status: string;
+  uptime: string;
+  tasksCompleted: number;
+  avgResponseTime: string;
+  memoryUsage: number;
+  cpuUsage: number;
+  lastActivity: string;
+  currentTask: string | null;
+  errorRate: number;
+}
+
+interface SystemMetrics {
+  totalAgents: number;
+  activeAgents: number;
+  totalTasks: number;
+  tasksInQueue: number;
+  avgSystemLoad: number;
+  totalMemory: number;
+  usedMemory: number;
+  apiCalls: number;
+  successRate: number;
+}
+
+interface ActivityLogEntry {
+  time: string;
+  agent: string;
+  action: string;
+  details: string;
+}
+
 // Mock monitoring data
-const mockAgentMetrics = [
+const mockAgentMetrics: Agent[] = [
   {
     id: '1',
     name: 'Research Assistant',
@@ -58,7 +91,7 @@ const mockAgentMetrics = [
   },
 ];
 
-const mockSystemMetrics = {
+const mockSystemMetrics: SystemMetrics = {
   totalAgents: 12,
   activeAgents: 8,
   totalTasks: 512,
@@ -70,7 +103,7 @@ const mockSystemMetrics = {
   successRate: 99.2,
 };
 
-const mockActivityLog = [
+const mockActivityLog: ActivityLogEntry[] = [
   { time: '10:45:23', agent: 'Research Assistant', action: 'Task completed', details: 'Market analysis report generated' },
   { time: '10:44:15', agent: 'Code Generator', action: 'Task started', details: 'Creating REST API endpoints' },
   { time: '10:43:08', agent: 'Content Writer', action: 'Task completed', details: 'Blog post published' },
@@ -79,12 +112,12 @@ const mockActivityLog = [
 ];
 
 export default function AgentMonitoring() {
-  const [agentMetrics, setAgentMetrics] = useState(mockAgentMetrics);
-  const [systemMetrics, setSystemMetrics] = useState(mockSystemMetrics);
-  const [activityLog, setActivityLog] = useState(mockActivityLog);
-  const [selectedAgent, setSelectedAgent] = useState(null);
-  const [refreshInterval, setRefreshInterval] = useState(5000);
-  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [agentMetrics, setAgentMetrics] = useState<Agent[]>(mockAgentMetrics);
+  const [systemMetrics, setSystemMetrics] = useState<SystemMetrics>(mockSystemMetrics);
+  const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>(mockActivityLog);
+  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+  const [refreshInterval, setRefreshInterval] = useState<number>(5000);
+  const [autoRefresh, setAutoRefresh] = useState<boolean>(true);
 
   // Simulate real-time updates
   useEffect(() => {
@@ -92,7 +125,7 @@ export default function AgentMonitoring() {
 
     const interval = setInterval(() => {
       // Update agent metrics with random changes
-      setAgentMetrics(prev => prev.map(agent => ({
+      setAgentMetrics(prev => prev.map((agent: Agent) => ({
         ...agent,
         cpuUsage: Math.max(0, Math.min(100, agent.cpuUsage + (Math.random() - 0.5) * 10)),
         memoryUsage: Math.max(0, Math.min(100, agent.memoryUsage + (Math.random() - 0.5) * 5)),
@@ -111,7 +144,7 @@ export default function AgentMonitoring() {
     return () => clearInterval(interval);
   }, [autoRefresh, refreshInterval]);
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'Active': return 'text-green-500';
       case 'Idle': return 'text-yellow-500';
@@ -120,7 +153,7 @@ export default function AgentMonitoring() {
     }
   };
 
-  const getProgressBarColor = (value) => {
+  const getProgressBarColor = (value: number) => {
     if (value < 50) return 'bg-green-500';
     if (value < 80) return 'bg-yellow-500';
     return 'bg-red-500';
@@ -211,7 +244,7 @@ export default function AgentMonitoring() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {agentMetrics.map((agent) => (
+                {agentMetrics.map((agent: Agent) => (
                   <tr key={agent.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">{agent.name}</div>
@@ -277,7 +310,7 @@ export default function AgentMonitoring() {
         <h2 className="text-xl font-bold mb-4">Activity Log</h2>
         <div className="bg-white rounded-lg shadow p-4">
           <div className="space-y-2">
-            {activityLog.map((log, index) => (
+            {activityLog.map((log: ActivityLogEntry, index: number) => (
               <div key={index} className="flex items-start space-x-3 py-2 border-b last:border-b-0">
                 <div className="text-xs text-gray-400 w-20">{log.time}</div>
                 <div className="flex-1">

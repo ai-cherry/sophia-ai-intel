@@ -1,0 +1,125 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sophia-orchestration
+  namespace: sophia
+  labels:
+    app: sophia-orchestration
+    tier: orchestration-services
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sophia-orchestration
+  template:
+    metadata:
+      labels:
+        app: sophia-orchestration
+        tier: orchestration-services
+    spec:
+      containers:
+      - name: sophia-orchestration
+        image: sophia-registry/sophia-orchestration:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 15
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 25
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 20
+        env:
+        - name: SERVICE_NAME
+          value: "sophia-orchestration"
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: sophia-redis-secrets
+              key: REDIS_URL
+        - name: POSTGRES_URL
+          valueFrom:
+            secretKeyRef:
+              name: sophia-database-secrets
+              key: POSTGRES_URL
+        - name: OPENROUTER_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: sophia-llm-secrets
+              key: OPENROUTER_API_KEY
+        - name: SOPHIA_AI_CORE_URL
+          value: "http://sophia-ai-core:8000"
+        - name: SOPHIA_BUSINESS_INTEL_URL
+          value: "http://sophia-business-intel:8000"
+        - name: SOPHIA_COMMUNICATIONS_URL
+          value: "http://sophia-communications:8000"
+        - name: SOPHIA_DEVELOPMENT_URL
+          value: "http://sophia-development:8000"
+        - name: MODE
+          value: "production"
+        resources:
+          requests:
+            cpu: 500m
+            memory: "1Gi"
+          limits:
+            cpu: 1
+            memory: "2Gi"
+        volumeMounts:
+        - name: orchestration-storage
+          mountPath: /data
+        - name: workflow-cache
+          mountPath: /tmp/workflows
+      volumes:
+      - name: orchestration-storage
+        persistentVolumeClaim:
+          claimName: sophia-orchestration-storage
+      - name: workflow-cache
+        emptyDir:
+          sizeLimit: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sophia-orchestration
+  namespace: sophia
+  labels:
+    app: sophia-orchestration
+    tier: orchestration-services
+spec:
+  selector:
+    app: sophia-orchestration
+  ports:
+    - port: 8000
+      targetPort: 8000
+      name: http
+  type: ClusterIP
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sophia-orchestration-storage
+  namespace: sophia
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 3Gi

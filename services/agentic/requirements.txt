@@ -1,0 +1,16 @@
+# Sophia AI Agentic Service Requirements  
+# Core Python web framework dependencies
+fastapi==0.111.1
+uvicorn[standard]==0.30.1
+pydantic==2.8.2
+httpx==0.27.0
+python-dotenv==1.0.1
+
+# AI and LLM integrations
+openai==1.12.0
+anthropic==0.34.0
+agno==0.1.82
+
+# Data handling
+pandas==2.2.2
+numpy==2.0.1

@@ -18,7 +18,8 @@ services:
       - ENABLE_TRACING=true
       - JAEGER_ENDPOINT=http://jaeger-collector:14268/api/traces
       - REDIS_URL=redis://redis:6379
-      - QDRANT_URL=http://qdrant:6333
+      - WEAVIATE_URL=https://w6bigpoxsrwvq7wlgmmdva.c0.us-west3.gcp.weaviate.cloud
+      - WEAVIATE_API_KEY=VMKjGMQUnXQIDiFOciZZOhr7amBfCHMh7hNf
       - POSTGRES_URL=${POSTGRES_URL}
       - JWT_SECRET=${JWT_SECRET}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
@@ -29,7 +30,6 @@ services:
       - ./services/agno-coordinator:/app
     depends_on:
       - redis
-      - qdrant
       - postgres
     networks:
       - sophia-network
@@ -51,11 +51,12 @@ services:
     container_name: mcp-agents
     ports:
       - "8000:8000"
-    env_file: ./.env.production.real.production.real
+    env_file: ./.env.production.real
     environment:
       - ENVIRONMENT=production
       - REDIS_URL=redis://redis:6379
-      - QDRANT_URL=http://qdrant:6333
+      - WEAVIATE_URL=https://w6bigpoxsrwvq7wlgmmdva.c0.us-west3.gcp.weaviate.cloud
+      - WEAVIATE_API_KEY=VMKjGMQUnXQIDiFOciZZOhr7amBfCHMh7hNf
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - POSTGRES_URL=${POSTGRES_URL}
@@ -65,7 +66,6 @@ services:
       - ./services/mcp-agents:/app
     depends_on:
       - redis
-      - qdrant
       - postgres
     networks:
       - sophia-network
@@ -78,8 +78,8 @@ services:
 
   mcp-context:
     build:
-      context: ./services/mcp-context
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./services/mcp-context/Dockerfile
     container_name: mcp-context
     ports:
       - "8081:8081"
@@ -91,12 +91,13 @@ services:
         reservations:
           memory: 512M
           cpus: "0.25"
-    env_file: ./.env.production.real.production.real
+    env_file: ./.env.production.real
     environment:
       - ENVIRONMENT=production
       - PORT=8081
       - REDIS_URL=redis://redis:6379
-      - QDRANT_URL=http://qdrant:6333
+      - WEAVIATE_URL=https://w6bigpoxsrwvq7wlgmmdva.c0.us-west3.gcp.weaviate.cloud
+      - WEAVIATE_API_KEY=VMKjGMQUnXQIDiFOciZZOhr7amBfCHMh7hNf
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - EMBEDDING_MODEL=text-embedding-ada-002
       - POSTGRES_URL=${POSTGRES_URL}
@@ -107,7 +108,6 @@ services:
       - context-data:/app/data
     depends_on:
       - redis
-      - qdrant
       - postgres
     networks:
       - sophia-network
@@ -120,8 +120,8 @@ services:
 
   mcp-github:
     build:
-      context: ./services/mcp-github
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./services/mcp-github/Dockerfile
     container_name: mcp-github
     ports:
       - "8082:8082"
@@ -133,7 +133,7 @@ services:
         reservations:
           memory: 512M
           cpus: "0.25"
-    env_file: ./.env.production.real.production.real
+    env_file: ./.env.production.real
     environment:
       - ENVIRONMENT=production
       - PORT=8082
@@ -158,8 +158,8 @@ services:
 
   mcp-hubspot:
     build:
-      context: ./services/mcp-hubspot
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./services/mcp-hubspot/Dockerfile
     container_name: mcp-hubspot
     ports:
       - "8083:8083"
@@ -171,7 +171,7 @@ services:
         reservations:
           memory: 512M
           cpus: "0.25"
-    env_file: ./.env.production.real.production.real
+    env_file: ./.env.production.real
     environment:
       - ENVIRONMENT=production
       - PORT=8083
@@ -196,8 +196,8 @@ services:
 
   mcp-lambda:
     build:
-      context: ./services/mcp-lambda
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./services/mcp-lambda/Dockerfile
     container_name: mcp-lambda
     ports:
       - "8084:8084"
@@ -209,7 +209,7 @@ services:
         reservations:
           memory: 512M
           cpus: "0.25"
-    env_file: ./.env.production.real.production.real
+    env_file: ./.env.production.real
     environment:
       - ENVIRONMENT=production
       - PORT=8084
@@ -235,12 +235,12 @@ services:
 
   mcp-research:
     build:
-      context: ./services/mcp-research
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./services/mcp-research/Dockerfile
     container_name: mcp-research
     ports:
       - "8085:8080"
-    env_file: ./.env.production.real.production.real
+    env_file: ./.env.production.real
     environment:
       - ENVIRONMENT=production
       - TAVILY_API_KEY=${TAVILY_API_KEY}
@@ -265,12 +265,12 @@ services:
 
   mcp-business:
     build:
-      context: ./services/mcp-business
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./services/mcp-business/Dockerfile
     container_name: mcp-business
     ports:
       - "8086:8080"
-    env_file: ./.env.production.real.production.real
+    env_file: ./.env.production.real
     environment:
       - ENVIRONMENT=production
       - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}
@@ -304,12 +304,13 @@ services:
     container_name: agno-teams
     ports:
       - "8087:8087"
-    env_file: ./.env.production.real.production.real
+    env_file: ./.env.production.real
     environment:
       - ENVIRONMENT=production
       - LOG_LEVEL=info
       - REDIS_URL=redis://redis:6379
-      - QDRANT_URL=http://qdrant:6333
+      - WEAVIATE_URL=https://w6bigpoxsrwvq7wlgmmdva.c0.us-west3.gcp.weaviate.cloud
+      - WEAVIATE_API_KEY=VMKjGMQUnXQIDiFOciZZOhr7amBfCHMh7hNf
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - PORT=8087
@@ -321,7 +322,6 @@ services:
       - ./services/agno-teams:/app
     depends_on:
       - redis
-      - qdrant
       - postgres
     networks:
       - sophia-network
@@ -339,7 +339,7 @@ services:
     container_name: agno-wrappers
     ports:
       - "8089:8080"
-    env_file: ./.env.production.real.production.real
+    env_file: ./.env.production.real
     environment:
       - ENVIRONMENT=production
       - LOG_LEVEL=info
@@ -367,12 +367,12 @@ services:
 
   mcp-apollo:
     build:
-      context: ./services/mcp-apollo
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./services/mcp-apollo/Dockerfile
     container_name: mcp-apollo
     ports:
       - "8090:8080"
-    env_file: ./.env.production.real.production.real
+    env_file: ./.env.production.real
     environment:
       - ENVIRONMENT=production
       - APOLLO_API_KEY=${APOLLO_API_KEY}
@@ -396,12 +396,12 @@ services:
 
   mcp-gong:
     build:
-      context: ./services/mcp-gong
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./services/mcp-gong/Dockerfile
     container_name: mcp-gong
     ports:
       - "8091:8080"
-    env_file: ./.env.production.real.production.real
+    env_file: ./.env.production.real
     environment:
       - ENVIRONMENT=production
       - GONG_ACCESS_KEY=${GONG_ACCESS_KEY}
@@ -426,12 +426,12 @@ services:
 
   mcp-salesforce:
     build:
-      context: ./services/mcp-salesforce
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./services/mcp-salesforce/Dockerfile
     container_name: mcp-salesforce
     ports:
       - "8092:8080"
-    env_file: ./.env.production.real.production.real
+    env_file: ./.env.production.real
     environment:
       - ENVIRONMENT=production
       - SALESFORCE_CLIENT_ID=${SALESFORCE_CLIENT_ID}
@@ -458,12 +458,12 @@ services:
 
   mcp-slack:
     build:
-      context: ./services/mcp-slack
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./services/mcp-slack/Dockerfile
     container_name: mcp-slack
     ports:
       - "8093:8080"
-    env_file: ./.env.production.real.production.real
+    env_file: ./.env.production.real
     environment:
       - ENVIRONMENT=production
       - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}
@@ -497,7 +497,7 @@ services:
     container_name: portkey-llm
     ports:
       - "8007:8000"
-    env_file: ./.env.production.real.production.real
+    env_file: ./.env.production.real
     environment:
       - ENVIRONMENT=production
       - PORTKEY_API_KEY=${PORTKEY_API_KEY}
@@ -530,7 +530,7 @@ services:
     container_name: agents-swarm
     ports:
       - "8008:8000"
-    env_file: ./.env.production.real.production.real
+    env_file: ./.env.production.real
     environment:
       - ENVIRONMENT=production
       - PORTKEY_LLM_URL=http://portkey-llm:8000
@@ -565,12 +565,13 @@ services:
     container_name: orchestrator
     ports:
       - "8088:8088"
-    env_file: ./.env.production.real.production.real
+    env_file: ./.env.production.real
     environment:
       - NODE_ENV=production
       - LOG_LEVEL=info
       - REDIS_URL=redis://redis:6379
-      - QDRANT_URL=http://qdrant:6333
+      - WEAVIATE_URL=https://w6bigpoxsrwvq7wlgmmdva.c0.us-west3.gcp.weaviate.cloud
+      - WEAVIATE_API_KEY=VMKjGMQUnXQIDiFOciZZOhr7amBfCHMh7hNf
       - PORT=8088
       - HOST=0.0.0.0
       - POSTGRES_URL=${POSTGRES_URL}
@@ -582,7 +583,6 @@ services:
       - ./services/orchestrator:/app
     depends_on:
       - redis
-      - qdrant
       - postgres
       - agno-teams
       - mcp-context
@@ -607,7 +607,7 @@ services:
     container_name: redis
     ports:
        - "6380:6379"
-    env_file: ./.env.production.real.production.real
+    env_file: ./.env.production.real
     environment:
       - REDIS_USER_KEY=${REDIS_USER_KEY}
       - REDIS_ACCOUNT_KEY=${REDIS_ACCOUNT_KEY}
@@ -625,36 +625,12 @@ services:
       timeout: 10s
       retries: 3
 
-  qdrant:
-    image: qdrant/qdrant:v1.7.4
-    container_name: qdrant
-    ports:
-      - "6333:6333"
-      - "6334:6334"
-    env_file: ./.env.production.real.production.real
-    environment:
-      - QDRANT_API_KEY=${QDRANT_API_KEY}
-      - QDRANT_MANAGEMENT_KEY=${QDRANT_MANAGEMENT_KEY}
-      - QDRANT_URL=${QDRANT_URL}
-      - QDRANT_CLUSTER_API_KEY=${QDRANT_CLUSTER_API_KEY}
-      - QDRANT_ACCOUNT_ID=${QDRANT_ACCOUNT_ID}
-    volumes:
-      - qdrant-data:/qdrant/storage
-    networks:
-      - sophia-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
   postgres:
     image: postgres:15-alpine
     container_name: postgres
     ports:
       - "5432:5432"
-    env_file: ./.env.production.real.production.real
+    env_file: ./.env.production.real
     environment:
       - POSTGRES_DB=sophia
       - POSTGRES_USER=sophia
@@ -745,7 +721,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
-    env_file: ./.env.production.real.production.real
+    env_file: ./.env.production.real
     environment:
       - DNSIMPLE_API_KEY=${DNSIMPLE_API_KEY}
       - DOCKER_PAT=${DOCKER_PAT}
@@ -764,7 +740,6 @@ services:
 
 volumes:
   redis-data:
-  qdrant-data:
   postgres-data:
   context-data:
   prometheus-data:

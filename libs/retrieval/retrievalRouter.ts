@@ -1,7 +1,7 @@
 /**
- * Retrieval Router - Unified retrieval from Neon/Qdrant/Redis with compression
- * ===========================================================================
- * 
+ * Retrieval Router - Unified retrieval from Neon/Weaviate/Redis with compression
+ * ==============================================================================
+ *
  * Orchestrates retrieval across multiple data sources with intelligent routing,
  * result merging, compression, temporal filtering, and payload optimization.
  */
@@ -12,7 +12,7 @@ import { validateToolInput } from '../validation/toolSchemas'
 /** Retrieval source configuration */
 export interface RetrievalSource {
   name: string
-  type: 'neon' | 'qdrant' | 'redis' | 'memory'
+  type: 'neon' | 'weaviate' | 'redis' | 'memory'
   endpoint: string
   priority: number
   timeout: number
@@ -246,11 +246,11 @@ export class RetrievalRouter {
       metadata: { description: 'Primary structured data store' }
     })
 
-    // Qdrant for vector similarity search
+    // Weaviate for vector similarity search
     this.registerSource({
-      name: 'qdrant-vectors',
-      type: 'qdrant',
-      endpoint: (globalThis as any).process?.env?.QDRANT_URL || 'http://localhost:6333',
+      name: 'weaviate-vectors',
+      type: 'weaviate',
+      endpoint: (globalThis as any).process?.env?.WEAVIATE_URL || 'https://w6bigpoxsrwvq7wlgmmdva.c0.us-west3.gcp.weaviate.cloud',
       priority: 2,
       timeout: 3000,
       maxResults: 50,
@@ -439,12 +439,12 @@ export class RetrievalRouter {
           timeRange: query.temporalHints?.timeRange
         }
 
-      case 'qdrant':
+      case 'weaviate':
         return {
           ...baseParams,
           vector_search: true,
-          score_threshold: 0.7,
-          with_payload: query.includeMetadata !== false
+          certainty: 0.7,
+          with_additional: query.includeMetadata !== false
         }
 
       case 'redis':
@@ -511,8 +511,8 @@ export class RetrievalRouter {
     switch (source.type) {
       case 'neon':
         return this.queryNeon(source, query, params)
-      case 'qdrant':
-        return this.queryQdrant(source, query, params)
+      case 'weaviate':
+        return this.queryWeaviate(source, query, params)
       case 'redis':
         return this.queryRedis(source, query, params)
       case 'memory':
@@ -543,22 +543,22 @@ export class RetrievalRouter {
   }
 
   /**
-   * Query Qdrant vector database
+   * Query Weaviate vector database
    */
-  private async queryQdrant(
+  private async queryWeaviate(
     source: RetrievalSource,
     query: string,
     params: Record<string, any>
   ): Promise<RetrievalResult[]> {
-    // This would integrate with actual Qdrant client
+    // This would integrate with actual Weaviate client
     // For now, return mock data
     return [{
-      id: `qdrant-${Date.now()}`,
-      content: `Qdrant vector result for: ${query}`,
+      id: `weaviate-${Date.now()}`,
+      content: `Weaviate vector result for: ${query}`,
       source: source.name,
       relevanceScore: 0.9,
       timestamp: new Date(),
-      metadata: { source_type: 'qdrant', ...params }
+      metadata: { source_type: 'weaviate', ...params }
     }]
   }
 

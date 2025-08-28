@@ -43,16 +43,16 @@ spec:
             secretKeyRef:
               name: sophia-database-secrets
               key: NEON_DATABASE_URL
-        - name: QDRANT_URL
+        - name: WEAVIATE_URL
           valueFrom:
             secretKeyRef:
-              name: sophia-vector-secrets
-              key: QDRANT_URL
-        - name: QDRANT_API_KEY
+              name: sophia-weaviate-secrets
+              key: WEAVIATE_URL
+        - name: WEAVIATE_API_KEY
           valueFrom:
             secretKeyRef:
-              name: sophia-vector-secrets
-              key: QDRANT_API_KEY
+              name: sophia-weaviate-secrets
+              key: WEAVIATE_API_KEY
         - name: REDIS_URL
           valueFrom:
             secretKeyRef:

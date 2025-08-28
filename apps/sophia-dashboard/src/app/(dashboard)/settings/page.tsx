@@ -1,4 +1,4 @@
-import PersonaControls from '@/components/PersonaControls';
+import PersonaControls from '../../../components/PersonaControls';
 
 export default function SettingsPage() {
   return (

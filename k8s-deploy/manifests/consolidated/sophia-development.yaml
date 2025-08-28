@@ -1,0 +1,127 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sophia-development
+  namespace: sophia
+  labels:
+    app: sophia-development
+    tier: development-services
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sophia-development
+  template:
+    metadata:
+      labels:
+        app: sophia-development
+        tier: development-services
+    spec:
+      containers:
+      - name: sophia-development
+        image: sophia-registry/sophia-development:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 15
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 15
+        env:
+        - name: SERVICE_NAME
+          value: "sophia-development"
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: sophia-development-secrets
+              key: GITHUB_TOKEN
+        - name: GITHUB_WEBHOOK_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: sophia-development-secrets
+              key: GITHUB_WEBHOOK_SECRET
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: sophia-aws-secrets
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: sophia-aws-secrets
+              key: AWS_SECRET_ACCESS_KEY
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: sophia-redis-secrets
+              key: REDIS_URL
+        - name: MODE
+          value: "production"
+        resources:
+          requests:
+            cpu: 400m
+            memory: "512Mi"
+          limits:
+            cpu: 1
+            memory: "1Gi"
+        volumeMounts:
+        - name: dev-storage
+          mountPath: /data
+        - name: tmp-workspace
+          mountPath: /tmp/workspace
+      volumes:
+      - name: dev-storage
+        persistentVolumeClaim:
+          claimName: sophia-development-storage
+      - name: tmp-workspace
+        emptyDir:
+          sizeLimit: 2Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sophia-development
+  namespace: sophia
+  labels:
+    app: sophia-development
+    tier: development-services
+spec:
+  selector:
+    app: sophia-development
+  ports:
+    - port: 8000
+      targetPort: 8000
+      name: http
+  type: ClusterIP
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sophia-development-storage
+  namespace: sophia
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi

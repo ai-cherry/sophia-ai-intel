@@ -27,7 +27,7 @@
       "description": "Code symbols, embeddings, and technical implementation context",
       "storage": "hybrid",
       "sources": {
-        "primary": "qdrant",
+        "primary": "weaviate",
         "secondary": "neon_postgresql",
         "cache": "redis"
       },
@@ -110,7 +110,7 @@
     "max_concurrent_queries": 5
   },
   "fallback": {
-    "on_qdrant_failure": "use_postgresql_only",
+    "on_weaviate_failure": "use_postgresql_only",
     "on_postgresql_failure": "use_in_memory_only",
     "on_notion_failure": "skip_personal_context"
   }

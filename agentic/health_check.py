@@ -156,12 +156,12 @@ async def comprehensive_health_check() -> HealthStatus:
         if dependencies["postgres"]["status"] != "healthy":
             service_healthy = False
     
-    # Check Qdrant if configured
-    qdrant_url = os.getenv("QDRANT_URL")
-    qdrant_key = os.getenv("QDRANT_API_KEY")
-    if qdrant_url:
-        dependencies["qdrant"] = await DependencyCheck.check_qdrant(qdrant_url, qdrant_key)
-        if dependencies["qdrant"]["status"] != "healthy":
+    # Check Weaviate if configured
+    weaviate_url = os.getenv("WEAVIATE_URL")
+    weaviate_key = os.getenv("WEAVIATE_API_KEY")
+    if weaviate_url:
+        dependencies["weaviate"] = await DependencyCheck.check_weaviate(weaviate_url, weaviate_key)
+        if dependencies["weaviate"]["status"] != "healthy":
             service_healthy = False
     
     # Check dependent MCP services
@@ -258,6 +258,6 @@ def add_health_endpoints_to_app(app: FastAPI):
 HEALTH_CHECK_CONFIG = {
     "redis_required": {"redis_url" if "context" in service_name or "agent" in service_name else "False"},
     "postgres_required": {"postgres_url" if "context" in service_name else "False"}, 
-    "qdrant_required": {"qdrant_url" if "context" in service_name else "False"},
+    "weaviate_required": {"weaviate_url" if "context" in service_name else "False"},
     "dependent_services": []
 }
