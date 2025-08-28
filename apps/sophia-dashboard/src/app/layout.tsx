@@ -5,8 +5,13 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Sophia AI",
-  description: "The next generation of AI",
+  title: "Sophia AI - Intelligent Multi-Agent Platform",
+  description: "Advanced AI platform with agent orchestration, deep web research, code generation, and GitHub integration",
+  icons: {
+    icon: '/sophia-logo.jpg',
+    shortcut: '/sophia-logo.jpg',
+    apple: '/sophia-logo.jpg',
+  },
 };
 
 export default function RootLayout({

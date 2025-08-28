@@ -1,152 +1,659 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
-export default function SimpleDashboard() {
-  const [messages, setMessages] = useState<Array<{role: string, content: string}>>([
-    { role: 'system', content: 'Welcome to Sophia AI! How can I help you today?' }
+interface Message {
+  id: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  timestamp: Date;
+  metadata?: any;
+}
+
+interface Agent {
+  id: string;
+  type: string;
+  status: string;
+  icon: string;
+  description: string;
+}
+
+interface MetricCard {
+  title: string;
+  value: string | number;
+  status: 'good' | 'warning' | 'error';
+  change?: string;
+}
+
+export default function SophiaApp() {
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: '1',
+      role: 'assistant',
+      content: 'Hello! I\'m Sophia AI. I can help with research, agent orchestration, code generation, and deep analysis. What would you like to work on?',
+      timestamp: new Date()
+    }
   ]);
+  
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [activeView, setActiveView] = useState('chat');
+  const [selectedDashboard, setSelectedDashboard] = useState('neural');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState('connected');
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [researchQuery, setResearchQuery] = useState('');
+  const [codePrompt, setCodePrompt] = useState('');
+  const [projectName, setProjectName] = useState('AI Research Platform');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const sendMessage = async () => {
-    if (!input.trim()) return;
-    
-    const userMessage = { role: 'user', content: input };
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
-    setIsLoading(true);
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
+  useEffect(() => {
+    if (activeView === 'agents') {
+      loadAgents();
+    }
+  }, [activeView]);
+
+  const loadAgents = async () => {
     try {
-      // Call MCP Context API
-      const response = await fetch('http://localhost:8081/documents/search', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: input, limit: 5 })
-      });
-      
-      const data = await response.json();
-      
-      const aiResponse = {
-        role: 'assistant',
-        content: data.results?.length > 0 
-          ? `Found ${data.results.length} relevant documents: ${data.results[0].content}`
-          : `I'll help you with: "${input}". The system is processing your request.`
-      };
-      
-      setMessages(prev => [...prev, aiResponse]);
+      const response = await fetch('/api/agents');
+      if (response.ok) {
+        const data = await response.json();
+        setAgents(data.availableAgents || []);
+      }
     } catch (error) {
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: 'Connection established. How can I assist you?'
-      }]);
-    } finally {
-      setIsLoading(false);
+      console.error('Failed to load agents:', error);
     }
   };
 
-  return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900">
-      {/* Header */}
-      <header className="bg-black/30 backdrop-blur-md border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-white">Sophia AI Platform</h1>
-              <p className="text-purple-300">Intelligent Multi-Agent System</p>
-            </div>
-            <div className="flex gap-2">
-              <StatusIndicator service="MCP Context" port={8081} />
-              <StatusIndicator service="Orchestrator" port={8088} />
-              <StatusIndicator service="AI Core" port={8080} />
-            </div>
-          </div>
-        </div>
-      </header>
+  const sendMessage = async () => {
+    if (!input.trim()) return;
 
-      {/* Chat Interface */}
-      <div className="max-w-4xl mx-auto p-4">
-        <div className="bg-black/20 backdrop-blur-md rounded-lg shadow-2xl border border-white/10">
-          {/* Messages */}
-          <div className="h-[500px] overflow-y-auto p-6 space-y-4">
-            {messages.map((msg, idx) => (
-              <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[70%] rounded-lg p-4 ${
-                  msg.role === 'user' 
-                    ? 'bg-purple-600 text-white' 
-                    : 'bg-gray-800 text-gray-200 border border-purple-500/30'
-                }`}>
-                  <div className="text-xs opacity-70 mb-1">
-                    {msg.role === 'user' ? 'You' : 'Sophia AI'}
-                  </div>
-                  <div>{msg.content}</div>
-                </div>
-              </div>
-            ))}
-            {isLoading && (
-              <div className="flex justify-start">
-                <div className="bg-gray-800 text-gray-200 rounded-lg p-4 border border-purple-500/30">
-                  <div className="flex space-x-2">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                    <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                  </div>
-                </div>
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: input,
+      timestamp: new Date()
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
+    setIsLoading(true);
+    setConnectionStatus('processing');
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: userMessage.content,
+          context: messages.slice(-5)
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const assistantMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: data.response,
+          timestamp: new Date(),
+          metadata: data
+        };
+        setMessages(prev => [...prev, assistantMessage]);
+      } else {
+        throw new Error('API request failed');
+      }
+    } catch (error) {
+      setMessages(prev => [...prev, {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: 'I\'m having trouble connecting to my neural networks. Let me try to reconnect...',
+        timestamp: new Date()
+      }]);
+      setConnectionStatus('disconnected');
+      setTimeout(() => setConnectionStatus('connected'), 3000);
+    } finally {
+      setIsLoading(false);
+      setConnectionStatus('connected');
+    }
+  };
+
+  const deployAgent = async (agentType: string) => {
+    try {
+      const response = await fetch('/api/agents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'deploy',
+          agentType,
+          task: `Deploy ${agentType} for autonomous operations`
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        alert(`${agentType} deployed successfully! Agent ID: ${data.agentId}`);
+        loadAgents();
+      }
+    } catch (error) {
+      alert('Failed to deploy agent');
+    }
+  };
+
+  const apiMetrics: MetricCard[] = [
+    { title: 'Response Time', value: '127ms', status: 'good', change: '-12%' },
+    { title: 'Success Rate', value: '99.8%', status: 'good', change: '+0.3%' },
+    { title: 'Active Connections', value: '1,247', status: 'warning', change: '+18%' },
+    { title: 'Error Rate', value: '0.2%', status: 'good', change: '-0.1%' }
+  ];
+
+  const quickActions = [
+    { icon: '🔬', text: 'Research AI Papers', command: 'Search for the latest AI research papers' },
+    { icon: '🤖', text: 'Deploy Agent', command: 'Create a new AI agent for data analysis' },
+    { icon: '⚡', text: 'Generate Code', command: 'Generate a Python function to process data' },
+    { icon: '🌐', text: 'Swarm Intelligence', command: 'Deploy an agent swarm for web scraping' }
+  ];
+
+  return (
+    <div className="flex h-screen">
+      {/* Left Sidebar Navigation */}
+      <div className={`${sidebarCollapsed ? 'w-20' : 'w-72'} transition-all duration-300 bg-gradient-to-b from-[#0f1b3c] via-[#1e293b] to-[#4c1d95]/70 backdrop-blur-xl border-r border-cyan-500/10 flex flex-col`}>
+        {/* Sidebar Header */}
+        <div className="p-6 border-b border-cyan-500/20">
+          <div className="flex items-center gap-4">
+            <div className="logo-container">
+              <img 
+                src="/sophia-logo.jpg" 
+                alt="Sophia AI" 
+                className="w-10 h-10 rounded-xl object-cover shadow-2xl cursor-pointer"
+                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              />
+            </div>
+            {!sidebarCollapsed && (
+              <div>
+                <h1 className="text-white font-bold text-lg">Sophia AI</h1>
+                <p className="text-xs text-cyan-400/80">Platform Control</p>
               </div>
             )}
           </div>
+        </div>
 
-          {/* Input */}
-          <div className="border-t border-white/10 p-4">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-                placeholder="Type your message..."
-                className="flex-1 bg-gray-800 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              />
-              <button
-                onClick={sendMessage}
-                disabled={isLoading}
-                className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white rounded-lg px-6 py-3 transition-colors"
-              >
-                Send
-              </button>
+        {/* Sidebar Navigation */}
+        <nav className="flex-1 overflow-y-auto py-4">
+          {/* Platform Section */}
+          {!sidebarCollapsed && <div className="px-4 mb-2 text-xs font-semibold text-gray-400 uppercase">Platform</div>}
+          
+          <button
+            onClick={() => setSelectedDashboard('neural')}
+            className={`w-full flex items-center gap-3 px-4 py-3 mx-2 mb-1 rounded-lg transition-all ${
+              selectedDashboard === 'neural' 
+                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
+                : 'text-gray-300 hover:bg-white/5 hover:text-cyan-400 hover:translate-x-1'
+            }`}
+          >
+            <span className="text-xl w-6 text-center">🏠</span>
+            {!sidebarCollapsed && <span>Neural Interface</span>}
+          </button>
+
+          <button
+            onClick={() => setSelectedDashboard('api-health')}
+            className={`w-full flex items-center gap-3 px-4 py-3 mx-2 mb-1 rounded-lg transition-all ${
+              selectedDashboard === 'api-health' 
+                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
+                : 'text-gray-300 hover:bg-white/5 hover:text-cyan-400 hover:translate-x-1'
+            }`}
+          >
+            <span className="text-xl w-6 text-center">📊</span>
+            {!sidebarCollapsed && <span>API Health</span>}
+          </button>
+
+          <button
+            onClick={() => setSelectedDashboard('agent-factory')}
+            className={`w-full flex items-center gap-3 px-4 py-3 mx-2 mb-1 rounded-lg transition-all ${
+              selectedDashboard === 'agent-factory' 
+                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
+                : 'text-gray-300 hover:bg-white/5 hover:text-cyan-400 hover:translate-x-1'
+            }`}
+          >
+            <span className="text-xl w-6 text-center">🏭</span>
+            {!sidebarCollapsed && <span>Agent Factory</span>}
+          </button>
+
+          <button
+            onClick={() => setSelectedDashboard('project-mgmt')}
+            className={`w-full flex items-center gap-3 px-4 py-3 mx-2 mb-1 rounded-lg transition-all ${
+              selectedDashboard === 'project-mgmt' 
+                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
+                : 'text-gray-300 hover:bg-white/5 hover:text-cyan-400 hover:translate-x-1'
+            }`}
+          >
+            <span className="text-xl w-6 text-center">📋</span>
+            {!sidebarCollapsed && <span>Project Management</span>}
+          </button>
+
+          {/* System Section */}
+          {!sidebarCollapsed && <div className="px-4 mt-6 mb-2 text-xs font-semibold text-gray-400 uppercase">System</div>}
+          
+          <button className="w-full flex items-center gap-3 px-4 py-3 mx-2 mb-1 rounded-lg text-gray-300 hover:bg-white/5 hover:text-cyan-400 hover:translate-x-1 transition-all">
+            <span className="text-xl w-6 text-center">⚙️</span>
+            {!sidebarCollapsed && <span>Settings</span>}
+          </button>
+
+          <button className="w-full flex items-center gap-3 px-4 py-3 mx-2 mb-1 rounded-lg text-gray-300 hover:bg-white/5 hover:text-cyan-400 hover:translate-x-1 transition-all">
+            <span className="text-xl w-6 text-center">📈</span>
+            {!sidebarCollapsed && <span>Analytics</span>}
+          </button>
+
+          <button className="w-full flex items-center gap-3 px-4 py-3 mx-2 mb-1 rounded-lg text-gray-300 hover:bg-white/5 hover:text-cyan-400 hover:translate-x-1 transition-all">
+            <span className="text-xl w-6 text-center">🔒</span>
+            {!sidebarCollapsed && <span>Security</span>}
+          </button>
+        </nav>
+
+        {/* Sidebar Footer */}
+        {!sidebarCollapsed && (
+          <div className="p-4 border-t border-cyan-500/20">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-gray-400">Connection</span>
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${connectionStatus === 'connected' ? 'bg-green-400' : 'bg-red-400'}`}></div>
+                <span className={connectionStatus === 'connected' ? 'text-green-400' : 'text-red-400'}>
+                  {connectionStatus === 'connected' ? 'Active' : 'Offline'}
+                </span>
+              </div>
             </div>
           </div>
-        </div>
-
-        {/* Service Status */}
-        <div className="mt-4 grid grid-cols-4 gap-2">
-          {['MCP Context', 'MCP Agents', 'Orchestrator', 'Memory'].map(service => (
-            <div key={service} className="bg-black/20 backdrop-blur-md rounded-lg p-3 border border-white/10">
-              <div className="text-xs text-gray-400">{service}</div>
-              <div className="text-green-400 text-sm">● Online</div>
-            </div>
-          ))}
-        </div>
+        )}
       </div>
-    </main>
-  );
-}
 
-function StatusIndicator({ service, port }: { service: string; port: number }) {
-  const [status, setStatus] = useState('checking');
-  
-  useState(() => {
-    fetch(`http://localhost:${port}/healthz`)
-      .then(() => setStatus('online'))
-      .catch(() => setStatus('offline'));
-  });
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col">
+        {/* Neural Interface Dashboard */}
+        {selectedDashboard === 'neural' && (
+          <>
+            {/* Top Navigation for Neural Interface */}
+            <header className="compact-header">
+              <div className="nav-tabs">
+                {[
+                  { id: 'chat', label: 'Chat', tooltip: 'Direct conversation with Sophia AI' },
+                  { id: 'agents', label: 'Agents', tooltip: 'Deploy autonomous AI agents' },
+                  { id: 'research', label: 'Research', tooltip: 'Deep research with citations' },
+                  { id: 'code', label: 'Code', tooltip: 'Generate and optimize code' }
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveView(tab.id)}
+                    className={`nav-tab ${activeView === tab.id ? 'active' : ''}`}
+                    title={tab.tooltip}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </header>
 
-  return (
-    <div className="text-xs">
-      <span className={`inline-block w-2 h-2 rounded-full mr-1 ${
-        status === 'online' ? 'bg-green-400' : status === 'offline' ? 'bg-red-400' : 'bg-yellow-400'
-      }`}></span>
-      <span className="text-gray-300">{service}</span>
+            <main className="flex-1 relative overflow-hidden">
+              {/* Chat View */}
+              {activeView === 'chat' && (
+                <>
+                  <div className="chat-container">
+                    {messages.map((msg) => (
+                      <div key={msg.id} className={`mb-4 ${msg.role === 'user' ? 'flex justify-end' : ''}`}>
+                        <div className={`inline-block max-w-[70%] px-4 py-3 ${
+                          msg.role === 'user' 
+                            ? 'user-message' 
+                            : msg.role === 'system'
+                            ? 'system-message'
+                            : 'ai-message'
+                        }`}>
+                          <div className="message-time">
+                            {msg.timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                          </div>
+                          <div className="message-text">{msg.content}</div>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    {isLoading && (
+                      <div className="mb-4">
+                        <div className="inline-block ai-message px-4 py-3">
+                          <div className="text-cyan-400 text-sm">Sophia is thinking...</div>
+                          <div className="loading-dots">
+                            <div className="loading-dot"></div>
+                            <div className="loading-dot"></div>
+                            <div className="loading-dot"></div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div ref={messagesEndRef} />
+                  </div>
+
+                  {messages.length <= 2 && (
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                      <div className="grid grid-cols-2 gap-4 max-w-md">
+                        {quickActions.map((action, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => setInput(action.command)}
+                            className="quick-action flex items-center gap-3 px-4 py-3 rounded-xl text-left"
+                          >
+                            <span className="text-2xl">{action.icon}</span>
+                            <span className="text-sm text-white/80">{action.text}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Other existing views (agents, research, code) remain the same */}
+              {activeView === 'agents' && (
+                <div className="p-8 max-w-6xl mx-auto">
+                  <div className="mb-8">
+                    <h2 className="text-2xl font-bold text-white mb-2">AI Agent Deployment Center</h2>
+                    <p className="text-gray-400">Deploy specialized AI agents for autonomous tasks</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    {[
+                      { type: 'Research Agent', icon: '🔍', desc: 'Autonomous web research and data gathering' },
+                      { type: 'Code Agent', icon: '💻', desc: 'Automated code generation and debugging' },
+                      { type: 'Analysis Agent', icon: '📊', desc: 'Data analysis and insights generation' }
+                    ].map((agent) => (
+                      <div key={agent.type} className="glass-card p-6">
+                        <div className="text-4xl mb-4">{agent.icon}</div>
+                        <h3 className="text-lg font-semibold text-white mb-2">{agent.type}</h3>
+                        <p className="text-gray-400 text-sm mb-4">{agent.desc}</p>
+                        <button
+                          onClick={() => deployAgent(agent.type)}
+                          className="neural-button w-full"
+                          disabled={isLoading}
+                        >
+                          Deploy Agent
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </main>
+
+            {/* Floating Input (only for chat view) */}
+            {activeView === 'chat' && (
+              <div className="message-input-container">
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
+                    placeholder="Ask Sophia anything..."
+                    className="message-input"
+                  />
+                  <button
+                    onClick={sendMessage}
+                    disabled={isLoading || !input.trim()}
+                    className="send-button"
+                  >
+                    ➤
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* API Health Dashboard */}
+        {selectedDashboard === 'api-health' && (
+          <div className="flex-1 p-8 overflow-y-auto">
+            <div className="max-w-7xl mx-auto">
+              <div className="flex justify-between items-center mb-8">
+                <div>
+                  <h1 className="text-3xl font-bold text-white">API Health Monitor</h1>
+                  <p className="text-gray-400 mt-2">Real-time system performance and health metrics</p>
+                </div>
+                <div className="flex items-center gap-2 px-4 py-2 bg-green-500/20 border border-green-500/50 rounded-lg">
+                  <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                  <span className="text-green-400 font-semibold">All Systems Operational</span>
+                </div>
+              </div>
+
+              {/* Metrics Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                {apiMetrics.map((metric) => (
+                  <div key={metric.title} className="glass-card p-6">
+                    <div className="flex justify-between items-start mb-4">
+                      <h3 className="text-gray-400 text-sm">{metric.title}</h3>
+                      <span className={`text-xs px-2 py-1 rounded ${
+                        metric.status === 'good' ? 'bg-green-500/20 text-green-400' :
+                        metric.status === 'warning' ? 'bg-yellow-500/20 text-yellow-400' :
+                        'bg-red-500/20 text-red-400'
+                      }`}>
+                        {metric.change}
+                      </span>
+                    </div>
+                    <div className="text-3xl font-bold text-white mb-2">{metric.value}</div>
+                    <div className="h-16 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 rounded"></div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Service Status */}
+              <div className="glass-card p-6 mb-8">
+                <h2 className="text-xl font-semibold text-white mb-4">Service Status</h2>
+                <div className="space-y-3">
+                  {['Neural Chat API', 'Agent Orchestration', 'Research Engine', 'Code Generation'].map((service) => (
+                    <div key={service} className="flex items-center justify-between p-4 bg-gray-800/30 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                        <span className="text-white">{service}</span>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <span className="text-gray-400 text-sm">Uptime: 99.9%</span>
+                        <span className="text-green-400 text-sm">Healthy</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Agent Factory Dashboard */}
+        {selectedDashboard === 'agent-factory' && (
+          <div className="flex-1 p-8 overflow-y-auto">
+            <div className="max-w-7xl mx-auto">
+              <div className="mb-8">
+                <h1 className="text-3xl font-bold text-white">Agent Factory</h1>
+                <p className="text-gray-400 mt-2">Build, deploy, and manage AI agent swarms</p>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Agent Builder */}
+                <div className="glass-card p-6">
+                  <h2 className="text-xl font-semibold text-white mb-6">Agent Configuration</h2>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm text-gray-400 mb-2">Agent Type</label>
+                      <select className="w-full neural-input">
+                        <option>Research Agent</option>
+                        <option>Code Agent</option>
+                        <option>Analysis Agent</option>
+                        <option>Custom Agent</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-gray-400 mb-2">Capabilities</label>
+                      <div className="space-y-2">
+                        {['Web Search', 'Code Generation', 'Data Analysis', 'File Processing'].map((cap) => (
+                          <label key={cap} className="flex items-center gap-2 text-white">
+                            <input type="checkbox" className="rounded" />
+                            <span>{cap}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-gray-400 mb-2">Swarm Size</label>
+                      <input type="range" min="1" max="10" defaultValue="3" className="w-full" />
+                      <div className="flex justify-between text-xs text-gray-400 mt-1">
+                        <span>1</span>
+                        <span>5</span>
+                        <span>10</span>
+                      </div>
+                    </div>
+
+                    <button className="neural-button w-full">Deploy Agent Swarm</button>
+                  </div>
+                </div>
+
+                {/* Active Swarms */}
+                <div className="glass-card p-6">
+                  <h2 className="text-xl font-semibold text-white mb-6">Active Agent Swarms</h2>
+                  
+                  <div className="space-y-4">
+                    <div className="p-4 bg-gray-800/30 rounded-lg">
+                      <div className="flex justify-between items-start mb-3">
+                        <h3 className="text-white font-semibold">Research Swarm Alpha</h3>
+                        <span className="text-xs px-2 py-1 bg-green-500/20 text-green-400 rounded">3 agents active</span>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-400">Researcher-01</span>
+                          <span className="text-cyan-400">Busy - Market analysis</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-400">Researcher-02</span>
+                          <span className="text-green-400">Idle</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-400">Synthesizer-01</span>
+                          <span className="text-cyan-400">Busy - Report generation</span>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 mt-4">
+                        <button className="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm">Pause</button>
+                        <button className="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm">Scale</button>
+                        <button className="px-3 py-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded text-sm">Terminate</button>
+                      </div>
+                    </div>
+
+                    <div className="p-4 bg-gray-800/30 rounded-lg">
+                      <div className="flex justify-between items-start mb-3">
+                        <h3 className="text-white font-semibold">Code Development Squad</h3>
+                        <span className="text-xs px-2 py-1 bg-gray-500/20 text-gray-400 rounded">2 agents idle</span>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-400">Coder-01</span>
+                          <span className="text-green-400">Idle</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-400">Debugger-01</span>
+                          <span className="text-green-400">Idle</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Project Management Dashboard */}
+        {selectedDashboard === 'project-mgmt' && (
+          <div className="flex-1 p-8 overflow-y-auto">
+            <div className="max-w-7xl mx-auto">
+              <div className="flex justify-between items-center mb-8">
+                <div>
+                  <h1 className="text-3xl font-bold text-white">Project Command Center</h1>
+                  <p className="text-gray-400 mt-2">Manage projects, tasks, and team coordination</p>
+                </div>
+                <select className="neural-input" value={projectName} onChange={(e) => setProjectName(e.target.value)}>
+                  <option>AI Research Platform</option>
+                  <option>Neural Interface v2.0</option>
+                  <option>Agent Swarm System</option>
+                </select>
+              </div>
+
+              {/* Project Overview */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="glass-card p-6">
+                  <h3 className="text-gray-400 text-sm mb-4">Progress</h3>
+                  <div className="text-3xl font-bold text-white mb-4">73%</div>
+                  <div className="w-full bg-gray-700 rounded-full h-2">
+                    <div className="bg-gradient-to-r from-cyan-500 to-purple-500 h-2 rounded-full" style={{ width: '73%' }}></div>
+                  </div>
+                </div>
+
+                <div className="glass-card p-6">
+                  <h3 className="text-gray-400 text-sm mb-4">Active Tasks</h3>
+                  <div className="text-3xl font-bold text-white mb-4">12</div>
+                  <div className="flex gap-2 text-xs">
+                    <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded">4 In Progress</span>
+                    <span className="px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded">6 Review</span>
+                    <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded">2 Testing</span>
+                  </div>
+                </div>
+
+                <div className="glass-card p-6">
+                  <h3 className="text-gray-400 text-sm mb-4">Team Capacity</h3>
+                  <div className="text-3xl font-bold text-white mb-4">85%</div>
+                  <p className="text-sm text-gray-400">3 agents + 2 humans</p>
+                </div>
+              </div>
+
+              {/* Task Board */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                {['Backlog', 'In Progress', 'Review', 'Done'].map((column) => (
+                  <div key={column} className="glass-card p-4">
+                    <h3 className="text-white font-semibold mb-4">{column}</h3>
+                    <div className="space-y-3">
+                      {column === 'In Progress' && (
+                        <div className="p-3 bg-gray-800/50 rounded-lg border-l-4 border-yellow-500">
+                          <h4 className="text-white text-sm font-medium mb-2">API health monitoring system</h4>
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-xs px-2 py-1 bg-red-500/20 text-red-400 rounded">Critical</span>
+                            <span className="text-xs px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded">DevOps</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs text-gray-400">Agent-Code-01</span>
+                            <span className="text-xs text-cyan-400">60%</span>
+                          </div>
+                        </div>
+                      )}
+                      {column === 'Backlog' && (
+                        <>
+                          <div className="p-3 bg-gray-800/50 rounded-lg">
+                            <h4 className="text-white text-sm font-medium mb-2">Implement neural network optimization</h4>
+                            <span className="text-xs px-2 py-1 bg-purple-500/20 text-purple-400 rounded">AI/ML</span>
+                          </div>
+                          <div className="p-3 bg-gray-800/50 rounded-lg">
+                            <h4 className="text-white text-sm font-medium mb-2">Design swarm coordination protocol</h4>
+                            <span className="text-xs px-2 py-1 bg-green-500/20 text-green-400 rounded">Architecture</span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
