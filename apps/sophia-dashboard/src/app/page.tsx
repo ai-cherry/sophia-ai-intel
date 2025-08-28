@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import SwarmManager from '@/components/SwarmManager';
 
 interface Message {
   id: string;
@@ -469,106 +470,8 @@ export default function SophiaApp() {
 
         {/* Agent Factory Dashboard */}
         {selectedDashboard === 'agent-factory' && (
-          <div className="flex-1 p-8 overflow-y-auto">
-            <div className="max-w-7xl mx-auto">
-              <div className="mb-8">
-                <h1 className="text-3xl font-bold text-white">Agent Factory</h1>
-                <p className="text-gray-400 mt-2">Build, deploy, and manage AI agent swarms</p>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Agent Builder */}
-                <div className="glass-card p-6">
-                  <h2 className="text-xl font-semibold text-white mb-6">Agent Configuration</h2>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm text-gray-400 mb-2">Agent Type</label>
-                      <select className="w-full neural-input">
-                        <option>Research Agent</option>
-                        <option>Code Agent</option>
-                        <option>Analysis Agent</option>
-                        <option>Custom Agent</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm text-gray-400 mb-2">Capabilities</label>
-                      <div className="space-y-2">
-                        {['Web Search', 'Code Generation', 'Data Analysis', 'File Processing'].map((cap) => (
-                          <label key={cap} className="flex items-center gap-2 text-white">
-                            <input type="checkbox" className="rounded" />
-                            <span>{cap}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm text-gray-400 mb-2">Swarm Size</label>
-                      <input type="range" min="1" max="10" defaultValue="3" className="w-full" />
-                      <div className="flex justify-between text-xs text-gray-400 mt-1">
-                        <span>1</span>
-                        <span>5</span>
-                        <span>10</span>
-                      </div>
-                    </div>
-
-                    <button className="neural-button w-full">Deploy Agent Swarm</button>
-                  </div>
-                </div>
-
-                {/* Active Swarms */}
-                <div className="glass-card p-6">
-                  <h2 className="text-xl font-semibold text-white mb-6">Active Agent Swarms</h2>
-                  
-                  <div className="space-y-4">
-                    <div className="p-4 bg-gray-800/30 rounded-lg">
-                      <div className="flex justify-between items-start mb-3">
-                        <h3 className="text-white font-semibold">Research Swarm Alpha</h3>
-                        <span className="text-xs px-2 py-1 bg-green-500/20 text-green-400 rounded">3 agents active</span>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-400">Researcher-01</span>
-                          <span className="text-cyan-400">Busy - Market analysis</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-400">Researcher-02</span>
-                          <span className="text-green-400">Idle</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-400">Synthesizer-01</span>
-                          <span className="text-cyan-400">Busy - Report generation</span>
-                        </div>
-                      </div>
-                      <div className="flex gap-2 mt-4">
-                        <button className="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm">Pause</button>
-                        <button className="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm">Scale</button>
-                        <button className="px-3 py-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded text-sm">Terminate</button>
-                      </div>
-                    </div>
-
-                    <div className="p-4 bg-gray-800/30 rounded-lg">
-                      <div className="flex justify-between items-start mb-3">
-                        <h3 className="text-white font-semibold">Code Development Squad</h3>
-                        <span className="text-xs px-2 py-1 bg-gray-500/20 text-gray-400 rounded">2 agents idle</span>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-400">Coder-01</span>
-                          <span className="text-green-400">Idle</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-400">Debugger-01</span>
-                          <span className="text-green-400">Idle</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="flex-1 overflow-hidden">
+            <SwarmManager />
           </div>
         )}
 
