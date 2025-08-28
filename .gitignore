@@ -56,3 +56,8 @@ __pycache__/
 # Production secrets and sensitive files
 *.env.production.real
 update_secrets.py
+.env*
+k8s-deploy/secrets/
+kubeconfig*.yaml
+*.key
+*.pem

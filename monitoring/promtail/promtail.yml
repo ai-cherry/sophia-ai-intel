@@ -1,0 +1,241 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  # Docker container logs for all Sophia AI services
+  - job_name: docker
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+        filters:
+          - name: label
+            values: ["com.docker.compose.project=sophia-ai-intel-1"]
+    relabel_configs:
+      - source_labels: ['__meta_docker_container_name']
+        regex: '^/(.*)$'
+        target_label: '__tmp_container_name'
+      - source_labels: ['__tmp_container_name']
+        target_label: 'container'
+      - source_labels: ['__meta_docker_container_log_stream']
+        target_label: 'stream'
+      - source_labels: ['__meta_docker_container_label_com_docker_compose_service']
+        target_label: 'service'
+    pipeline_stages:
+      # Parse different log formats
+      - match:
+          selector: '{service=~"agno-.*|mcp-.*|orchestrator|agents-swarm"}'
+          stages:
+            - regex:
+                expression: '^(?P<timestamp>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d+Z)\s+(?P<level>\w+)\s+(?P<message>.+)$'
+            - labels:
+                level:
+            - timestamp:
+                source: timestamp
+                format: RFC3339Nano
+      # Parse JSON logs
+      - match:
+          selector: '{service=~"portkey-llm"}'
+          stages:
+            - json:
+                expressions:
+                  level: level
+                  timestamp: timestamp
+                  message: message
+                  trace_id: trace_id
+            - labels:
+                level:
+                trace_id:
+            - timestamp:
+                source: timestamp
+                format: RFC3339
+      # Parse PostgreSQL logs
+      - match:
+          selector: '{service="postgres"}'
+          stages:
+            - regex:
+                expression: '^(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d+ \w+) \[(?P<pid>\d+)\] (?P<level>\w+):\s+(?P<message>.+)$'
+            - labels:
+                level:
+                pid:
+            - timestamp:
+                source: timestamp
+                format: "2006-01-02 15:04:05.000 MST"
+      # Parse Redis logs  
+      - match:
+          selector: '{service="redis"}'
+          stages:
+            - regex:
+                expression: '^(?P<pid>\d+):(?P<role>\w) (?P<timestamp>\d+ \w+ \d{2}:\d{2}:\d{2}.\d+) (?P<level>.) (?P<message>.+)$'
+            - labels:
+                level:
+                role:
+            - timestamp:
+                source: timestamp
+                format: "02 Jan 15:04:05.000"
+
+  # Application-specific log files
+  - job_name: sophia-app-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: sophia-app-logs
+          __path__: /app/logs/*.log
+    pipeline_stages:
+      - match:
+          selector: '{filename=~".*/error\\.log"}'
+          stages:
+            - regex:
+                expression: '^\[(?P<timestamp>[^\]]+)\] (?P<level>\w+): (?P<message>.+)$'
+            - labels:
+                level: ERROR
+            - timestamp:
+                source: timestamp
+                format: "2006-01-02 15:04:05"
+      - match:
+          selector: '{filename=~".*/access\\.log"}'
+          stages:
+            - regex:
+                expression: '^(?P<remote_addr>\S+) - (?P<remote_user>\S+) \[(?P<timestamp>[^\]]+)\] "(?P<method>\S+) (?P<path>\S+) (?P<protocol>\S+)" (?P<status>\d+) (?P<body_bytes_sent>\d+)'
+            - labels:
+                method:
+                status:
+            - timestamp:
+                source: timestamp
+                format: "02/Jan/2006:15:04:05 -0700"
+
+  # Development workflow logs
+  - job_name: dev-workflow
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: dev-workflow
+          __path__: /.dev-workflow/*.log
+    pipeline_stages:
+      - regex:
+          expression: '^(?P<timestamp>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z) (?P<level>\w+) \[(?P<component>\w+)\] (?P<message>.+)$'
+      - labels:
+          level:
+          component:
+      - timestamp:
+          source: timestamp
+          format: RFC3339
+
+  # Test execution logs
+  - job_name: test-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: test-logs
+          __path__: /.pytest_cache/logs/*.log
+    pipeline_stages:
+      - regex:
+          expression: '^(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) (?P<level>\w+) (?P<test_name>\S+) (?P<message>.+)$'
+      - labels:
+          level:
+          test_name:
+      - timestamp:
+          source: timestamp
+          format: "2006-01-02 15:04:05"
+
+  # Health monitor logs
+  - job_name: health-monitor
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: health-monitor
+          __path__: /.health/*.log
+    pipeline_stages:
+      - regex:
+          expression: '^(?P<timestamp>[^|]+)\|(?P<service>[^|]+)\|(?P<event_type>[^|]+)\|(?P<message>.+)$'
+      - labels:
+          service:
+          event_type:
+      - timestamp:
+          source: timestamp
+          format: RFC3339
+
+  # Debug profiler logs
+  - job_name: debug-profiler
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: debug-profiler
+          __path__: /.debug/*.log
+    pipeline_stages:
+      - match:
+          selector: '{filename=~".*/profile_.*\\.log"}'
+          stages:
+            - regex:
+                expression: '^(?P<timestamp>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z) \[(?P<service>\w+)\] (?P<profile_type>\w+) (?P<message>.+)$'
+            - labels:
+                service:
+                profile_type:
+
+  # Nginx access and error logs
+  - job_name: nginx
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: nginx-access
+          __path__: /var/log/nginx/access.log
+      - targets:
+          - localhost
+        labels:
+          job: nginx-error
+          __path__: /var/log/nginx/error.log
+    pipeline_stages:
+      - match:
+          selector: '{job="nginx-access"}'
+          stages:
+            - regex:
+                expression: '^(?P<remote_addr>\S+) - (?P<remote_user>\S+) \[(?P<timestamp>[^\]]+)\] "(?P<method>\S+) (?P<path>\S+) (?P<protocol>\S+)" (?P<status>\d+) (?P<body_bytes_sent>\d+) "(?P<http_referer>[^"]*)" "(?P<http_user_agent>[^"]*)"'
+            - labels:
+                method:
+                status:
+                remote_addr:
+            - timestamp:
+                source: timestamp
+                format: "02/Jan/2006:15:04:05 -0700"
+      - match:
+          selector: '{job="nginx-error"}'
+          stages:
+            - regex:
+                expression: '^(?P<timestamp>\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}) \[(?P<level>\w+)\] (?P<pid>\d+)#(?P<tid>\d+): (?P<message>.+)$'
+            - labels:
+                level:
+            - timestamp:
+                source: timestamp
+                format: "2006/01/02 15:04:05"
+
+  # System logs (journald integration for development)
+  - job_name: journal
+    journal:
+      max_age: 12h
+      labels:
+        job: systemd-journal
+    relabel_configs:
+      - source_labels: ['__journal__systemd_unit']
+        target_label: 'unit'
+      - source_labels: ['__journal__hostname']
+        target_label: 'hostname'
+    pipeline_stages:
+      - match:
+          selector: '{unit="docker.service"}'
+          stages:
+            - regex:
+                expression: '^.*container (?P<container_name>\w+).*$'
+            - labels:
+                container_name:

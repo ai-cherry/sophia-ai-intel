@@ -1,44 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-
-// Mock interfaces and API for now
-interface ChatMessage {
-  id: string;
-  role: 'user' | 'system' | 'assistant';
-  content: string;
-  timestamp: Date;
-  metadata?: {
-    model?: string;
-    prompt_enhanced?: boolean;
-    processing_time?: number;
-  };
-}
-
-const chatAPI = {
-  sendMessage: async (
-    message: string,
-    settings: any,
-    history: ChatMessage[]
-  ): Promise<{ message: ChatMessage; error: any }> => {
-    console.log('Sending message:', message, settings, history);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    return {
-      message: {
-        id: Date.now().toString(),
-        role: 'assistant',
-        content: `This is a mocked response to: "${message}"`,
-        timestamp: new Date(),
-        metadata: {
-          model: 'mock-gpt-5',
-          prompt_enhanced: settings.enableEnhancement,
-        },
-      },
-      error: null,
-    };
-  },
-};
+import { apiClient, ChatMessage, ChatSettings } from '../lib/api';
 
 export default function ChatInterface() {
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -56,12 +19,12 @@ export default function ChatInterface() {
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [settings, setSettings] = useState({
+  const [settings, setSettings] = useState<ChatSettings>({
     verbosity: 'standard',
     askMeThreshold: 0.7,
     riskStance: 'balanced',
     enableEnhancement: true,
-    model: 'gpt-5',
+    model: 'gpt-4o',
   });
   const [showSettings, setShowSettings] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -88,7 +51,7 @@ export default function ChatInterface() {
     setIsLoading(true);
 
     try {
-      const response = await chatAPI.sendMessage(
+      const response = await apiClient.sendChatMessage(
         currentInput,
         settings,
         messages
@@ -98,28 +61,44 @@ export default function ChatInterface() {
         const errorMessage: ChatMessage = {
           id: (Date.now() + 1).toString(),
           role: 'system',
-          content: `Error: ${response.error}`,
+          content: `Backend Error: ${response.error}. Falling back to mock response.`,
           timestamp: new Date(),
           metadata: {
             model: 'error',
             prompt_enhanced: false,
+            service: 'error',
           },
         };
         setMessages((prev) => [...prev, errorMessage]);
-      } else {
-        setMessages((prev) => [...prev, response.message]);
+
+        // Fallback to mock response when backend is unavailable
+        const mockMessage: ChatMessage = {
+          id: (Date.now() + 2).toString(),
+          role: 'assistant',
+          content: `[DEMO MODE] This is a simulated response to: "${currentInput}". The Sophia AI backend services are starting up.`,
+          timestamp: new Date(),
+          metadata: {
+            model: 'demo-mode',
+            prompt_enhanced: settings.enableEnhancement,
+            service: 'mock',
+          },
+        };
+        setMessages((prev) => [...prev, mockMessage]);
+      } else if (response.data) {
+        setMessages((prev) => [...prev, response.data!]);
       }
     } catch (error) {
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'system',
-        content: `Error: ${
-          error instanceof Error ? error.message : 'Failed to generate response'
+        content: `Connection Error: ${
+          error instanceof Error ? error.message : 'Failed to connect to backend'
         }`,
         timestamp: new Date(),
         metadata: {
           model: 'error',
           prompt_enhanced: false,
+          service: 'connection-error',
         },
       };
       setMessages((prev) => [...prev, errorMessage]);
@@ -247,9 +226,9 @@ export default function ChatInterface() {
                 }
                 className="p-1 border rounded-md"
               >
-                <option value="gpt-5">GPT-5 (Primary)</option>
+                <option value="gpt-4o">GPT-4o (Primary)</option>
                 <option value="claude-3.5-sonnet">Claude 3.5 Sonnet</option>
-                <option value="gpt-4o">GPT-4o</option>
+                <option value="gpt-4-turbo">GPT-4 Turbo</option>
                 <option value="deepseek-coder">DeepSeek Coder</option>
               </select>
             </div>

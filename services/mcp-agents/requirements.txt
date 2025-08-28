@@ -5,7 +5,7 @@ uvicorn[standard]==0.24.0
 
 # HTTP client and async support
 httpx==0.25.2
-asyncio-compat==0.1.2
+aiofiles==23.2.1
 
 # Data validation and type hints
 pydantic==2.5.0

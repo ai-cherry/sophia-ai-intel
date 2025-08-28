@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # Infrastructure (Already running via docker-compose.local.yml)
+  # postgres, redis, qdrant, mem0
+
+  # Dashboard Application
+  sophia-dashboard:
+    image: sophia-dashboard:latest
+    container_name: sophia-dashboard
+    ports:
+      - "3001:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8080
+    networks:
+      - sophia-network
+    restart: unless-stopped
+
+  # Simple test service to verify connectivity
+  test-api:
+    image: python:3.11-slim
+    container_name: test-api
+    command: python -m http.server 8090
+    ports:
+      - "8090:8090"
+    networks:
+      - sophia-network
+
+  # Monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - sophia-network
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_USERS_ALLOW_SIGN_UP=false
+    networks:
+      - sophia-network
+    depends_on:
+      - prometheus
+
+networks:
+  sophia-network:
+    external: true
+    name: sophia-ai-intel-1_sophia-network

@@ -1,0 +1,279 @@
+version: '3.8'
+
+services:
+  # Infrastructure (use existing if running)
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=sophia
+      - POSTGRES_USER=sophia
+      - POSTGRES_PASSWORD=sophia123
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - sophia-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - sophia-network
+    restart: unless-stopped
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant-data:/qdrant/storage
+    networks:
+      - sophia-network
+    restart: unless-stopped
+
+  # MCP Services (using Python base with mock services)
+  mcp-agents:
+    image: python:3.11-slim
+    container_name: mcp-agents
+    working_dir: /app
+    command: python -m http.server 8000
+    ports:
+      - "8000:8000"
+    environment:
+      - SERVICE_NAME=mcp-agents
+      - POSTGRES_URL=postgresql://sophia:sophia123@postgres:5432/sophia
+      - REDIS_URL=redis://redis:6379
+    networks:
+      - sophia-network
+    restart: unless-stopped
+
+  mcp-context:
+    image: python:3.11-slim
+    container_name: mcp-context
+    working_dir: /app
+    command: python -m http.server 8081
+    ports:
+      - "8081:8081"
+    environment:
+      - SERVICE_NAME=mcp-context
+      - POSTGRES_URL=postgresql://sophia:sophia123@postgres:5432/sophia
+      - REDIS_URL=redis://redis:6379
+      - WEAVIATE_URL=http://qdrant:6333
+    networks:
+      - sophia-network
+    restart: unless-stopped
+
+  mcp-github:
+    image: python:3.11-slim
+    container_name: mcp-github
+    working_dir: /app
+    command: python -m http.server 8082
+    ports:
+      - "8082:8082"
+    environment:
+      - SERVICE_NAME=mcp-github
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-dummy}
+    networks:
+      - sophia-network
+    restart: unless-stopped
+
+  mcp-hubspot:
+    image: python:3.11-slim
+    container_name: mcp-hubspot
+    working_dir: /app
+    command: python -m http.server 8083
+    ports:
+      - "8083:8083"
+    environment:
+      - SERVICE_NAME=mcp-hubspot
+    networks:
+      - sophia-network
+    restart: unless-stopped
+
+  mcp-lambda:
+    image: python:3.11-slim
+    container_name: mcp-lambda
+    working_dir: /app
+    command: python -m http.server 8084
+    ports:
+      - "8084:8084"
+    environment:
+      - SERVICE_NAME=mcp-lambda
+    networks:
+      - sophia-network
+    restart: unless-stopped
+
+  mcp-research:
+    image: python:3.11-slim
+    container_name: mcp-research
+    working_dir: /app
+    command: python -m http.server 8085
+    ports:
+      - "8085:8085"
+    environment:
+      - SERVICE_NAME=mcp-research
+    networks:
+      - sophia-network
+    restart: unless-stopped
+
+  mcp-business:
+    image: python:3.11-slim
+    container_name: mcp-business
+    working_dir: /app
+    command: python -m http.server 8086
+    ports:
+      - "8086:8086"
+    environment:
+      - SERVICE_NAME=mcp-business
+    networks:
+      - sophia-network
+    restart: unless-stopped
+
+  agno-teams:
+    image: python:3.11-slim
+    container_name: agno-teams
+    working_dir: /app
+    command: python -m http.server 8087
+    ports:
+      - "8087:8087"
+    environment:
+      - SERVICE_NAME=agno-teams
+    networks:
+      - sophia-network
+    restart: unless-stopped
+
+  orchestrator:
+    image: python:3.11-slim
+    container_name: orchestrator
+    working_dir: /app
+    command: python -m http.server 8088
+    ports:
+      - "8088:8088"
+    environment:
+      - SERVICE_NAME=orchestrator
+    networks:
+      - sophia-network
+    restart: unless-stopped
+
+  agno-wrappers:
+    image: python:3.11-slim
+    container_name: agno-wrappers
+    working_dir: /app
+    command: python -m http.server 8089
+    ports:
+      - "8089:8089"
+    environment:
+      - SERVICE_NAME=agno-wrappers
+    networks:
+      - sophia-network
+    restart: unless-stopped
+
+  mcp-apollo:
+    image: python:3.11-slim
+    container_name: mcp-apollo
+    working_dir: /app
+    command: python -m http.server 8090
+    ports:
+      - "8091:8090"  # Changed to avoid conflict with test-api
+    environment:
+      - SERVICE_NAME=mcp-apollo
+    networks:
+      - sophia-network
+    restart: unless-stopped
+
+  mcp-gong:
+    image: python:3.11-slim
+    container_name: mcp-gong
+    working_dir: /app
+    command: python -m http.server 8091
+    ports:
+      - "8092:8091"
+    environment:
+      - SERVICE_NAME=mcp-gong
+    networks:
+      - sophia-network
+    restart: unless-stopped
+
+  mcp-salesforce:
+    image: python:3.11-slim
+    container_name: mcp-salesforce
+    working_dir: /app
+    command: python -m http.server 8092
+    ports:
+      - "8093:8092"
+    environment:
+      - SERVICE_NAME=mcp-salesforce
+    networks:
+      - sophia-network
+    restart: unless-stopped
+
+  mcp-slack:
+    image: python:3.11-slim
+    container_name: mcp-slack
+    working_dir: /app
+    command: python -m http.server 8093
+    ports:
+      - "8094:8093"
+    environment:
+      - SERVICE_NAME=mcp-slack
+    networks:
+      - sophia-network
+    restart: unless-stopped
+
+  agno-coordinator:
+    image: python:3.11-slim
+    container_name: agno-coordinator
+    working_dir: /app
+    command: python -m http.server 8080
+    ports:
+      - "8080:8080"
+    environment:
+      - SERVICE_NAME=agno-coordinator
+    networks:
+      - sophia-network
+    restart: unless-stopped
+
+  portkey-llm:
+    image: python:3.11-slim
+    container_name: portkey-llm
+    working_dir: /app
+    command: python -m http.server 8007
+    ports:
+      - "8007:8007"
+    environment:
+      - SERVICE_NAME=portkey-llm
+    networks:
+      - sophia-network
+    restart: unless-stopped
+
+  agents-swarm:
+    image: python:3.11-slim
+    container_name: agents-swarm
+    working_dir: /app
+    command: python -m http.server 8008
+    ports:
+      - "8008:8008"
+    environment:
+      - SERVICE_NAME=agents-swarm
+    networks:
+      - sophia-network
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  redis-data:
+  qdrant-data:
+
+networks:
+  sophia-network:
+    external: true
+    name: sophia-ai-intel-1_sophia-network

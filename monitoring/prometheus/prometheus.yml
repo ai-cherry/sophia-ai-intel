@@ -1,0 +1,183 @@
+# Prometheus Configuration for Sophia AI Local Development
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'sophia-ai-local'
+    environment: 'development'
+
+# Load alerting rules and recording rules
+rule_files:
+  - "rules/*.yml"
+  - "alerts/*.yml"
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Node Exporter for host metrics
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+
+  # Docker daemon metrics
+  - job_name: 'docker'
+    static_configs:
+      - targets: ['host.docker.internal:9323']
+    metrics_path: /metrics
+
+  # PostgreSQL metrics
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+
+  # Redis metrics
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+
+  # Core AI Services
+  - job_name: 'agno-coordinator'
+    static_configs:
+      - targets: ['agno-coordinator:8080']
+    metrics_path: /metrics
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  - job_name: 'agno-teams'
+    static_configs:
+      - targets: ['agno-teams:8087']
+    metrics_path: /metrics
+    scrape_interval: 10s
+
+  - job_name: 'orchestrator'
+    static_configs:
+      - targets: ['orchestrator:8088']
+    metrics_path: /metrics
+    scrape_interval: 10s
+
+  - job_name: 'agno-wrappers'
+    static_configs:
+      - targets: ['agno-wrappers:8089']
+    metrics_path: /metrics
+    scrape_interval: 10s
+
+  # MCP Services
+  - job_name: 'mcp-agents'
+    static_configs:
+      - targets: ['mcp-agents:8000']
+    metrics_path: /metrics
+    scrape_interval: 15s
+
+  - job_name: 'mcp-context'
+    static_configs:
+      - targets: ['mcp-context:8081']
+    metrics_path: /metrics
+    scrape_interval: 15s
+
+  - job_name: 'mcp-github'
+    static_configs:
+      - targets: ['mcp-github:8082']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  - job_name: 'mcp-hubspot'
+    static_configs:
+      - targets: ['mcp-hubspot:8083']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  - job_name: 'mcp-lambda'
+    static_configs:
+      - targets: ['mcp-lambda:8084']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  - job_name: 'mcp-research'
+    static_configs:
+      - targets: ['mcp-research:8085']
+    metrics_path: /metrics
+    scrape_interval: 15s
+
+  - job_name: 'mcp-business'
+    static_configs:
+      - targets: ['mcp-business:8086']
+    metrics_path: /metrics
+    scrape_interval: 15s
+
+  - job_name: 'mcp-apollo'
+    static_configs:
+      - targets: ['mcp-apollo:8090']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  - job_name: 'mcp-gong'
+    static_configs:
+      - targets: ['mcp-gong:8091']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  - job_name: 'mcp-salesforce'
+    static_configs:
+      - targets: ['mcp-salesforce:8092']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  - job_name: 'mcp-slack'
+    static_configs:
+      - targets: ['mcp-slack:8093']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  # LLM and Agent Services
+  - job_name: 'portkey-llm'
+    static_configs:
+      - targets: ['portkey-llm:8007']
+    metrics_path: /metrics
+    scrape_interval: 10s
+
+  - job_name: 'agents-swarm'
+    static_configs:
+      - targets: ['agents-swarm:8008']
+    metrics_path: /metrics
+    scrape_interval: 10s
+
+  # Development Tools
+  - job_name: 'dev-workflow'
+    static_configs:
+      - targets: ['file-watcher:8094']
+    metrics_path: /metrics
+    scrape_interval: 5s
+
+  # cAdvisor for container metrics
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+    metrics_path: /metrics
+
+  # Jaeger metrics
+  - job_name: 'jaeger'
+    static_configs:
+      - targets: ['jaeger:14269']
+    metrics_path: /metrics
+
+# Remote write for long-term storage (optional)
+# remote_write:
+#   - url: "http://victoria-metrics:8428/api/v1/write"
+
+  # Scrape configuration for development metrics
+  - job_name: 'development-metrics'
+    static_configs:
+      - targets: ['localhost:8095']  # Custom development metrics endpoint
+    metrics_path: /dev-metrics
+    scrape_interval: 5s

@@ -20,7 +20,7 @@ WORKDIR /app
 
 # Copy requirements and install dependencies
 # This layer will be cached unless requirements change
-COPY requirements*.txt ./
+COPY services/agno-wrappers/requirements*.txt ./
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 
@@ -28,7 +28,7 @@ RUN pip install --no-cache-dir --upgrade pip \
 FROM base as runtime
 
 # Copy application code
-COPY --chown=sophia:sophia . .
+COPY --chown=sophia:sophia services/agno-wrappers/ .
 
 # Switch to non-root user
 USER sophia

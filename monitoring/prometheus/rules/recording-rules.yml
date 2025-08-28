@@ -1,0 +1,101 @@
+groups:
+  # Sophia AI performance aggregates
+  - name: sophia_ai_aggregates
+    interval: 30s
+    rules:
+      - record: sophia_ai:cpu_usage_rate
+        expr: rate(container_cpu_usage_seconds_total{name=~"sophia-ai.*"}[5m])
+      
+      - record: sophia_ai:memory_usage_bytes
+        expr: container_memory_usage_bytes{name=~"sophia-ai.*"}
+      
+      - record: sophia_ai:network_io_rate
+        expr: rate(container_network_receive_bytes_total{name=~"sophia-ai.*"}[5m]) + rate(container_network_transmit_bytes_total{name=~"sophia-ai.*"}[5m])
+      
+      - record: sophia_ai:http_request_rate
+        expr: rate(http_requests_total{job=~"sophia-ai.*"}[5m])
+      
+      - record: sophia_ai:error_rate
+        expr: rate(http_requests_total{job=~"sophia-ai.*", status=~"5.."}[5m])
+      
+      - record: sophia_ai:response_time_p95
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=~"sophia-ai.*"}[5m]))
+      
+      - record: sophia_ai:response_time_p50
+        expr: histogram_quantile(0.50, rate(http_request_duration_seconds_bucket{job=~"sophia-ai.*"}[5m]))
+
+  # Development-specific aggregates
+  - name: development_metrics
+    interval: 15s
+    rules:
+      - record: dev:file_change_rate
+        expr: rate(dev_file_changes_total[1m])
+      
+      - record: dev:hot_reload_rate
+        expr: rate(dev_hot_reloads_total[1m])
+      
+      - record: dev:test_failure_rate
+        expr: rate(test_results_total{status="failed"}[5m]) / rate(test_results_total[5m])
+      
+      - record: dev:debug_session_count
+        expr: count(debug_client_connected == 1)
+      
+      - record: dev:test_execution_rate
+        expr: rate(test_results_total[5m])
+      
+      - record: dev:code_coverage_avg
+        expr: avg(code_coverage_percentage)
+
+  # AI-specific aggregates
+  - name: ai_metrics
+    interval: 60s
+    rules:
+      - record: ai:inference_rate
+        expr: rate(ai_inference_requests_total[5m])
+      
+      - record: ai:inference_latency_p95
+        expr: histogram_quantile(0.95, ai_inference_duration_seconds_bucket)
+      
+      - record: ai:inference_latency_p50
+        expr: histogram_quantile(0.50, ai_inference_duration_seconds_bucket)
+      
+      - record: ai:model_load_time_avg
+        expr: avg(ai_model_load_duration_seconds)
+      
+      - record: ai:gpu_utilization_avg
+        expr: avg(nvidia_gpu_utilization_percent)
+
+  # MCP service aggregates
+  - name: mcp_metrics
+    interval: 30s
+    rules:
+      - record: mcp:request_rate
+        expr: rate(mcp_requests_total[5m])
+      
+      - record: mcp:error_rate
+        expr: rate(mcp_errors_total[5m])
+      
+      - record: mcp:success_rate
+        expr: rate(mcp_requests_total{status="success"}[5m]) / rate(mcp_requests_total[5m])
+      
+      - record: mcp:response_time_p95
+        expr: histogram_quantile(0.95, rate(mcp_request_duration_seconds_bucket[5m]))
+
+  # Database performance aggregates
+  - name: database_metrics
+    interval: 60s
+    rules:
+      - record: db:connection_utilization
+        expr: pg_stat_database_numbackends / pg_settings_max_connections
+      
+      - record: db:query_duration_p95
+        expr: histogram_quantile(0.95, rate(pg_stat_statements_mean_time_bucket[5m]))
+      
+      - record: db:cache_hit_ratio
+        expr: rate(pg_stat_database_blks_hit[5m]) / (rate(pg_stat_database_blks_hit[5m]) + rate(pg_stat_database_blks_read[5m]))
+      
+      - record: redis:memory_utilization
+        expr: redis_memory_used_bytes / redis_memory_max_bytes
+      
+      - record: redis:hit_ratio
+        expr: rate(redis_keyspace_hits_total[5m]) / (rate(redis_keyspace_hits_total[5m]) + rate(redis_keyspace_misses_total[5m]))

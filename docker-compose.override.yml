@@ -1,0 +1,394 @@
+# Docker Compose Override for Sophia AI Intel Development
+# This file extends docker-compose.yml with development-specific configurations
+# Automatically loaded by docker-compose for enhanced development workflow
+
+version: '3.8'
+
+services:
+  # ===========================================
+  # Development Infrastructure Enhancements
+  # ===========================================
+  
+  postgres:
+    environment:
+      - POSTGRES_DB=sophia_dev
+      - POSTGRES_USER=sophia
+      - POSTGRES_PASSWORD=sophia_dev_password_123
+    volumes:
+      - ./data/postgres-dev:/var/lib/postgresql/data
+      - ./scripts/dev-init.sql:/docker-entrypoint-initdb.d/dev-init.sql:ro
+    ports:
+      - "5432:5432"  # Expose for external DB tools
+    command:
+      - postgres
+      - -c
+      - log_statement=all
+      - -c
+      - log_duration=on
+      - -c
+      - log_min_duration_statement=0
+
+  redis:
+    volumes:
+      - ./data/redis-dev:/data
+    ports:
+      - "6380:6379"  # Expose for Redis tools
+    command: redis-server --appendonly yes --appendfsync everysec --save 60 1000
+
+  # ===========================================
+  # Development Vector Database
+  # ===========================================
+  
+  qdrant-dev:
+    image: qdrant/qdrant:latest
+    container_name: qdrant-dev
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - ./data/qdrant-dev:/qdrant/storage
+    environment:
+      - QDRANT__SERVICE__HTTP_PORT=6333
+      - QDRANT__SERVICE__GRPC_PORT=6334
+      - QDRANT__LOG_LEVEL=DEBUG
+    networks:
+      - sophia-network
+    restart: unless-stopped
+
+  # ===========================================
+  # AI Services with Development Enhancements
+  # ===========================================
+  
+  agno-coordinator:
+    build:
+      context: ./services/agno-coordinator
+      dockerfile: Dockerfile.dev  # Development-optimized Dockerfile
+      target: development
+    volumes:
+      - ./services/agno-coordinator:/app:cached
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - DEBUG=sophia:*
+      - ENABLE_HOT_RELOAD=true
+      - DEBUG_PORT=9229
+    ports:
+      - "8080:8080"
+      - "9229:9229"  # Debug port
+    command: ["npm", "run", "dev"]
+    depends_on:
+      - postgres
+      - redis
+      - qdrant-dev
+
+  mcp-agents:
+    volumes:
+      - ./services/mcp-agents:/app:cached
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - RELOAD=true
+      - PYTHONPATH=/app
+    ports:
+      - "8000:8000"
+      - "5678:5678"  # Python debugger port
+    command: ["python", "-m", "debugpy", "--listen", "0.0.0.0:5678", "--wait-for-client", "-m", "uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+  mcp-context:
+    volumes:
+      - ./services/mcp-context:/app:cached
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - RELOAD=true
+    ports:
+      - "8081:8081"
+      - "5679:5678"  # Python debugger port
+
+  mcp-github:
+    volumes:
+      - ./services/mcp-github:/app:cached
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - RELOAD=true
+    ports:
+      - "8082:8082"
+      - "5680:5678"  # Python debugger port
+
+  mcp-hubspot:
+    volumes:
+      - ./services/mcp-hubspot:/app:cached
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - RELOAD=true
+    ports:
+      - "8083:8083"
+      - "5681:5678"  # Python debugger port
+
+  mcp-lambda:
+    volumes:
+      - ./services/mcp-lambda:/app:cached
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - RELOAD=true
+    ports:
+      - "8084:8084"
+      - "5682:5678"  # Python debugger port
+
+  mcp-research:
+    volumes:
+      - ./services/mcp-research:/app:cached
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - RELOAD=true
+    ports:
+      - "8085:8080"
+      - "5683:5678"  # Python debugger port
+
+  mcp-business:
+    volumes:
+      - ./services/mcp-business:/app:cached
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - RELOAD=true
+    ports:
+      - "8086:8080"
+      - "5684:5678"  # Python debugger port
+
+  # ===========================================
+  # Agent Systems Development
+  # ===========================================
+  
+  agno-teams:
+    volumes:
+      - ./services/agno-teams:/app:cached
+    environment:
+      - ENVIRONMENT=development
+      - LOG_LEVEL=debug
+      - ENABLE_HOT_RELOAD=true
+    ports:
+      - "8087:8087"
+      - "5685:5678"  # Python debugger port
+
+  agents-swarm:
+    volumes:
+      - ./agents/swarm:/app:cached
+    environment:
+      - ENVIRONMENT=development
+      - LOG_LEVEL=debug
+      - ENABLE_HOT_RELOAD=true
+    ports:
+      - "8008:8000"
+      - "5686:5678"  # Python debugger port
+
+  orchestrator:
+    volumes:
+      - ./services/orchestrator:/app:cached
+    environment:
+      - NODE_ENV=development
+      - DEBUG=sophia:orchestrator:*
+      - ENABLE_HOT_RELOAD=true
+    ports:
+      - "8088:8088"
+      - "9230:9229"  # Debug port
+
+  # ===========================================
+  # Frontend Development
+  # ===========================================
+  
+  sophia-dashboard:
+    build:
+      context: ./apps/sophia-dashboard
+      dockerfile: Dockerfile.dev
+      target: development
+    container_name: sophia-dashboard-dev
+    ports:
+      - "3000:3000"
+      - "9231:9229"  # Next.js debug port
+    volumes:
+      - ./apps/sophia-dashboard:/app:cached
+      - /app/.next
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - NEXT_TELEMETRY_DISABLED=1
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
+    command: ["npm", "run", "dev"]
+    networks:
+      - sophia-network
+
+  # ===========================================
+  # Enhanced Monitoring Stack
+  # ===========================================
+  
+  prometheus:
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/alerts/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus-dev-data:/prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+
+  grafana:
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel,grafana-worldmap-panel
+      - GF_FEATURE_TOGGLES_ENABLE=ngalert
+    volumes:
+      - grafana-dev-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning-dev:/etc/grafana/provisioning
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+    ports:
+      - "3002:3000"
+
+  loki:
+    volumes:
+      - ./monitoring/loki-dev-config.yml:/etc/loki/local-config.yaml
+      - loki-dev-data:/loki
+    ports:
+      - "3100:3100"
+
+  promtail:
+    volumes:
+      - ./monitoring/promtail-dev-config.yml:/etc/promtail/config.yml
+      - /var/log:/var/log:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+
+  # ===========================================
+  # Development Tools & Utilities
+  # ===========================================
+  
+  # Jaeger for distributed tracing
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: jaeger-dev
+    ports:
+      - "16686:16686"  # Jaeger UI
+      - "14268:14268"  # Jaeger HTTP collector
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - sophia-network
+
+  # Adminer for database management
+  adminer:
+    image: adminer:latest
+    container_name: adminer-dev
+    ports:
+      - "8080:8080"
+    environment:
+      - ADMINER_DEFAULT_SERVER=postgres
+    networks:
+      - sophia-network
+    depends_on:
+      - postgres
+
+  # Redis Commander for Redis management
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: redis-commander-dev
+    ports:
+      - "8081:8081"
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    networks:
+      - sophia-network
+    depends_on:
+      - redis
+
+  # Nginx with development configuration
+  nginx:
+    volumes:
+      - ./nginx-dev.conf:/etc/nginx/nginx.conf:ro
+      - ./logs/nginx:/var/log/nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - sophia-dashboard
+      - agno-coordinator
+      - prometheus
+      - grafana
+
+  # Development file watcher and live reload
+  file-watcher:
+    image: node:18-alpine
+    container_name: file-watcher-dev
+    volumes:
+      - ./:/workspace:cached
+      - /workspace/node_modules
+    working_dir: /workspace
+    command: |
+      sh -c "
+        npm install -g nodemon concurrently &&
+        concurrently \
+          'nodemon --watch services --ext py,js,ts --exec echo Services changed' \
+          'nodemon --watch apps --ext js,ts,tsx,jsx --exec echo Apps changed' \
+          'nodemon --watch monitoring --ext yml,yaml --exec echo Monitoring config changed'
+      "
+    networks:
+      - sophia-network
+
+  # Development test runner
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    container_name: test-runner-dev
+    volumes:
+      - ./:/app:cached
+      - test-results:/app/test-results
+    environment:
+      - ENVIRONMENT=test
+      - PYTHONPATH=/app
+    command: ["python", "-m", "pytest", "tests/", "-v", "--tb=short", "--html=test-results/report.html"]
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - sophia-network
+
+# ===========================================
+# Development Volumes
+# ===========================================
+
+volumes:
+  postgres-dev-data:
+    driver: local
+  redis-dev-data:
+    driver: local
+  qdrant-dev-data:
+    driver: local
+  prometheus-dev-data:
+    driver: local
+  grafana-dev-data:
+    driver: local
+  loki-dev-data:
+    driver: local
+  test-results:
+    driver: local
+
+# ===========================================
+# Development Networks
+# ===========================================
+
+networks:
+  sophia-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

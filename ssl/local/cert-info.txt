@@ -1,0 +1,70 @@
+# Sophia AI Local Development SSL Certificates
+# Generated: Wed Aug 27 23:43:27 PDT 2025
+
+## Root CA Certificate
+- Location: /Users/lynnmusil/sophia-ai-intel-1/ssl/local/ca-cert.pem
+- Validity: 365 days from generation
+- Usage: Import this into your browser/system trust store
+
+## Server Certificate
+- Location: /Users/lynnmusil/sophia-ai-intel-1/ssl/local/server-cert.pem
+- Private Key: /Users/lynnmusil/sophia-ai-intel-1/ssl/local/server-key.pem
+- SAN Domains: All Sophia services and localhost variants
+- Validity: 365 days from generation
+
+## Service Certificates
+Individual certificates generated for each microservice in /Users/lynnmusil/sophia-ai-intel-1/ssl/local/
+
+## Browser Installation Instructions
+
+### Chrome/Chromium (macOS):
+1. Open Chrome Settings > Privacy and Security > Security
+2. Manage Certificates > Import
+3. Select '/Users/lynnmusil/sophia-ai-intel-1/ssl/local/ca-cert.pem'
+4. Choose "System" keychain and "Always Trust"
+
+### Firefox:
+1. Open Firefox Settings > Privacy & Security
+2. View Certificates > Import
+3. Select '/Users/lynnmusil/sophia-ai-intel-1/ssl/local/ca-cert.pem'
+4. Check "Trust this CA to identify websites"
+
+### Safari (macOS):
+1. Double-click '/Users/lynnmusil/sophia-ai-intel-1/ssl/local/ca-cert.pem'
+2. Add to System keychain
+3. Open Keychain Access, find "Sophia AI Local CA"
+4. Double-click > Trust > When using this certificate: Always Trust
+
+## Testing
+curl -k https://sophia.local/
+curl --cacert /Users/lynnmusil/sophia-ai-intel-1/ssl/local/ca-cert.pem https://sophia.local/
+
+## Domains Configured
+- localhost
+- sophia.local
+- api.sophia.local
+- agno-coordinator.sophia.local
+- mcp-agents.sophia.local
+- mcp-context.sophia.local
+- mcp-github.sophia.local
+- mcp-hubspot.sophia.local
+- mcp-lambda.sophia.local
+- mcp-research.sophia.local
+- mcp-business.sophia.local
+- agno-teams.sophia.local
+- agno-wrappers.sophia.local
+- mcp-apollo.sophia.local
+- mcp-gong.sophia.local
+- mcp-salesforce.sophia.local
+- mcp-slack.sophia.local
+- portkey-llm.sophia.local
+- agents-swarm.sophia.local
+- orchestrator.sophia.local
+- grafana.sophia.local
+- prometheus.sophia.local
+- adminer.sophia.local
+- redis-commander.sophia.local
+- jaeger.sophia.local
+- 127.0.0.1
+- 0.0.0.0
+

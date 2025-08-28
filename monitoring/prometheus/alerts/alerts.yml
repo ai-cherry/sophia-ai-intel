@@ -1,0 +1,312 @@
+groups:
+  # Infrastructure alerts
+  - name: infrastructure
+    rules:
+      - alert: ServiceDown
+        expr: up{job=~"sophia-ai.*"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "Service {{ $labels.job }} on {{ $labels.instance }} has been down for more than 1 minute."
+
+      - alert: HighCPUUsage
+        expr: sophia_ai:cpu_usage_rate > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.name }}"
+          description: "CPU usage is above 80% for {{ $labels.name }} for more than 5 minutes. Current value: {{ $value | humanizePercentage }}"
+
+      - alert: HighMemoryUsage
+        expr: sophia_ai:memory_usage_bytes / container_spec_memory_limit_bytes > 0.85
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on {{ $labels.name }}"
+          description: "Memory usage is above 85% for {{ $labels.name }}. Current usage: {{ $value | humanizePercentage }}"
+
+      - alert: OutOfMemory
+        expr: sophia_ai:memory_usage_bytes / container_spec_memory_limit_bytes > 0.95
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Container {{ $labels.name }} is almost out of memory"
+          description: "Memory usage is above 95% for {{ $labels.name }}. Immediate attention required!"
+
+  # Application performance alerts
+  - name: application_performance
+    rules:
+      - alert: HighErrorRate
+        expr: sophia_ai:error_rate / sophia_ai:http_request_rate > 0.05
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate for {{ $labels.job }}"
+          description: "Error rate is above 5% for {{ $labels.job }}. Current rate: {{ $value | humanizePercentage }}"
+
+      - alert: CriticalErrorRate
+        expr: sophia_ai:error_rate / sophia_ai:http_request_rate > 0.15
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical error rate for {{ $labels.job }}"
+          description: "Error rate is above 15% for {{ $labels.job }}. Current rate: {{ $value | humanizePercentage }}"
+
+      - alert: HighResponseTime
+        expr: sophia_ai:response_time_p95 > 2
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High response time for {{ $labels.job }}"
+          description: "95th percentile response time is above 2 seconds for {{ $labels.job }}. Current: {{ $value }}s"
+
+      - alert: VeryHighResponseTime
+        expr: sophia_ai:response_time_p95 > 5
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Very high response time for {{ $labels.job }}"
+          description: "95th percentile response time is above 5 seconds for {{ $labels.job }}. Current: {{ $value }}s"
+
+  # AI-specific alerts
+  - name: ai_services
+    rules:
+      - alert: AIInferenceLatencyHigh
+        expr: ai:inference_latency_p95 > 10
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "AI inference latency is high"
+          description: "95th percentile AI inference latency is above 10 seconds. Current: {{ $value }}s"
+
+      - alert: AIInferenceFailure
+        expr: rate(ai_inference_errors_total[5m]) > 0.1
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "AI inference failures detected"
+          description: "AI inference error rate is {{ $value }} errors per second"
+
+      - alert: ModelLoadingIssues
+        expr: ai:model_load_time_avg > 60
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Model loading is taking too long"
+          description: "Average model load time is {{ $value }}s, which is above the 60s threshold"
+
+      - alert: GPUUtilizationLow
+        expr: ai:gpu_utilization_avg < 20
+        for: 10m
+        labels:
+          severity: info
+        annotations:
+          summary: "GPU utilization is low"
+          description: "Average GPU utilization is {{ $value }}%, which may indicate underutilization"
+
+  # MCP service alerts
+  - name: mcp_services
+    rules:
+      - alert: MCPHighErrorRate
+        expr: mcp:error_rate / mcp:request_rate > 0.1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate in MCP service {{ $labels.service }}"
+          description: "MCP service {{ $labels.service }} has error rate above 10%"
+
+      - alert: MCPServiceSlowResponse
+        expr: mcp:response_time_p95 > 5
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow MCP service response for {{ $labels.service }}"
+          description: "MCP service {{ $labels.service }} 95th percentile response time is {{ $value }}s"
+
+      - alert: MCPServiceDown
+        expr: mcp:request_rate == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "MCP service {{ $labels.service }} appears to be down"
+          description: "No requests processed by MCP service {{ $labels.service }} for 5 minutes"
+
+  # Database alerts
+  - name: database
+    rules:
+      - alert: PostgreSQLDown
+        expr: up{job="postgres"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL database is not responding"
+
+      - alert: PostgreSQLHighConnections
+        expr: db:connection_utilization > 0.8
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PostgreSQL connection usage is high"
+          description: "PostgreSQL connection usage is {{ $value | humanizePercentage }}"
+
+      - alert: PostgreSQLSlowQueries
+        expr: db:query_duration_p95 > 1000
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PostgreSQL queries are slow"
+          description: "95th percentile query duration is {{ $value }}ms"
+
+      - alert: PostgreSQLLowCacheHitRatio
+        expr: db:cache_hit_ratio < 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PostgreSQL cache hit ratio is low"
+          description: "Cache hit ratio is {{ $value | humanizePercentage }}, consider increasing shared_buffers"
+
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis is down"
+          description: "Redis cache is not responding"
+
+      - alert: RedisHighMemoryUsage
+        expr: redis:memory_utilization > 0.9
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis memory usage is high"
+          description: "Redis memory usage is {{ $value | humanizePercentage }}"
+
+      - alert: RedisLowHitRatio
+        expr: redis:hit_ratio < 0.8
+        for: 5m
+        labels:
+          severity: info
+        annotations:
+          summary: "Redis cache hit ratio is low"
+          description: "Redis hit ratio is {{ $value | humanizePercentage }}"
+
+  # Development-specific alerts
+  - name: development
+    rules:
+      - alert: HighTestFailureRate
+        expr: dev:test_failure_rate > 0.2
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High test failure rate detected"
+          description: "Test failure rate is {{ $value | humanizePercentage }}"
+
+      - alert: NoTestsRunning
+        expr: dev:test_execution_rate == 0
+        for: 30m
+        labels:
+          severity: info
+        annotations:
+          summary: "No tests have been executed recently"
+          description: "No test execution detected for 30 minutes"
+
+      - alert: LowCodeCoverage
+        expr: dev:code_coverage_avg < 70
+        for: 10m
+        labels:
+          severity: info
+        annotations:
+          summary: "Code coverage is below threshold"
+          description: "Average code coverage is {{ $value }}%, below the 70% threshold"
+
+      - alert: HotReloadIssues
+        expr: dev:hot_reload_rate == 0 and dev:file_change_rate > 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Hot reload may not be working"
+          description: "File changes detected but no hot reloads occurring"
+
+  # Security alerts
+  - name: security
+    rules:
+      - alert: UnauthorizedAccess
+        expr: rate(http_requests_total{status="401"}[5m]) > 5
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High rate of unauthorized access attempts"
+          description: "{{ $value }} unauthorized requests per second to {{ $labels.job }}"
+
+      - alert: SuspiciousActivity
+        expr: rate(http_requests_total{status="403"}[5m]) > 10
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High rate of forbidden requests"
+          description: "{{ $value }} forbidden requests per second to {{ $labels.job }}"
+
+      - alert: SSLCertificateExpiring
+        expr: ssl_certificate_expiry_seconds < 7 * 24 * 3600
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "SSL certificate expiring soon"
+          description: "SSL certificate for {{ $labels.domain }} expires in {{ $value | humanizeDuration }}"
+
+  # Disk and storage alerts
+  - name: storage
+    rules:
+      - alert: DiskSpaceUsageHigh
+        expr: (node_filesystem_size_bytes - node_filesystem_free_bytes) / node_filesystem_size_bytes > 0.85
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Disk space usage is high"
+          description: "Disk usage is {{ $value | humanizePercentage }} on {{ $labels.mountpoint }}"
+
+      - alert: DiskSpaceCritical
+        expr: (node_filesystem_size_bytes - node_filesystem_free_bytes) / node_filesystem_size_bytes > 0.95
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Disk space is critically low"
+          description: "Disk usage is {{ $value | humanizePercentage }} on {{ $labels.mountpoint }}"
+
+      - alert: InodeUsageHigh
+        expr: (node_filesystem_files - node_filesystem_files_free) / node_filesystem_files > 0.9
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Inode usage is high"
+          description: "Inode usage is {{ $value | humanizePercentage }} on {{ $labels.mountpoint }}"
