@@ -30,7 +30,7 @@ export default function SophiaApp() {
     {
       id: '1',
       role: 'assistant',
-      content: 'Hello! I\'m Sophia AI. I can help with research, agent orchestration, code generation, and deep analysis. What would you like to work on?',
+      content: 'VERSION 3.0 NEURAL - Welcome! I\'m Sophia AI, your intelligent neural companion. I can help with research, agent orchestration, code generation, and deep analysis. What would you like to explore today?',
       timestamp: new Date()
     }
   ]);

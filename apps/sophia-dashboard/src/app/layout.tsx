@@ -20,7 +20,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" data-version="NEW-DASHBOARD-2.0-NEURAL">
+      {/* THIS IS THE NEW DASHBOARD VERSION 2.0 - UPDATED AT 2:18 PM */}
       <body className={inter.className}>{children}</body>
     </html>
   );
