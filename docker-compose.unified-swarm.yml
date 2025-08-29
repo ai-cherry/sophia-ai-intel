@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  unified-swarm:
+    build:
+      context: ./services
+      dockerfile: Dockerfile.unified-swarm
+    container_name: unified-swarm
+    ports:
+      - "8100:8100"
+    environment:
+      - ENVIRONMENT=production
+      - REDIS_URL=redis://redis:6379
+      - POSTGRES_URL=postgresql://sophia:sophia123@postgres:5432/sophia_ai
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - sophia-network
+    restart: unless-stopped
+
+networks:
+  sophia-network:
+    external: true

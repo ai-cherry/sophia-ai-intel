@@ -17,15 +17,23 @@ import sys
 import os
 
 # Add parent directory to path for imports
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Import the canonical SwarmManager
+# Import the real executor
 try:
-    from libs.agents.swarm_manager import SwarmManager, SwarmConfiguration
-except ImportError:
-    print("Warning: SwarmManager not found, using mock implementation")
-    SwarmManager = None
-    SwarmConfiguration = None
+    from real_swarm_executor import execute_swarm_task
+    print("Real swarm executor loaded!")
+    EXECUTOR_AVAILABLE = True
+except ImportError as e:
+    print(f"Warning: Real executor not found - {e}")
+    EXECUTOR_AVAILABLE = False
+    async def execute_swarm_task(swarm_type, task, context):
+        return {"status": "mock", "result": f"Mock execution: {task}"}
+
+# Try to import SwarmManager for compatibility
+SwarmManager = None
+SwarmConfiguration = None
 
 app = FastAPI(
     title="Unified Swarm Service",
@@ -191,36 +199,47 @@ class UnifiedSwarmService:
             current_task=request.task
         )
         
-        # If SwarmManager is available, delegate to it
-        if self.swarm_manager:
+        # Start async execution with real executor
+        if EXECUTOR_AVAILABLE:
             try:
-                # Create SwarmConfiguration and execute
-                if SwarmConfiguration:
-                    config = SwarmConfiguration(
-                        task_type=request.swarm_type.value,
-                        max_iterations=5,
-                        timeout=300
+                # Start async task execution
+                asyncio.create_task(
+                    self.execute_with_swarm_manager(
+                        swarm_id, 
+                        request.task, 
+                        request.swarm_type.value,
+                        request.context
                     )
-                    # Start async task execution
-                    asyncio.create_task(self.execute_with_swarm_manager(swarm_id, request.task, config))
+                )
+                print(f"Started real execution for swarm {swarm_id}")
             except Exception as e:
-                print(f"SwarmManager execution failed: {e}")
+                print(f"Execution start failed: {e}")
         
         # Update status
         self.active_swarms[swarm_id].status = "active"
         
         return swarm_id
     
-    async def execute_with_swarm_manager(self, swarm_id: str, task: str, config: Any):
-        """Execute task using SwarmManager"""
+    async def execute_with_swarm_manager(self, swarm_id: str, task: str, swarm_type: str, context: Dict):
+        """Execute task using real executor"""
         try:
-            result = await self.swarm_manager.execute_task(task, config)
+            # Update status to executing
+            self.active_swarms[swarm_id].status = "executing"
+            self.active_swarms[swarm_id].progress = 0.3
+            
+            # Execute the actual task
+            result = await execute_swarm_task(swarm_type, task, context)
+            
+            # Update with results
             self.active_swarms[swarm_id].status = "completed"
             self.active_swarms[swarm_id].results = result
             self.active_swarms[swarm_id].progress = 1.0
+            
+            print(f"Swarm {swarm_id} completed: {result.get('summary', 'Done')}")
         except Exception as e:
             self.active_swarms[swarm_id].status = "failed"
             self.active_swarms[swarm_id].results = {"error": str(e)}
+            print(f"Swarm {swarm_id} failed: {e}")
     
     async def generate_plans(self, task: str, context: Dict[str, Any]) -> Dict[PlannerType, PlanResponse]:
         """Generate plans from all three planners"""
@@ -361,13 +380,17 @@ async def get_swarm_status(swarm_id: str):
     return status
 
 
+class PlanRequest(BaseModel):
+    task: str
+    context: Optional[Dict[str, Any]] = {}
+
 @app.post("/plans")
-async def generate_plans(task: str, context: Optional[Dict[str, Any]] = None):
+async def generate_plans(request: PlanRequest):
     """Generate plans using three-planner system"""
-    plans = await service.generate_plans(task, context or {})
+    plans = await service.generate_plans(request.task, request.context)
     
     return {
-        "task": task,
+        "task": request.task,
         "plans": {
             "cutting_edge": plans[PlannerType.CUTTING_EDGE].dict(),
             "conservative": plans[PlannerType.CONSERVATIVE].dict(),

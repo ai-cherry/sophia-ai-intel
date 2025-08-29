@@ -11,6 +11,11 @@ export async function POST(request: Request) {
         activeTab: activeTab || 'chat',
         sessionId: sessionId || `session_${Date.now()}`,
         timestamp: new Date().toISOString()
+      },
+      services: {
+        unified_swarm: 'http://localhost:8100',
+        mcp_context: 'http://localhost:8081',
+        github: 'http://localhost:8082'
       }
     };
 

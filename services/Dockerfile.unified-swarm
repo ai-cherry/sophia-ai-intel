@@ -1,0 +1,23 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies
+RUN pip install --no-cache-dir \
+    fastapi \
+    uvicorn \
+    httpx \
+    pydantic \
+    websockets \
+    redis \
+    asyncio
+
+# Copy the service file
+COPY unified_swarm_service.py .
+
+# Copy SwarmManager if it exists
+COPY ../libs/agents/swarm_manager.py ./libs/agents/ || true
+
+EXPOSE 8100
+
+CMD ["uvicorn", "unified_swarm_service:app", "--host", "0.0.0.0", "--port", "8100"]

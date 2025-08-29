@@ -60,17 +60,40 @@ class SophiaBrain:
     """Central intelligence that coordinates all services"""
     
     def __init__(self):
-        self.services = {
-            "context": "http://localhost:8081",
-            "research": "http://localhost:8085",
-            "github": "http://localhost:8082",
-            "hubspot": "http://localhost:8083",
-            "salesforce": "http://localhost:8092",
-            "gong": "http://localhost:8091",
-            "agents": "http://localhost:8000",
-            "coordinator": "http://localhost:8080",
-            "orchestrator": "http://localhost:8088"
-        }
+        # Use container names when running in Docker, localhost when running locally
+        import os
+        is_docker = os.environ.get('ENVIRONMENT') == 'production' or os.path.exists('/.dockerenv')
+        
+        if is_docker:
+            # Use container names for Docker networking
+            self.services = {
+                "context": "http://mcp-context:8081",
+                "research": "http://mcp-research:8085",
+                "github": "http://mcp-github:8082",
+                "hubspot": "http://mcp-hubspot:8083",
+                "salesforce": "http://mcp-salesforce:8092",
+                "gong": "http://mcp-gong:8091",
+                "agents": "http://mcp-agents:8000",
+                "coordinator": "http://agno-coordinator:8080",
+                "orchestrator": "http://orchestrator:8088",
+                "unified_swarm": "http://host.docker.internal:8100",  # Running on host
+                "legacy_swarm": "http://agents-swarm:8008"
+            }
+        else:
+            # Use localhost for local development
+            self.services = {
+                "context": "http://localhost:8081",
+                "research": "http://localhost:8085",
+                "github": "http://localhost:8082",
+                "hubspot": "http://localhost:8083",
+                "salesforce": "http://localhost:8092",
+                "gong": "http://localhost:8091",
+                "agents": "http://localhost:8000",
+                "coordinator": "http://localhost:8080",
+                "orchestrator": "http://localhost:8088",
+                "unified_swarm": "http://localhost:8100",
+                "legacy_swarm": "http://localhost:8008"
+            }
         self.active_agents = {}
         self.conversation_memory = {}
         
@@ -193,8 +216,10 @@ class SophiaBrain:
                     }
                 )
             elif action.type == ActionType.AGENT_CREATE:
+                # Use unified swarm service for agent/swarm creation
+                swarm_url = self.services["unified_swarm"]
                 response = await client.post(
-                    f"{service_url}/agents/create",
+                    f"{swarm_url}/swarms/create",
                     json={
                         "name": f"Agent_{uuid.uuid4().hex[:8]}",
                         "type": "task",
@@ -474,14 +499,30 @@ async def root():
 async def health():
     """Health check with service status"""
     
+    # Map services to their actual health endpoints
+    health_endpoints = {
+        "context": "/healthz",
+        "research": "/",
+        "github": "/",
+        "hubspot": "/health",
+        "salesforce": "/health",
+        "gong": "/health",
+        "agents": "/",
+        "coordinator": "/health",
+        "orchestrator": "/health",
+        "unified_swarm": "/health",
+        "legacy_swarm": "/"
+    }
+    
     service_status = {}
     async with httpx.AsyncClient(timeout=2.0) as client:
         for name, url in sophia_brain.services.items():
             try:
-                response = await client.get(f"{url}/health")
+                endpoint = health_endpoints.get(name, "/health")
+                response = await client.get(f"{url}{endpoint}")
                 service_status[name] = "healthy" if response.status_code == 200 else "unhealthy"
-            except:
-                service_status[name] = "unreachable"
+            except Exception as e:
+                service_status[name] = f"unreachable: {str(e)[:30]}"
     
     return {
         "status": "healthy",

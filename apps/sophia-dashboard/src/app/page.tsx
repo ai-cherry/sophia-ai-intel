@@ -43,6 +43,8 @@ export default function SophiaApp() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('connected');
   const [agents, setAgents] = useState<Agent[]>([]);
+  const [deployedAgents, setDeployedAgents] = useState<any[]>([]);
+  const [agentStatus, setAgentStatus] = useState<Record<string, any>>({});
   const [researchQuery, setResearchQuery] = useState('');
   const [codePrompt, setCodePrompt] = useState('');
   const [projectName, setProjectName] = useState('AI Research Platform');
@@ -84,6 +86,25 @@ export default function SophiaApp() {
     setInput('');
     setIsLoading(true);
     setConnectionStatus('processing');
+    
+    // Check for agent-related commands
+    const lowerInput = input.toLowerCase();
+    if (lowerInput.includes('agent status') || lowerInput.includes('show agents') || lowerInput.includes('list agents')) {
+      const statusMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: deployedAgents.length > 0 
+          ? `📊 **Active Agents:**\n\n${deployedAgents.map(a => 
+              `🤖 **${a.type}**\n   ID: ${a.id}\n   Status: ${a.status}\n   Task: ${a.task}\n   Deployed: ${new Date(a.timestamp).toLocaleTimeString()}`
+            ).join('\n\n')}\n\n💡 Tip: You can give them new tasks or ask about specific agent IDs.`
+          : '📭 No agents currently deployed.\n\nTo deploy an agent:\n1. Switch to the **Agents** tab\n2. Choose an agent type\n3. Click **Deploy Agent**\n\nOr go to **Agent Factory** in the sidebar for advanced swarm management.',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, statusMessage]);
+      setIsLoading(false);
+      setConnectionStatus('connected');
+      return;
+    }
 
     try {
       const response = await fetch('/api/chat', {
@@ -91,7 +112,9 @@ export default function SophiaApp() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: userMessage.content,
-          context: messages.slice(-5)
+          context: messages.slice(-5),
+          activeAgents: deployedAgents,
+          activeTab: activeView
         })
       });
 
@@ -137,7 +160,30 @@ export default function SophiaApp() {
 
       if (response.ok) {
         const data = await response.json();
-        alert(`${agentType} deployed successfully! Agent ID: ${data.agentId}`);
+        
+        // Add to deployed agents list
+        const newAgent = {
+          id: data.swarmId || data.agentId,
+          type: agentType,
+          status: 'active',
+          task: data.task,
+          timestamp: new Date().toISOString()
+        };
+        setDeployedAgents(prev => [...prev, newAgent]);
+        
+        // Add a system message in chat
+        const systemMessage: Message = {
+          id: `msg-${Date.now()}`,
+          role: 'system',
+          content: `🤖 ${agentType} deployed!\n\nSwarm ID: ${data.swarmId || data.agentId}\nStatus: Active\n\nYou can now:\n• Give it tasks by typing in chat\n• Ask "What is my agent doing?"\n• Navigate to Agent Factory tab for monitoring`,
+          timestamp: new Date(),
+          metadata: { agentId: data.swarmId || data.agentId }
+        };
+        setMessages(prev => [...prev, systemMessage]);
+        
+        // Switch to chat to show the deployment
+        setActiveView('chat');
+        
         loadAgents();
       }
     } catch (error) {
@@ -301,7 +347,37 @@ export default function SophiaApp() {
               {/* Chat View */}
               {activeView === 'chat' && (
                 <>
-                  <div className="chat-container">
+                  {/* Active Agents Bar */}
+                  {deployedAgents.length > 0 && (
+                    <div className="absolute top-0 left-0 right-0 z-10 p-3">
+                      <div className="glass-card p-2 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                          <span className="text-sm text-gray-300">
+                            {deployedAgents.length} agent{deployedAgents.length !== 1 ? 's' : ''} active
+                          </span>
+                          <div className="flex gap-2">
+                            {deployedAgents.map(agent => (
+                              <span key={agent.id} className="text-xs px-2 py-1 bg-gray-800 rounded text-cyan-400">
+                                {agent.type.replace(' Agent', '')} • {agent.id.slice(0, 8)}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        <button 
+                          onClick={() => {
+                            const statusMsg = `Active agents:\n${deployedAgents.map(a => `• ${a.type}: ${a.task}`).join('\n')}`;
+                            setInput('show agent status');
+                            sendMessage();
+                          }}
+                          className="text-xs px-3 py-1 bg-cyan-600/20 hover:bg-cyan-600/30 border border-cyan-600/50 rounded transition-all"
+                        >
+                          View Status
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  <div className="chat-container" style={{ paddingTop: deployedAgents.length > 0 ? '60px' : '0' }}>
                     {messages.map((msg) => (
                       <div key={msg.id} className={`mb-4 ${msg.role === 'user' ? 'flex justify-end' : ''}`}>
                         <div className={`inline-block max-w-[70%] px-4 py-3 ${
