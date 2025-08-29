@@ -60,7 +60,6 @@ export default function DashboardPage() {
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
       console.error('Chat error:', error);
-      // Fallback response
       setMessages(prev => [...prev, {
         id: `msg-${Date.now() + 1}`,
         role: 'assistant' as const,
@@ -73,43 +72,43 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="h-screen bg-gradient-to-br from-[#0f1b3c] via-[#1e293b] to-[#4c1d95] relative overflow-hidden">
-      {/* Neural Network Background Effect */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-20 left-20 w-96 h-96 bg-cyan-500 rounded-full filter blur-3xl animate-pulse" />
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-purple-600 rounded-full filter blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500 rounded-full filter blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+    <div className="h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+      {/* Bright Neural Network Background Effect */}
+      <div className="absolute inset-0">
+        <div className="absolute top-20 left-20 w-96 h-96 bg-cyan-400 rounded-full filter blur-3xl opacity-20 animate-pulse" />
+        <div className="absolute bottom-20 right-20 w-96 h-96 bg-purple-500 rounded-full filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500 rounded-full filter blur-3xl opacity-15 animate-pulse" style={{ animationDelay: '1s' }} />
       </div>
 
       {/* Main Container */}
       <div className="relative z-10 h-full flex flex-col">
-        {/* Header */}
-        <header className="bg-black/20 backdrop-blur-xl border-b border-cyan-500/30 px-8 py-6">
+        {/* Header - Brighter */}
+        <header className="bg-white/10 backdrop-blur-xl border-b border-cyan-400/40 px-8 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               {/* Logo */}
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 to-purple-500 flex items-center justify-center shadow-lg shadow-cyan-400/50">
                 <span className="text-white font-bold text-xl">S</span>
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-white">Sophia AI</h1>
-                <p className="text-sm text-cyan-400">Neural Intelligence Platform</p>
+                <p className="text-sm text-cyan-300">Neural Intelligence Platform</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                <span className="text-sm text-gray-300">Neural Network Active</span>
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50" />
+                <span className="text-sm text-white">Neural Network Active</span>
               </div>
             </div>
           </div>
         </header>
 
         {/* Chat Container */}
-        <main className="flex-1 overflow-hidden flex">
+        <main className="flex-1 overflow-hidden flex bg-gray-900/30">
           <div className="flex-1 flex flex-col max-w-5xl mx-auto w-full p-6">
-            {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto space-y-4 pb-6">
+            {/* Messages Area - Brighter Background */}
+            <div className="flex-1 overflow-y-auto space-y-4 pb-6 bg-white/5 rounded-lg p-4">
               <AnimatePresence>
                 {messages.map((message) => (
                   <motion.div
@@ -123,18 +122,13 @@ export default function DashboardPage() {
                       className={`
                         max-w-[70%] px-6 py-4 rounded-2xl backdrop-blur-md
                         ${message.role === 'user' 
-                          ? 'bg-gradient-to-r from-blue-600/30 to-cyan-600/30 border border-cyan-500/50 text-white' 
-                          : 'bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-white'
+                          ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-cyan-500/30' 
+                          : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/30'
                         }
                       `}
-                      style={{
-                        boxShadow: message.role === 'user' 
-                          ? '0 0 40px rgba(0, 217, 255, 0.3)' 
-                          : '0 0 40px rgba(153, 69, 255, 0.3)'
-                      }}
                     >
-                      <p className="text-base leading-relaxed">{message.content}</p>
-                      <p className="text-xs text-gray-400 mt-2">
+                      <p className="text-base leading-relaxed font-medium">{message.content}</p>
+                      <p className="text-xs text-white/70 mt-2">
                         {message.timestamp.toLocaleTimeString()}
                       </p>
                     </div>
@@ -147,11 +141,11 @@ export default function DashboardPage() {
                   animate={{ opacity: 1 }}
                   className="flex justify-start"
                 >
-                  <div className="bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 px-6 py-4 rounded-2xl backdrop-blur-md">
+                  <div className="bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-4 rounded-2xl shadow-lg shadow-purple-500/30">
                     <div className="flex gap-2">
-                      <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" />
-                      <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
-                      <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+                      <div className="w-2 h-2 bg-white rounded-full animate-bounce" />
+                      <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
+                      <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
                     </div>
                   </div>
                 </motion.div>
@@ -159,9 +153,9 @@ export default function DashboardPage() {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input Area */}
-            <div className="relative">
-              <div className="bg-black/30 backdrop-blur-xl rounded-2xl border border-cyan-500/30 p-2">
+            {/* Input Area - Much Brighter */}
+            <div className="relative mt-4">
+              <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-cyan-400/40 p-2 shadow-xl">
                 <div className="flex gap-3">
                   <input
                     type="text"
@@ -170,7 +164,7 @@ export default function DashboardPage() {
                     onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
                     placeholder="Ask Sophia anything..."
                     disabled={isLoading}
-                    className="flex-1 px-6 py-4 bg-transparent text-white placeholder-gray-400 outline-none"
+                    className="flex-1 px-6 py-4 bg-white/10 text-white placeholder-gray-300 outline-none rounded-xl"
                     style={{ fontSize: '16px' }}
                   />
                   <motion.button
@@ -178,10 +172,7 @@ export default function DashboardPage() {
                     disabled={isLoading || !input.trim()}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="px-8 py-4 bg-gradient-to-r from-cyan-600 to-purple-600 text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                    style={{
-                      boxShadow: '0 0 30px rgba(0, 217, 255, 0.5)'
-                    }}
+                    className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-purple-500 text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-cyan-500/40"
                   >
                     {isLoading ? (
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -194,53 +185,53 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Side Panel - Minimal and Functional */}
-          <aside className="w-80 bg-black/20 backdrop-blur-xl border-l border-cyan-500/30 p-6">
+          {/* Side Panel - Brighter */}
+          <aside className="w-80 bg-white/10 backdrop-blur-xl border-l border-cyan-400/40 p-6">
             <h3 className="text-lg font-semibold text-white mb-4">Neural Status</h3>
             
-            {/* Quick Stats */}
+            {/* Quick Stats - More Visible */}
             <div className="space-y-4">
-              <div className="bg-black/30 backdrop-blur-md rounded-xl border border-cyan-500/20 p-4">
+              <div className="bg-white/10 backdrop-blur-md rounded-xl border border-cyan-400/30 p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-400">Response Time</span>
-                  <span className="text-sm text-cyan-400">127ms</span>
+                  <span className="text-sm text-gray-200">Response Time</span>
+                  <span className="text-sm text-cyan-300 font-bold">127ms</span>
                 </div>
-                <div className="w-full bg-gray-700 rounded-full h-2">
-                  <div className="bg-gradient-to-r from-cyan-500 to-purple-600 h-2 rounded-full" style={{ width: '85%' }} />
+                <div className="w-full bg-gray-600 rounded-full h-2">
+                  <div className="bg-gradient-to-r from-cyan-400 to-purple-500 h-2 rounded-full" style={{ width: '85%' }} />
                 </div>
               </div>
 
-              <div className="bg-black/30 backdrop-blur-md rounded-xl border border-cyan-500/20 p-4">
+              <div className="bg-white/10 backdrop-blur-md rounded-xl border border-cyan-400/30 p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-400">Neural Load</span>
-                  <span className="text-sm text-cyan-400">42%</span>
+                  <span className="text-sm text-gray-200">Neural Load</span>
+                  <span className="text-sm text-cyan-300 font-bold">42%</span>
                 </div>
-                <div className="w-full bg-gray-700 rounded-full h-2">
-                  <div className="bg-gradient-to-r from-cyan-500 to-purple-600 h-2 rounded-full animate-pulse" style={{ width: '42%' }} />
+                <div className="w-full bg-gray-600 rounded-full h-2">
+                  <div className="bg-gradient-to-r from-cyan-400 to-purple-500 h-2 rounded-full animate-pulse" style={{ width: '42%' }} />
                 </div>
               </div>
 
-              <div className="bg-black/30 backdrop-blur-md rounded-xl border border-cyan-500/20 p-4">
-                <p className="text-sm text-gray-400 mb-2">Active Models</p>
+              <div className="bg-white/10 backdrop-blur-md rounded-xl border border-cyan-400/30 p-4">
+                <p className="text-sm text-gray-200 mb-2">Active Models</p>
                 <div className="flex flex-wrap gap-2">
-                  <span className="px-2 py-1 bg-cyan-500/20 text-cyan-400 rounded text-xs">GPT-4</span>
-                  <span className="px-2 py-1 bg-purple-500/20 text-purple-400 rounded text-xs">Claude</span>
-                  <span className="px-2 py-1 bg-pink-500/20 text-pink-400 rounded text-xs">Research</span>
+                  <span className="px-3 py-1 bg-cyan-500 text-white rounded-full text-xs font-bold">GPT-4</span>
+                  <span className="px-3 py-1 bg-purple-500 text-white rounded-full text-xs font-bold">Claude</span>
+                  <span className="px-3 py-1 bg-pink-500 text-white rounded-full text-xs font-bold">Research</span>
                 </div>
               </div>
             </div>
 
-            {/* Quick Actions */}
+            {/* Quick Actions - More Visible */}
             <div className="mt-8">
-              <h4 className="text-sm font-semibold text-gray-400 mb-3">Quick Actions</h4>
+              <h4 className="text-sm font-semibold text-gray-200 mb-3">Quick Actions</h4>
               <div className="space-y-2">
-                <button className="w-full px-4 py-3 bg-gradient-to-r from-cyan-600/20 to-purple-600/20 border border-cyan-500/30 text-white rounded-lg hover:from-cyan-600/30 hover:to-purple-600/30 transition-all text-sm">
+                <button className="w-full px-4 py-3 bg-gradient-to-r from-cyan-500 to-purple-500 text-white rounded-lg hover:from-cyan-400 hover:to-purple-400 transition-all text-sm font-bold shadow-lg">
                   🚀 Deploy Agent
                 </button>
-                <button className="w-full px-4 py-3 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 text-white rounded-lg hover:from-purple-600/30 hover:to-pink-600/30 transition-all text-sm">
+                <button className="w-full px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-400 hover:to-pink-400 transition-all text-sm font-bold shadow-lg">
                   🔍 Deep Research
                 </button>
-                <button className="w-full px-4 py-3 bg-gradient-to-r from-blue-600/20 to-cyan-600/20 border border-blue-500/30 text-white rounded-lg hover:from-blue-600/30 hover:to-cyan-600/30 transition-all text-sm">
+                <button className="w-full px-4 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:from-blue-400 hover:to-cyan-400 transition-all text-sm font-bold shadow-lg">
                   💻 Generate Code
                 </button>
               </div>
