@@ -1,724 +1,676 @@
-# Sophia AI Intel Platform - Developer Guide
+# Sophia AI Developer Guide
 
-## 🚀 Quick Start
+## Overview
 
-Welcome to the Sophia AI Intel platform! This comprehensive guide will get you up and running with our advanced 17-microservice AI coordination platform.
+This guide provides comprehensive instructions for developers working on the Sophia AI platform, covering setup, architecture, development workflows, and best practices.
+
+## Project Structure
+
+```
+sophia-ai-intel/
+├── apps/
+│   └── sophia-dashboard/     # Next.js frontend dashboard
+├── services/                  # Backend microservices
+│   ├── mcp-agents/           # Agent orchestration
+│   ├── mcp-context/          # Context and memory management
+│   ├── mcp-research/         # Research and search services
+│   ├── mcp-github/           # GitHub integration
+│   ├── mcp-hubspot/          # HubSpot integration
+│   ├── mcp-salesforce/       # Salesforce integration
+│   ├── mcp-gong/             # Gong integration
+│   └── ...
+├── libs/                      # Shared libraries
+│   ├── llm/                  # LLM integration and routing
+│   ├── secrets/              # Secrets management
+│   └── config/               # Configuration management
+├── docs/                      # Documentation
+├── scripts/                   # Utility scripts
+├── tests/                     # Test suite
+└── infrastructure/           # Infrastructure as Code
+```
+
+## Development Environment Setup
 
 ### Prerequisites
 
-- Docker & Docker Compose
-- Node.js 18+ and Python 3.9+
-- 16GB+ RAM recommended
-- 50GB+ free disk space
+1. **Docker and Docker Compose**
+   - Install Docker Desktop or Docker Engine
+   - Verify installation: `docker --version`
 
-### One-Command Setup
+2. **Python 3.11+**
+   - Install Python 3.11 or higher
+   - Verify: `python --version`
 
+3. **Node.js 18+**
+   - Install Node.js 18 or higher
+   - Verify: `node --version`
+
+4. **GitHub CLI**
+   - Install GitHub CLI for secrets management
+   - Authenticate: `gh auth login`
+
+### Initial Setup
+
+1. **Clone the repository:**
 ```bash
-# Clone and start the full platform
-git clone <repository-url> sophia-ai-intel-1
-cd sophia-ai-intel-1
-./scripts/dev-utils.sh setup-dev
-docker-compose --env-file .env.local up -d
+git clone https://github.com/ai-cherry/sophia-ai-intel.git
+cd sophia-ai-intel
 ```
 
-## 📋 Table of Contents
-
-1. [Architecture Overview](#architecture-overview)
-2. [Development Environment](#development-environment)
-3. [Service Directory](#service-directory)
-4. [Development Workflow](#development-workflow)
-5. [Testing Guide](#testing-guide)
-6. [Debugging & Profiling](#debugging--profiling)
-7. [Monitoring & Observability](#monitoring--observability)
-8. [Troubleshooting](#troubleshooting)
-9. [Performance Optimization](#performance-optimization)
-10. [Security Considerations](#security-considerations)
-
----
-
-## 🏗️ Architecture Overview
-
-The Sophia AI Intel platform consists of 17+ microservices organized into logical groups:
-
-```mermaid
-graph TB
-    subgraph "🧠 Core AI Services"
-        AC[agno-coordinator:8080]
-        AT[agno-teams:8087] 
-        OR[orchestrator:8088]
-        AW[agno-wrappers:8089]
-    end
-    
-    subgraph "🔗 MCP Services"
-        MA[mcp-agents:8000]
-        MC[mcp-context:8081]
-        MR[mcp-research:8085]
-        MB[mcp-business:8086]
-    end
-    
-    subgraph "🔌 Integrations"
-        MG[mcp-github:8082]
-        MH[mcp-hubspot:8083]
-        ML[mcp-lambda:8084]
-        MS[mcp-salesforce:8092]
-        MSL[mcp-slack:8093]
-        MAP[mcp-apollo:8090]
-        MGO[mcp-gong:8091]
-    end
-    
-    subgraph "🤖 LLM & Agents"
-        PL[portkey-llm:8007]
-        AS[agents-swarm:8008]
-    end
-    
-    subgraph "💾 Data Layer"
-        PG[(PostgreSQL:5432)]
-        RD[(Redis:6380)]
-        QD[(Qdrant:6333)]
-    end
-    
-    subgraph "📊 Monitoring"
-        PROM[Prometheus:9090]
-        GRAF[Grafana:3000]
-        LOKI[Loki:3100]
-        JAEG[Jaeger:16686]
-    end
-```
-
-### Service Communication
-
-- **HTTP/REST**: Primary communication protocol
-- **WebSocket**: Real-time updates and streaming
-- **gRPC**: High-performance inter-service calls
-- **Message Queue**: Async processing via Redis
-- **Event Streaming**: Real-time event propagation
-
----
-
-## 🛠️ Development Environment
-
-### Environment Configurations
-
-We provide three pre-configured environments:
-
-| Environment | File | Purpose | Features |
-|-------------|------|---------|----------|
-| **Local** | `.env.local` | Development work | Mock services, debug ports, hot reload |
-| **Development** | `.env.development` | Team development | Real integrations, shared resources |
-| **Test** | `.env.test` | Automated testing | Isolated databases, test fixtures |
-
-### Quick Environment Switch
-
+2. **Set up Python environment:**
 ```bash
-# Switch to local development
-cp .env.local .env
-
-# Switch to team development  
-cp .env.development .env
-
-# Switch to test environment
-cp .env.test .env
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+pip install -r requirements.txt
 ```
 
-### Development Tools
-
-| Tool | URL | Purpose |
-|------|-----|---------|
-| **Adminer** | http://localhost:8080 | Database management |
-| **Redis Commander** | http://localhost:8081 | Redis inspection |
-| **Grafana** | http://localhost:3000 | Metrics & dashboards |
-| **Jaeger** | http://localhost:16686 | Distributed tracing |
-| **Prometheus** | http://localhost:9090 | Metrics collection |
-
----
-
-## 📂 Service Directory
-
-### Core AI Services
-
-#### `agno-coordinator` (Port: 8080)
-**Primary AI coordination and task routing service**
-
+3. **Set up Node.js environment:**
 ```bash
-# Debug ports
-Debug: 5678 (Python debugpy)
-Health: GET /health
-Metrics: GET /metrics
-
-# Key endpoints
-POST /api/v1/coordinate    # Route AI tasks
-GET  /api/v1/status       # Service status
-POST /api/v1/shutdown     # Graceful shutdown
+cd apps/sophia-dashboard
+npm install
 ```
 
-**Common Issues:**
-- High memory usage → Check model loading
-- Slow response times → Profile with `./scripts/debug-profiler.sh profile agno-coordinator 60 cpu`
-
-#### `agno-teams` (Port: 8087)
-**Multi-agent team coordination**
-
+4. **Configure environment variables:**
 ```bash
-# Specialized endpoints
-POST /api/v1/teams/create     # Create agent team
-GET  /api/v1/teams/{id}      # Get team status
-POST /api/v1/teams/{id}/task # Assign team task
+cp .env.example .env
+# Edit .env with your API keys and configuration
 ```
 
-#### `orchestrator` (Port: 8088)
-**Main workflow orchestration engine**
+## Architecture Overview
 
+### Frontend Architecture
+
+The frontend is built with Next.js 13+ using the App Router pattern:
+
+```
+apps/sophia-dashboard/
+├── src/
+│   ├── app/                  # App Router pages
+│   │   ├── api/              # API routes
+│   │   ├── components/       # React components
+│   │   └── lib/              # Client libraries
+│   └── components/           # Shared components
+├── public/                   # Static assets
+└── styles/                   # CSS and styling
+```
+
+Key components:
+- **Unified Chat Interface**: `page-unified.tsx`
+- **WebSocket Client**: `lib/swarm-client.ts`
+- **Component Library**: `components/`
+
+### Backend Architecture
+
+Backend services follow a microservice pattern:
+
+```
+services/
+├── mcp-agents/
+│   ├── app_unified.py        # Main service entry point
+│   ├── Dockerfile           # Container configuration
+│   └── requirements.txt     # Dependencies
+├── mcp-context/
+│   ├── app.py               # Main context service
+│   ├── memory_coordinator.py # Memory management
+│   └── ...
+└── ...
+```
+
+### Core Libraries
+
+#### LLM Library (`libs/llm/`)
+- **Base Client**: `base.py` - Abstract base classes
+- **Provider Clients**: `openai_client.py`, `anthropic_client.py`
+- **Router**: `router.py` - Smart provider selection
+- **Cache**: `cache.py` - Response caching
+
+#### Secrets Management (`libs/secrets/`)
+- **Manager**: `manager.py` - Multi-backend secrets management
+- **Backends**: GitHub Actions, Pulumi ESC, Fly.io, Environment
+
+#### Configuration (`libs/config/`)
+- **Config Manager**: `config.py` - Typed configuration objects
+- **Environment Integration**: Automatic secrets loading
+
+## Development Workflows
+
+### Frontend Development
+
+1. **Start development server:**
 ```bash
-# Workflow management
-POST /api/v1/workflows       # Create workflow
-GET  /api/v1/workflows/{id}  # Get workflow status
-PUT  /api/v1/workflows/{id}  # Update workflow
+cd apps/sophia-dashboard
+npm run dev
 ```
 
-### MCP Services
-
-#### `mcp-agents` (Port: 8000)
-**Model Context Protocol agent management**
-
+2. **Component Development:**
 ```bash
-# Agent operations  
-POST /api/v1/agent/execute   # Execute agent task
-GET  /api/v1/agent/list      # List available agents
-POST /api/v1/agent/create    # Create new agent
+# Create new component
+touch src/components/NewComponent.tsx
+
+# Add to component library
+export * from './NewComponent' in src/components/index.ts
 ```
 
-#### `mcp-research` (Port: 8085)
-**Research and knowledge retrieval**
-
+3. **API Route Development:**
 ```bash
-# Research endpoints
-POST /api/v1/research/query    # Search knowledge base
-GET  /api/v1/research/sources  # List sources
-POST /api/v1/research/index    # Index new content
+# Create new API route
+mkdir -p src/app/api/new-feature
+touch src/app/api/new-feature/route.ts
 ```
 
-### Integration Services
+### Backend Service Development
 
-#### `mcp-github` (Port: 8082)
-**GitHub integration and repository management**
-
+1. **Service Development:**
 ```bash
-# GitHub operations
-GET  /api/v1/repos           # List repositories
-POST /api/v1/repos/{id}/pr   # Create pull request  
-GET  /api/v1/issues          # List issues
+# Navigate to service
+cd services/mcp-new-service
+
+# Create service files
+touch app.py requirements.txt Dockerfile
 ```
 
-**Environment Variables:**
-- `GITHUB_TOKEN` - GitHub API token
-- `GITHUB_WEBHOOK_SECRET` - Webhook validation
-
-#### `mcp-hubspot` (Port: 8083)
-**CRM and customer data integration**
-
+2. **Local Testing:**
 ```bash
-# CRM operations
-GET  /api/v1/contacts        # List contacts
-POST /api/v1/deals           # Create deals
-GET  /api/v1/pipeline        # Get pipeline data
+# Run service locally
+python app.py
+
+# Test with curl
+curl http://localhost:8000/health
 ```
 
-### LLM Services
-
-#### `portkey-llm` (Port: 8007)
-**Large Language Model routing and management**
-
+3. **Docker Testing:**
 ```bash
-# LLM operations
-POST /api/v1/chat/completions  # Chat completions
-POST /api/v1/embeddings        # Generate embeddings
-GET  /api/v1/models           # List available models
+# Build and run container
+docker build -t sophia-mcp-new-service .
+docker run -p 8000:8000 sophia-mcp-new-service
 ```
 
-**Performance Notes:**
-- CPU-intensive model loading
-- High memory requirements
-- GPU acceleration available
+### Adding New Features
 
----
+#### 1. New MCP Service
 
-## 🔄 Development Workflow
-
-### Hot Reloading
-
-The platform supports intelligent hot reloading for rapid development:
-
+1. **Create service directory:**
 ```bash
-# Start development workflow with file watching
-./scripts/dev-workflow.sh start
-
-# Monitor file changes
-./scripts/dev-workflow.sh status
-
-# Stop workflow
-./scripts/dev-workflow.sh stop
+mkdir -p services/mcp-newservice
+cd services/mcp-newservice
 ```
 
-**Supported File Types:**
-- **Python**: `.py` files → Automatic service restart
-- **JavaScript/TypeScript**: `.js, .ts` files → Nodemon restart
-- **Configuration**: `.yml, .json` files → Config reload
-- **Docker**: `Dockerfile, docker-compose.yml` → Container rebuild
+2. **Create service files:**
+```python
+# app.py
+from fastapi import FastAPI
+import uvicorn
 
-### Code Quality
+app = FastAPI()
 
-Pre-commit hooks ensure code quality:
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
 
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+```
+
+3. **Add dependencies:**
 ```bash
-# Install pre-commit hooks
-pre-commit install
-
-# Run manually
-pre-commit run --all-files
-
-# Skip hooks (emergency only)
-git commit --no-verify -m "Emergency commit"
+# requirements.txt
+fastapi>=0.68.0
+uvicorn>=0.15.0
 ```
 
-### Database Operations
+4. **Create Dockerfile:**
+```dockerfile
+FROM python:3.11-slim
 
-```bash
-# Run migrations
-./scripts/database/migrate.sh up
+WORKDIR /app
 
-# Rollback migration
-./scripts/database/migrate.sh down
+COPY requirements.txt .
+RUN pip install -r requirements.txt
 
-# Reset development database
-./scripts/dev-utils.sh reset-db
+COPY . .
 
-# Seed test data
-./scripts/dev-utils.sh seed-data
+EXPOSE 8000
+
+CMD ["python", "app.py"]
 ```
 
----
-
-## 🧪 Testing Guide
-
-### Test Categories
-
-Our comprehensive testing framework includes:
-
-| Category | Command | Purpose |
-|----------|---------|---------|
-| **Unit** | `pytest tests/unit/` | Individual component testing |
-| **Integration** | `pytest tests/integration/ -m integration` | Service interaction testing |
-| **E2E** | `pytest tests/e2e/ -m e2e` | Full workflow testing |
-| **Performance** | `pytest tests/performance/ -m performance` | Load and stress testing |
-| **Security** | `pytest tests/security/ -m security` | Security vulnerability testing |
-
-### Running Tests
-
-```bash
-# Run all tests with coverage
-pytest tests/ --cov=services/ --cov-report=html
-
-# Run specific service tests
-pytest tests/services/test_agno_coordinator.py -v
-
-# Run integration tests only
-pytest tests/integration/ -m integration
-
-# Run with specific markers
-pytest -m "not slow and not external"
-
-# Generate coverage report
-pytest --cov-report=html
-open htmlcov/index.html
+5. **Add to docker-compose.yml:**
+```yaml
+mcp-newservice:
+  build:
+    context: .
+    dockerfile: ./services/mcp-newservice/Dockerfile
+  ports:
+    - "8001:8000"
+  environment:
+    - ENVIRONMENT=development
 ```
 
-### Test Data Management
+#### 2. New Frontend Component
 
-```bash
-# Load test fixtures
-pytest --fixtures tests/fixtures/
+1. **Create component:**
+```typescript
+// src/components/NewFeature.tsx
+'use client';
 
-# Clean test databases
-./scripts/dev-utils.sh clean-test-data
+import { useState } from 'react';
 
-# Generate test data
-./scripts/dev-utils.sh generate-test-data 1000
-```
+interface NewFeatureProps {
+  initialData?: any;
+}
 
----
-
-## 🐛 Debugging & Profiling
-
-### Debugger Attachment
-
-Each service exposes debug ports for IDE attachment:
-
-```bash
-# List available debug ports
-./scripts/debug-profiler.sh dashboard
-
-# Attach debugger to specific service
-./scripts/debug-profiler.sh attach agno-coordinator
-```
-
-**VS Code Debug Configuration:**
-
-```json
-{
-    "name": "Debug agno-coordinator",
-    "type": "python",
-    "request": "attach",
-    "connect": {
-        "host": "localhost",
-        "port": 5678
-    },
-    "pathMappings": [
-        {
-            "localRoot": "${workspaceFolder}/services/agno-coordinator",
-            "remoteRoot": "/app"
-        }
-    ]
+export default function NewFeature({ initialData }: NewFeatureProps) {
+  const [data, setData] = useState(initialData || {});
+  
+  return (
+    <div className="new-feature">
+      {/* Component implementation */}
+    </div>
+  );
 }
 ```
 
-### Performance Profiling
-
-```bash
-# CPU profiling
-./scripts/debug-profiler.sh profile agno-coordinator 60 cpu
-
-# Memory profiling  
-./scripts/debug-profiler.sh profile mcp-agents 30 memory
-
-# I/O profiling
-./scripts/debug-profiler.sh profile orchestrator 45 io
-
-# Interactive debugging session
-./scripts/debug-profiler.sh shell portkey-llm
+2. **Export component:**
+```typescript
+// src/components/index.ts
+export { default as NewFeature } from './NewFeature';
 ```
 
-### Log Analysis
+3. **Use in pages:**
+```typescript
+// src/app/new-page/page.tsx
+import { NewFeature } from '@/components';
 
-```bash
-# Analyze service logs
-./scripts/debug-profiler.sh logs agno-coordinator 1000
-
-# Real-time log streaming
-docker-compose logs -f agno-coordinator
-
-# Search logs with patterns
-./scripts/dev-utils.sh search-logs "ERROR" --service agno-coordinator
+export default function NewPage() {
+  return (
+    <div>
+      <NewFeature />
+    </div>
+  );
+}
 ```
 
----
+## Testing
 
-## 📊 Monitoring & Observability
+### Unit Testing
 
-### Health Monitoring
-
-Comprehensive health monitoring with automatic recovery:
-
+#### Python Services
 ```bash
-# Start health monitor
-./scripts/health-monitor.sh start
+# Run all tests
+pytest tests/
 
-# View current status
-./scripts/health-monitor.sh status
+# Run specific test file
+pytest tests/test_service.py
 
-# Manual service recovery
-./scripts/health-monitor.sh recover agno-coordinator
-
-# View health events
-./scripts/health-monitor.sh events 50
+# Run with coverage
+pytest --cov=services tests/
 ```
 
-### Metrics & Dashboards
+#### Frontend Testing
+```bash
+cd apps/sophia-dashboard
 
-Access monitoring tools:
+# Run all tests
+npm test
 
-| Dashboard | URL | Purpose |
-|-----------|-----|---------|
-| **Platform Overview** | http://localhost:3000/d/sophia-ai-overview | System-wide metrics |
-| **Development Dashboard** | http://localhost:3000/d/sophia-ai-development | Dev-specific metrics |
-| **Service Metrics** | http://localhost:9090 | Raw Prometheus metrics |
-| **Distributed Tracing** | http://localhost:16686 | Request tracing |
+# Run specific test
+npm test -- src/components/NewComponent.test.tsx
 
-### Custom Metrics
+# Run with coverage
+npm test -- --coverage
+```
 
-Add custom metrics to your services:
+### Integration Testing
+
+1. **Service Integration Tests:**
+```bash
+# Start services
+docker-compose -f docker-compose.test.yml up -d
+
+# Run integration tests
+./scripts/run-integration-tests.sh
+```
+
+2. **End-to-End Tests:**
+```bash
+# Start full platform
+docker-compose up -d
+
+# Run E2E tests
+./scripts/run-e2e-tests.sh
+```
+
+### Test Structure
+
+```
+tests/
+├── unit/                     # Unit tests
+│   ├── test_agents.py        # Agents service tests
+│   ├── test_context.py       # Context service tests
+│   └── ...
+├── integration/              # Integration tests
+│   ├── test_api_endpoints.py # API endpoint tests
+│   ├── test_service_mesh.py  # Service communication tests
+│   └── ...
+├── e2e/                      # End-to-end tests
+│   ├── test_chat_workflow.py # Chat interface tests
+│   ├── test_agent_swarm.py   # Swarm orchestration tests
+│   └── ...
+└── fixtures/                 # Test data and utilities
+```
+
+## Code Quality and Standards
+
+### Python Standards
+
+1. **Code Style**: PEP 8 compliance
+2. **Type Hints**: Required for all functions and classes
+3. **Documentation**: Google-style docstrings
 
 ```python
-# Python example
+def calculate_score(
+    context: str,
+    query: str,
+    model: str = "gpt-4"
+) -> float:
+    """Calculate relevance score between context and query.
+    
+    Args:
+        context: The context text to evaluate
+        query: The query text to match against
+        model: The model to use for scoring
+        
+    Returns:
+        float: Relevance score between 0 and 1
+        
+    Raises:
+        ValueError: If context or query is empty
+    """
+    if not context or not query:
+        raise ValueError("Context and query cannot be empty")
+    
+    # Implementation here
+    return score
+```
+
+### TypeScript Standards
+
+1. **Code Style**: ESLint with strict rules
+2. **Type Safety**: Strict TypeScript with no implicit any
+3. **Component Patterns**: React hooks and functional components
+
+```typescript
+interface ChatMessageProps {
+  message: Message;
+  isStreaming?: boolean;
+  onRetry?: () => void;
+}
+
+export default function ChatMessage({
+  message,
+  isStreaming = false,
+  onRetry
+}: ChatMessageProps) {
+  // Component implementation
+}
+```
+
+### Security Standards
+
+1. **Secret Management**: Never hardcode secrets
+2. **Input Validation**: Validate all external inputs
+3. **Authentication**: JWT-based with proper scope checking
+4. **Rate Limiting**: Implement rate limiting for external APIs
+
+## Debugging and Monitoring
+
+### Local Debugging
+
+1. **Service Logs:**
+```bash
+# View service logs
+docker-compose logs mcp-agents
+
+# Follow logs in real-time
+docker-compose logs -f mcp-context
+```
+
+2. **Debugging Python Services:**
+```bash
+# Add debug logging
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
+# Use debugger
+import pdb; pdb.set_trace()
+```
+
+3. **Debugging Frontend:**
+```typescript
+// Add console logs
+console.log('Debug info:', data);
+
+// Use React DevTools
+// Install React Developer Tools browser extension
+```
+
+### Performance Monitoring
+
+1. **Metrics Collection:**
+```python
+# Add custom metrics
 from prometheus_client import Counter, Histogram
 
 REQUEST_COUNT = Counter('requests_total', 'Total requests')
 REQUEST_DURATION = Histogram('request_duration_seconds', 'Request duration')
 
-@REQUEST_DURATION.time()
-def process_request():
+@app.middleware("http")
+async def metrics_middleware(request: Request, call_next):
     REQUEST_COUNT.inc()
-    # Your logic here
+    start_time = time.time()
+    response = await call_next(request)
+    REQUEST_DURATION.observe(time.time() - start_time)
+    return response
 ```
 
----
+2. **Profiling:**
+```bash
+# Profile Python code
+python -m cProfile -o profile.out script.py
 
-## 🔧 Troubleshooting
+# Analyze profile
+python -m pstats profile.out
+```
+
+## Deployment and CI/CD
+
+### Local Development
+
+1. **Start Development Environment:**
+```bash
+# Start all services
+docker-compose -f docker-compose.local.yml up -d
+
+# Start frontend
+cd apps/sophia-dashboard && npm run dev
+```
+
+2. **Hot Reloading:**
+- Python services: Use `--reload` flag with uvicorn
+- Frontend: Next.js automatic hot reloading
+
+### Production Deployment
+
+1. **Build and Deploy:**
+```bash
+# Build production images
+docker-compose build
+
+# Deploy to production
+./scripts/fly-deploy.sh
+```
+
+2. **Environment Configuration:**
+- Use environment-specific `.env` files
+- Configure secrets through deployment platform
+- Set proper resource limits
+
+### CI/CD Pipeline
+
+GitHub Actions workflows handle:
+- **Testing**: Unit, integration, and E2E tests
+- **Building**: Docker image creation
+- **Deployment**: Staging and production deployments
+- **Monitoring**: Health checks and rollback triggers
+
+## Troubleshooting
 
 ### Common Issues
 
-#### Service Won't Start
-
-**Symptoms:** Service shows as "Exited" in `docker-compose ps`
-
+1. **Service Won't Start:**
 ```bash
 # Check service logs
-docker-compose logs agno-coordinator
+docker-compose logs <service-name>
 
-# Common fixes
-docker-compose restart agno-coordinator  # Simple restart
-docker-compose up -d --force-recreate agno-coordinator  # Force recreate
+# Check dependencies
+docker-compose ps
+
+# Restart service
+docker-compose restart <service-name>
 ```
 
-**Most Common Causes:**
-1. **Port conflicts** → Check `netstat -tulpn | grep :8080`
-2. **Database connection** → Verify PostgreSQL is running
-3. **Missing environment variables** → Check `.env` file
-4. **Memory issues** → Increase Docker memory limit
-
-#### High Memory Usage
-
+2. **Connection Issues:**
 ```bash
-# Check memory usage by service
-docker stats --format "table {{.Name}}\t{{.MemUsage}}\t{{.MemPerc}}"
+# Check network connectivity
+docker network ls
+docker network inspect sophia-network
 
-# Profile memory usage
-./scripts/debug-profiler.sh profile agno-coordinator 60 memory
-
-# Memory optimization
-./scripts/dev-utils.sh optimize-memory
+# Check service health endpoints
+curl http://localhost:<port>/health
 ```
 
-#### Slow Performance
-
+3. **Performance Issues:**
 ```bash
-# Performance analysis
-./scripts/stress-test.sh service agno-coordinator 60
+# Monitor resource usage
+docker stats
 
-# Database query analysis
-./scripts/dev-utils.sh analyze-slow-queries
-
-# Enable query logging
-./scripts/dev-utils.sh enable-query-logging
+# Check application logs
+docker-compose logs --tail 100 <service-name>
 ```
 
-#### Database Connection Issues
+### Debugging Checklist
 
+- [ ] Check service logs for errors
+- [ ] Verify environment variables
+- [ ] Check network connectivity between services
+- [ ] Validate API keys and credentials
+- [ ] Review resource limits and usage
+- [ ] Check database connections
+- [ ] Verify file permissions
+- [ ] Review recent code changes
+
+## Best Practices
+
+### Code Organization
+
+1. **Separation of Concerns:**
+   - Keep business logic separate from presentation
+   - Use service layers for complex operations
+   - Implement proper error handling
+
+2. **Configuration Management:**
+   - Use environment variables for configuration
+   - Implement graceful degradation
+   - Document all configuration options
+
+3. **Error Handling:**
+   - Implement comprehensive error handling
+   - Use structured logging
+   - Provide meaningful error messages
+
+### Performance Optimization
+
+1. **Caching:**
+   - Implement Redis caching for frequent operations
+   - Use appropriate cache expiration times
+   - Monitor cache hit rates
+
+2. **Database Optimization:**
+   - Use connection pooling
+   - Implement proper indexing
+   - Optimize queries
+
+3. **API Optimization:**
+   - Implement pagination for large datasets
+   - Use efficient data serialization
+   - Minimize network requests
+
+### Security Best Practices
+
+1. **Input Validation:**
+   - Validate all user inputs
+   - Sanitize data before processing
+   - Implement rate limiting
+
+2. **Authentication:**
+   - Use JWT for stateless authentication
+   - Implement proper session management
+   - Regular token rotation
+
+3. **Data Protection:**
+   - Encrypt sensitive data at rest
+   - Use HTTPS for all communications
+   - Implement proper access controls
+
+## Contributing
+
+### Pull Request Process
+
+1. **Fork and Branch:**
 ```bash
-# Test database connectivity
-./scripts/dev-utils.sh test-db-connection
-
-# Reset database connections
-./scripts/dev-utils.sh reset-db-connections
-
-# Check connection pool status
-./scripts/dev-utils.sh db-pool-status
+git checkout -b feature/new-feature-name
 ```
 
-### Automated Diagnostics
+2. **Development:**
+   - Write tests for new functionality
+   - Follow coding standards
+   - Update documentation
 
-Run automated system health checks:
+3. **Testing:**
+   - Run full test suite
+   - Verify no regressions
+   - Check code quality
 
-```bash
-# Comprehensive system check
-./scripts/dev-utils.sh health-check
+4. **Submit PR:**
+   - Provide clear description
+   - Link related issues
+   - Request review from maintainers
 
-# Network connectivity test
-./scripts/dev-utils.sh network-test
+### Code Review Guidelines
 
-# Performance baseline
-./scripts/dev-utils.sh performance-baseline
+Reviewers should check:
+- [ ] Code quality and standards compliance
+- [ ] Test coverage and quality
+- [ ] Documentation updates
+- [ ] Security considerations
+- [ ] Performance implications
+- [ ] Backward compatibility
 
-# Security scan
-./scripts/dev-utils.sh security-scan
-```
+## Support and Resources
 
-### Emergency Recovery
+### Documentation
+- [API Documentation](docs/API.md)
+- [Deployment Guide](docs/DEPLOYMENT.md)
+- [Secrets Management](docs/SECRETS.md)
+- [Architecture Diagrams](docs/ARCHITECTURE.md)
 
-**Complete System Reset:**
+### Community
+- GitHub Issues for bug reports
+- Discussions for feature requests
+- Slack community for real-time help
 
-```bash
-# Nuclear option - full reset
-./scripts/dev-utils.sh nuclear-reset
-
-# This will:
-# - Stop all services
-# - Remove all volumes
-# - Rebuild all containers
-# - Reset databases
-# - Restore from backup if available
-```
-
-**Service-Specific Recovery:**
-
-```bash
-# Recover specific service
-./scripts/dev-utils.sh recover-service agno-coordinator
-
-# This includes:
-# - Stop service gracefully
-# - Check dependencies
-# - Clear cache/temp files
-# - Restart with health check
-```
-
----
-
-## ⚡ Performance Optimization
-
-### Database Optimization
-
-```bash
-# Optimize PostgreSQL settings
-./scripts/dev-utils.sh optimize-postgres
-
-# Analyze and fix slow queries
-./scripts/dev-utils.sh analyze-queries
-
-# Update database statistics
-./scripts/dev-utils.sh update-stats
-```
-
-### Caching Strategy
-
-```bash
-# Redis cache analysis
-./scripts/dev-utils.sh redis-analysis
-
-# Clear cache
-./scripts/dev-utils.sh clear-cache
-
-# Cache hit ratio
-./scripts/dev-utils.sh cache-stats
-```
-
-### Load Testing
-
-```bash
-# Comprehensive load test
-./scripts/stress-test.sh full 300 50 200
-
-# Test specific service
-./scripts/stress-test.sh service agno-coordinator 120
-
-# AI-specific load test
-./scripts/stress-test.sh ai portkey-llm 60 10
-```
-
----
-
-## 🔒 Security Considerations
-
-### Development Security
-
-```bash
-# Security scan
-./scripts/dev-utils.sh security-scan
-
-# Check for vulnerabilities
-./scripts/dev-utils.sh vulnerability-check
-
-# Update security patches
-./scripts/dev-utils.sh security-update
-```
-
-### SSL/TLS Configuration
-
-```bash
-# Generate local certificates
-./scripts/ssl/generate-local-certs.sh
-
-# Verify certificate validity
-./scripts/dev-utils.sh verify-certs
-
-# Renew certificates
-./scripts/ssl/generate-local-certs.sh --renew
-```
-
-### Secrets Management
-
-```bash
-# Rotate secrets
-./scripts/dev-utils.sh rotate-secrets
-
-# Check for exposed secrets
-./scripts/dev-utils.sh scan-secrets
-
-# Validate environment variables
-./scripts/dev-utils.sh validate-env
-```
-
----
-
-## 📚 Additional Resources
-
-### API Documentation
-
-- **OpenAPI Specs**: Available at `/docs` endpoint for each service
-- **Postman Collection**: `docs/postman/sophia-ai-collection.json`
-- **GraphQL Playground**: http://localhost:8080/graphql
-
-### Development Tools
-
-```bash
-# Code formatting
-./scripts/dev-utils.sh format-code
-
-# Dependency analysis
-./scripts/dev-utils.sh analyze-deps
-
-# Generate documentation
-./scripts/dev-utils.sh generate-docs
-```
-
-### Useful Commands Reference
-
-```bash
-# Quick service restart
-./scripts/dev-utils.sh restart-service <service-name>
-
-# View service configuration
-./scripts/dev-utils.sh show-config <service-name>
-
-# Export logs
-./scripts/dev-utils.sh export-logs [date-range]
-
-# Backup development data
-./scripts/dev-utils.sh backup-dev-data
-
-# Clean Docker resources
-./scripts/dev-utils.sh clean-docker
-```
-
----
-
-## 🆘 Getting Help
-
-1. **Check logs first**: `docker-compose logs <service-name>`
-2. **Run diagnostics**: `./scripts/dev-utils.sh health-check`
-3. **Search documentation**: This guide is searchable
-4. **Check monitoring**: http://localhost:3000
-5. **Ask the team**: #sophia-ai-development Slack channel
-
-### Support Contacts
-
-- **Platform Team**: sophia-platform@company.com
-- **DevOps Support**: devops@company.com
-- **Security Issues**: security@company.com
-
----
-
-**Happy Coding! 🚀**
-
-*This documentation is auto-generated and updated with each deployment.*
-
-*Last updated: $(date -Iseconds)*
+### Enterprise Support
+- SLA-based support contracts
+- Dedicated engineering support
+- Custom development services
+- Training and onboarding
