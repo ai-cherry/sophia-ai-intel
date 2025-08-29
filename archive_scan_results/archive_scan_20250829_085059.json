@@ -1,0 +1,4541 @@
+{
+  "scan_time": "2025-08-29T08:50:59.003750",
+  "root_directory": "/Users/lynnmusil/sophia-ai-intel-1",
+  "archived_files": [
+    {
+      "path": ".env.production.real.backup",
+      "pattern": ".*\\.backup$",
+      "size": 8377,
+      "modified": "2025-08-27T22:50:24.384349"
+    },
+    {
+      "path": "DEPLOYMENT_REMEDIATION_SUMMARY_20250827_133501.md",
+      "pattern": ".*_\\d{8}_\\d{6}.*",
+      "size": 2539,
+      "modified": "2025-08-27T06:35:01.385671"
+    },
+    {
+      "path": "helm.tar.gz",
+      "pattern": ".*\\.tar\\.gz$",
+      "size": 17032674,
+      "modified": "2025-08-25T21:03:26.075490"
+    },
+    {
+      "path": ".env.production.secure.bak",
+      "pattern": ".*\\.bak$",
+      "size": 6394,
+      "modified": "2025-08-27T07:07:21.060338"
+    },
+    {
+      "path": "SOPHIA_AI_FINAL_REPORT_20250826_071324.md",
+      "pattern": ".*_\\d{8}_\\d{6}.*",
+      "size": 6650,
+      "modified": "2025-08-26T07:13:24.907485"
+    },
+    {
+      "path": "DEPLOYMENT_READINESS_REPORT_20250827_133501.json",
+      "pattern": ".*_\\d{8}_\\d{6}.*",
+      "size": 3709,
+      "modified": "2025-08-27T06:35:01.385357"
+    },
+    {
+      "path": "agentic/research_swarms/trend_swarm.py.deprecated",
+      "pattern": ".*\\.deprecated$",
+      "size": 759,
+      "modified": "2025-08-27T05:33:38.910542"
+    },
+    {
+      "path": "agentic/coding_swarms/main.py.deprecated",
+      "pattern": ".*\\.deprecated$",
+      "size": 945,
+      "modified": "2025-08-27T05:32:08.015705"
+    },
+    {
+      "path": "scripts/run-sophia-locally.sh.backup",
+      "pattern": ".*\\.backup$",
+      "size": 5669,
+      "modified": "2025-08-27T23:13:39.121919"
+    },
+    {
+      "path": "scripts/synthetic_checks.py.backup",
+      "pattern": ".*\\.backup$",
+      "size": 12623,
+      "modified": "2025-08-27T04:12:32.575409"
+    }
+  ],
+  "backup_files": [
+    ".env.production.real.backup",
+    ".env.production.secure.bak",
+    "scripts/run-sophia-locally.sh.backup",
+    "scripts/synthetic_checks.py.backup",
+    "scripts/database/backup-restore.sh"
+  ],
+  "temp_files": [
+    ".env.production.real.backup",
+    ".env.production",
+    ".env.production.deployment",
+    ".env.local",
+    ".htpasswd",
+    ".env.production.template",
+    ".dockerignore",
+    ".env",
+    ".env.production.real",
+    ".env.example",
+    ".env.production.secure",
+    ".env.development",
+    ".env.production.secure.bak",
+    "context/.env.example",
+    "k8s-deploy/scripts/.srl",
+    "jobs/.dockerignore",
+    "services/mcp-context/.dockerignore",
+    "services/mcp-research/.dockerignore",
+    "services/mcp-agents/.dockerignore",
+    "services/mcp-business/.dockerignore",
+    "services/mcp-lambda/.dockerignore",
+    "services/mcp-github/.dockerignore",
+    "services/mcp-hubspot/.dockerignore",
+    "services/orchestrator/.dockerignore"
+  ],
+  "old_versions": [
+    "DEPLOYMENT_REMEDIATION_SUMMARY_20250827_133501.md",
+    "AGNO_INTEGRATION_PLAN_V2.md",
+    "SOPHIA_AI_FINAL_REPORT_20250826_071324.md",
+    "DEPLOYMENT_READINESS_REPORT_20250827_133501.json",
+    "proofs/STABILITY_CHECKPOINT_20250826.md",
+    "proofs/tree_v6.txt",
+    "proofs/REPOSITORY_AUDIT_REPORT_20250826.md",
+    "proofs/LAMBDA_LABS_SYSTEM_BASELINE_20250826.md",
+    "proofs/context/index_run_1756175783.json",
+    "proofs/biz/search_1724356980.json",
+    "proofs/biz/digest_1724356985.json",
+    "proofs/deployment/status_17159386511.json",
+    "proofs/deployment/status_17158741440.json",
+    "proofs/deployment/deployment_auth_fix_status_1724702741.json",
+    "proofs/persona/sophia_persona_v1_complete.json",
+    "proofs/cline_operations/live_health_verification_1756016621.json",
+    "proofs/cline_operations/system_status_1756016357.json",
+    "docs/PERSONA_V1.md",
+    "services/planning/intelligent_planner_v2.py"
+  ],
+  "obsolete_files": [
+    {
+      "path": "test_weaviate_connection.py",
+      "pattern": "test_.*\\.py$",
+      "size": 2883,
+      "modified": "2025-08-27T09:00:17.366552"
+    },
+    {
+      "path": "todo.md",
+      "pattern": "TODO.*",
+      "size": 1685,
+      "modified": "2025-08-25T12:34:27.034144"
+    },
+    {
+      "path": "temp_plan.md",
+      "pattern": "temp_.*",
+      "size": 1920,
+      "modified": "2025-08-27T05:25:40.014740"
+    },
+    {
+      "path": "test_weaviate_basic.py",
+      "pattern": "test_.*\\.py$",
+      "size": 4731,
+      "modified": "2025-08-27T09:55:05.037055"
+    },
+    {
+      "path": "example_swarm_usage.py",
+      "pattern": "example_.*\\.py$",
+      "size": 6279,
+      "modified": "2025-08-28T20:17:53.657853"
+    },
+    {
+      "path": "test_official_weaviate_pattern.py",
+      "pattern": "test_.*\\.py$",
+      "size": 2093,
+      "modified": "2025-08-27T10:07:04.039550"
+    },
+    {
+      "path": "test_init_weaviate_only.py",
+      "pattern": "test_.*\\.py$",
+      "size": 6324,
+      "modified": "2025-08-27T09:58:34.045406"
+    },
+    {
+      "path": "context/vector-indexer/test_weaviate_connection.py",
+      "pattern": "test_.*\\.py$",
+      "size": 8033,
+      "modified": "2025-08-27T09:29:26.216087"
+    },
+    {
+      "path": "context/context-api/test_weaviate_connection.py",
+      "pattern": "test_.*\\.py$",
+      "size": 10021,
+      "modified": "2025-08-27T09:45:09.240704"
+    },
+    {
+      "path": "memory/mem0/example_usage.py",
+      "pattern": "example_.*\\.py$",
+      "size": 1181,
+      "modified": "2025-08-26T21:49:34.722971"
+    },
+    {
+      "path": "tests/integration/test_mcp_services.py",
+      "pattern": "test_.*\\.py$",
+      "size": 6761,
+      "modified": "2025-08-25T13:40:27.134910"
+    },
+    {
+      "path": "tests/integration/test_frontend_backend_integration.py",
+      "pattern": "test_.*\\.py$",
+      "size": 11403,
+      "modified": "2025-08-28T08:22:54.720471"
+    },
+    {
+      "path": "tests/agentic/test_research_swarm.py",
+      "pattern": "test_.*\\.py$",
+      "size": 652,
+      "modified": "2025-08-27T05:16:50.016309"
+    },
+    {
+      "path": "tests/agentic/test_coding_swarm.py",
+      "pattern": "test_.*\\.py$",
+      "size": 787,
+      "modified": "2025-08-27T05:13:45.024807"
+    },
+    {
+      "path": "tests/continuity_scan/test_continuity_scan.py",
+      "pattern": "test_.*\\.py$",
+      "size": 1395,
+      "modified": "2025-08-25T12:34:27.033947"
+    },
+    {
+      "path": "tests/e2e/test_platform_integration.py",
+      "pattern": "test_.*\\.py$",
+      "size": 26929,
+      "modified": "2025-08-28T00:16:15.588041"
+    },
+    {
+      "path": "scripts/external_api_connectivity_test.py",
+      "pattern": ".*_test\\.py$",
+      "size": 31052,
+      "modified": "2025-08-26T11:09:11.807895"
+    },
+    {
+      "path": "scripts/test_qdrant_lambda_focused.py",
+      "pattern": "test_.*\\.py$",
+      "size": 28465,
+      "modified": "2025-08-26T10:29:04.062646"
+    },
+    {
+      "path": "scripts/test_external_apis.py",
+      "pattern": "test_.*\\.py$",
+      "size": 38362,
+      "modified": "2025-08-26T10:12:22.116801"
+    },
+    {
+      "path": "scripts/test_basic_import.py",
+      "pattern": "test_.*\\.py$",
+      "size": 5344,
+      "modified": "2025-08-25T17:40:40.241779"
+    },
+    {
+      "path": "scripts/test_client_health_team.py",
+      "pattern": "test_.*\\.py$",
+      "size": 7312,
+      "modified": "2025-08-25T17:40:05.710179"
+    },
+    {
+      "path": "scripts/demo_mcp_tokens.py",
+      "pattern": "demo_.*\\.py$",
+      "size": 13375,
+      "modified": "2025-08-25T22:14:08.596637"
+    },
+    {
+      "path": "scripts/test_audit_insert.py",
+      "pattern": "test_.*\\.py$",
+      "size": 15658,
+      "modified": "2025-08-26T22:21:47.169378"
+    },
+    {
+      "path": "scripts/test_unified_sophia.py",
+      "pattern": "test_.*\\.py$",
+      "size": 1511,
+      "modified": "2025-08-28T23:51:21.694791"
+    },
+    {
+      "path": "scripts/test_complete_integration.py",
+      "pattern": "test_.*\\.py$",
+      "size": 11164,
+      "modified": "2025-08-25T21:48:15.644140"
+    },
+    {
+      "path": "scripts/test_client_health_team_fixed.py",
+      "pattern": "test_.*\\.py$",
+      "size": 5797,
+      "modified": "2025-08-25T17:40:23.181642"
+    },
+    {
+      "path": "scripts/neon_passwordless_test.py",
+      "pattern": ".*_test\\.py$",
+      "size": 5583,
+      "modified": "2025-08-26T23:57:01.995176"
+    },
+    {
+      "path": "scripts/test_external_services.py",
+      "pattern": "test_.*\\.py$",
+      "size": 14096,
+      "modified": "2025-08-26T09:35:03.347112"
+    },
+    {
+      "path": "scripts/load_testing/llm_failover_test.py",
+      "pattern": ".*_test\\.py$",
+      "size": 15170,
+      "modified": "2025-08-25T21:47:44.664107"
+    },
+    {
+      "path": "scripts/load_testing/comprehensive_load_test.py",
+      "pattern": ".*_test\\.py$",
+      "size": 22192,
+      "modified": "2025-08-26T12:20:17.528932"
+    },
+    {
+      "path": "services/mcp-context/test_weaviate_connection.py",
+      "pattern": "test_.*\\.py$",
+      "size": 4782,
+      "modified": "2025-08-27T09:22:34.381726"
+    },
+    {
+      "path": "services/mcp-research/test_weaviate_connection.py",
+      "pattern": "test_.*\\.py$",
+      "size": 2811,
+      "modified": "2025-08-27T09:37:15.786496"
+    }
+  ],
+  "duplicate_candidates": [
+    {
+      "file1": ".env",
+      "file2": ".env.production.secure",
+      "hash": "8e49bff5f38355231050df0dc816cae0"
+    },
+    {
+      "file1": "ssl/dhparam.pem",
+      "file2": "ssl/local/dhparam.pem",
+      "hash": "42f65bf86be13ba9dc8e580dcfe1b561"
+    },
+    {
+      "file1": "ssl/ca.crt",
+      "file2": "ssl/local/ca-cert.pem",
+      "hash": "aa789a25f4312fbe699e490b34c31a45"
+    },
+    {
+      "file1": "ssl/sophia.key",
+      "file2": "ssl/local/server-key.pem",
+      "hash": "b3d103e590c0e69d4335dc032393dc0d"
+    },
+    {
+      "file1": "ssl/fullchain.pem",
+      "file2": "ssl/local/fullchain.pem",
+      "hash": "3b1614d0bee164ec96d2260f0b4e148a"
+    },
+    {
+      "file1": "ssl/sophia.crt",
+      "file2": "ssl/local/server-cert.pem",
+      "hash": "ea682a367d75dfa6f3c71e2220635520"
+    },
+    {
+      "file1": "proofs/healthz_final/research.txt",
+      "file2": "proofs/healthz_final/dashboard.txt",
+      "hash": "74170928bae84bb0a107a0906596aa52"
+    },
+    {
+      "file1": "proofs/healthz_final/research.txt",
+      "file2": "proofs/healthz_final/context.txt",
+      "hash": "74170928bae84bb0a107a0906596aa52"
+    },
+    {
+      "file1": "proofs/healthz_final/research.txt",
+      "file2": "proofs/healthz_final/business.txt",
+      "hash": "74170928bae84bb0a107a0906596aa52"
+    },
+    {
+      "file1": "proofs/healthz_final/research.txt",
+      "file2": "proofs/healthz_final/jobs.txt",
+      "hash": "74170928bae84bb0a107a0906596aa52"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "proofs/mcp_context/index.json",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/healthz/sophiaai-mcp-context.txt",
+      "file2": "proofs/healthz/sophiaai-mcp-research.txt",
+      "hash": "59ddd62d640d175de037992fb04da424"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "proofs/healthz/sophiaai-dashboard-v2_fresh.txt",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/healthz/sophiaai-mcp-context.txt",
+      "file2": "proofs/healthz/sophiaai-dashboard.txt",
+      "hash": "59ddd62d640d175de037992fb04da424"
+    },
+    {
+      "file1": "proofs/mcp_repo/tree_dashboard.json",
+      "file2": "proofs/mcp_repo/file_vite_config.json",
+      "hash": "e3b68709ebf3d51940324e2f5b2944ca"
+    },
+    {
+      "file1": "llm/portkey-llm/Dockerfile",
+      "file2": "agents/swarm/Dockerfile",
+      "hash": "361f9f4d3de88e8e3fc68307082fcaf6"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "agentic/ui/.gitkeep",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "agentic/ui/__init__.py",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "agentic/research_swarms/.gitkeep",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "agentic/business_swarms/.gitkeep",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "agentic/swarms/__init__.py",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "agentic/swarms/research/__init__.py",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "agentic/swarms/business/__init__.py",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "agentic/swarms/coding/__init__.py",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "agentic/swarms/process/__init__.py",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "agentic/coding_swarms/.gitkeep",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "agentic/process_orchestration/.gitkeep",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "agents/swarm/requirements.txt",
+      "file2": "mcp/agents-swarm/requirements.txt",
+      "hash": "9479a4e3f2f58797e9cfe8cb1884badf"
+    },
+    {
+      "file1": "scripts/run-sophia-locally.sh",
+      "file2": "scripts/run-sophia-locally.sh.backup",
+      "hash": "668dc4ab1a9f678f3ce35ea53b7a8a05"
+    },
+    {
+      "file1": "scripts/synthetic_checks.py",
+      "file2": "scripts/synthetic_checks.py.backup",
+      "hash": "11cf1de19952e6ba0c31756216e7e133"
+    },
+    {
+      "file1": "data/postgres-dev/pg_multixact/members/0000",
+      "file2": "data/postgres-dev/pg_multixact/offsets/0000",
+      "hash": "0829f71740aab1ab98b33eae21dee122"
+    },
+    {
+      "file1": "data/postgres-dev/pg_multixact/members/0000",
+      "file2": "data/postgres-dev/pg_subtrans/0000",
+      "hash": "0829f71740aab1ab98b33eae21dee122"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/global/4185",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/global/4183",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/global/6244",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/global/4177",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/global/6243",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/global/3592",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/global/2964",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/global/4060",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/global/6000",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/global/1214",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/global/4175",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/global/4181",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/global/2846",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/global/6100",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/global/2966",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/2620",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/4147",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/4171",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/4149",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/2611",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/13472",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/global/1261_fsm",
+      "file2": "data/postgres-dev/base/1/3601_fsm",
+      "hash": "2a3216a10d8aeed6ac8058c1f5f6cabb"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/6228",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/6104",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/826",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/6102",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/2336",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/PG_VERSION",
+      "file2": "data/postgres-dev/base/1/PG_VERSION",
+      "hash": "8c9eb686bf3eb5bd83d9373eadf6504b"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/3439",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/3430",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/6175",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/3256",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/13467",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/2834",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/3118",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/2604",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/4163",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/4155",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/1418",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/13457",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/2832",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/4153",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/1417",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/4165",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/4143",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13464_fsm",
+      "file2": "data/postgres-dev/base/1/2601_fsm",
+      "hash": "99d1debbe47a2018c43693c11dd06300"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/3350",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/3501",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/global/1261_fsm",
+      "file2": "data/postgres-dev/base/1/3079_fsm",
+      "hash": "2a3216a10d8aeed6ac8058c1f5f6cabb"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/3596",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/3598",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/2224",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/4173",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/2613",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/4145",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/6106",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/3429",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/2995",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/2328",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/3466",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/4167",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/4169",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/4151",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/3576",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/2830",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/3381",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/4157",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/4159",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/13462",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/1/6237",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/2620",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/4147",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/4171",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/4149",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/2611",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/13472",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/6228",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/6104",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/826",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/6102",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/2336",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/PG_VERSION",
+      "file2": "data/postgres-dev/base/16384/PG_VERSION",
+      "hash": "8c9eb686bf3eb5bd83d9373eadf6504b"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/3439",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/3430",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/pg_filenode.map",
+      "file2": "data/postgres-dev/base/16384/pg_filenode.map",
+      "hash": "5a07d8e288fca6021046aa087bbd396c"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/6175",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/3256",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/13467",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/2834",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/3118",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/2604",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/4163",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/4155",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/1418",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/13457",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/2832",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/4153",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/1417",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/4165",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/4143",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/3350",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/3501",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/3596",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/3598",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/2224",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/4173",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/2613",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/4145",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/6106",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/3429",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/2995",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/2328",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/3466",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/4167",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/4169",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/4151",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/3576",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/2830",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/3381",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/4157",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/4159",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/13462",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/16384/6237",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2618",
+      "file2": "data/postgres-dev/base/4/2618",
+      "hash": "4ccb112006c5a5b94ec75fc26eacfadc"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/2620",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3534",
+      "file2": "data/postgres-dev/base/4/3534",
+      "hash": "caac1bbb98f5cf3a42696ac3a6230ff5"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/4147",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2616",
+      "file2": "data/postgres-dev/base/4/2616",
+      "hash": "91d3d334a895d7f5b09e4d7cd08ccba8"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/4171",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3502",
+      "file2": "data/postgres-dev/base/4/3502",
+      "hash": "0464ee1606688a1bbcae2e96418e29a0"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/1255",
+      "file2": "data/postgres-dev/base/4/1255",
+      "hash": "64eaa536797c349b1378b8379b019866"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3602_fsm",
+      "file2": "data/postgres-dev/base/4/3602_fsm",
+      "hash": "ff69b8180e8ba6f8e0f5d2fa22023862"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/4149",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3603_vm",
+      "file2": "data/postgres-dev/base/4/3603_vm",
+      "hash": "f09085041f489fb2be4b46d79e79058a"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/2611",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3603_fsm",
+      "file2": "data/postgres-dev/base/4/3603_fsm",
+      "hash": "84a14d7eb643bd12423fcc9d585a889c"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3764",
+      "file2": "data/postgres-dev/base/4/3764",
+      "hash": "1ecd9820e25b85cd1154956a91bbc49a"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2689",
+      "file2": "data/postgres-dev/base/4/2689",
+      "hash": "f9a25fc570c1293864be98f5bb5c39a2"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/6229",
+      "file2": "data/postgres-dev/base/4/6229",
+      "hash": "83ef1d23ed1ec2309a85bc7a21b18907"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2674",
+      "file2": "data/postgres-dev/base/4/2674",
+      "hash": "430967f09d8c326629988d67971f04da"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2680",
+      "file2": "data/postgres-dev/base/4/2680",
+      "hash": "302e0cbe1021d7c05d6a16952ac730df"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2687",
+      "file2": "data/postgres-dev/base/4/2687",
+      "hash": "547f393cc2473f782162e6e6b4ed570d"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2673",
+      "file2": "data/postgres-dev/base/4/2673",
+      "hash": "b54a95bfd8446bcb09b8e497c604f758"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/13472",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2228",
+      "file2": "data/postgres-dev/base/4/2228",
+      "hash": "334aa9095f04342ed80898bdeb5c30af"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3997",
+      "file2": "data/postgres-dev/base/4/3997",
+      "hash": "c1337db09bf803491c7006600468459e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/4148",
+      "file2": "data/postgres-dev/base/4/4148",
+      "hash": "80a26ebbf01dbfdf66caadb8632e839d"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2610",
+      "file2": "data/postgres-dev/base/4/2610",
+      "hash": "bccc3e795657c50b9d27c9b4b89271d5"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/4170",
+      "file2": "data/postgres-dev/base/4/4170",
+      "hash": "bf8e3590d54f0ab5b2f247cfe0943fc1"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3503",
+      "file2": "data/postgres-dev/base/4/3503",
+      "hash": "04add95e4d3eced47d337779673e0c61"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2617",
+      "file2": "data/postgres-dev/base/4/2617",
+      "hash": "9c6249a2151a7b411886cd8b817010ee"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/4146",
+      "file2": "data/postgres-dev/base/4/4146",
+      "hash": "c92e1aa53b7405f4a82512f8b6f12755"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2609_vm",
+      "file2": "data/postgres-dev/base/4/2609_vm",
+      "hash": "c974c74cbc92dc12adf928f1d3dfd0c8"
+    },
+    {
+      "file1": "data/postgres-dev/global/1261_fsm",
+      "file2": "data/postgres-dev/base/4/3601_fsm",
+      "hash": "2a3216a10d8aeed6ac8058c1f5f6cabb"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2619",
+      "file2": "data/postgres-dev/base/4/2619",
+      "hash": "6da71367f26a9bb339c7661835914df9"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3541_vm",
+      "file2": "data/postgres-dev/base/4/3541_vm",
+      "hash": "ed3b3566cb36d6e707a5be2d44cc98f0"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13473",
+      "file2": "data/postgres-dev/base/4/13473",
+      "hash": "95220c6c9b8bb1cca62bbd362d085bd3"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2686",
+      "file2": "data/postgres-dev/base/4/2686",
+      "hash": "2cfd11d7498ab0a5e20047c722b35e6b"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3600_fsm",
+      "file2": "data/postgres-dev/base/4/3600_fsm",
+      "hash": "8a9adde47fbb8b71a502c7fa4b7c1a45"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2681",
+      "file2": "data/postgres-dev/base/4/2681",
+      "hash": "95c74dde6e18fb406bb676f0dd29ba95"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2619_vm",
+      "file2": "data/postgres-dev/base/4/2619_vm",
+      "hash": "6d92d913dbf004a40e5e1aa4502b8412"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2675",
+      "file2": "data/postgres-dev/base/4/2675",
+      "hash": "d79d743a5a03ecfc698b6efc66ce6d8b"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/5002",
+      "file2": "data/postgres-dev/base/4/5002",
+      "hash": "7bbb24f0908c1bbde7f9ad117f3b129a"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/6228",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2688",
+      "file2": "data/postgres-dev/base/4/2688",
+      "hash": "a68979d7664611255842ee2893ccd4b7"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3079",
+      "file2": "data/postgres-dev/base/4/3079",
+      "hash": "1e23162042f26b7f485125de3f800af2"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3764_fsm",
+      "file2": "data/postgres-dev/base/4/3764_fsm",
+      "hash": "461ce67a44bad8aa641f0f8ac7f750a3"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/827",
+      "file2": "data/postgres-dev/base/4/827",
+      "hash": "391a062405da742f3537fdeaebe7dac8"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2608_vm",
+      "file2": "data/postgres-dev/base/4/2608_vm",
+      "hash": "d404cb394eb73236f40cf3945bc134fc"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3440",
+      "file2": "data/postgres-dev/base/4/3440",
+      "hash": "7f18156bd102a6f9d1e8290f4f322702"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2754",
+      "file2": "data/postgres-dev/base/4/2754",
+      "hash": "7bf1dda28a3c54c394078ca128329531"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2753",
+      "file2": "data/postgres-dev/base/4/2753",
+      "hash": "939d5132068e42f05e4b9db4608ca027"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2337",
+      "file2": "data/postgres-dev/base/4/2337",
+      "hash": "80d80e398f75cf7f844ebba82da5e34f"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2618_vm",
+      "file2": "data/postgres-dev/base/4/2618_vm",
+      "hash": "e4665ea2140fb39914a1cd518eada8e4"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/6104",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3085",
+      "file2": "data/postgres-dev/base/4/3085",
+      "hash": "c172ef569486fdf74ffed53aa696f5c9"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2701",
+      "file2": "data/postgres-dev/base/4/2701",
+      "hash": "e5906b10d6b5c1b51d1dcd18b1ec1de8"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/828",
+      "file2": "data/postgres-dev/base/4/828",
+      "hash": "a2650945d03592e0dc191745a21a09ee"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3602_vm",
+      "file2": "data/postgres-dev/base/4/3602_vm",
+      "hash": "fe7194d2d1c7e72b9175f29c32e5fa83"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2996",
+      "file2": "data/postgres-dev/base/4/2996",
+      "hash": "e07a836ea274286ff3a17b439ed3188f"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/826",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/6102",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3079_vm",
+      "file2": "data/postgres-dev/base/4/3079_vm",
+      "hash": "96cb2591d7f478c57e91dc936dd8b821"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/2336",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2755",
+      "file2": "data/postgres-dev/base/4/2755",
+      "hash": "7361c7e853cd6238b10906903acdaaf2"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/6111",
+      "file2": "data/postgres-dev/base/4/6111",
+      "hash": "70f3d7871efc919088f5737b108f665d"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2609_fsm",
+      "file2": "data/postgres-dev/base/4/2609_fsm",
+      "hash": "41d1238090d2ad10dd0cafcc0bcf2226"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2607_vm",
+      "file2": "data/postgres-dev/base/4/2607_vm",
+      "hash": "6bdea694e310dd962a2c65dfa613d7c4"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/6116",
+      "file2": "data/postgres-dev/base/4/6116",
+      "hash": "7bb76b2faa88b294afa06b7336e6c9bf"
+    },
+    {
+      "file1": "data/postgres-dev/PG_VERSION",
+      "file2": "data/postgres-dev/base/4/PG_VERSION",
+      "hash": "8c9eb686bf3eb5bd83d9373eadf6504b"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3455",
+      "file2": "data/postgres-dev/base/4/3455",
+      "hash": "4cea571a8bb5cac2169f6a3a278c7266"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3257",
+      "file2": "data/postgres-dev/base/4/3257",
+      "hash": "1914659d64ed58946d484a7545e77700"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/3439",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/1249_fsm",
+      "file2": "data/postgres-dev/base/4/1249_fsm",
+      "hash": "9687e0187c3e6965a47073d06e611591"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3602",
+      "file2": "data/postgres-dev/base/4/3602",
+      "hash": "3f49857595a2253eeed9dd465a1f69e7"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/3430",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2617_vm",
+      "file2": "data/postgres-dev/base/4/2617_vm",
+      "hash": "3f2e2d1f609a5c957422e091317a47f9"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2608_fsm",
+      "file2": "data/postgres-dev/base/4/2608_fsm",
+      "hash": "91663ea46fa14922b0b01432cbf471fa"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3605",
+      "file2": "data/postgres-dev/base/4/3605",
+      "hash": "a971e99e8dda00b6614182e077b3dc9e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13469_vm",
+      "file2": "data/postgres-dev/base/4/13469_vm",
+      "hash": "f10a52d6eefe84c5dc5e4cd1fb4c07f4"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2840_vm",
+      "file2": "data/postgres-dev/base/4/2840_vm",
+      "hash": "0a2d50b88c5b47b93fb0326c6606dc2a"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2603_vm",
+      "file2": "data/postgres-dev/base/4/2603_vm",
+      "hash": "afd7e9232fc8deeb0c8a3062f167d4df"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/6117",
+      "file2": "data/postgres-dev/base/4/6117",
+      "hash": "7c64f009cd169d9cf9411e2a165c5a21"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/6110",
+      "file2": "data/postgres-dev/base/4/6110",
+      "hash": "025b9f01e790b7252383718d942192bf"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3604",
+      "file2": "data/postgres-dev/base/4/3604",
+      "hash": "6136b2404bd39a8b513af22cd329d963"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3431",
+      "file2": "data/postgres-dev/base/4/3431",
+      "hash": "1e52339425ea1cb927a8f243cdcc21fc"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3603",
+      "file2": "data/postgres-dev/base/4/3603",
+      "hash": "04f747d03f77da23ab252a75072beebe"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2187",
+      "file2": "data/postgres-dev/base/4/2187",
+      "hash": "275cecb31ef2067e87779f59b3875598"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/pg_filenode.map",
+      "file2": "data/postgres-dev/base/4/pg_filenode.map",
+      "hash": "5a07d8e288fca6021046aa087bbd396c"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3258",
+      "file2": "data/postgres-dev/base/4/3258",
+      "hash": "3a1d785b6db28bb699cc4d3b53e39f32"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2838_fsm",
+      "file2": "data/postgres-dev/base/4/2838_fsm",
+      "hash": "d3afa7cedd8634df37ff80ae893e9ae2"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/6175",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/3256",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13459_vm",
+      "file2": "data/postgres-dev/base/4/13459_vm",
+      "hash": "50cbd819ca6a8c76602ed32bd4dbecb3"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2753_vm",
+      "file2": "data/postgres-dev/base/4/2753_vm",
+      "hash": "c64ca5134be74f62f1b7cc505456382f"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2833",
+      "file2": "data/postgres-dev/base/4/2833",
+      "hash": "205db2875cb924ad2cd54d70af8fb55c"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13458",
+      "file2": "data/postgres-dev/base/4/13458",
+      "hash": "dab5a820c9417d0d8d01127a19079630"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/174",
+      "file2": "data/postgres-dev/base/4/174",
+      "hash": "49449142f26ed08acb7d17737681aef3"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2602_vm",
+      "file2": "data/postgres-dev/base/4/2602_vm",
+      "hash": "56bc5d751a02cdfea0760d8267e279db"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2659",
+      "file2": "data/postgres-dev/base/4/2659",
+      "hash": "405af73d58c49f82448f558268cf3c78"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2666",
+      "file2": "data/postgres-dev/base/4/2666",
+      "hash": "fd8799ea64a0baac6b332f5f8082ec22"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/13467",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2692",
+      "file2": "data/postgres-dev/base/4/2692",
+      "hash": "87ba5b7ca5508beb8676eb7a2f4d2490"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/2834",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3575",
+      "file2": "data/postgres-dev/base/4/3575",
+      "hash": "b2420ecb4ab83140a440450f0cc91d22"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2661",
+      "file2": "data/postgres-dev/base/4/2661",
+      "hash": "c63386379859c03169b988b4af9ecc4e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2753_fsm",
+      "file2": "data/postgres-dev/base/4/2753_fsm",
+      "hash": "8b86ede8bfad9954aca87e11ae375f3f"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/3118",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13469",
+      "file2": "data/postgres-dev/base/4/13469",
+      "hash": "5bee3bdf9e442cf33ea1617172686e7e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2668",
+      "file2": "data/postgres-dev/base/4/2668",
+      "hash": "49e84fa33eeb160cb73c51dd7e830490"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2657",
+      "file2": "data/postgres-dev/base/4/2657",
+      "hash": "c9678d0fdd93cb7c9e570b2fbbb02b22"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2650",
+      "file2": "data/postgres-dev/base/4/2650",
+      "hash": "83f2230a940a5732d14317044a73f91a"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/2604",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/1247",
+      "file2": "data/postgres-dev/base/4/1247",
+      "hash": "1d6b36769fce3707493857e237cda2ef"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/4163",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3379",
+      "file2": "data/postgres-dev/base/4/3379",
+      "hash": "ca3090cb55388bd996c18d1874a9b5e4"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/4164",
+      "file2": "data/postgres-dev/base/4/4164",
+      "hash": "ad7b79ec6a13e54771fcab3c8524272c"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2603",
+      "file2": "data/postgres-dev/base/4/2603",
+      "hash": "d5d58e3ea02f85010ce8fabfa7b5cdf8"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/4152",
+      "file2": "data/postgres-dev/base/4/4152",
+      "hash": "8aa93ca7cb3e783653e229dacaa2a567"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/1249",
+      "file2": "data/postgres-dev/base/4/1249",
+      "hash": "5237836b3e567c83d081d1f76ebdf41f"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/4155",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2612_vm",
+      "file2": "data/postgres-dev/base/4/2612_vm",
+      "hash": "bbdb85dfa2443abc217edd3f8024484c"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/1418",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13454_fsm",
+      "file2": "data/postgres-dev/base/4/13454_fsm",
+      "hash": "9328f31cdda4acfab6b5cfd3ed8c072e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2651",
+      "file2": "data/postgres-dev/base/4/2651",
+      "hash": "706c2bcb5f0b312aea79106e66e44fa2"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13468",
+      "file2": "data/postgres-dev/base/4/13468",
+      "hash": "2ce4b9359d3fe175337c0a2663c7d43d"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2669",
+      "file2": "data/postgres-dev/base/4/2669",
+      "hash": "c96039f43a5ef32fc402f9f922f27d8f"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2606_vm",
+      "file2": "data/postgres-dev/base/4/2606_vm",
+      "hash": "68260d9e93099f98ab58909ac8d82720"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2618_fsm",
+      "file2": "data/postgres-dev/base/4/2618_fsm",
+      "hash": "74c6786515db8ff8bf4f84f4fcf3b214"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3119",
+      "file2": "data/postgres-dev/base/4/3119",
+      "hash": "b537bc768aeeabba50b6adeaf70e9176"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2656",
+      "file2": "data/postgres-dev/base/4/2656",
+      "hash": "31b8d4c66a76b126f3f77383f98efb0e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/13457",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3542",
+      "file2": "data/postgres-dev/base/4/3542",
+      "hash": "b659f6c6c168e54a610b5b28465e767b"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2835",
+      "file2": "data/postgres-dev/base/4/2835",
+      "hash": "6855da7dc46e4641e90d5efe2ffd18f2"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/1259_fsm",
+      "file2": "data/postgres-dev/base/4/1259_fsm",
+      "hash": "07de7e7703f31ec420a53b7b515cf361"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2660",
+      "file2": "data/postgres-dev/base/4/2660",
+      "hash": "eb2b76c24d39a439f9af1ddb95d2b8d8"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3574",
+      "file2": "data/postgres-dev/base/4/3574",
+      "hash": "7bf7aeee660bc8eaa1272bf8eddf5521"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13459",
+      "file2": "data/postgres-dev/base/4/13459",
+      "hash": "4844b31a5e543622da6399cc825f493e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/175",
+      "file2": "data/postgres-dev/base/4/175",
+      "hash": "8ce5ade015ee0a3a150dca632b0f45bb"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/2832",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2658",
+      "file2": "data/postgres-dev/base/4/2658",
+      "hash": "41315b93c81123e11bdd10f4fb64c3ec"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2693",
+      "file2": "data/postgres-dev/base/4/2693",
+      "hash": "276112540e6a3c255685f6ec3cb32b39"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2667",
+      "file2": "data/postgres-dev/base/4/2667",
+      "hash": "3df53f25b043be4c941d5ac3e1a6bbf4"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/1255_vm",
+      "file2": "data/postgres-dev/base/4/1255_vm",
+      "hash": "aa42cad5d91b53e725872ffcd9274300"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/4154",
+      "file2": "data/postgres-dev/base/4/4154",
+      "hash": "5e3684fc16eb10a16d4d3f1117c0f068"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3712",
+      "file2": "data/postgres-dev/base/4/3712",
+      "hash": "c9bc3db7e446553234906cc06be866c9"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/4153",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2602",
+      "file2": "data/postgres-dev/base/4/2602",
+      "hash": "daed6cf1f556513112e2320cf16a6183"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/1417",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/4165",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2619_fsm",
+      "file2": "data/postgres-dev/base/4/2619_fsm",
+      "hash": "69bab744030bffec420c5b2c54e19c41"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2616_vm",
+      "file2": "data/postgres-dev/base/4/2616_vm",
+      "hash": "6d67646c01e0bd34578fda6b79b9f02b"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2605",
+      "file2": "data/postgres-dev/base/4/2605",
+      "hash": "2de1dfcc215aadd18d98dae8c60f672a"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13469_fsm",
+      "file2": "data/postgres-dev/base/4/13469_fsm",
+      "hash": "494e3d7e1d96d96b0f3805d131e2c185"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13464_fsm",
+      "file2": "data/postgres-dev/base/4/13464_fsm",
+      "hash": "99d1debbe47a2018c43693c11dd06300"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3767",
+      "file2": "data/postgres-dev/base/4/3767",
+      "hash": "a094a0a4953764ee9bc0a034780d614f"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2601_vm",
+      "file2": "data/postgres-dev/base/4/2601_vm",
+      "hash": "5bf1636deaea5cf6c94dd8d8e3ac32c9"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2600_fsm",
+      "file2": "data/postgres-dev/base/4/2600_fsm",
+      "hash": "975e93c45163edf7d79d474f48a38e95"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2679",
+      "file2": "data/postgres-dev/base/4/2679",
+      "hash": "50ab3dd9b39d37c949046ca73d2c9cee"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3599",
+      "file2": "data/postgres-dev/base/4/3599",
+      "hash": "f0328ddaf0a81515836c3e1a4d2bad24"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/1255_fsm",
+      "file2": "data/postgres-dev/base/4/1255_fsm",
+      "hash": "77e4897456e87ad01f6d612b6407d8b2"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3456_fsm",
+      "file2": "data/postgres-dev/base/4/3456_fsm",
+      "hash": "ccc3c22406cac9975b2ac31a34f28bec"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2684",
+      "file2": "data/postgres-dev/base/4/2684",
+      "hash": "9ac10044649cbbec05375511421cb21b"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2670",
+      "file2": "data/postgres-dev/base/4/2670",
+      "hash": "3a3ca6f3fee9d05e8087177cf5e11f9c"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3597",
+      "file2": "data/postgres-dev/base/4/3597",
+      "hash": "4b9fa1bc74d2e120aa35c6d66d77e0ad"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2683",
+      "file2": "data/postgres-dev/base/4/2683",
+      "hash": "b571d425ca24337aafcba4b04cee274e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3395",
+      "file2": "data/postgres-dev/base/4/3395",
+      "hash": "6c991dc24c14fc336fdb232a2af18d80"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/4144",
+      "file2": "data/postgres-dev/base/4/4144",
+      "hash": "9547e983cce8f925c4988474df787cc1"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/4143",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13464_fsm",
+      "file2": "data/postgres-dev/base/4/2601_fsm",
+      "hash": "99d1debbe47a2018c43693c11dd06300"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/3350",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2615_fsm",
+      "file2": "data/postgres-dev/base/4/2615_fsm",
+      "hash": "f4c0fce5bd26eef8fa877777f49ca3d1"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2612",
+      "file2": "data/postgres-dev/base/4/2612",
+      "hash": "8111dcdf9a0a413f3ab1ccf1d771e8e5"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2840",
+      "file2": "data/postgres-dev/base/4/2840",
+      "hash": "c27f0ddc6cd214c588910b5790053a03"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2615",
+      "file2": "data/postgres-dev/base/4/2615",
+      "hash": "f00921c7cc813dd9a68a9df98598ab4d"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13459_fsm",
+      "file2": "data/postgres-dev/base/4/13459_fsm",
+      "hash": "a94223eea911fd04e9a890190965b2e7"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/4172",
+      "file2": "data/postgres-dev/base/4/4172",
+      "hash": "25b615de5579b539e43f4466835829e7"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/3501",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2682",
+      "file2": "data/postgres-dev/base/4/2682",
+      "hash": "831a834867370f7f64016e9e433cbf92"
+    },
+    {
+      "file1": "data/postgres-dev/global/1261_fsm",
+      "file2": "data/postgres-dev/base/4/3079_fsm",
+      "hash": "2a3216a10d8aeed6ac8058c1f5f6cabb"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/3596",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2603_fsm",
+      "file2": "data/postgres-dev/base/4/2603_fsm",
+      "hash": "9ca68ef0649e031eba0efe2e49c72f00"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2617_fsm",
+      "file2": "data/postgres-dev/base/4/2617_fsm",
+      "hash": "f07284f4f31eff7bbe8d162e6c96fab0"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2685",
+      "file2": "data/postgres-dev/base/4/2685",
+      "hash": "1352aa010e4971482883b9f12eee9c1f"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2605_vm",
+      "file2": "data/postgres-dev/base/4/2605_vm",
+      "hash": "75fc47043a131b1c04860cc25d2d680e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/3598",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3394_vm",
+      "file2": "data/postgres-dev/base/4/3394_vm",
+      "hash": "09819d8216864a57fea8eabd56801c2a"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2678",
+      "file2": "data/postgres-dev/base/4/2678",
+      "hash": "55f3cbd789ccb6cc8a1a063f350af90a"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3766",
+      "file2": "data/postgres-dev/base/4/3766",
+      "hash": "d53c67151d4edf0dd50dbb536762626e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/2224",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2841",
+      "file2": "data/postgres-dev/base/4/2841",
+      "hash": "ff4178e0afaad90be2766bc263121385"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3164",
+      "file2": "data/postgres-dev/base/4/3164",
+      "hash": "f97f678e453b72fa8a25c7512b66bb60"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/4173",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/2613",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/4174",
+      "file2": "data/postgres-dev/base/4/4174",
+      "hash": "02e23eecc6e3c30549229222601bef8f"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3351",
+      "file2": "data/postgres-dev/base/4/3351",
+      "hash": "6635f23ed0ed53a50e0d07b663c88788"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2615_vm",
+      "file2": "data/postgres-dev/base/4/2615_vm",
+      "hash": "a1388fd1b092745cb2d852b3c494a6ff"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2616_fsm",
+      "file2": "data/postgres-dev/base/4/2616_fsm",
+      "hash": "318950000df5cda83d15998c70b6614e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2602_fsm",
+      "file2": "data/postgres-dev/base/4/2602_fsm",
+      "hash": "81d3bd271f04529fdf13661f83cadbc3"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/4145",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3394",
+      "file2": "data/postgres-dev/base/4/3394",
+      "hash": "3319bf5f205fa1ac77d8e97cd9ea7262"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2606_fsm",
+      "file2": "data/postgres-dev/base/4/2606_fsm",
+      "hash": "bc2d29b8bed12f3c1c4dc448748099db"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2612_fsm",
+      "file2": "data/postgres-dev/base/4/2612_fsm",
+      "hash": "aea8f5edde98825ca5f51d06329e21d7"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2757",
+      "file2": "data/postgres-dev/base/4/2757",
+      "hash": "683020de7700ccf089de43a5c8fc8db5"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/1247_fsm",
+      "file2": "data/postgres-dev/base/4/1247_fsm",
+      "hash": "c2ecea3d6a501db0dd6bce0663dc2a7b"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/1247_vm",
+      "file2": "data/postgres-dev/base/4/1247_vm",
+      "hash": "a058d01ecb29be710225078adcaa9dd3"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2607_fsm",
+      "file2": "data/postgres-dev/base/4/2607_fsm",
+      "hash": "5d614904b11262f1ba4e00107d200e94"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2703",
+      "file2": "data/postgres-dev/base/4/2703",
+      "hash": "0036457b39e042dab91f56e05cc4e499"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2704",
+      "file2": "data/postgres-dev/base/4/2704",
+      "hash": "1b389d615801a11f48b5a042b7324409"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3080",
+      "file2": "data/postgres-dev/base/4/3080",
+      "hash": "213dd305029f68fb273c48a2eea5fc29"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2600_vm",
+      "file2": "data/postgres-dev/base/4/2600_vm",
+      "hash": "f9e428f08689e57ad3a9f9bcaba41782"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2605_fsm",
+      "file2": "data/postgres-dev/base/4/2605_fsm",
+      "hash": "5f8c83661215d907d8d951e2ac1d8733"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/6106",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2836_fsm",
+      "file2": "data/postgres-dev/base/4/2836_fsm",
+      "hash": "cdce9ca31874b14c6d24d4a7c7d83a98"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2756",
+      "file2": "data/postgres-dev/base/4/2756",
+      "hash": "417e012d635542f8b26b74f8641f476d"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3081",
+      "file2": "data/postgres-dev/base/4/3081",
+      "hash": "b4f593b0ef5547c08e169f37a6c2f37b"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/3429",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2702",
+      "file2": "data/postgres-dev/base/4/2702",
+      "hash": "f58a4f3421f00ff29bf0385207b394a1"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2836_vm",
+      "file2": "data/postgres-dev/base/4/2836_vm",
+      "hash": "26c0bba6ebe4283ece7b59e0f6a66ddd"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/2995",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2610_fsm",
+      "file2": "data/postgres-dev/base/4/2610_fsm",
+      "hash": "ef86e390c5d783504e1139c8d86ffbef"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2610_vm",
+      "file2": "data/postgres-dev/base/4/2610_vm",
+      "hash": "aed78de5d0ac1e420ccf1ec91ecbb141"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3608",
+      "file2": "data/postgres-dev/base/4/3608",
+      "hash": "b83fcf6d3a4add7a3df2b2a5a70495ad"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3541_fsm",
+      "file2": "data/postgres-dev/base/4/3541_fsm",
+      "hash": "32e0dc838ad17b94f6de14a2ba9efac0"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3606",
+      "file2": "data/postgres-dev/base/4/3606",
+      "hash": "4d85621f9e4d6902161a644282b369eb"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3433",
+      "file2": "data/postgres-dev/base/4/3433",
+      "hash": "1e54ad23b661bf893060fd87046d929f"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3601",
+      "file2": "data/postgres-dev/base/4/3601",
+      "hash": "8653700f1910bc0c8a8b3a099aa526a1"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/2328",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3467",
+      "file2": "data/postgres-dev/base/4/3467",
+      "hash": "ab22d20610200a1c3c6418de298ae319"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2579",
+      "file2": "data/postgres-dev/base/4/2579",
+      "hash": "8b564b95f24fb9f4348c32ecb4f1c3f6"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/6112",
+      "file2": "data/postgres-dev/base/4/6112",
+      "hash": "1f32eb5c85294b43dabd3a8e7a0802f3"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3456",
+      "file2": "data/postgres-dev/base/4/3456",
+      "hash": "fe681e84509c809ef31c4eaa6edbe698"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3600",
+      "file2": "data/postgres-dev/base/4/3600",
+      "hash": "56d7345a708b4f06037bf534bcadc35c"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3607",
+      "file2": "data/postgres-dev/base/4/3607",
+      "hash": "f65f2877edc1c90d6c874e747e26709e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/6176",
+      "file2": "data/postgres-dev/base/4/6176",
+      "hash": "17115b9f9707b11e519c877216e05e1d"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3609",
+      "file2": "data/postgres-dev/base/4/3609",
+      "hash": "0d32389e9d38c07223dd42e2cff95252"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3601_vm",
+      "file2": "data/postgres-dev/base/4/3601_vm",
+      "hash": "36e2daa7d91e79eb4d9455aa733f296f"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3468",
+      "file2": "data/postgres-dev/base/4/3468",
+      "hash": "a4ccb5193a5f6c342725da7ba2d0f306"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3456_vm",
+      "file2": "data/postgres-dev/base/4/3456_vm",
+      "hash": "d535b20a1c567b58a2105d170e4cd520"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/6113",
+      "file2": "data/postgres-dev/base/4/6113",
+      "hash": "d08a1889e04002da5238ec86bcd47480"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/3466",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/4167",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/549",
+      "file2": "data/postgres-dev/base/4/549",
+      "hash": "24324322edd271a8bbda784d197ff187"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2600",
+      "file2": "data/postgres-dev/base/4/2600",
+      "hash": "2b48e6044e88e7c2220366db5301e672"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/4158",
+      "file2": "data/postgres-dev/base/4/4158",
+      "hash": "3177584bfc09c26f8e0af2038965c508"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/112",
+      "file2": "data/postgres-dev/base/4/112",
+      "hash": "6ff73ad8a28fd2120bf66ebda8ce9820"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2607",
+      "file2": "data/postgres-dev/base/4/2607",
+      "hash": "59902a3274f338e486e55a6d47cc03d8"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/4160",
+      "file2": "data/postgres-dev/base/4/4160",
+      "hash": "8686e1b2a97f7a2c1a3b955c22f6782a"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/4156",
+      "file2": "data/postgres-dev/base/4/4156",
+      "hash": "02a8609f2fd22ea09c4d4a10e5ecb7a2"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/4169",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/4151",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3380",
+      "file2": "data/postgres-dev/base/4/3380",
+      "hash": "05a0da70a93c260a9656991657718b4a"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2609",
+      "file2": "data/postgres-dev/base/4/2609",
+      "hash": "5d5667c96dc349f6562420a54c22a439"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3600_vm",
+      "file2": "data/postgres-dev/base/4/3600_vm",
+      "hash": "9cc078bc70366c7fe5fbebfe4836fea5"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2837",
+      "file2": "data/postgres-dev/base/4/2837",
+      "hash": "7b78dd1c6b6f06073502cc67452b7672"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2696",
+      "file2": "data/postgres-dev/base/4/2696",
+      "hash": "80608c33eb17cc1f1b861ea965982401"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/3576",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13463",
+      "file2": "data/postgres-dev/base/4/13463",
+      "hash": "2b7bc4d487fca53416f46faf99b1a7ba"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13454_vm",
+      "file2": "data/postgres-dev/base/4/13454_vm",
+      "hash": "091037c39f67c4118eedef4efa84942e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2662",
+      "file2": "data/postgres-dev/base/4/2662",
+      "hash": "1c00b05a87a36b98f00d3adc10f080dd"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/2830",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3764_vm",
+      "file2": "data/postgres-dev/base/4/3764_vm",
+      "hash": "68931c2f0e5d51da19419ae949b823c0"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2665",
+      "file2": "data/postgres-dev/base/4/2665",
+      "hash": "9dcb819452f7da2d0c3eadb954336486"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13464",
+      "file2": "data/postgres-dev/base/4/13464",
+      "hash": "73517f2bd5ccd87a4a6e111276d5b017"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2838_vm",
+      "file2": "data/postgres-dev/base/4/2838_vm",
+      "hash": "ede7e4e644584404db33799ad8dbc3b7"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2691",
+      "file2": "data/postgres-dev/base/4/2691",
+      "hash": "35320640ba0e7f165f88412ebbbb125a"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/6238",
+      "file2": "data/postgres-dev/base/4/6238",
+      "hash": "7d803f52155a332a029fa7eb9d3522fe"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2839",
+      "file2": "data/postgres-dev/base/4/2839",
+      "hash": "78c4fafc2409343ca1c372ee016eb404"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2653",
+      "file2": "data/postgres-dev/base/4/2653",
+      "hash": "e96e884d104b82856c967d05c3a96feb"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2654",
+      "file2": "data/postgres-dev/base/4/2654",
+      "hash": "09a01252f11d67beb79e970f819b8404"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/3381",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/4150",
+      "file2": "data/postgres-dev/base/4/4150",
+      "hash": "dabf280324c0ba85c85dee48b2b13c04"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2608",
+      "file2": "data/postgres-dev/base/4/2608",
+      "hash": "30c7a162094d0c9a81b63998cb005e7d"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/1259_vm",
+      "file2": "data/postgres-dev/base/4/1259_vm",
+      "hash": "21e30e6bc94cd8527c87fe643fe55975"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/4157",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/4168",
+      "file2": "data/postgres-dev/base/4/4168",
+      "hash": "1cdba18c4763213352700b2787c86067"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2606",
+      "file2": "data/postgres-dev/base/4/2606",
+      "hash": "1b5f7387f1670de4f79c231341495a80"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2601",
+      "file2": "data/postgres-dev/base/4/2601",
+      "hash": "dbc4f3c37a43037af15a4a5b8080f2f4"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/548",
+      "file2": "data/postgres-dev/base/4/548",
+      "hash": "eeb846495561515550380700c67906cd"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/4166",
+      "file2": "data/postgres-dev/base/4/4166",
+      "hash": "ef0cbcb834e22691a7c829c0f526c6f2"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/113",
+      "file2": "data/postgres-dev/base/4/113",
+      "hash": "d07c336679bbaafc7db9f206008bd556"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/4159",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2655",
+      "file2": "data/postgres-dev/base/4/2655",
+      "hash": "54b0156b0e1681123cd7dcb8238594d5"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13454",
+      "file2": "data/postgres-dev/base/4/13454",
+      "hash": "9ba360dc6529e7a4eeae257dc9ebdd53"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13464_vm",
+      "file2": "data/postgres-dev/base/4/13464_vm",
+      "hash": "04dec3afcc1109a42c9eae1cf5ec37e0"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3541",
+      "file2": "data/postgres-dev/base/4/3541",
+      "hash": "676a9901680b381e7f5e4e2b29855d7b"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3394_fsm",
+      "file2": "data/postgres-dev/base/4/3394_fsm",
+      "hash": "f36e952cfca0419bc0a70e8e5b8afc4c"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2699",
+      "file2": "data/postgres-dev/base/4/2699",
+      "hash": "815a271cf61680e98433849b7633ee57"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/6239",
+      "file2": "data/postgres-dev/base/4/6239",
+      "hash": "4a928db954aa3047f96e404180d35904"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2838",
+      "file2": "data/postgres-dev/base/4/2838",
+      "hash": "a9ae26b3e256a86b81cda81660bd7c4d"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2652",
+      "file2": "data/postgres-dev/base/4/2652",
+      "hash": "094acb42112059e14cbb99d119073fcf"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2840_fsm",
+      "file2": "data/postgres-dev/base/4/2840_fsm",
+      "hash": "eddf62b55a097ef068a53d161bcb3218"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2831",
+      "file2": "data/postgres-dev/base/4/2831",
+      "hash": "178ba2c4afa804041fe718aa094de5db"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2690",
+      "file2": "data/postgres-dev/base/4/2690",
+      "hash": "a9d26c117572e8f205bf414566d9582e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2664",
+      "file2": "data/postgres-dev/base/4/2664",
+      "hash": "69ddee45e9a590936093bfab74f9846e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/1249_vm",
+      "file2": "data/postgres-dev/base/4/1249_vm",
+      "hash": "a8d5038494a48119eed9c901f53b0bfa"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2836",
+      "file2": "data/postgres-dev/base/4/2836",
+      "hash": "6db45132fc97b1cfe6151efa9799bdda"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/13462",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2663",
+      "file2": "data/postgres-dev/base/4/2663",
+      "hash": "83a738c82d8afde664b6c3d1e493e43f"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/4/6237",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2618",
+      "file2": "data/postgres-dev/base/5/2618",
+      "hash": "4ccb112006c5a5b94ec75fc26eacfadc"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/2620",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3534",
+      "file2": "data/postgres-dev/base/5/3534",
+      "hash": "caac1bbb98f5cf3a42696ac3a6230ff5"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/4147",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2616",
+      "file2": "data/postgres-dev/base/5/2616",
+      "hash": "91d3d334a895d7f5b09e4d7cd08ccba8"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/4171",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3502",
+      "file2": "data/postgres-dev/base/5/3502",
+      "hash": "0464ee1606688a1bbcae2e96418e29a0"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/1255",
+      "file2": "data/postgres-dev/base/5/1255",
+      "hash": "64eaa536797c349b1378b8379b019866"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3602_fsm",
+      "file2": "data/postgres-dev/base/5/3602_fsm",
+      "hash": "ff69b8180e8ba6f8e0f5d2fa22023862"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/4149",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3603_vm",
+      "file2": "data/postgres-dev/base/5/3603_vm",
+      "hash": "f09085041f489fb2be4b46d79e79058a"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/2611",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3603_fsm",
+      "file2": "data/postgres-dev/base/5/3603_fsm",
+      "hash": "84a14d7eb643bd12423fcc9d585a889c"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3764",
+      "file2": "data/postgres-dev/base/5/3764",
+      "hash": "1ecd9820e25b85cd1154956a91bbc49a"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2689",
+      "file2": "data/postgres-dev/base/5/2689",
+      "hash": "f9a25fc570c1293864be98f5bb5c39a2"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/6229",
+      "file2": "data/postgres-dev/base/5/6229",
+      "hash": "83ef1d23ed1ec2309a85bc7a21b18907"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2674",
+      "file2": "data/postgres-dev/base/5/2674",
+      "hash": "430967f09d8c326629988d67971f04da"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2680",
+      "file2": "data/postgres-dev/base/5/2680",
+      "hash": "302e0cbe1021d7c05d6a16952ac730df"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2687",
+      "file2": "data/postgres-dev/base/5/2687",
+      "hash": "547f393cc2473f782162e6e6b4ed570d"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2673",
+      "file2": "data/postgres-dev/base/5/2673",
+      "hash": "b54a95bfd8446bcb09b8e497c604f758"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/13472",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2228",
+      "file2": "data/postgres-dev/base/5/2228",
+      "hash": "334aa9095f04342ed80898bdeb5c30af"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3997",
+      "file2": "data/postgres-dev/base/5/3997",
+      "hash": "c1337db09bf803491c7006600468459e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/4148",
+      "file2": "data/postgres-dev/base/5/4148",
+      "hash": "80a26ebbf01dbfdf66caadb8632e839d"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2610",
+      "file2": "data/postgres-dev/base/5/2610",
+      "hash": "bccc3e795657c50b9d27c9b4b89271d5"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/4170",
+      "file2": "data/postgres-dev/base/5/4170",
+      "hash": "bf8e3590d54f0ab5b2f247cfe0943fc1"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3503",
+      "file2": "data/postgres-dev/base/5/3503",
+      "hash": "04add95e4d3eced47d337779673e0c61"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2617",
+      "file2": "data/postgres-dev/base/5/2617",
+      "hash": "9c6249a2151a7b411886cd8b817010ee"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/4146",
+      "file2": "data/postgres-dev/base/5/4146",
+      "hash": "c92e1aa53b7405f4a82512f8b6f12755"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2609_vm",
+      "file2": "data/postgres-dev/base/5/2609_vm",
+      "hash": "c974c74cbc92dc12adf928f1d3dfd0c8"
+    },
+    {
+      "file1": "data/postgres-dev/global/1261_fsm",
+      "file2": "data/postgres-dev/base/5/3601_fsm",
+      "hash": "2a3216a10d8aeed6ac8058c1f5f6cabb"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2619",
+      "file2": "data/postgres-dev/base/5/2619",
+      "hash": "6da71367f26a9bb339c7661835914df9"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3541_vm",
+      "file2": "data/postgres-dev/base/5/3541_vm",
+      "hash": "ed3b3566cb36d6e707a5be2d44cc98f0"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13473",
+      "file2": "data/postgres-dev/base/5/13473",
+      "hash": "95220c6c9b8bb1cca62bbd362d085bd3"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2686",
+      "file2": "data/postgres-dev/base/5/2686",
+      "hash": "2cfd11d7498ab0a5e20047c722b35e6b"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3600_fsm",
+      "file2": "data/postgres-dev/base/5/3600_fsm",
+      "hash": "8a9adde47fbb8b71a502c7fa4b7c1a45"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2681",
+      "file2": "data/postgres-dev/base/5/2681",
+      "hash": "95c74dde6e18fb406bb676f0dd29ba95"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2619_vm",
+      "file2": "data/postgres-dev/base/5/2619_vm",
+      "hash": "6d92d913dbf004a40e5e1aa4502b8412"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2675",
+      "file2": "data/postgres-dev/base/5/2675",
+      "hash": "d79d743a5a03ecfc698b6efc66ce6d8b"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/5002",
+      "file2": "data/postgres-dev/base/5/5002",
+      "hash": "7bbb24f0908c1bbde7f9ad117f3b129a"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/6228",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2688",
+      "file2": "data/postgres-dev/base/5/2688",
+      "hash": "a68979d7664611255842ee2893ccd4b7"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3079",
+      "file2": "data/postgres-dev/base/5/3079",
+      "hash": "1e23162042f26b7f485125de3f800af2"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3764_fsm",
+      "file2": "data/postgres-dev/base/5/3764_fsm",
+      "hash": "461ce67a44bad8aa641f0f8ac7f750a3"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/827",
+      "file2": "data/postgres-dev/base/5/827",
+      "hash": "391a062405da742f3537fdeaebe7dac8"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2608_vm",
+      "file2": "data/postgres-dev/base/5/2608_vm",
+      "hash": "d404cb394eb73236f40cf3945bc134fc"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3440",
+      "file2": "data/postgres-dev/base/5/3440",
+      "hash": "7f18156bd102a6f9d1e8290f4f322702"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2754",
+      "file2": "data/postgres-dev/base/5/2754",
+      "hash": "7bf1dda28a3c54c394078ca128329531"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2753",
+      "file2": "data/postgres-dev/base/5/2753",
+      "hash": "939d5132068e42f05e4b9db4608ca027"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2337",
+      "file2": "data/postgres-dev/base/5/2337",
+      "hash": "80d80e398f75cf7f844ebba82da5e34f"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2618_vm",
+      "file2": "data/postgres-dev/base/5/2618_vm",
+      "hash": "e4665ea2140fb39914a1cd518eada8e4"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/6104",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3085",
+      "file2": "data/postgres-dev/base/5/3085",
+      "hash": "c172ef569486fdf74ffed53aa696f5c9"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2701",
+      "file2": "data/postgres-dev/base/5/2701",
+      "hash": "e5906b10d6b5c1b51d1dcd18b1ec1de8"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/828",
+      "file2": "data/postgres-dev/base/5/828",
+      "hash": "a2650945d03592e0dc191745a21a09ee"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3602_vm",
+      "file2": "data/postgres-dev/base/5/3602_vm",
+      "hash": "fe7194d2d1c7e72b9175f29c32e5fa83"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2996",
+      "file2": "data/postgres-dev/base/5/2996",
+      "hash": "e07a836ea274286ff3a17b439ed3188f"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/826",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/6102",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3079_vm",
+      "file2": "data/postgres-dev/base/5/3079_vm",
+      "hash": "96cb2591d7f478c57e91dc936dd8b821"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/2336",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2755",
+      "file2": "data/postgres-dev/base/5/2755",
+      "hash": "7361c7e853cd6238b10906903acdaaf2"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/6111",
+      "file2": "data/postgres-dev/base/5/6111",
+      "hash": "70f3d7871efc919088f5737b108f665d"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2609_fsm",
+      "file2": "data/postgres-dev/base/5/2609_fsm",
+      "hash": "41d1238090d2ad10dd0cafcc0bcf2226"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2607_vm",
+      "file2": "data/postgres-dev/base/5/2607_vm",
+      "hash": "6bdea694e310dd962a2c65dfa613d7c4"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/6116",
+      "file2": "data/postgres-dev/base/5/6116",
+      "hash": "7bb76b2faa88b294afa06b7336e6c9bf"
+    },
+    {
+      "file1": "data/postgres-dev/PG_VERSION",
+      "file2": "data/postgres-dev/base/5/PG_VERSION",
+      "hash": "8c9eb686bf3eb5bd83d9373eadf6504b"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3455",
+      "file2": "data/postgres-dev/base/5/3455",
+      "hash": "4cea571a8bb5cac2169f6a3a278c7266"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3257",
+      "file2": "data/postgres-dev/base/5/3257",
+      "hash": "1914659d64ed58946d484a7545e77700"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/3439",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/1249_fsm",
+      "file2": "data/postgres-dev/base/5/1249_fsm",
+      "hash": "9687e0187c3e6965a47073d06e611591"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3602",
+      "file2": "data/postgres-dev/base/5/3602",
+      "hash": "3f49857595a2253eeed9dd465a1f69e7"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/3430",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2617_vm",
+      "file2": "data/postgres-dev/base/5/2617_vm",
+      "hash": "3f2e2d1f609a5c957422e091317a47f9"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2608_fsm",
+      "file2": "data/postgres-dev/base/5/2608_fsm",
+      "hash": "91663ea46fa14922b0b01432cbf471fa"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3605",
+      "file2": "data/postgres-dev/base/5/3605",
+      "hash": "a971e99e8dda00b6614182e077b3dc9e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13469_vm",
+      "file2": "data/postgres-dev/base/5/13469_vm",
+      "hash": "f10a52d6eefe84c5dc5e4cd1fb4c07f4"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2840_vm",
+      "file2": "data/postgres-dev/base/5/2840_vm",
+      "hash": "0a2d50b88c5b47b93fb0326c6606dc2a"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2603_vm",
+      "file2": "data/postgres-dev/base/5/2603_vm",
+      "hash": "afd7e9232fc8deeb0c8a3062f167d4df"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/6117",
+      "file2": "data/postgres-dev/base/5/6117",
+      "hash": "7c64f009cd169d9cf9411e2a165c5a21"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/6110",
+      "file2": "data/postgres-dev/base/5/6110",
+      "hash": "025b9f01e790b7252383718d942192bf"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3604",
+      "file2": "data/postgres-dev/base/5/3604",
+      "hash": "6136b2404bd39a8b513af22cd329d963"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3431",
+      "file2": "data/postgres-dev/base/5/3431",
+      "hash": "1e52339425ea1cb927a8f243cdcc21fc"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3603",
+      "file2": "data/postgres-dev/base/5/3603",
+      "hash": "04f747d03f77da23ab252a75072beebe"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2187",
+      "file2": "data/postgres-dev/base/5/2187",
+      "hash": "275cecb31ef2067e87779f59b3875598"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/pg_filenode.map",
+      "file2": "data/postgres-dev/base/5/pg_filenode.map",
+      "hash": "5a07d8e288fca6021046aa087bbd396c"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3258",
+      "file2": "data/postgres-dev/base/5/3258",
+      "hash": "3a1d785b6db28bb699cc4d3b53e39f32"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2838_fsm",
+      "file2": "data/postgres-dev/base/5/2838_fsm",
+      "hash": "d3afa7cedd8634df37ff80ae893e9ae2"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/6175",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/3256",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13459_vm",
+      "file2": "data/postgres-dev/base/5/13459_vm",
+      "hash": "50cbd819ca6a8c76602ed32bd4dbecb3"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2753_vm",
+      "file2": "data/postgres-dev/base/5/2753_vm",
+      "hash": "c64ca5134be74f62f1b7cc505456382f"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2833",
+      "file2": "data/postgres-dev/base/5/2833",
+      "hash": "205db2875cb924ad2cd54d70af8fb55c"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13458",
+      "file2": "data/postgres-dev/base/5/13458",
+      "hash": "dab5a820c9417d0d8d01127a19079630"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/174",
+      "file2": "data/postgres-dev/base/5/174",
+      "hash": "49449142f26ed08acb7d17737681aef3"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2602_vm",
+      "file2": "data/postgres-dev/base/5/2602_vm",
+      "hash": "56bc5d751a02cdfea0760d8267e279db"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2659",
+      "file2": "data/postgres-dev/base/5/2659",
+      "hash": "405af73d58c49f82448f558268cf3c78"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2666",
+      "file2": "data/postgres-dev/base/5/2666",
+      "hash": "fd8799ea64a0baac6b332f5f8082ec22"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/13467",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2692",
+      "file2": "data/postgres-dev/base/5/2692",
+      "hash": "87ba5b7ca5508beb8676eb7a2f4d2490"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/2834",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3575",
+      "file2": "data/postgres-dev/base/5/3575",
+      "hash": "b2420ecb4ab83140a440450f0cc91d22"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2661",
+      "file2": "data/postgres-dev/base/5/2661",
+      "hash": "c63386379859c03169b988b4af9ecc4e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2753_fsm",
+      "file2": "data/postgres-dev/base/5/2753_fsm",
+      "hash": "8b86ede8bfad9954aca87e11ae375f3f"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/3118",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13469",
+      "file2": "data/postgres-dev/base/5/13469",
+      "hash": "5bee3bdf9e442cf33ea1617172686e7e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2668",
+      "file2": "data/postgres-dev/base/5/2668",
+      "hash": "49e84fa33eeb160cb73c51dd7e830490"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2657",
+      "file2": "data/postgres-dev/base/5/2657",
+      "hash": "c9678d0fdd93cb7c9e570b2fbbb02b22"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2650",
+      "file2": "data/postgres-dev/base/5/2650",
+      "hash": "83f2230a940a5732d14317044a73f91a"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/2604",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/1247",
+      "file2": "data/postgres-dev/base/5/1247",
+      "hash": "1d6b36769fce3707493857e237cda2ef"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/4163",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3379",
+      "file2": "data/postgres-dev/base/5/3379",
+      "hash": "ca3090cb55388bd996c18d1874a9b5e4"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/4164",
+      "file2": "data/postgres-dev/base/5/4164",
+      "hash": "ad7b79ec6a13e54771fcab3c8524272c"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2603",
+      "file2": "data/postgres-dev/base/5/2603",
+      "hash": "d5d58e3ea02f85010ce8fabfa7b5cdf8"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/4152",
+      "file2": "data/postgres-dev/base/5/4152",
+      "hash": "8aa93ca7cb3e783653e229dacaa2a567"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/1249",
+      "file2": "data/postgres-dev/base/5/1249",
+      "hash": "5237836b3e567c83d081d1f76ebdf41f"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/4155",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2612_vm",
+      "file2": "data/postgres-dev/base/5/2612_vm",
+      "hash": "bbdb85dfa2443abc217edd3f8024484c"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/1418",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13454_fsm",
+      "file2": "data/postgres-dev/base/5/13454_fsm",
+      "hash": "9328f31cdda4acfab6b5cfd3ed8c072e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2651",
+      "file2": "data/postgres-dev/base/5/2651",
+      "hash": "706c2bcb5f0b312aea79106e66e44fa2"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13468",
+      "file2": "data/postgres-dev/base/5/13468",
+      "hash": "2ce4b9359d3fe175337c0a2663c7d43d"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2669",
+      "file2": "data/postgres-dev/base/5/2669",
+      "hash": "c96039f43a5ef32fc402f9f922f27d8f"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2606_vm",
+      "file2": "data/postgres-dev/base/5/2606_vm",
+      "hash": "68260d9e93099f98ab58909ac8d82720"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2618_fsm",
+      "file2": "data/postgres-dev/base/5/2618_fsm",
+      "hash": "74c6786515db8ff8bf4f84f4fcf3b214"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3119",
+      "file2": "data/postgres-dev/base/5/3119",
+      "hash": "b537bc768aeeabba50b6adeaf70e9176"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2656",
+      "file2": "data/postgres-dev/base/5/2656",
+      "hash": "31b8d4c66a76b126f3f77383f98efb0e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/13457",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3542",
+      "file2": "data/postgres-dev/base/5/3542",
+      "hash": "b659f6c6c168e54a610b5b28465e767b"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2835",
+      "file2": "data/postgres-dev/base/5/2835",
+      "hash": "6855da7dc46e4641e90d5efe2ffd18f2"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/1259_fsm",
+      "file2": "data/postgres-dev/base/5/1259_fsm",
+      "hash": "07de7e7703f31ec420a53b7b515cf361"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2660",
+      "file2": "data/postgres-dev/base/5/2660",
+      "hash": "eb2b76c24d39a439f9af1ddb95d2b8d8"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3574",
+      "file2": "data/postgres-dev/base/5/3574",
+      "hash": "7bf7aeee660bc8eaa1272bf8eddf5521"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13459",
+      "file2": "data/postgres-dev/base/5/13459",
+      "hash": "4844b31a5e543622da6399cc825f493e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/175",
+      "file2": "data/postgres-dev/base/5/175",
+      "hash": "8ce5ade015ee0a3a150dca632b0f45bb"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/2832",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2658",
+      "file2": "data/postgres-dev/base/5/2658",
+      "hash": "41315b93c81123e11bdd10f4fb64c3ec"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2693",
+      "file2": "data/postgres-dev/base/5/2693",
+      "hash": "276112540e6a3c255685f6ec3cb32b39"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2667",
+      "file2": "data/postgres-dev/base/5/2667",
+      "hash": "3df53f25b043be4c941d5ac3e1a6bbf4"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/1255_vm",
+      "file2": "data/postgres-dev/base/5/1255_vm",
+      "hash": "aa42cad5d91b53e725872ffcd9274300"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/4154",
+      "file2": "data/postgres-dev/base/5/4154",
+      "hash": "5e3684fc16eb10a16d4d3f1117c0f068"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3712",
+      "file2": "data/postgres-dev/base/5/3712",
+      "hash": "c9bc3db7e446553234906cc06be866c9"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/4153",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2602",
+      "file2": "data/postgres-dev/base/5/2602",
+      "hash": "daed6cf1f556513112e2320cf16a6183"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/1417",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/4165",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2619_fsm",
+      "file2": "data/postgres-dev/base/5/2619_fsm",
+      "hash": "69bab744030bffec420c5b2c54e19c41"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2616_vm",
+      "file2": "data/postgres-dev/base/5/2616_vm",
+      "hash": "6d67646c01e0bd34578fda6b79b9f02b"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2605",
+      "file2": "data/postgres-dev/base/5/2605",
+      "hash": "2de1dfcc215aadd18d98dae8c60f672a"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13469_fsm",
+      "file2": "data/postgres-dev/base/5/13469_fsm",
+      "hash": "494e3d7e1d96d96b0f3805d131e2c185"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13464_fsm",
+      "file2": "data/postgres-dev/base/5/13464_fsm",
+      "hash": "99d1debbe47a2018c43693c11dd06300"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3767",
+      "file2": "data/postgres-dev/base/5/3767",
+      "hash": "a094a0a4953764ee9bc0a034780d614f"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2601_vm",
+      "file2": "data/postgres-dev/base/5/2601_vm",
+      "hash": "5bf1636deaea5cf6c94dd8d8e3ac32c9"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2600_fsm",
+      "file2": "data/postgres-dev/base/5/2600_fsm",
+      "hash": "975e93c45163edf7d79d474f48a38e95"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2679",
+      "file2": "data/postgres-dev/base/5/2679",
+      "hash": "50ab3dd9b39d37c949046ca73d2c9cee"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3599",
+      "file2": "data/postgres-dev/base/5/3599",
+      "hash": "f0328ddaf0a81515836c3e1a4d2bad24"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/1255_fsm",
+      "file2": "data/postgres-dev/base/5/1255_fsm",
+      "hash": "77e4897456e87ad01f6d612b6407d8b2"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3456_fsm",
+      "file2": "data/postgres-dev/base/5/3456_fsm",
+      "hash": "ccc3c22406cac9975b2ac31a34f28bec"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2684",
+      "file2": "data/postgres-dev/base/5/2684",
+      "hash": "9ac10044649cbbec05375511421cb21b"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2670",
+      "file2": "data/postgres-dev/base/5/2670",
+      "hash": "3a3ca6f3fee9d05e8087177cf5e11f9c"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3597",
+      "file2": "data/postgres-dev/base/5/3597",
+      "hash": "4b9fa1bc74d2e120aa35c6d66d77e0ad"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2683",
+      "file2": "data/postgres-dev/base/5/2683",
+      "hash": "b571d425ca24337aafcba4b04cee274e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3395",
+      "file2": "data/postgres-dev/base/5/3395",
+      "hash": "6c991dc24c14fc336fdb232a2af18d80"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/4144",
+      "file2": "data/postgres-dev/base/5/4144",
+      "hash": "9547e983cce8f925c4988474df787cc1"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/4143",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13464_fsm",
+      "file2": "data/postgres-dev/base/5/2601_fsm",
+      "hash": "99d1debbe47a2018c43693c11dd06300"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/3350",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2615_fsm",
+      "file2": "data/postgres-dev/base/5/2615_fsm",
+      "hash": "f4c0fce5bd26eef8fa877777f49ca3d1"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2612",
+      "file2": "data/postgres-dev/base/5/2612",
+      "hash": "8111dcdf9a0a413f3ab1ccf1d771e8e5"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2840",
+      "file2": "data/postgres-dev/base/5/2840",
+      "hash": "c27f0ddc6cd214c588910b5790053a03"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2615",
+      "file2": "data/postgres-dev/base/5/2615",
+      "hash": "f00921c7cc813dd9a68a9df98598ab4d"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13459_fsm",
+      "file2": "data/postgres-dev/base/5/13459_fsm",
+      "hash": "a94223eea911fd04e9a890190965b2e7"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/4172",
+      "file2": "data/postgres-dev/base/5/4172",
+      "hash": "25b615de5579b539e43f4466835829e7"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/3501",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2682",
+      "file2": "data/postgres-dev/base/5/2682",
+      "hash": "831a834867370f7f64016e9e433cbf92"
+    },
+    {
+      "file1": "data/postgres-dev/global/1261_fsm",
+      "file2": "data/postgres-dev/base/5/3079_fsm",
+      "hash": "2a3216a10d8aeed6ac8058c1f5f6cabb"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/3596",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2603_fsm",
+      "file2": "data/postgres-dev/base/5/2603_fsm",
+      "hash": "9ca68ef0649e031eba0efe2e49c72f00"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2617_fsm",
+      "file2": "data/postgres-dev/base/5/2617_fsm",
+      "hash": "f07284f4f31eff7bbe8d162e6c96fab0"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2685",
+      "file2": "data/postgres-dev/base/5/2685",
+      "hash": "1352aa010e4971482883b9f12eee9c1f"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2605_vm",
+      "file2": "data/postgres-dev/base/5/2605_vm",
+      "hash": "75fc47043a131b1c04860cc25d2d680e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/3598",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3394_vm",
+      "file2": "data/postgres-dev/base/5/3394_vm",
+      "hash": "09819d8216864a57fea8eabd56801c2a"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2678",
+      "file2": "data/postgres-dev/base/5/2678",
+      "hash": "55f3cbd789ccb6cc8a1a063f350af90a"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3766",
+      "file2": "data/postgres-dev/base/5/3766",
+      "hash": "d53c67151d4edf0dd50dbb536762626e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/2224",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2841",
+      "file2": "data/postgres-dev/base/5/2841",
+      "hash": "ff4178e0afaad90be2766bc263121385"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3164",
+      "file2": "data/postgres-dev/base/5/3164",
+      "hash": "f97f678e453b72fa8a25c7512b66bb60"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/4173",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/2613",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/4174",
+      "file2": "data/postgres-dev/base/5/4174",
+      "hash": "02e23eecc6e3c30549229222601bef8f"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3351",
+      "file2": "data/postgres-dev/base/5/3351",
+      "hash": "6635f23ed0ed53a50e0d07b663c88788"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2615_vm",
+      "file2": "data/postgres-dev/base/5/2615_vm",
+      "hash": "a1388fd1b092745cb2d852b3c494a6ff"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/1259",
+      "file2": "data/postgres-dev/base/5/1259",
+      "hash": "fdb426b739351ddd737eb9402c427f26"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2616_fsm",
+      "file2": "data/postgres-dev/base/5/2616_fsm",
+      "hash": "318950000df5cda83d15998c70b6614e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2602_fsm",
+      "file2": "data/postgres-dev/base/5/2602_fsm",
+      "hash": "81d3bd271f04529fdf13661f83cadbc3"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/4145",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3394",
+      "file2": "data/postgres-dev/base/5/3394",
+      "hash": "3319bf5f205fa1ac77d8e97cd9ea7262"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2606_fsm",
+      "file2": "data/postgres-dev/base/5/2606_fsm",
+      "hash": "bc2d29b8bed12f3c1c4dc448748099db"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2612_fsm",
+      "file2": "data/postgres-dev/base/5/2612_fsm",
+      "hash": "aea8f5edde98825ca5f51d06329e21d7"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2757",
+      "file2": "data/postgres-dev/base/5/2757",
+      "hash": "683020de7700ccf089de43a5c8fc8db5"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/1247_fsm",
+      "file2": "data/postgres-dev/base/5/1247_fsm",
+      "hash": "c2ecea3d6a501db0dd6bce0663dc2a7b"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/1247_vm",
+      "file2": "data/postgres-dev/base/5/1247_vm",
+      "hash": "a058d01ecb29be710225078adcaa9dd3"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2607_fsm",
+      "file2": "data/postgres-dev/base/5/2607_fsm",
+      "hash": "5d614904b11262f1ba4e00107d200e94"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2703",
+      "file2": "data/postgres-dev/base/5/2703",
+      "hash": "0036457b39e042dab91f56e05cc4e499"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2704",
+      "file2": "data/postgres-dev/base/5/2704",
+      "hash": "1b389d615801a11f48b5a042b7324409"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3080",
+      "file2": "data/postgres-dev/base/5/3080",
+      "hash": "213dd305029f68fb273c48a2eea5fc29"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2600_vm",
+      "file2": "data/postgres-dev/base/5/2600_vm",
+      "hash": "f9e428f08689e57ad3a9f9bcaba41782"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2605_fsm",
+      "file2": "data/postgres-dev/base/5/2605_fsm",
+      "hash": "5f8c83661215d907d8d951e2ac1d8733"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/6106",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2836_fsm",
+      "file2": "data/postgres-dev/base/5/2836_fsm",
+      "hash": "cdce9ca31874b14c6d24d4a7c7d83a98"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2756",
+      "file2": "data/postgres-dev/base/5/2756",
+      "hash": "417e012d635542f8b26b74f8641f476d"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3081",
+      "file2": "data/postgres-dev/base/5/3081",
+      "hash": "b4f593b0ef5547c08e169f37a6c2f37b"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/3429",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2702",
+      "file2": "data/postgres-dev/base/5/2702",
+      "hash": "f58a4f3421f00ff29bf0385207b394a1"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2836_vm",
+      "file2": "data/postgres-dev/base/5/2836_vm",
+      "hash": "26c0bba6ebe4283ece7b59e0f6a66ddd"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/2995",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2610_fsm",
+      "file2": "data/postgres-dev/base/5/2610_fsm",
+      "hash": "ef86e390c5d783504e1139c8d86ffbef"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2610_vm",
+      "file2": "data/postgres-dev/base/5/2610_vm",
+      "hash": "aed78de5d0ac1e420ccf1ec91ecbb141"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3608",
+      "file2": "data/postgres-dev/base/5/3608",
+      "hash": "b83fcf6d3a4add7a3df2b2a5a70495ad"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3541_fsm",
+      "file2": "data/postgres-dev/base/5/3541_fsm",
+      "hash": "32e0dc838ad17b94f6de14a2ba9efac0"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3606",
+      "file2": "data/postgres-dev/base/5/3606",
+      "hash": "4d85621f9e4d6902161a644282b369eb"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3433",
+      "file2": "data/postgres-dev/base/5/3433",
+      "hash": "1e54ad23b661bf893060fd87046d929f"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3601",
+      "file2": "data/postgres-dev/base/5/3601",
+      "hash": "8653700f1910bc0c8a8b3a099aa526a1"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/2328",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3467",
+      "file2": "data/postgres-dev/base/5/3467",
+      "hash": "ab22d20610200a1c3c6418de298ae319"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2579",
+      "file2": "data/postgres-dev/base/5/2579",
+      "hash": "8b564b95f24fb9f4348c32ecb4f1c3f6"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/6112",
+      "file2": "data/postgres-dev/base/5/6112",
+      "hash": "1f32eb5c85294b43dabd3a8e7a0802f3"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3456",
+      "file2": "data/postgres-dev/base/5/3456",
+      "hash": "fe681e84509c809ef31c4eaa6edbe698"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3600",
+      "file2": "data/postgres-dev/base/5/3600",
+      "hash": "56d7345a708b4f06037bf534bcadc35c"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3607",
+      "file2": "data/postgres-dev/base/5/3607",
+      "hash": "f65f2877edc1c90d6c874e747e26709e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/6176",
+      "file2": "data/postgres-dev/base/5/6176",
+      "hash": "17115b9f9707b11e519c877216e05e1d"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3609",
+      "file2": "data/postgres-dev/base/5/3609",
+      "hash": "0d32389e9d38c07223dd42e2cff95252"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3601_vm",
+      "file2": "data/postgres-dev/base/5/3601_vm",
+      "hash": "36e2daa7d91e79eb4d9455aa733f296f"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3468",
+      "file2": "data/postgres-dev/base/5/3468",
+      "hash": "a4ccb5193a5f6c342725da7ba2d0f306"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3456_vm",
+      "file2": "data/postgres-dev/base/5/3456_vm",
+      "hash": "d535b20a1c567b58a2105d170e4cd520"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/6113",
+      "file2": "data/postgres-dev/base/5/6113",
+      "hash": "d08a1889e04002da5238ec86bcd47480"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/3466",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/4167",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/549",
+      "file2": "data/postgres-dev/base/5/549",
+      "hash": "24324322edd271a8bbda784d197ff187"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2600",
+      "file2": "data/postgres-dev/base/5/2600",
+      "hash": "2b48e6044e88e7c2220366db5301e672"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/4158",
+      "file2": "data/postgres-dev/base/5/4158",
+      "hash": "3177584bfc09c26f8e0af2038965c508"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/112",
+      "file2": "data/postgres-dev/base/5/112",
+      "hash": "6ff73ad8a28fd2120bf66ebda8ce9820"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2607",
+      "file2": "data/postgres-dev/base/5/2607",
+      "hash": "59902a3274f338e486e55a6d47cc03d8"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/4160",
+      "file2": "data/postgres-dev/base/5/4160",
+      "hash": "8686e1b2a97f7a2c1a3b955c22f6782a"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/4156",
+      "file2": "data/postgres-dev/base/5/4156",
+      "hash": "02a8609f2fd22ea09c4d4a10e5ecb7a2"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/4169",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/4151",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3380",
+      "file2": "data/postgres-dev/base/5/3380",
+      "hash": "05a0da70a93c260a9656991657718b4a"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2609",
+      "file2": "data/postgres-dev/base/5/2609",
+      "hash": "5d5667c96dc349f6562420a54c22a439"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3600_vm",
+      "file2": "data/postgres-dev/base/5/3600_vm",
+      "hash": "9cc078bc70366c7fe5fbebfe4836fea5"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2837",
+      "file2": "data/postgres-dev/base/5/2837",
+      "hash": "7b78dd1c6b6f06073502cc67452b7672"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2696",
+      "file2": "data/postgres-dev/base/5/2696",
+      "hash": "80608c33eb17cc1f1b861ea965982401"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/3576",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13463",
+      "file2": "data/postgres-dev/base/5/13463",
+      "hash": "2b7bc4d487fca53416f46faf99b1a7ba"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13454_vm",
+      "file2": "data/postgres-dev/base/5/13454_vm",
+      "hash": "091037c39f67c4118eedef4efa84942e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2662",
+      "file2": "data/postgres-dev/base/5/2662",
+      "hash": "1c00b05a87a36b98f00d3adc10f080dd"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/2830",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3764_vm",
+      "file2": "data/postgres-dev/base/5/3764_vm",
+      "hash": "68931c2f0e5d51da19419ae949b823c0"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2665",
+      "file2": "data/postgres-dev/base/5/2665",
+      "hash": "9dcb819452f7da2d0c3eadb954336486"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13464",
+      "file2": "data/postgres-dev/base/5/13464",
+      "hash": "73517f2bd5ccd87a4a6e111276d5b017"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2838_vm",
+      "file2": "data/postgres-dev/base/5/2838_vm",
+      "hash": "ede7e4e644584404db33799ad8dbc3b7"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2691",
+      "file2": "data/postgres-dev/base/5/2691",
+      "hash": "35320640ba0e7f165f88412ebbbb125a"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/6238",
+      "file2": "data/postgres-dev/base/5/6238",
+      "hash": "7d803f52155a332a029fa7eb9d3522fe"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2839",
+      "file2": "data/postgres-dev/base/5/2839",
+      "hash": "78c4fafc2409343ca1c372ee016eb404"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2653",
+      "file2": "data/postgres-dev/base/5/2653",
+      "hash": "e96e884d104b82856c967d05c3a96feb"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2654",
+      "file2": "data/postgres-dev/base/5/2654",
+      "hash": "09a01252f11d67beb79e970f819b8404"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/3381",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/4150",
+      "file2": "data/postgres-dev/base/5/4150",
+      "hash": "dabf280324c0ba85c85dee48b2b13c04"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2608",
+      "file2": "data/postgres-dev/base/5/2608",
+      "hash": "30c7a162094d0c9a81b63998cb005e7d"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/1259_vm",
+      "file2": "data/postgres-dev/base/5/1259_vm",
+      "hash": "21e30e6bc94cd8527c87fe643fe55975"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/4157",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/4168",
+      "file2": "data/postgres-dev/base/5/4168",
+      "hash": "1cdba18c4763213352700b2787c86067"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2606",
+      "file2": "data/postgres-dev/base/5/2606",
+      "hash": "1b5f7387f1670de4f79c231341495a80"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2601",
+      "file2": "data/postgres-dev/base/5/2601",
+      "hash": "dbc4f3c37a43037af15a4a5b8080f2f4"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/548",
+      "file2": "data/postgres-dev/base/5/548",
+      "hash": "eeb846495561515550380700c67906cd"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/4166",
+      "file2": "data/postgres-dev/base/5/4166",
+      "hash": "ef0cbcb834e22691a7c829c0f526c6f2"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/113",
+      "file2": "data/postgres-dev/base/5/113",
+      "hash": "d07c336679bbaafc7db9f206008bd556"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/4159",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2655",
+      "file2": "data/postgres-dev/base/5/2655",
+      "hash": "54b0156b0e1681123cd7dcb8238594d5"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13454",
+      "file2": "data/postgres-dev/base/5/13454",
+      "hash": "9ba360dc6529e7a4eeae257dc9ebdd53"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/13464_vm",
+      "file2": "data/postgres-dev/base/5/13464_vm",
+      "hash": "04dec3afcc1109a42c9eae1cf5ec37e0"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3541",
+      "file2": "data/postgres-dev/base/5/3541",
+      "hash": "676a9901680b381e7f5e4e2b29855d7b"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/3394_fsm",
+      "file2": "data/postgres-dev/base/5/3394_fsm",
+      "hash": "f36e952cfca0419bc0a70e8e5b8afc4c"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2699",
+      "file2": "data/postgres-dev/base/5/2699",
+      "hash": "815a271cf61680e98433849b7633ee57"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/6239",
+      "file2": "data/postgres-dev/base/5/6239",
+      "hash": "4a928db954aa3047f96e404180d35904"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2838",
+      "file2": "data/postgres-dev/base/5/2838",
+      "hash": "a9ae26b3e256a86b81cda81660bd7c4d"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2652",
+      "file2": "data/postgres-dev/base/5/2652",
+      "hash": "094acb42112059e14cbb99d119073fcf"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2840_fsm",
+      "file2": "data/postgres-dev/base/5/2840_fsm",
+      "hash": "eddf62b55a097ef068a53d161bcb3218"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2831",
+      "file2": "data/postgres-dev/base/5/2831",
+      "hash": "178ba2c4afa804041fe718aa094de5db"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2690",
+      "file2": "data/postgres-dev/base/5/2690",
+      "hash": "a9d26c117572e8f205bf414566d9582e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2664",
+      "file2": "data/postgres-dev/base/5/2664",
+      "hash": "69ddee45e9a590936093bfab74f9846e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/1249_vm",
+      "file2": "data/postgres-dev/base/5/1249_vm",
+      "hash": "a8d5038494a48119eed9c901f53b0bfa"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2836",
+      "file2": "data/postgres-dev/base/5/2836",
+      "hash": "6db45132fc97b1cfe6151efa9799bdda"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/13462",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "data/postgres-dev/base/1/2663",
+      "file2": "data/postgres-dev/base/5/2663",
+      "hash": "83a738c82d8afde664b6c3d1e493e43f"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/postgres-dev/base/5/6237",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "proofs/mcp_context/search.json",
+      "file2": "data/redis-dev/appendonlydir/appendonly.aof.1.incr.aof",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file1": "apps/sophia-dashboard/public/favicon.ico",
+      "file2": "apps/sophia-dashboard/public/sophia-logo.jpg",
+      "hash": "b1a6657c4d4ace247722ba6d5a074b3a"
+    },
+    {
+      "file1": "jobs/.dockerignore",
+      "file2": "services/mcp-context/.dockerignore",
+      "hash": "638b4c6ad661f1edd6bac7ec4b83194d"
+    },
+    {
+      "file1": "jobs/.dockerignore",
+      "file2": "services/mcp-research/.dockerignore",
+      "hash": "638b4c6ad661f1edd6bac7ec4b83194d"
+    },
+    {
+      "file1": "services/mcp-context/requirements.txt",
+      "file2": "services/mcp-slack/requirements.txt",
+      "hash": "21d878a4a59ca8a3b85170bb876f7c76"
+    },
+    {
+      "file1": "services/mcp-context/requirements.txt",
+      "file2": "services/agno-teams/requirements.txt",
+      "hash": "21d878a4a59ca8a3b85170bb876f7c76"
+    },
+    {
+      "file1": "jobs/.dockerignore",
+      "file2": "services/mcp-business/.dockerignore",
+      "hash": "638b4c6ad661f1edd6bac7ec4b83194d"
+    },
+    {
+      "file1": "services/mcp-context/requirements.txt",
+      "file2": "services/mcp-lambda/requirements.txt",
+      "hash": "21d878a4a59ca8a3b85170bb876f7c76"
+    },
+    {
+      "file1": "jobs/.dockerignore",
+      "file2": "services/mcp-lambda/.dockerignore",
+      "hash": "638b4c6ad661f1edd6bac7ec4b83194d"
+    },
+    {
+      "file1": "services/mcp-context/requirements.txt",
+      "file2": "services/mcp-gong/requirements.txt",
+      "hash": "21d878a4a59ca8a3b85170bb876f7c76"
+    },
+    {
+      "file1": "services/mcp-context/requirements.txt",
+      "file2": "services/mcp-github/requirements.txt",
+      "hash": "21d878a4a59ca8a3b85170bb876f7c76"
+    },
+    {
+      "file1": "jobs/.dockerignore",
+      "file2": "services/mcp-github/.dockerignore",
+      "hash": "638b4c6ad661f1edd6bac7ec4b83194d"
+    },
+    {
+      "file1": "services/mcp-context/requirements.txt",
+      "file2": "services/mcp-apollo/requirements.txt",
+      "hash": "21d878a4a59ca8a3b85170bb876f7c76"
+    },
+    {
+      "file1": "services/mcp-context/requirements.txt",
+      "file2": "services/mcp-salesforce/requirements.txt",
+      "hash": "21d878a4a59ca8a3b85170bb876f7c76"
+    },
+    {
+      "file1": "services/mcp-context/requirements.txt",
+      "file2": "services/mcp-hubspot/requirements.txt",
+      "hash": "21d878a4a59ca8a3b85170bb876f7c76"
+    },
+    {
+      "file1": "jobs/.dockerignore",
+      "file2": "services/mcp-hubspot/.dockerignore",
+      "hash": "638b4c6ad661f1edd6bac7ec4b83194d"
+    },
+    {
+      "file1": "services/agno-teams/sophia_agno_teams.egg-info/dependency_links.txt",
+      "file2": "services/agno/agno.egg-info/top_level.txt",
+      "hash": "68b329da9893e34099c7d8ad5cb9c940"
+    },
+    {
+      "file1": "services/agno-teams/sophia_agno_teams.egg-info/dependency_links.txt",
+      "file2": "services/agno/agno.egg-info/dependency_links.txt",
+      "hash": "68b329da9893e34099c7d8ad5cb9c940"
+    },
+    {
+      "file1": "jobs/.dockerignore",
+      "file2": "services/orchestrator/.dockerignore",
+      "hash": "638b4c6ad661f1edd6bac7ec4b83194d"
+    },
+    {
+      "file1": "services/agno-teams/sophia_agno_teams.egg-info/dependency_links.txt",
+      "file2": "src/sophia_ai_intel.egg-info/top_level.txt",
+      "hash": "68b329da9893e34099c7d8ad5cb9c940"
+    },
+    {
+      "file1": "services/agno-teams/sophia_agno_teams.egg-info/dependency_links.txt",
+      "file2": "src/sophia_ai_intel.egg-info/dependency_links.txt",
+      "hash": "68b329da9893e34099c7d8ad5cb9c940"
+    }
+  ],
+  "large_archives": [
+    {
+      "path": "helm.tar.gz",
+      "size_mb": 16.24
+    }
+  ],
+  "analysis": {
+    "summary": {
+      "total_archived_files": 10,
+      "total_backup_files": 5,
+      "total_temp_files": 24,
+      "total_old_versions": 19,
+      "total_obsolete_files": 32,
+      "total_duplicate_candidates": 771,
+      "total_large_archives": 1,
+      "total_archive_size_mb": 16.29,
+      "total_obsolete_size_mb": 0.3,
+      "potential_space_savings_mb": 16.59
+    },
+    "archive_types": {
+      ".backup": [
+        ".env.production.real.backup",
+        "scripts/run-sophia-locally.sh.backup",
+        "scripts/synthetic_checks.py.backup"
+      ],
+      ".md": [
+        "DEPLOYMENT_REMEDIATION_SUMMARY_20250827_133501.md",
+        "SOPHIA_AI_FINAL_REPORT_20250826_071324.md"
+      ],
+      ".gz": [
+        "helm.tar.gz"
+      ],
+      ".bak": [
+        ".env.production.secure.bak"
+      ],
+      ".json": [
+        "DEPLOYMENT_READINESS_REPORT_20250827_133501.json"
+      ],
+      ".deprecated": [
+        "agentic/research_swarms/trend_swarm.py.deprecated",
+        "agentic/coding_swarms/main.py.deprecated"
+      ]
+    },
+    "oldest_archives": [
+      {
+        "path": "helm.tar.gz",
+        "pattern": ".*\\.tar\\.gz$",
+        "size": 17032674,
+        "modified": "2025-08-25T21:03:26.075490"
+      },
+      {
+        "path": "SOPHIA_AI_FINAL_REPORT_20250826_071324.md",
+        "pattern": ".*_\\d{8}_\\d{6}.*",
+        "size": 6650,
+        "modified": "2025-08-26T07:13:24.907485"
+      },
+      {
+        "path": "scripts/synthetic_checks.py.backup",
+        "pattern": ".*\\.backup$",
+        "size": 12623,
+        "modified": "2025-08-27T04:12:32.575409"
+      },
+      {
+        "path": "agentic/coding_swarms/main.py.deprecated",
+        "pattern": ".*\\.deprecated$",
+        "size": 945,
+        "modified": "2025-08-27T05:32:08.015705"
+      },
+      {
+        "path": "agentic/research_swarms/trend_swarm.py.deprecated",
+        "pattern": ".*\\.deprecated$",
+        "size": 759,
+        "modified": "2025-08-27T05:33:38.910542"
+      },
+      {
+        "path": "DEPLOYMENT_READINESS_REPORT_20250827_133501.json",
+        "pattern": ".*_\\d{8}_\\d{6}.*",
+        "size": 3709,
+        "modified": "2025-08-27T06:35:01.385357"
+      },
+      {
+        "path": "DEPLOYMENT_REMEDIATION_SUMMARY_20250827_133501.md",
+        "pattern": ".*_\\d{8}_\\d{6}.*",
+        "size": 2539,
+        "modified": "2025-08-27T06:35:01.385671"
+      },
+      {
+        "path": ".env.production.secure.bak",
+        "pattern": ".*\\.bak$",
+        "size": 6394,
+        "modified": "2025-08-27T07:07:21.060338"
+      },
+      {
+        "path": ".env.production.real.backup",
+        "pattern": ".*\\.backup$",
+        "size": 8377,
+        "modified": "2025-08-27T22:50:24.384349"
+      },
+      {
+        "path": "scripts/run-sophia-locally.sh.backup",
+        "pattern": ".*\\.backup$",
+        "size": 5669,
+        "modified": "2025-08-27T23:13:39.121919"
+      }
+    ],
+    "large_archives": [
+      {
+        "path": "helm.tar.gz",
+        "size_mb": 16.24
+      }
+    ],
+    "duplicate_groups": [
+      {
+        "file1": ".env",
+        "file2": ".env.production.secure",
+        "hash": "8e49bff5f38355231050df0dc816cae0"
+      },
+      {
+        "file1": "ssl/dhparam.pem",
+        "file2": "ssl/local/dhparam.pem",
+        "hash": "42f65bf86be13ba9dc8e580dcfe1b561"
+      },
+      {
+        "file1": "ssl/ca.crt",
+        "file2": "ssl/local/ca-cert.pem",
+        "hash": "aa789a25f4312fbe699e490b34c31a45"
+      },
+      {
+        "file1": "ssl/sophia.key",
+        "file2": "ssl/local/server-key.pem",
+        "hash": "b3d103e590c0e69d4335dc032393dc0d"
+      },
+      {
+        "file1": "ssl/fullchain.pem",
+        "file2": "ssl/local/fullchain.pem",
+        "hash": "3b1614d0bee164ec96d2260f0b4e148a"
+      },
+      {
+        "file1": "ssl/sophia.crt",
+        "file2": "ssl/local/server-cert.pem",
+        "hash": "ea682a367d75dfa6f3c71e2220635520"
+      },
+      {
+        "file1": "proofs/healthz_final/research.txt",
+        "file2": "proofs/healthz_final/dashboard.txt",
+        "hash": "74170928bae84bb0a107a0906596aa52"
+      },
+      {
+        "file1": "proofs/healthz_final/research.txt",
+        "file2": "proofs/healthz_final/context.txt",
+        "hash": "74170928bae84bb0a107a0906596aa52"
+      },
+      {
+        "file1": "proofs/healthz_final/research.txt",
+        "file2": "proofs/healthz_final/business.txt",
+        "hash": "74170928bae84bb0a107a0906596aa52"
+      },
+      {
+        "file1": "proofs/healthz_final/research.txt",
+        "file2": "proofs/healthz_final/jobs.txt",
+        "hash": "74170928bae84bb0a107a0906596aa52"
+      },
+      {
+        "file1": "proofs/mcp_context/search.json",
+        "file2": "proofs/mcp_context/index.json",
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "file1": "proofs/healthz/sophiaai-mcp-context.txt",
+        "file2": "proofs/healthz/sophiaai-mcp-research.txt",
+        "hash": "59ddd62d640d175de037992fb04da424"
+      },
+      {
+        "file1": "proofs/mcp_context/search.json",
+        "file2": "proofs/healthz/sophiaai-dashboard-v2_fresh.txt",
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "file1": "proofs/healthz/sophiaai-mcp-context.txt",
+        "file2": "proofs/healthz/sophiaai-dashboard.txt",
+        "hash": "59ddd62d640d175de037992fb04da424"
+      },
+      {
+        "file1": "proofs/mcp_repo/tree_dashboard.json",
+        "file2": "proofs/mcp_repo/file_vite_config.json",
+        "hash": "e3b68709ebf3d51940324e2f5b2944ca"
+      },
+      {
+        "file1": "llm/portkey-llm/Dockerfile",
+        "file2": "agents/swarm/Dockerfile",
+        "hash": "361f9f4d3de88e8e3fc68307082fcaf6"
+      },
+      {
+        "file1": "proofs/mcp_context/search.json",
+        "file2": "agentic/ui/.gitkeep",
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "file1": "proofs/mcp_context/search.json",
+        "file2": "agentic/ui/__init__.py",
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "file1": "proofs/mcp_context/search.json",
+        "file2": "agentic/research_swarms/.gitkeep",
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "file1": "proofs/mcp_context/search.json",
+        "file2": "agentic/business_swarms/.gitkeep",
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "file1": "proofs/mcp_context/search.json",
+        "file2": "agentic/swarms/__init__.py",
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "file1": "proofs/mcp_context/search.json",
+        "file2": "agentic/swarms/research/__init__.py",
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "file1": "proofs/mcp_context/search.json",
+        "file2": "agentic/swarms/business/__init__.py",
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "file1": "proofs/mcp_context/search.json",
+        "file2": "agentic/swarms/coding/__init__.py",
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "file1": "proofs/mcp_context/search.json",
+        "file2": "agentic/swarms/process/__init__.py",
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "file1": "proofs/mcp_context/search.json",
+        "file2": "agentic/coding_swarms/.gitkeep",
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "file1": "proofs/mcp_context/search.json",
+        "file2": "agentic/process_orchestration/.gitkeep",
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "file1": "agents/swarm/requirements.txt",
+        "file2": "mcp/agents-swarm/requirements.txt",
+        "hash": "9479a4e3f2f58797e9cfe8cb1884badf"
+      },
+      {
+        "file1": "scripts/run-sophia-locally.sh",
+        "file2": "scripts/run-sophia-locally.sh.backup",
+        "hash": "668dc4ab1a9f678f3ce35ea53b7a8a05"
+      },
+      {
+        "file1": "scripts/synthetic_checks.py",
+        "file2": "scripts/synthetic_checks.py.backup",
+        "hash": "11cf1de19952e6ba0c31756216e7e133"
+      },
+      {
+        "file1": "data/postgres-dev/pg_multixact/members/0000",
+        "file2": "data/postgres-dev/pg_multixact/offsets/0000",
+        "hash": "0829f71740aab1ab98b33eae21dee122"
+      },
+      {
+        "file1": "data/postgres-dev/pg_multixact/members/0000",
+        "file2": "data/postgres-dev/pg_subtrans/0000",
+        "hash": "0829f71740aab1ab98b33eae21dee122"
+      },
+      {
+        "file1": "proofs/mcp_context/search.json",
+        "file2": "data/postgres-dev/global/4185",
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "file1": "proofs/mcp_context/search.json",
+        "file2": "data/postgres-dev/global/4183",
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "file1": "proofs/mcp_context/search.json",
+        "file2": "data/postgres-dev/global/6244",
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "file1": "proofs/mcp_context/search.json",
+        "file2": "data/postgres-dev/global/4177",
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "file1": "proofs/mcp_context/search.json",
+        "file2": "data/postgres-dev/global/6243",
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "file1": "proofs/mcp_context/search.json",
+        "file2": "data/postgres-dev/global/3592",
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "file1": "proofs/mcp_context/search.json",
+        "file2": "data/postgres-dev/global/2964",
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "file1": "proofs/mcp_context/search.json",
+        "file2": "data/postgres-dev/global/4060",
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "file1": "proofs/mcp_context/search.json",
+        "file2": "data/postgres-dev/global/6000",
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "file1": "proofs/mcp_context/search.json",
+        "file2": "data/postgres-dev/global/1214",
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "file1": "proofs/mcp_context/search.json",
+        "file2": "data/postgres-dev/global/4175",
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "file1": "proofs/mcp_context/search.json",
+        "file2": "data/postgres-dev/global/4181",
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "file1": "proofs/mcp_context/search.json",
+        "file2": "data/postgres-dev/global/2846",
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "file1": "proofs/mcp_context/search.json",
+        "file2": "data/postgres-dev/global/6100",
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "file1": "proofs/mcp_context/search.json",
+        "file2": "data/postgres-dev/global/2966",
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "file1": "proofs/mcp_context/search.json",
+        "file2": "data/postgres-dev/base/1/2620",
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "file1": "proofs/mcp_context/search.json",
+        "file2": "data/postgres-dev/base/1/4147",
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "file1": "proofs/mcp_context/search.json",
+        "file2": "data/postgres-dev/base/1/4171",
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      }
+    ],
+    "cleanup_recommendations": [
+      "INFO: 24 temporary files can be safely removed.",
+      "WARNING: 771 potential duplicate files found.",
+      "CRITICAL: 1 large archives consuming 16.24MB.",
+      "INFO: Found 1 tar.gz archives. Consider extracting needed files and removing."
+    ]
+  }
+}

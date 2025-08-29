@@ -1,0 +1,269 @@
+name: Test Suite
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 0 * * *'  # Daily at midnight
+
+jobs:
+  unit-tests-backend:
+    name: Backend Unit Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: sophia_test
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: sophia_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r requirements-test.txt
+      
+      - name: Run unit tests
+        env:
+          POSTGRES_URL: postgresql://sophia_test:test_password@localhost:5432/sophia_test
+          REDIS_URL: redis://localhost:6379
+          TESTING: "1"
+        run: |
+          pytest tests/unit -v --cov=services --cov-report=xml -m unit
+      
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          flags: backend-unit
+
+  unit-tests-frontend:
+    name: Frontend Unit Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: apps/sophia-dashboard/package-lock.json
+      
+      - name: Install dependencies
+        working-directory: apps/sophia-dashboard
+        run: npm ci
+      
+      - name: Run tests
+        working-directory: apps/sophia-dashboard
+        run: npm test -- --coverage
+      
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./apps/sophia-dashboard/coverage/lcov.info
+          flags: frontend-unit
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [unit-tests-backend, unit-tests-frontend]
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: sophia_test
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: sophia_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+      
+      qdrant:
+        image: qdrant/qdrant
+        ports:
+          - 6333:6333
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: apps/sophia-dashboard/package-lock.json
+      
+      - name: Install backend dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r requirements-test.txt
+      
+      - name: Install frontend dependencies
+        working-directory: apps/sophia-dashboard
+        run: npm ci
+      
+      - name: Build frontend
+        working-directory: apps/sophia-dashboard
+        run: npm run build
+      
+      - name: Start services
+        env:
+          POSTGRES_URL: postgresql://sophia_test:test_password@localhost:5432/sophia_test
+          REDIS_URL: redis://localhost:6379
+          QDRANT_URL: http://localhost:6333
+          TESTING: "1"
+        run: |
+          python services/unified_swarm_service.py &
+          python services/websocket_hub.py &
+          cd apps/sophia-dashboard && npm start &
+          sleep 10  # Wait for services to start
+      
+      - name: Run integration tests
+        env:
+          POSTGRES_URL: postgresql://sophia_test:test_password@localhost:5432/sophia_test
+          REDIS_URL: redis://localhost:6379
+          QDRANT_URL: http://localhost:6333
+        run: |
+          pytest tests/integration -v -m integration
+
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: [integration-tests]
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install Playwright
+        run: |
+          pip install playwright pytest-playwright
+          playwright install chromium
+      
+      - name: Run Docker Compose
+        run: |
+          docker-compose -f docker-compose.test.yml up -d
+          sleep 30  # Wait for all services
+      
+      - name: Run E2E tests
+        run: |
+          pytest tests/e2e -v -m e2e
+      
+      - name: Upload screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: e2e-screenshots
+          path: tests/e2e/screenshots/
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Run Trivy security scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+      
+      - name: Upload Trivy results
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  lint-and-format:
+    name: Lint & Format Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Python linting
+        run: |
+          pip install black flake8 mypy
+          black --check services/ tests/
+          flake8 services/ tests/
+          mypy services/ --ignore-missing-imports
+      
+      - name: JavaScript/TypeScript linting
+        working-directory: apps/sophia-dashboard
+        run: |
+          npm ci
+          npm run lint
+          npm run type-check

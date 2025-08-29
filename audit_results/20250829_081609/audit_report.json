@@ -1,0 +1,762 @@
+{
+  "timestamp": "2025-08-29T08:16:01.706113",
+  "sections": {
+    "api_endpoints": [
+      {
+        "url": "http://localhost:3000/api/chat",
+        "method": "POST",
+        "status": 200,
+        "latency_ms": 11.4,
+        "is_mock": false,
+        "has_error": false,
+        "body_preview": "{\"sections\":{\"summary\":\"Processing your request...\",\"actions\":[],\"research\":[],\"plans\":null,\"code\":null,\"github\":null,\"events\":[]},\"metadata\":{\"intent\":\"general\",\"timestamp\":\"2025-08-29T15:16:01.716Z\""
+      },
+      {
+        "url": "http://localhost:3000/api/health",
+        "method": "GET",
+        "status": 200,
+        "latency_ms": 21.95,
+        "is_mock": false,
+        "has_error": false,
+        "body_preview": "{\"status\":\"degraded\",\"timestamp\":\"2025-08-29T15:16:01.739Z\",\"services\":[{\"name\":\"Swarm Orchestrator\",\"url\":\"http://localhost:8100/health\",\"status\":\"healthy\",\"latency\":10},{\"name\":\"MCP Context\",\"url\":\""
+      },
+      {
+        "url": "http://localhost:3000/api/metrics",
+        "method": "GET",
+        "status": 200,
+        "latency_ms": 10.49,
+        "is_mock": true,
+        "has_error": false,
+        "body_preview": "{\"status\":\"success\",\"metrics\":[\"app_info\",\"app_status_recovery_mode\",\"cluster_enabled\",\"collections_total\",\"collections_vector_total\",\"go_gc_cycles_automatic_gc_cycles_total\",\"go_gc_cycles_forced_gc_c"
+      },
+      {
+        "url": "http://localhost:3000/api/metrics?target=health",
+        "method": "GET",
+        "status": 200,
+        "latency_ms": 5.89,
+        "is_mock": false,
+        "has_error": false,
+        "body_preview": "{\"status\":\"healthy\",\"prometheus_url\":\"http://localhost:9090\",\"timestamp\":\"2025-08-29T15:16:01.756Z\"}"
+      },
+      {
+        "url": "http://localhost:3000/api/metrics?target=targets",
+        "method": "GET",
+        "status": 200,
+        "latency_ms": 7.16,
+        "is_mock": false,
+        "has_error": false,
+        "body_preview": "{\"status\":\"success\",\"targets\":[{\"discoveredLabels\":{\"__address__\":\"localhost:9090\",\"__metrics_path__\":\"/metrics\",\"__scheme__\":\"http\",\"__scrape_interval__\":\"15s\",\"__scrape_timeout__\":\"10s\",\"job\":\"prome"
+      },
+      {
+        "url": "http://localhost:3000/api/agents",
+        "method": "GET",
+        "status": 200,
+        "latency_ms": 74.0,
+        "is_mock": false,
+        "has_error": false,
+        "body_preview": "{\"availableAgents\":[{\"type\":\"Code Architect\",\"icon\":\"\ud83c\udfaf\",\"description\":\"system design, architecture, planning\",\"capabilities\":[\"system design\",\"architecture\",\"planning\"]},{\"type\":\"Frontend Developer\",\""
+      },
+      {
+        "url": "http://localhost:3000/api/agents?action=activity",
+        "method": "GET",
+        "status": 200,
+        "latency_ms": 2.98,
+        "is_mock": false,
+        "has_error": false,
+        "body_preview": "{\"activities\":[{\"id\":\"swarm-c0a5cc76-269a-428d-b335-dc7137541cba\",\"timestamp\":\"2025-08-29T15:16:01.840Z\",\"type\":\"agent\",\"agent_id\":\"c0a5cc76-269a-428d-b335-dc7137541cba\",\"agent_type\":\"analysis\",\"actio"
+      },
+      {
+        "url": "http://localhost:3000/api/agents",
+        "method": "POST",
+        "status": 200,
+        "latency_ms": 2.88,
+        "is_mock": false,
+        "has_error": false,
+        "body_preview": "{\"agents\":[{\"id\":\"c0a5cc76-269a-428d-b335-dc7137541cba\",\"type\":\"analysis\",\"status\":\"completed\",\"progress\":1,\"task\":\"integration-audit swarm creation\",\"lastActive\":\"2025-08-29T15:16:01.843Z\"},{\"id\":\"d9"
+      },
+      {
+        "url": "http://localhost:3000/api/results",
+        "method": "GET",
+        "status": 200,
+        "latency_ms": 38.66,
+        "is_mock": false,
+        "has_error": false,
+        "body_preview": "{\"results\":[],\"timestamp\":\"2025-08-29T15:16:01.882Z\"}"
+      },
+      {
+        "url": "http://localhost:3000/api/status",
+        "method": "GET",
+        "status": 200,
+        "latency_ms": 36.11,
+        "is_mock": false,
+        "has_error": false,
+        "body_preview": "{\"status\":\"operational\",\"services\":{\"chat\":\"online\",\"agents\":\"online\",\"research\":\"online\",\"code\":\"online\"},\"timestamp\":\"2025-08-29T15:16:01.918Z\"}"
+      },
+      {
+        "url": "http://localhost:8100/swarms",
+        "method": "GET",
+        "status": 200,
+        "latency_ms": 1.57,
+        "is_mock": false,
+        "has_error": false,
+        "body_preview": "[{\"swarm_id\":\"c0a5cc76-269a-428d-b335-dc7137541cba\",\"swarm_type\":\"analysis\",\"status\":\"completed\",\"agents\":[],\"current_task\":\"integration-audit swarm creation\",\"progress\":1.0,\"results\":{\"task_id\":\"a431"
+      },
+      {
+        "url": "http://localhost:8100/agents",
+        "method": "GET",
+        "status": 200,
+        "latency_ms": 0.38,
+        "is_mock": false,
+        "has_error": false,
+        "body_preview": "[{\"id\":\"code_architect\",\"name\":\"Code Architect\",\"type\":\"orchestrator\",\"capabilities\":[\"system design\",\"architecture\",\"planning\"],\"status\":\"idle\"},{\"id\":\"frontend_dev\",\"name\":\"Frontend Developer\",\"type"
+      },
+      {
+        "url": "http://localhost:8100/health",
+        "method": "GET",
+        "status": 200,
+        "latency_ms": 0.28,
+        "is_mock": false,
+        "has_error": false,
+        "body_preview": "{\"status\":\"healthy\",\"active_swarms\":4,\"swarm_manager\":\"not available\"}"
+      },
+      {
+        "url": "http://localhost:8081/health",
+        "method": "GET",
+        "status": 404,
+        "latency_ms": 2.67,
+        "is_mock": false,
+        "has_error": true,
+        "body_preview": "{\"detail\":\"Not Found\"}"
+      },
+      {
+        "url": "http://localhost:8082/health",
+        "method": "GET",
+        "status": 200,
+        "latency_ms": 9.08,
+        "is_mock": false,
+        "has_error": false,
+        "body_preview": "{\"status\":\"healthy\",\"repos\":0,\"commits\":0}"
+      },
+      {
+        "url": "http://localhost:8095/health",
+        "method": "GET",
+        "status": 200,
+        "latency_ms": 5.71,
+        "is_mock": false,
+        "has_error": false,
+        "body_preview": "{\"status\":\"healthy\"}"
+      },
+      {
+        "url": "http://localhost:8099/health",
+        "method": "GET",
+        "status": 200,
+        "latency_ms": 123.35,
+        "is_mock": false,
+        "has_error": false,
+        "body_preview": "{\"status\":\"healthy\",\"services\":{\"context\":\"healthy\",\"research\":\"healthy\",\"github\":\"healthy\",\"hubspot\":\"healthy\",\"salesforce\":\"healthy\",\"gong\":\"healthy\",\"agents\":\"unhealthy\",\"coordinator\":\"healthy\",\"or"
+      },
+      {
+        "url": "http://localhost:8200/health",
+        "method": "GET",
+        "status": 404,
+        "latency_ms": 2.99,
+        "is_mock": false,
+        "has_error": true,
+        "body_preview": "{\"detail\":\"Not Found\"}"
+      },
+      {
+        "url": "http://localhost:8300/health",
+        "method": "GET",
+        "status": 404,
+        "latency_ms": 3.33,
+        "is_mock": false,
+        "has_error": true,
+        "body_preview": "{\"detail\":\"Not Found\"}"
+      },
+      {
+        "url": "http://localhost:9090/-/healthy",
+        "method": "GET",
+        "status": 200,
+        "latency_ms": 1.7,
+        "is_mock": false,
+        "has_error": false,
+        "body_preview": "Prometheus Server is Healthy.\n"
+      }
+    ],
+    "websockets": [
+      {
+        "endpoint": "ws://localhost:8100/ws/swarm/test",
+        "status": "ready"
+      },
+      {
+        "endpoint": "ws://localhost:3000/ws",
+        "status": "ready"
+      },
+      {
+        "endpoint": "ws://localhost:8200/ws",
+        "status": "ready"
+      }
+    ],
+    "file_structure": {
+      "Backend Services": [
+        {
+          "path": "services/planning/intelligent_planner_v2.py",
+          "exists": true,
+          "size": 9991,
+          "modified": "2025-08-29T00:22:16.648061",
+          "issues": []
+        },
+        {
+          "path": "services/real_swarm_executor.py",
+          "exists": true,
+          "size": 25204,
+          "modified": "2025-08-29T00:26:23.657898",
+          "issues": []
+        },
+        {
+          "path": "libs/agents/swarm_manager.py",
+          "exists": true,
+          "size": 28925,
+          "modified": "2025-08-25T13:34:24.146726",
+          "issues": []
+        },
+        {
+          "path": "backend/agents/agent_orchestrator.py",
+          "exists": false
+        }
+      ],
+      "Dashboard Components": [
+        {
+          "path": "apps/sophia-dashboard/src/app/page.tsx",
+          "exists": true,
+          "size": 37821,
+          "modified": "2025-08-29T07:58:54.583773",
+          "issues": []
+        },
+        {
+          "path": "apps/sophia-dashboard/src/app/page-unified.tsx",
+          "exists": true,
+          "size": 18987,
+          "modified": "2025-08-29T00:25:35.580300",
+          "issues": []
+        },
+        {
+          "path": "apps/sophia-dashboard/src/lib/swarm-client.ts",
+          "exists": true,
+          "size": 7005,
+          "modified": "2025-08-29T07:53:05.031814",
+          "issues": []
+        },
+        {
+          "path": "apps/sophia-dashboard/src/components/ChatRenderer.tsx",
+          "exists": true,
+          "size": 4353,
+          "modified": "2025-08-29T07:39:47.570540",
+          "issues": []
+        }
+      ],
+      "API Routes": [
+        {
+          "path": "apps/sophia-dashboard/src/app/api/chat/route.ts",
+          "exists": true,
+          "size": 262,
+          "modified": "2025-08-29T07:56:36.682426",
+          "issues": []
+        },
+        {
+          "path": "apps/sophia-dashboard/src/app/api/chat/unified-route.ts",
+          "exists": true,
+          "size": 14555,
+          "modified": "2025-08-29T08:07:29.581140",
+          "issues": []
+        },
+        {
+          "path": "apps/sophia-dashboard/src/app/api/health/route.ts",
+          "exists": true,
+          "size": 2602,
+          "modified": "2025-08-29T07:41:47.082581",
+          "issues": []
+        },
+        {
+          "path": "apps/sophia-dashboard/src/app/api/metrics/route.ts",
+          "exists": true,
+          "size": 8043,
+          "modified": "2025-08-29T07:51:15.328708",
+          "issues": []
+        }
+      ],
+      "MCP Servers": [
+        {
+          "path": "services/mcp-context/server.py",
+          "exists": false
+        },
+        {
+          "path": "services/mcp-github/server.py",
+          "exists": false
+        },
+        {
+          "path": "services/mcp-memory/server.py",
+          "exists": false
+        }
+      ],
+      "Configuration": [
+        {
+          "path": "docker-compose.yml",
+          "exists": true,
+          "size": 19981,
+          "modified": "2025-08-27T11:06:40.985754",
+          "issues": []
+        },
+        {
+          "path": "pyproject.toml",
+          "exists": true,
+          "size": 1414,
+          "modified": "2025-08-27T09:52:22.526125",
+          "issues": []
+        },
+        {
+          "path": "package.json",
+          "exists": true,
+          "size": 2598,
+          "modified": "2025-08-26T11:17:09.596574",
+          "issues": []
+        },
+        {
+          "path": ".env",
+          "exists": true,
+          "size": 6376,
+          "modified": "2025-08-27T23:10:32.001748",
+          "issues": []
+        },
+        {
+          "path": ".env.production",
+          "exists": true,
+          "size": 5584,
+          "modified": "2025-08-26T13:41:08.071357",
+          "issues": []
+        }
+      ]
+    },
+    "dependencies": {
+      "nodejs": {
+        "total": 4,
+        "critical": [
+          "next",
+          "react",
+          "typescript",
+          "tailwindcss"
+        ],
+        "missing": [
+          "next",
+          "react",
+          "typescript",
+          "tailwindcss"
+        ]
+      }
+    },
+    "docker_services": [
+      {
+        "Command": "\"python -m http.serv\u2026\"",
+        "CreatedAt": "2025-08-28 10:05:40 -0700 PDT",
+        "ExitCode": 0,
+        "Health": "",
+        "ID": "e4fe6872af05",
+        "Image": "python:3.11-slim",
+        "Labels": "com.docker.compose.project=sophia-ai-intel-1,com.docker.compose.version=2.39.1,desktop.docker.io/ports/8008/tcp=:8008,com.docker.compose.config-hash=0a6bbb70a4e13cb13eb96ac062f2d2ac7384256cb4ba1ce21fbae61105ed7e6a,com.docker.compose.container-number=1,com.docker.compose.depends_on=,com.docker.compose.image=sha256:1d6131b5d479888b43200645e03a78443c7157efbdb730e6b48129740727c312,desktop.docker.io/ports.scheme=v2,com.docker.compose.oneoff=False,com.docker.compose.project.config_files=/Users/lynnmusil/sophia-ai-intel-1/docker-compose.complete.yml,com.docker.compose.project.working_dir=/Users/lynnmusil/sophia-ai-intel-1,com.docker.compose.service=agents-swarm",
+        "LocalVolumes": "0",
+        "Mounts": "",
+        "Name": "agents-swarm",
+        "Names": "agents-swarm",
+        "Networks": "sophia-ai-intel-1_sophia-network",
+        "Ports": "0.0.0.0:8008->8008/tcp, [::]:8008->8008/tcp",
+        "Project": "sophia-ai-intel-1",
+        "Publishers": [
+          {
+            "URL": "0.0.0.0",
+            "TargetPort": 8008,
+            "PublishedPort": 8008,
+            "Protocol": "tcp"
+          },
+          {
+            "URL": "::",
+            "TargetPort": 8008,
+            "PublishedPort": 8008,
+            "Protocol": "tcp"
+          }
+        ],
+        "RunningFor": "22 hours ago",
+        "Service": "agents-swarm",
+        "Size": "0B",
+        "State": "running",
+        "Status": "Up 22 hours"
+      },
+      {
+        "Command": "\"uvicorn app:app --h\u2026\"",
+        "CreatedAt": "2025-08-28 09:59:01 -0700 PDT",
+        "ExitCode": 0,
+        "Health": "unhealthy",
+        "ID": "ba8398855f94",
+        "Image": "sophia-ai-intel-1-mem0",
+        "Labels": "desktop.docker.io/ports.scheme=v2,com.docker.compose.depends_on=redis:service_started:false,qdrant:service_started:false,com.docker.compose.oneoff=False,com.docker.compose.project=sophia-ai-intel-1,com.docker.compose.project.working_dir=/Users/lynnmusil/sophia-ai-intel-1,com.docker.compose.version=2.39.1,desktop.docker.io/ports/8000/tcp=:8050,com.docker.compose.config-hash=5069076ab1fb867093b22c0148e4d76fc4887e9f1d82b3f545f6bf8e92943e44,com.docker.compose.container-number=1,com.docker.compose.image=sha256:5ce66880cb64fe5e86e78b80a046a7cf16da81b9dab49cc3fb2c8cf1c2a72e40,com.docker.compose.project.config_files=/Users/lynnmusil/sophia-ai-intel-1/docker-compose.local.yml,com.docker.compose.service=mem0",
+        "LocalVolumes": "0",
+        "Mounts": "",
+        "Name": "mem0",
+        "Names": "mem0",
+        "Networks": "sophia-ai-intel-1_sophia-network",
+        "Ports": "0.0.0.0:8050->8000/tcp, [::]:8050->8000/tcp",
+        "Project": "sophia-ai-intel-1",
+        "Publishers": [
+          {
+            "URL": "0.0.0.0",
+            "TargetPort": 8000,
+            "PublishedPort": 8050,
+            "Protocol": "tcp"
+          },
+          {
+            "URL": "::",
+            "TargetPort": 8000,
+            "PublishedPort": 8050,
+            "Protocol": "tcp"
+          }
+        ],
+        "RunningFor": "22 hours ago",
+        "Service": "mem0",
+        "Size": "0B",
+        "State": "running",
+        "Status": "Up 21 hours (unhealthy)"
+      },
+      {
+        "Command": "\"python -m http.serv\u2026\"",
+        "CreatedAt": "2025-08-28 10:05:40 -0700 PDT",
+        "ExitCode": 0,
+        "Health": "",
+        "ID": "ced309670096",
+        "Image": "python:3.11-slim",
+        "Labels": "com.docker.compose.service=portkey-llm,com.docker.compose.container-number=1,com.docker.compose.depends_on=,com.docker.compose.image=sha256:1d6131b5d479888b43200645e03a78443c7157efbdb730e6b48129740727c312,com.docker.compose.oneoff=False,com.docker.compose.project=sophia-ai-intel-1,com.docker.compose.project.config_files=/Users/lynnmusil/sophia-ai-intel-1/docker-compose.complete.yml,com.docker.compose.project.working_dir=/Users/lynnmusil/sophia-ai-intel-1,com.docker.compose.version=2.39.1,desktop.docker.io/ports/8007/tcp=:8007,com.docker.compose.config-hash=0f74cf8c06c627d051e1125c0b707b9302477c8f5f3ad83b88063439037a44e2,desktop.docker.io/ports.scheme=v2",
+        "LocalVolumes": "0",
+        "Mounts": "",
+        "Name": "portkey-llm",
+        "Names": "portkey-llm",
+        "Networks": "sophia-ai-intel-1_sophia-network",
+        "Ports": "0.0.0.0:8007->8007/tcp, [::]:8007->8007/tcp",
+        "Project": "sophia-ai-intel-1",
+        "Publishers": [
+          {
+            "URL": "0.0.0.0",
+            "TargetPort": 8007,
+            "PublishedPort": 8007,
+            "Protocol": "tcp"
+          },
+          {
+            "URL": "::",
+            "TargetPort": 8007,
+            "PublishedPort": 8007,
+            "Protocol": "tcp"
+          }
+        ],
+        "RunningFor": "22 hours ago",
+        "Service": "portkey-llm",
+        "Size": "0B",
+        "State": "running",
+        "Status": "Up 22 hours"
+      },
+      {
+        "Command": "\"docker-entrypoint.s\u2026\"",
+        "CreatedAt": "2025-08-28 10:05:40 -0700 PDT",
+        "ExitCode": 0,
+        "Health": "",
+        "ID": "c05abbff6d61",
+        "Image": "postgres:15-alpine",
+        "Labels": "desktop.docker.io/ports/5432/tcp=:5432,com.docker.compose.config-hash=cb1c0e19db9ecb47feaaefa5fcc9db3596e457a9bde3318044f96fe7b2711f46,com.docker.compose.depends_on=,com.docker.compose.oneoff=False,com.docker.compose.project.working_dir=/Users/lynnmusil/sophia-ai-intel-1,com.docker.compose.replace=postgres,com.docker.compose.version=2.39.1,desktop.docker.io/ports.scheme=v2,com.docker.compose.container-number=1,com.docker.compose.image=sha256:987b242173006d6df08506f10b967a71478a3610664cfefbc49b9c775d3d0eed,com.docker.compose.project=sophia-ai-intel-1,com.docker.compose.project.config_files=/Users/lynnmusil/sophia-ai-intel-1/docker-compose.complete.yml,com.docker.compose.service=postgres",
+        "LocalVolumes": "1",
+        "Mounts": "sophia-ai-inte\u2026",
+        "Name": "postgres",
+        "Names": "postgres",
+        "Networks": "sophia-ai-intel-1_sophia-network",
+        "Ports": "0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp",
+        "Project": "sophia-ai-intel-1",
+        "Publishers": [
+          {
+            "URL": "0.0.0.0",
+            "TargetPort": 5432,
+            "PublishedPort": 5432,
+            "Protocol": "tcp"
+          },
+          {
+            "URL": "::",
+            "TargetPort": 5432,
+            "PublishedPort": 5432,
+            "Protocol": "tcp"
+          }
+        ],
+        "RunningFor": "22 hours ago",
+        "Service": "postgres",
+        "Size": "0B",
+        "State": "running",
+        "Status": "Up 22 hours"
+      },
+      {
+        "Command": "\"/bin/prometheus --c\u2026\"",
+        "CreatedAt": "2025-08-28 10:00:25 -0700 PDT",
+        "ExitCode": 0,
+        "Health": "",
+        "ID": "2f7004a92679",
+        "Image": "prom/prometheus:latest",
+        "Labels": "com.docker.compose.image=sha256:63805ebb8d2b3920190daf1cb14a60871b16fd38bed42b857a3182bc621f4996,com.docker.compose.project=sophia-ai-intel-1,maintainer=The Prometheus Authors <prometheus-developers@googlegroups.com>,com.docker.compose.project.config_files=/Users/lynnmusil/sophia-ai-intel-1/docker-compose.working.yml,com.docker.compose.project.working_dir=/Users/lynnmusil/sophia-ai-intel-1,desktop.docker.io/ports.scheme=v2,desktop.docker.io/ports/9090/tcp=:9090,org.opencontainers.image.source=https://github.com/prometheus/prometheus,desktop.docker.io/binds/0/Target=/etc/prometheus/prometheus.yml,com.docker.compose.version=2.39.1,desktop.docker.io/binds/0/Source=/Users/lynnmusil/sophia-ai-intel-1/monitoring/prometheus.yml,desktop.docker.io/binds/0/SourceKind=hostFile,com.docker.compose.config-hash=be8f798868e4a3c9c8a88d4c948171a9f6f3355e45611fb0d7d066ef018abb81,com.docker.compose.container-number=1,com.docker.compose.depends_on=,com.docker.compose.oneoff=False,com.docker.compose.service=prometheus",
+        "LocalVolumes": "1",
+        "Mounts": "/host_mnt/User\u2026,d4520c4e229d3b\u2026",
+        "Name": "prometheus",
+        "Names": "prometheus",
+        "Networks": "sophia-ai-intel-1_sophia-network",
+        "Ports": "0.0.0.0:9090->9090/tcp, [::]:9090->9090/tcp",
+        "Project": "sophia-ai-intel-1",
+        "Publishers": [
+          {
+            "URL": "0.0.0.0",
+            "TargetPort": 9090,
+            "PublishedPort": 9090,
+            "Protocol": "tcp"
+          },
+          {
+            "URL": "::",
+            "TargetPort": 9090,
+            "PublishedPort": 9090,
+            "Protocol": "tcp"
+          }
+        ],
+        "RunningFor": "22 hours ago",
+        "Service": "prometheus",
+        "Size": "0B",
+        "State": "running",
+        "Status": "Up 22 hours"
+      },
+      {
+        "Command": "\"./entrypoint.sh\"",
+        "CreatedAt": "2025-08-28 10:05:40 -0700 PDT",
+        "ExitCode": 0,
+        "Health": "",
+        "ID": "d37d9ed72505",
+        "Image": "qdrant/qdrant:latest",
+        "Labels": "com.docker.compose.project=sophia-ai-intel-1,com.docker.compose.service=qdrant,desktop.docker.io/ports/6334/tcp=:6334,org.opencontainers.image.documentation=https://qdrant.com/docs,desktop.docker.io/ports/6333/tcp=:6333,org.opencontainers.image.title=Qdrant,com.docker.compose.config-hash=d12980d7e0da336b2a9aaa1fd4a75a8f1e882d8f8ef12ee7f28791cfa355739c,com.docker.compose.image=sha256:6ac4807063bbecddca0250bfbcff52acf18c22263b904d12919349e6d0a408f1,com.docker.compose.oneoff=False,com.docker.compose.replace=qdrant,org.opencontainers.image.url=https://qdrant.com/,org.opencontainers.image.vendor=Qdrant,com.docker.compose.container-number=1,com.docker.compose.depends_on=,com.docker.compose.project.config_files=/Users/lynnmusil/sophia-ai-intel-1/docker-compose.complete.yml,desktop.docker.io/ports.scheme=v2,org.opencontainers.image.version=v1.15.4,com.docker.compose.project.working_dir=/Users/lynnmusil/sophia-ai-intel-1,com.docker.compose.version=2.39.1,org.opencontainers.image.description=Official Qdrant image,org.opencontainers.image.source=https://github.com/qdrant/qdrant",
+        "LocalVolumes": "1",
+        "Mounts": "sophia-ai-inte\u2026",
+        "Name": "qdrant",
+        "Names": "qdrant",
+        "Networks": "sophia-ai-intel-1_sophia-network",
+        "Ports": "0.0.0.0:6333-6334->6333-6334/tcp, [::]:6333-6334->6333-6334/tcp",
+        "Project": "sophia-ai-intel-1",
+        "Publishers": [
+          {
+            "URL": "0.0.0.0",
+            "TargetPort": 6333,
+            "PublishedPort": 6333,
+            "Protocol": "tcp"
+          },
+          {
+            "URL": "::",
+            "TargetPort": 6333,
+            "PublishedPort": 6333,
+            "Protocol": "tcp"
+          },
+          {
+            "URL": "0.0.0.0",
+            "TargetPort": 6334,
+            "PublishedPort": 6334,
+            "Protocol": "tcp"
+          },
+          {
+            "URL": "::",
+            "TargetPort": 6334,
+            "PublishedPort": 6334,
+            "Protocol": "tcp"
+          }
+        ],
+        "RunningFor": "22 hours ago",
+        "Service": "qdrant",
+        "Size": "0B",
+        "State": "running",
+        "Status": "Up 22 hours"
+      },
+      {
+        "Command": "\"docker-entrypoint.s\u2026\"",
+        "CreatedAt": "2025-08-28 10:05:40 -0700 PDT",
+        "ExitCode": 0,
+        "Health": "",
+        "ID": "bb3343f47d31",
+        "Image": "redis:7-alpine",
+        "Labels": "com.docker.compose.replace=redis,com.docker.compose.service=redis,com.docker.compose.version=2.39.1,desktop.docker.io/ports/6379/tcp=:6380,com.docker.compose.image=sha256:bb186d083732f669da90be8b0f975a37812b15e913465bb14d845db72a4e3e08,com.docker.compose.container-number=1,com.docker.compose.depends_on=,com.docker.compose.oneoff=False,com.docker.compose.project=sophia-ai-intel-1,com.docker.compose.project.config_files=/Users/lynnmusil/sophia-ai-intel-1/docker-compose.complete.yml,com.docker.compose.project.working_dir=/Users/lynnmusil/sophia-ai-intel-1,desktop.docker.io/ports.scheme=v2,com.docker.compose.config-hash=627a2ad7c55249bd332bcd7d1a6b0f4bd0c251432bf43273cec9d720f9728647",
+        "LocalVolumes": "1",
+        "Mounts": "sophia-ai-inte\u2026",
+        "Name": "redis",
+        "Names": "redis",
+        "Networks": "sophia-ai-intel-1_sophia-network",
+        "Ports": "0.0.0.0:6380->6379/tcp, [::]:6380->6379/tcp",
+        "Project": "sophia-ai-intel-1",
+        "Publishers": [
+          {
+            "URL": "0.0.0.0",
+            "TargetPort": 6379,
+            "PublishedPort": 6380,
+            "Protocol": "tcp"
+          },
+          {
+            "URL": "::",
+            "TargetPort": 6379,
+            "PublishedPort": 6380,
+            "Protocol": "tcp"
+          }
+        ],
+        "RunningFor": "22 hours ago",
+        "Service": "redis",
+        "Size": "0B",
+        "State": "running",
+        "Status": "Up 22 hours"
+      },
+      {
+        "Command": "\"python -m http.serv\u2026\"",
+        "CreatedAt": "2025-08-28 10:00:25 -0700 PDT",
+        "ExitCode": 0,
+        "Health": "",
+        "ID": "8cd72a6a59d4",
+        "Image": "python:3.11-slim",
+        "Labels": "com.docker.compose.version=2.39.1,desktop.docker.io/ports.scheme=v2,desktop.docker.io/ports/8090/tcp=:8090,com.docker.compose.config-hash=70f999e719cbf0a32ac4c752ae15c0f7e7b0b5150bcb0bc54052f435773f5c1a,com.docker.compose.container-number=1,com.docker.compose.oneoff=False,com.docker.compose.project.config_files=/Users/lynnmusil/sophia-ai-intel-1/docker-compose.working.yml,com.docker.compose.project.working_dir=/Users/lynnmusil/sophia-ai-intel-1,com.docker.compose.service=test-api,com.docker.compose.depends_on=,com.docker.compose.image=sha256:1d6131b5d479888b43200645e03a78443c7157efbdb730e6b48129740727c312,com.docker.compose.project=sophia-ai-intel-1",
+        "LocalVolumes": "0",
+        "Mounts": "",
+        "Name": "test-api",
+        "Names": "test-api",
+        "Networks": "sophia-ai-intel-1_sophia-network",
+        "Ports": "0.0.0.0:8090->8090/tcp, [::]:8090->8090/tcp",
+        "Project": "sophia-ai-intel-1",
+        "Publishers": [
+          {
+            "URL": "0.0.0.0",
+            "TargetPort": 8090,
+            "PublishedPort": 8090,
+            "Protocol": "tcp"
+          },
+          {
+            "URL": "::",
+            "TargetPort": 8090,
+            "PublishedPort": 8090,
+            "Protocol": "tcp"
+          }
+        ],
+        "RunningFor": "22 hours ago",
+        "Service": "test-api",
+        "Size": "0B",
+        "State": "running",
+        "Status": "Up 22 hours"
+      }
+    ],
+    "security": {
+      "env_files": [
+        ".env",
+        ".env.local",
+        ".env.production"
+      ],
+      "hardcoded_secrets_count": 92,
+      "files_with_secrets": [
+        ".venv/lib/python3.12/site-packages/fsspec/spec.py",
+        ".venv/lib/python3.12/site-packages/starlette/datastructures.py",
+        ".venv/lib/python3.12/site-packages/langchain_community/cache.py",
+        ".venv/lib/python3.12/site-packages/psycopg2/__init__.py",
+        ".venv/lib/python3.12/site-packages/dns/tsig.py",
+        ".venv/lib/python3.12/site-packages/passlib/tests/test_context.py",
+        ".venv/lib/python3.12/site-packages/transformers/models/sew_d/convert_sew_d_original_pytorch_checkpoint_to_pytorch.py",
+        ".venv/lib/python3.12/site-packages/transformers/models/vits/tokenization_vits.py",
+        ".venv/lib/python3.12/site-packages/transformers/models/clvp/tokenization_clvp.py",
+        ".venv/lib/python3.12/site-packages/transformers/models/gpt_neox/tokenization_gpt_neox_fast.py"
+      ]
+    },
+    "performance": {
+      "next_build_size_mb": 101.18,
+      "total_files": 83323,
+      "lines_of_code": 5940869
+    }
+  },
+  "issues": [
+    "API Error: http://localhost:8081/health returned 404",
+    "API Error: http://localhost:8200/health returned 404",
+    "API Error: http://localhost:8300/health returned 404",
+    "Missing file: backend/agents/agent_orchestrator.py",
+    "Missing file: services/mcp-context/server.py",
+    "Missing file: services/mcp-github/server.py",
+    "Missing file: services/mcp-memory/server.py",
+    "Security: .env.local not in .gitignore",
+    "Hardcoded secrets found in 92 files"
+  ],
+  "warnings": [
+    "Mock Data: http://localhost:3000/api/metrics",
+    "Missing Node deps: ['next', 'react', 'typescript', 'tailwindcss']",
+    "Environment file exists: .env",
+    "Environment file exists: .env.local",
+    "Environment file exists: .env.production",
+    "Large build size: 101.18MB"
+  ],
+  "successes": [
+    "API OK: http://localhost:3000/api/chat",
+    "API OK: http://localhost:3000/api/health",
+    "API OK: http://localhost:3000/api/metrics?target=health",
+    "API OK: http://localhost:3000/api/metrics?target=targets",
+    "API OK: http://localhost:3000/api/agents",
+    "API OK: http://localhost:3000/api/agents?action=activity",
+    "API OK: http://localhost:3000/api/agents",
+    "API OK: http://localhost:3000/api/results",
+    "API OK: http://localhost:3000/api/status",
+    "API OK: http://localhost:8100/swarms",
+    "API OK: http://localhost:8100/agents",
+    "API OK: http://localhost:8100/health",
+    "API OK: http://localhost:8082/health",
+    "API OK: http://localhost:8095/health",
+    "API OK: http://localhost:8099/health",
+    "API OK: http://localhost:9090/-/healthy",
+    "WebSocket ready: localhost:8100",
+    "WebSocket ready: localhost:3000",
+    "WebSocket ready: localhost:8200",
+    "File OK: services/planning/intelligent_planner_v2.py",
+    "File OK: services/real_swarm_executor.py",
+    "File OK: libs/agents/swarm_manager.py",
+    "File OK: apps/sophia-dashboard/src/app/page.tsx",
+    "File OK: apps/sophia-dashboard/src/app/page-unified.tsx",
+    "File OK: apps/sophia-dashboard/src/lib/swarm-client.ts",
+    "File OK: apps/sophia-dashboard/src/components/ChatRenderer.tsx",
+    "File OK: apps/sophia-dashboard/src/app/api/chat/route.ts",
+    "File OK: apps/sophia-dashboard/src/app/api/chat/unified-route.ts",
+    "File OK: apps/sophia-dashboard/src/app/api/health/route.ts",
+    "File OK: apps/sophia-dashboard/src/app/api/metrics/route.ts",
+    "File OK: docker-compose.yml",
+    "File OK: pyproject.toml",
+    "File OK: package.json",
+    "File OK: .env",
+    "File OK: .env.production",
+    "Docker service running: agents-swarm",
+    "Docker service running: mem0",
+    "Docker service running: portkey-llm",
+    "Docker service running: postgres",
+    "Docker service running: prometheus",
+    "Docker service running: qdrant",
+    "Docker service running: redis",
+    "Docker service running: test-api",
+    "Security: .env in .gitignore",
+    "Security: .env.production in .gitignore"
+  ],
+  "metrics": {
+    "next_build_size_mb": 101.18,
+    "total_files": 83323,
+    "lines_of_code": 5940869
+  },
+  "recommendations": [
+    {
+      "priority": "MEDIUM",
+      "category": "Data Integrity",
+      "action": "Replace remaining mock data with real implementations",
+      "details": "Some endpoints still return mock data"
+    },
+    {
+      "priority": "LOW",
+      "category": "Performance",
+      "action": "Optimize Next.js bundle size",
+      "details": "Consider code splitting and lazy loading"
+    }
+  ]
+}

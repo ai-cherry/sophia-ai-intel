@@ -1,0 +1,107 @@
+================================================================================
+SOPHIA AI - ARCHIVE FILE SCAN REPORT
+Generated: 2025-08-29T08:50:59.005893
+================================================================================
+
+EXECUTIVE SUMMARY
+----------------------------------------
+  Total Archived Files: 10
+  Total Backup Files: 5
+  Total Temp Files: 24
+  Total Old Versions: 19
+  Total Obsolete Files: 32
+  Total Duplicate Candidates: 771
+  Total Large Archives: 1
+  Total Archive Size Mb: 16.29
+  Total Obsolete Size Mb: 0.3
+  Potential Space Savings Mb: 16.59
+
+CLEANUP RECOMMENDATIONS
+----------------------------------------
+  • INFO: 24 temporary files can be safely removed.
+  • WARNING: 771 potential duplicate files found.
+  • CRITICAL: 1 large archives consuming 16.24MB.
+  • INFO: Found 1 tar.gz archives. Consider extracting needed files and removing.
+
+ARCHIVE FILES BY TYPE
+----------------------------------------
+  .backup: 3 files
+  .md: 2 files
+  .deprecated: 2 files
+  .gz: 1 files
+  .bak: 1 files
+  .json: 1 files
+
+LARGEST ARCHIVE FILES (TOP 10)
+----------------------------------------
+  • helm.tar.gz (16.24MB)
+
+OLDEST ARCHIVE FILES (TOP 10)
+----------------------------------------
+  • helm.tar.gz (modified: 2025-08-25)
+  • SOPHIA_AI_FINAL_REPORT_20250826_071324.md (modified: 2025-08-26)
+  • scripts/synthetic_checks.py.backup (modified: 2025-08-27)
+  • agentic/coding_swarms/main.py.deprecated (modified: 2025-08-27)
+  • agentic/research_swarms/trend_swarm.py.deprecated (modified: 2025-08-27)
+  • DEPLOYMENT_READINESS_REPORT_20250827_133501.json (modified: 2025-08-27)
+  • DEPLOYMENT_REMEDIATION_SUMMARY_20250827_133501.md (modified: 2025-08-27)
+  • .env.production.secure.bak (modified: 2025-08-27)
+  • .env.production.real.backup (modified: 2025-08-27)
+  • scripts/run-sophia-locally.sh.backup (modified: 2025-08-27)
+
+ARCHIVED FILES (FIRST 20)
+----------------------------------------
+  • .env.production.real.backup
+  • DEPLOYMENT_REMEDIATION_SUMMARY_20250827_133501.md
+  • helm.tar.gz
+  • .env.production.secure.bak
+  • SOPHIA_AI_FINAL_REPORT_20250826_071324.md
+  • DEPLOYMENT_READINESS_REPORT_20250827_133501.json
+  • agentic/research_swarms/trend_swarm.py.deprecated
+  • agentic/coding_swarms/main.py.deprecated
+  • scripts/run-sophia-locally.sh.backup
+  • scripts/synthetic_checks.py.backup
+
+BACKUP FILES (FIRST 20)
+----------------------------------------
+  • .env.production.real.backup
+  • .env.production.secure.bak
+  • scripts/run-sophia-locally.sh.backup
+  • scripts/synthetic_checks.py.backup
+  • scripts/database/backup-restore.sh
+
+DUPLICATE FILE CANDIDATES (FIRST 10)
+----------------------------------------
+  • .env
+    = .env.production.secure
+  • ssl/dhparam.pem
+    = ssl/local/dhparam.pem
+  • ssl/ca.crt
+    = ssl/local/ca-cert.pem
+  • ssl/sophia.key
+    = ssl/local/server-key.pem
+  • ssl/fullchain.pem
+    = ssl/local/fullchain.pem
+  • ssl/sophia.crt
+    = ssl/local/server-cert.pem
+  • proofs/healthz_final/research.txt
+    = proofs/healthz_final/dashboard.txt
+  • proofs/healthz_final/research.txt
+    = proofs/healthz_final/context.txt
+  • proofs/healthz_final/research.txt
+    = proofs/healthz_final/business.txt
+  • proofs/healthz_final/research.txt
+    = proofs/healthz_final/jobs.txt
+  ... and 761 more pairs
+
+RECOMMENDED ACTIONS
+----------------------------------------
+  1. Review and remove unnecessary archive files
+  2. Move large archives to external storage
+  3. Delete temporary and backup files
+  4. Consolidate duplicate files
+  5. Update .gitignore to prevent future accumulation
+
+================================================================================
+END OF REPORT
+================================================================================

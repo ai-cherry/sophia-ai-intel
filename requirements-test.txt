@@ -1,0 +1,37 @@
+# Test Dependencies for Sophia AI Intelligence Platform
+# Install with: pip install -r requirements-test.txt
+
+# Core testing framework
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+pytest-mock==3.12.0
+pytest-timeout==2.2.0
+pytest-xdist==3.5.0  # Parallel test execution
+
+# HTTP testing
+httpx==0.25.2
+respx==0.20.2  # Mock httpx requests
+
+# Test data generation
+factory-boy==3.3.0
+faker==20.1.0
+
+# Performance testing
+locust==2.17.0
+pytest-benchmark==4.0.0
+
+# Code quality
+black==23.12.0
+flake8==6.1.0
+mypy==1.7.1
+isort==5.13.2
+
+# Mocking and fixtures
+freezegun==1.4.0  # Time mocking
+mongomock==4.1.2  # MongoDB mocking
+fakeredis==2.20.1  # Redis mocking
+
+# Coverage reporting
+coverage[toml]==7.3.3
+codecov==2.1.13

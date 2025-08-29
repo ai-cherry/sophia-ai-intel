@@ -55,8 +55,16 @@ logger = get_logger(__name__)
 
 # Environment Variables
 NEON_DATABASE_URL = settings.neon_database_url
-WEAVIATE_URL = os.getenv("WEAVIATE_URL", "w6bigpoxsrwvq7wlgmmdva.c0.us-west3.gcp.weaviate.cloud")
-WEAVIATE_API_KEY = os.getenv("WEAVIATE_API_KEY", "VMKjGMQUnXQIDiFOciZZOhr7amBfCHMh7hNf")
+WEAVIATE_URL = os.getenv("WEAVIATE_URL")
+WEAVIATE_API_KEY = os.getenv("WEAVIATE_API_KEY")
+
+# Validate required environment variables
+if not WEAVIATE_URL or not WEAVIATE_API_KEY:
+    raise ValueError(
+        "Missing required environment variables. "
+        "Please set WEAVIATE_URL and WEAVIATE_API_KEY. "
+        "See .env.example for configuration template."
+    )
 
 app = FastAPI(
     title="sophia-mcp-context-v2",
