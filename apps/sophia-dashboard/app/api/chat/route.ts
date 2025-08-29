@@ -23,6 +23,7 @@ interface ChatRequest {
 const API_KEYS = {
   perplexity: process.env.PERPLEXITY_API_KEY || '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',
   tavily: process.env.TAVILY_API_KEY || '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',
+  serper: process.env.SERPER_API_KEY || '7b616d4bf53e98d9169e89c25d6f4bf4389a9ed5',
   openrouter: process.env.OPENROUTER_API_KEY || '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',
   brave: process.env.BRAVE_API_KEY || 'BSApz0194z7SG6DplmVozl7ttFOi0Eo',
   openai: process.env.OPENAI_API_KEY,
@@ -126,6 +127,41 @@ class SophiaCore {
       }
     } catch (e) {
       console.error('Tavily error:', e);
+    }
+    return null;
+  }
+
+  /**
+   * Call Serper for Google search
+   */
+  private async callSerper(query: string): Promise<string | null> {
+    if (!API_KEYS.serper) return null;
+    
+    try {
+      const response = await fetch('https://google.serper.dev/search', {
+        method: 'POST',
+        headers: {
+          'X-API-KEY': API_KEYS.serper,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          q: query,
+          num: 5
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.organic?.length) {
+          let result = 'Search Results:\n';
+          data.organic.slice(0, 5).forEach((item: any) => {
+            result += `• ${item.title}\n  ${item.snippet}\n  ${item.link}\n\n`;
+          });
+          return result;
+        }
+      }
+    } catch (e) {
+      console.error('Serper error:', e);
     }
     return null;
   }
@@ -254,9 +290,15 @@ class SophiaCore {
     
     // Try providers based on query type
     if (classification.type === 'research' || classification.type === 'knowledge') {
-      // Try Perplexity first for research
-      response = await this.callPerplexity(query);
-      if (response) provider = 'perplexity';
+      // Try Serper first for research (Google search)
+      response = await this.callSerper(query);
+      if (response) provider = 'serper';
+      
+      // Fallback to Perplexity
+      if (!response) {
+        response = await this.callPerplexity(query);
+        if (response) provider = 'perplexity';
+      }
       
       // Fallback to Tavily
       if (!response) {
