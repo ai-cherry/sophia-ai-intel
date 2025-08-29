@@ -233,7 +233,85 @@ User Query → Sophia Orchestrator → MCP Router → Appropriate MCP Server →
 1. **Implement Missing MCP Servers**: Convert template servers to active implementations
 2. **Enhance Monitoring**: Add Prometheus metrics to all MCP servers
 3. **Improve Documentation**: Create comprehensive API documentation for each service
-4. **Add Testing**: Implement unit and integration tests for all MCP endpoints
+4. **Add Testing**: Implement unit and integration tests for all MCP endpointsBelow is a detailed prompt you can pass to your AI coder (with API Tool enabled) to address all critical issues in the Sophia‑AI‑Intel repo except for the fluff‑and‑fold research. This prompt outlines specific objectives, key files to modify or remove, expected architectural changes, and technology choices.
+
+---
+
+**Prompt for AI Coder:**
+
+**Context:** You will work on the `ai-cherry/sophia-ai-intel` repository using the GitHub connector. The goal is to consolidate the codebase, eliminate duplicates, implement missing functionality, and build a robust unified chat interface backed by reliable MCP services and multi‑agent orchestration. Do not work on any “laundry” features—those were included by mistake.
+
+**Tasks:**
+
+1. **Consolidate chat pages and UI:**
+
+   * Confirm that `apps/sophia-dashboard/src/app/page-unified.tsx` is the single chat entry point. Remove the legacy `page.tsx` and any components exclusively used there (e.g., unused `SwarmManager` UI elements).
+   * Design a single chat window that routes all user requests (research, coding, business data) through natural language. Add a vertical tab bar on the left with sections: API Health, Agent Factory, Swarm Monitor, Metrics, and Settings.
+   * Use a consistent design library (e.g., Tailwind CSS + Shadcn UI) and apply modern color schemes: for light mode, combine brown and Athens grey with subtle pink/blue/red accents; for dark mode, pair rich black with vibrant greens, purples and pinks.
+
+2. **Remove mock/in‑memory services:**
+
+   * For each MCP service (`mcp-hubspot`, `mcp-salesforce`, `mcp-github`, `mcp-gong`, `mcp-agents`, etc.), identify and remove the mock/in-memory versions (files named `*-app.py` that only use Python dictionaries). Keep or enhance the real versions that call external APIs and handle authentication.
+   * For services that are only placeholders (e.g., research, memory, looker, usergems), create proper scaffolds or leave them removed if not needed.
+
+3. **Context and memory architecture:**
+
+   * Consolidate `mcp-context` by selecting the version in `app.py` as the base. Remove `app_simple.py` and `app_event_driven.py`.
+   * Implement a `MemoryCoordinator` component that queries Qdrant and pgvector (via LlamaIndex or native drivers), merges results, and returns ranked context. Add configuration for optional Mem0 integration but leave unused code paths disabled until available.
+   * Set up incremental indexing: listen to GitHub webhooks for file changes, regenerate embeddings for changed files, and update the vector store. Support manual re-indexing via an API endpoint and optional “Re-index” button in the UI.
+   * Use real embedding models (e.g., OpenAI Ada v3 or BGE-Large) via LlamaIndex; provide environment variables to configure model choice.
+
+4. **Research service:**
+
+   * Implement `mcp-research` to call multiple search providers (e.g., Portkey, Tavily, Serper, Perplexity, Exa) and return aggregated, deduplicated, summarized results. Normalize cost and error handling across providers. Use LLM summarization to generate readable snippets.
+   * Expose endpoints for different research modes (e.g., quick search, deep research). Integrate caching (Redis) to avoid repeated queries.
+
+5. **Business integrations:**
+
+   * **HubSpot:** Ensure that `mcp-hubspot/app.py` uses real API calls via `aiohttp` and properly handles token expiration. Remove its mock counterpart.
+   * **Salesforce:** Finalize `mcp-salesforce/app.py` to perform OAuth authentication and fetch accounts, contacts, opportunities. Remove its mock counterpart.
+   * **Gong:** Replace static call data in `mcp/gong-mcp/app.py` with actual calls to the Gong API to fetch call recordings and transcripts. Add endpoints for summarizing calls and analyzing sentiment.
+   * **Looker, UserGems, Slack:** Create new services following the same pattern: define clients that use environment variables for credentials, implement endpoints to fetch data, and add basic error handling. If these services are not yet needed, document them clearly as stubs.
+
+6. **Agents and swarms:**
+
+   * Use the unified `mcp-agents/app_unified.py` as the base. Remove the legacy `mcp/agents-swarm/app.py`.
+   * Implement a multi‑agent “AI code planning swarm” with two debating agents and a mediator:
+
+     1. Define distinct roles/prompts for each planner (e.g., **Optimistic Planner** who proposes ambitious plans and **Cautious Critic** who examines risks).
+     2. Implement a debate loop: both planners present plans, critique each other, and refine their outputs over several rounds until a stop condition is met.
+     3. Add a **Mediator** agent that reviews the final arguments and selects or synthesizes a balanced plan.
+     4. Use a framework like LangChain’s LangGraph or write a custom orchestrator to manage turn-taking and shared conversation history.
+     5. Expose the planning swarm via the agents service and integrate it into the chat orchestrator. When a user requests a coding project, the planning swarm should be used instead of simple heuristics.
+
+7. **LLM integration and smart routing:**
+
+   * Create a unified LLM interface supporting OpenAI (GPT‑4/5), Anthropic (Claude), Perplexity, and Portkey. Use official SDKs if available and wrap them in a class that can stream responses.
+   * Implement a smart router that selects a provider based on task type, model quality, latency, and cost. Provide configuration via environment variables and allow user override.
+   * Enable response caching for common questions to minimize costs.
+
+8. **Environment variables and secret management:**
+
+   * Consolidate all environment variables into a single `.env.example` file. Use namespaced variables (e.g., `MCP_CONTEXT_DB_URL`, `GITHUB_APP_ID`, `HUBSPOT_TOKEN`).
+   * Integrate a secrets manager (1Password, AWS Secrets Manager, or Vault) and update the code to retrieve secrets at runtime. Remove sensitive values from version control.
+   * Update documentation (`docs/SECRETS.md`) to reflect the new variables and provide instructions on how to set up local and production environments.
+
+9. **Deployment and CI/CD:**
+
+   * Ensure that each service has a Dockerfile and that `docker-compose.yml` (or another orchestration file) uses the real services.
+   * Add unit tests and integration tests for each service. Use pytest for Python services and Jest for TypeScript.
+   * Set up GitHub Actions to run linting, testing, and security scans on each push. Store secrets securely in the repository’s secret settings.
+
+10. **Documentation and developer onboarding:**
+
+    * Update the README to describe how to run the unified chat, services, and agents locally.
+    * Create architecture diagrams illustrating the flow between the orchestrator, context service, agents service, research service, business integrations, and the front‑end.
+    * Provide clear usage examples for the multi‑agent planning swarm.
+
+**Output:** After completing these tasks, commit your changes to the `ai-cherry/sophia-ai-intel` repository. Provide a summary of modifications made (files created/removed/updated, new endpoints, any breaking changes) and verify that the unified chat works end‑to‑end with the new architecture.
+
+---
+
 
 ### Short-term Improvements (1-2 weeks):
 1. **Service Discovery**: Implement automatic MCP server discovery
