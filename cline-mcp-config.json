@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "sophia-universal": {
+      "command": "python3",
+      "args": ["/Users/lynnmusil/sophia-ai-intel-1/mcp-universal-adapter.py"],
+      "description": "Universal adapter for all Sophia AI services",
+      "enabled": true,
+      "env": {
+        "PYTHONUNBUFFERED": "1"
+      }
+    }
+  }
+}

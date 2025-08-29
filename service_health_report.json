@@ -1,0 +1,105 @@
+{
+  "timestamp": "2025-08-28T23:36:11.760186",
+  "summary": {
+    "total": 9,
+    "healthy": 7,
+    "unhealthy": 2,
+    "health_percentage": 77
+  },
+  "services": {
+    "healthy": [
+      {
+        "name": "research",
+        "status": "\u2705 HEALTHY",
+        "url": "http://localhost:8085",
+        "description": "Research and web search capabilities",
+        "details": {
+          "status": "healthy",
+          "timestamp": "2025-08-29T06:36:11.757261"
+        }
+      },
+      {
+        "name": "github",
+        "status": "\u2705 HEALTHY",
+        "url": "http://localhost:8082",
+        "description": "GitHub repository integration",
+        "details": {
+          "status": "healthy",
+          "repos": 0,
+          "commits": 0
+        }
+      },
+      {
+        "name": "hubspot",
+        "status": "\u2705 HEALTHY",
+        "url": "http://localhost:8083",
+        "description": "HubSpot CRM integration",
+        "details": {
+          "status": "healthy",
+          "contacts": 0,
+          "deals": 0
+        }
+      },
+      {
+        "name": "salesforce",
+        "status": "\u2705 HEALTHY",
+        "url": "http://localhost:8092",
+        "description": "Salesforce CRM integration",
+        "details": {
+          "status": "healthy",
+          "leads": 0,
+          "opportunities": 0
+        }
+      },
+      {
+        "name": "gong",
+        "status": "\u2705 HEALTHY",
+        "url": "http://localhost:8091",
+        "description": "Gong call analytics",
+        "details": {
+          "status": "healthy",
+          "calls": 0,
+          "insights": 0
+        }
+      },
+      {
+        "name": "coordinator",
+        "status": "\u2705 HEALTHY",
+        "url": "http://localhost:8080",
+        "description": "AGNO coordinator service",
+        "details": {
+          "status": "healthy",
+          "agents_active": 0,
+          "tasks_pending": 0
+        }
+      },
+      {
+        "name": "orchestrator",
+        "status": "\u2705 HEALTHY",
+        "url": "http://localhost:8088",
+        "description": "Workflow orchestration",
+        "details": {
+          "status": "healthy",
+          "workflows": 0,
+          "executions": 0
+        }
+      }
+    ],
+    "unhealthy": [
+      {
+        "name": "context",
+        "status": "\u26a0\ufe0f ERROR",
+        "url": "http://localhost:8081",
+        "description": "Document storage and semantic search",
+        "error": "Client error '404 Not Found' for url 'http://localhost:8081/health'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+      },
+      {
+        "name": "agents",
+        "status": "\u26a0\ufe0f ERROR",
+        "url": "http://localhost:8000",
+        "description": "AI agent orchestration",
+        "error": "Client error '404 Not Found' for url 'http://localhost:8000/health'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+      }
+    ]
+  }
+}

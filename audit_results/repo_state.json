@@ -1,0 +1,462 @@
+{
+  "services": [
+    {
+      "name": "mcp-context",
+      "path": "services/mcp-context",
+      "status": "dead",
+      "port": 8000,
+      "has_dockerfile": true,
+      "has_main": true,
+      "health_status": 404,
+      "health_check": "fail"
+    },
+    {
+      "name": "mcp-research",
+      "path": "services/mcp-research",
+      "status": "dead",
+      "port": 8085,
+      "has_dockerfile": true,
+      "has_main": true,
+      "health_status": 200,
+      "health_check": "pass"
+    },
+    {
+      "name": "agno-wrappers",
+      "path": "services/agno-wrappers",
+      "status": "unknown",
+      "port": null,
+      "has_dockerfile": true,
+      "has_main": true
+    },
+    {
+      "name": "mcp-agents",
+      "path": "services/mcp-agents",
+      "status": "dead",
+      "port": 8000,
+      "has_dockerfile": true,
+      "has_main": true,
+      "health_status": 404,
+      "health_check": "fail"
+    },
+    {
+      "name": "mcp-slack",
+      "path": "services/mcp-slack",
+      "status": "dead",
+      "port": 8080,
+      "has_dockerfile": true,
+      "has_main": true,
+      "health_status": 200,
+      "health_check": "pass"
+    },
+    {
+      "name": "agentic",
+      "path": "services/agentic",
+      "status": "unknown",
+      "port": null,
+      "has_dockerfile": true,
+      "has_main": false
+    },
+    {
+      "name": "__pycache__",
+      "path": "services/__pycache__",
+      "status": "unknown",
+      "port": null,
+      "has_dockerfile": false,
+      "has_main": false
+    },
+    {
+      "name": "agno-teams",
+      "path": "services/agno-teams",
+      "status": "unknown",
+      "port": null,
+      "has_dockerfile": true,
+      "has_main": true
+    },
+    {
+      "name": "mcp-business",
+      "path": "services/mcp-business",
+      "status": "dead",
+      "port": 8080,
+      "has_dockerfile": true,
+      "has_main": true,
+      "health_status": 200,
+      "health_check": "pass"
+    },
+    {
+      "name": "mcp-lambda",
+      "path": "services/mcp-lambda",
+      "status": "dead",
+      "port": 8080,
+      "has_dockerfile": true,
+      "has_main": true,
+      "health_status": 200,
+      "health_check": "pass"
+    },
+    {
+      "name": "mcp-gong",
+      "path": "services/mcp-gong",
+      "status": "dead",
+      "port": 8080,
+      "has_dockerfile": true,
+      "has_main": true,
+      "health_status": 200,
+      "health_check": "pass"
+    },
+    {
+      "name": "mcp-github",
+      "path": "services/mcp-github",
+      "status": "unknown",
+      "port": null,
+      "has_dockerfile": true,
+      "has_main": true
+    },
+    {
+      "name": "mcp-apollo",
+      "path": "services/mcp-apollo",
+      "status": "dead",
+      "port": 8080,
+      "has_dockerfile": true,
+      "has_main": true,
+      "health_status": 200,
+      "health_check": "pass"
+    },
+    {
+      "name": "mcp-salesforce",
+      "path": "services/mcp-salesforce",
+      "status": "dead",
+      "port": 8080,
+      "has_dockerfile": true,
+      "has_main": true,
+      "health_status": 200,
+      "health_check": "pass"
+    },
+    {
+      "name": "mcp-hubspot",
+      "path": "services/mcp-hubspot",
+      "status": "dead",
+      "port": 8080,
+      "has_dockerfile": true,
+      "has_main": true,
+      "health_status": 200,
+      "health_check": "pass"
+    },
+    {
+      "name": "agno",
+      "path": "services/agno",
+      "status": "unknown",
+      "port": null,
+      "has_dockerfile": false,
+      "has_main": false
+    },
+    {
+      "name": "agno-coordinator",
+      "path": "services/agno-coordinator",
+      "status": "unknown",
+      "port": null,
+      "has_dockerfile": true,
+      "has_main": false
+    },
+    {
+      "name": "orchestrator",
+      "path": "services/orchestrator",
+      "status": "unknown",
+      "port": null,
+      "has_dockerfile": true,
+      "has_main": false
+    }
+  ],
+  "mcp_servers": [
+    {
+      "name": "mcp-context",
+      "implemented": true,
+      "path": "services/mcp-context",
+      "health_url": "http://localhost:8000/health"
+    },
+    {
+      "name": "mcp-research",
+      "implemented": true,
+      "path": "services/mcp-research",
+      "health_url": "http://localhost:8085/health"
+    },
+    {
+      "name": "mcp-agents",
+      "implemented": true,
+      "path": "services/mcp-agents",
+      "health_url": "http://localhost:8000/health"
+    },
+    {
+      "name": "mcp-slack",
+      "implemented": true,
+      "path": "services/mcp-slack",
+      "health_url": "http://localhost:8080/health"
+    },
+    {
+      "name": "mcp-business",
+      "implemented": true,
+      "path": "services/mcp-business",
+      "health_url": "http://localhost:8080/health"
+    },
+    {
+      "name": "mcp-lambda",
+      "implemented": true,
+      "path": "services/mcp-lambda",
+      "health_url": "http://localhost:8080/health"
+    },
+    {
+      "name": "mcp-gong",
+      "implemented": true,
+      "path": "services/mcp-gong",
+      "health_url": "http://localhost:8080/health"
+    },
+    {
+      "name": "mcp-github",
+      "implemented": true,
+      "path": "services/mcp-github",
+      "health_url": null
+    },
+    {
+      "name": "mcp-apollo",
+      "implemented": true,
+      "path": "services/mcp-apollo",
+      "health_url": "http://localhost:8080/health"
+    },
+    {
+      "name": "mcp-salesforce",
+      "implemented": true,
+      "path": "services/mcp-salesforce",
+      "health_url": "http://localhost:8080/health"
+    },
+    {
+      "name": "mcp-hubspot",
+      "implemented": true,
+      "path": "services/mcp-hubspot",
+      "health_url": "http://localhost:8080/health"
+    }
+  ],
+  "agents": [
+    {
+      "type": "EnhancedRepositoryAnalystAgent",
+      "file": "libs/agents/repository_agent.py",
+      "api_endpoints": [],
+      "ws_endpoints": []
+    },
+    {
+      "type": "SophiaAgentSwarmManager",
+      "file": "libs/agents/swarm_manager.py",
+      "api_endpoints": [],
+      "ws_endpoints": []
+    },
+    {
+      "type": "AgentRole",
+      "file": "libs/agents/base_agent.py",
+      "api_endpoints": [],
+      "ws_endpoints": []
+    },
+    {
+      "type": "AgentTask",
+      "file": "libs/agents/base_agent.py",
+      "api_endpoints": [],
+      "ws_endpoints": []
+    },
+    {
+      "type": "AgentMessage",
+      "file": "libs/agents/base_agent.py",
+      "api_endpoints": [],
+      "ws_endpoints": []
+    },
+    {
+      "type": "AgentContext",
+      "file": "libs/agents/base_agent.py",
+      "api_endpoints": [],
+      "ws_endpoints": []
+    },
+    {
+      "type": "AgentMemory",
+      "file": "libs/agents/base_agent.py",
+      "api_endpoints": [],
+      "ws_endpoints": []
+    },
+    {
+      "type": "SophiaAgent",
+      "file": "libs/agents/base_agent.py",
+      "api_endpoints": [],
+      "ws_endpoints": []
+    },
+    {
+      "type": "AgentMessageBus",
+      "file": "libs/agents/communication.py",
+      "api_endpoints": [],
+      "ws_endpoints": []
+    },
+    {
+      "type": "BasePlannerAgent",
+      "file": "libs/agents/code_kraken/planners.py",
+      "api_endpoints": [],
+      "ws_endpoints": []
+    },
+    {
+      "type": "CuttingEdgePlannerAgent",
+      "file": "libs/agents/code_kraken/planners.py",
+      "api_endpoints": [],
+      "ws_endpoints": []
+    },
+    {
+      "type": "ConservativePlannerAgent",
+      "file": "libs/agents/code_kraken/planners.py",
+      "api_endpoints": [],
+      "ws_endpoints": []
+    },
+    {
+      "type": "SynthesisPlannerAgent",
+      "file": "libs/agents/code_kraken/planners.py",
+      "api_endpoints": [],
+      "ws_endpoints": []
+    }
+  ],
+  "ui_components": [
+    {
+      "file": "apps/sophia-dashboard/src/app/page.tsx",
+      "uses_mock_data": true,
+      "mock_locations": [
+        {
+          "line": 493,
+          "pattern": "placeholder",
+          "match": "placeholder"
+        },
+        {
+          "line": 528,
+          "pattern": "placeholder",
+          "match": "placeholder"
+        },
+        {
+          "line": 645,
+          "pattern": "placeholder",
+          "match": "placeholder"
+        }
+      ]
+    },
+    {
+      "file": "apps/sophia-dashboard/src/components/AgentManagement.tsx",
+      "uses_mock_data": true,
+      "mock_locations": [
+        {
+          "line": 309,
+          "pattern": "placeholder",
+          "match": "placeholder"
+        }
+      ]
+    },
+    {
+      "file": "apps/sophia-dashboard/src/components/CommandPalette.tsx",
+      "uses_mock_data": true,
+      "mock_locations": [
+        {
+          "line": 208,
+          "pattern": "placeholder",
+          "match": "placeholder"
+        },
+        {
+          "line": 209,
+          "pattern": "placeholder",
+          "match": "placeholder"
+        }
+      ]
+    },
+    {
+      "file": "apps/sophia-dashboard/src/components/SwarmManager.tsx",
+      "uses_mock_data": true,
+      "mock_locations": [
+        {
+          "line": 102,
+          "pattern": "placeholder",
+          "match": "placeholder"
+        }
+      ]
+    },
+    {
+      "file": "apps/sophia-dashboard/src/components/AgentMonitoring.tsx",
+      "uses_mock_data": true,
+      "mock_locations": [
+        {
+          "line": 39,
+          "pattern": "mock[a-zA-Z]*\\s*[=:]",
+          "match": "mockAgentMetrics:"
+        },
+        {
+          "line": 94,
+          "pattern": "mock[a-zA-Z]*\\s*[=:]",
+          "match": "mockSystemMetrics:"
+        },
+        {
+          "line": 106,
+          "pattern": "mock[a-zA-Z]*\\s*[=:]",
+          "match": "mockActivityLog:"
+        }
+      ]
+    },
+    {
+      "file": "apps/sophia-dashboard/src/components/SwarmCreator.tsx",
+      "uses_mock_data": true,
+      "mock_locations": [
+        {
+          "line": 297,
+          "pattern": "placeholder",
+          "match": "placeholder"
+        }
+      ]
+    },
+    {
+      "file": "apps/sophia-dashboard/src/app/dashboard/professional.tsx",
+      "uses_mock_data": true,
+      "mock_locations": [
+        {
+          "line": 322,
+          "pattern": "placeholder",
+          "match": "placeholder"
+        },
+        {
+          "line": 324,
+          "pattern": "placeholder",
+          "match": "placeholder"
+        }
+      ]
+    },
+    {
+      "file": "apps/sophia-dashboard/src/app/dashboard/page.tsx",
+      "uses_mock_data": true,
+      "mock_locations": [
+        {
+          "line": 165,
+          "pattern": "placeholder",
+          "match": "placeholder"
+        },
+        {
+          "line": 167,
+          "pattern": "placeholder",
+          "match": "placeholder"
+        }
+      ]
+    },
+    {
+      "file": "apps/sophia-dashboard/src/app/dashboard/page.backup.tsx",
+      "uses_mock_data": true,
+      "mock_locations": [
+        {
+          "line": 285,
+          "pattern": "placeholder",
+          "match": "placeholder"
+        },
+        {
+          "line": 329,
+          "pattern": "placeholder",
+          "match": "placeholder"
+        },
+        {
+          "line": 344,
+          "pattern": "placeholder",
+          "match": "placeholder"
+        }
+      ]
+    }
+  ]
+}
