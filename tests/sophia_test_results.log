@@ -1,0 +1,306 @@
+2025-08-29 12:01:46,623 - __main__ - INFO - 🧪 Sophia Comprehensive Test Framework Initialized
+2025-08-29 12:01:46,623 - __main__ - INFO - Testing against services: {'dashboard': 'http://localhost:3001', 'sophia_chat': 'http://localhost:8090', 'mcp_research': 'http://localhost:8085'}
+2025-08-29 12:01:46,623 - __main__ - INFO - 🚀 Starting Comprehensive Sophia AI System Testing
+2025-08-29 12:01:46,623 - __main__ - INFO - ================================================================================
+2025-08-29 12:01:46,623 - __main__ - INFO - 
+📋 Executing Infrastructure Tests
+2025-08-29 12:01:46,623 - __main__ - INFO - --------------------------------------------------
+2025-08-29 12:01:46,623 - __main__ - INFO - 🧪 Running: service_availability_check
+2025-08-29 12:01:46,636 - __main__ - INFO - ✅ PASSED: service_availability_check
+2025-08-29 12:01:46,636 - __main__ - INFO - 🧪 Running: api_endpoint_discovery
+2025-08-29 12:01:50,006 - __main__ - INFO - ✅ PASSED: api_endpoint_discovery
+2025-08-29 12:01:50,006 - __main__ - INFO - 🧪 Running: service_integration_health
+2025-08-29 12:01:50,584 - __main__ - INFO - ✅ PASSED: service_integration_health
+2025-08-29 12:01:50,584 - __main__ - INFO - 
+📊 Infrastructure Tests Summary:
+2025-08-29 12:01:50,584 - __main__ - INFO -    Total Tests: 3
+2025-08-29 12:01:50,584 - __main__ - INFO -    Passed: 3
+2025-08-29 12:01:50,584 - __main__ - INFO -    Failed: 0
+2025-08-29 12:01:50,584 - __main__ - INFO -    Execution Time: 3.96s
+2025-08-29 12:01:50,584 - __main__ - INFO - 
+📋 Executing Intelligence Tests
+2025-08-29 12:01:50,584 - __main__ - INFO - --------------------------------------------------
+2025-08-29 12:01:50,584 - __main__ - INFO - 🧪 Running: basic_intelligence_response
+2025-08-29 12:01:55,161 - __main__ - INFO - ✅ PASSED: basic_intelligence_response
+2025-08-29 12:01:55,161 - __main__ - INFO - 🧪 Running: complex_reasoning_task
+2025-08-29 12:01:57,881 - __main__ - INFO - ✅ PASSED: complex_reasoning_task
+2025-08-29 12:01:57,881 - __main__ - INFO - 🧪 Running: context_awareness
+2025-08-29 12:02:00,575 - __main__ - INFO - ✅ PASSED: context_awareness
+2025-08-29 12:02:00,575 - __main__ - INFO - 🧪 Running: knowledge_synthesis
+2025-08-29 12:02:01,682 - __main__ - INFO - ✅ PASSED: knowledge_synthesis
+2025-08-29 12:02:01,682 - __main__ - INFO - 
+📊 Intelligence Tests Summary:
+2025-08-29 12:02:01,682 - __main__ - INFO -    Total Tests: 4
+2025-08-29 12:02:01,682 - __main__ - INFO -    Passed: 4
+2025-08-29 12:02:01,682 - __main__ - INFO -    Failed: 0
+2025-08-29 12:02:01,682 - __main__ - INFO -    Execution Time: 11.10s
+2025-08-29 12:02:01,682 - __main__ - INFO - 
+📋 Executing API Routing Tests
+2025-08-29 12:02:01,682 - __main__ - INFO - --------------------------------------------------
+2025-08-29 12:02:01,682 - __main__ - INFO - 🧪 Running: intent_classification_accuracy
+2025-08-29 12:02:08,153 - __main__ - INFO - ✅ PASSED: intent_classification_accuracy
+2025-08-29 12:02:08,153 - __main__ - INFO - 🧪 Running: provider_selection_logic
+2025-08-29 12:02:08,154 - __main__ - INFO - ✅ PASSED: provider_selection_logic
+2025-08-29 12:02:08,154 - __main__ - INFO - 🧪 Running: multi_provider_coordination
+2025-08-29 12:02:08,154 - __main__ - ERROR - ❌ FAILED: multi_provider_coordination - 'SophiaComprehensiveTestFramework' object has no attribute 'test_multi_provider_coordination'
+2025-08-29 12:02:08,155 - __main__ - INFO - 🧪 Running: fallback_chain_execution
+2025-08-29 12:02:08,155 - __main__ - ERROR - ❌ FAILED: fallback_chain_execution - 'SophiaComprehensiveTestFramework' object has no attribute 'test_fallback_chains'
+2025-08-29 12:02:08,155 - __main__ - INFO - 🧪 Running: performance_monitoring
+2025-08-29 12:02:08,155 - __main__ - ERROR - ❌ FAILED: performance_monitoring - 'SophiaComprehensiveTestFramework' object has no attribute 'test_performance_monitoring'
+2025-08-29 12:02:08,155 - __main__ - INFO - 
+📊 API Routing Tests Summary:
+2025-08-29 12:02:08,155 - __main__ - INFO -    Total Tests: 5
+2025-08-29 12:02:08,155 - __main__ - INFO -    Passed: 2
+2025-08-29 12:02:08,155 - __main__ - INFO -    Failed: 3
+2025-08-29 12:02:08,155 - __main__ - INFO -    Execution Time: 6.47s
+2025-08-29 12:02:08,155 - __main__ - INFO - 
+📋 Executing Swarm Orchestration Tests
+2025-08-29 12:02:08,155 - __main__ - INFO - --------------------------------------------------
+2025-08-29 12:02:08,155 - __main__ - INFO - 🧪 Running: swarm_initialization
+2025-08-29 12:02:08,155 - __main__ - ERROR - ❌ FAILED: swarm_initialization - 'SophiaComprehensiveTestFramework' object has no attribute 'test_swarm_initialization'
+2025-08-29 12:02:08,155 - __main__ - INFO - 🧪 Running: task_delegation
+2025-08-29 12:02:08,155 - __main__ - ERROR - ❌ FAILED: task_delegation - 'SophiaComprehensiveTestFramework' object has no attribute 'test_task_delegation'
+2025-08-29 12:02:08,155 - __main__ - INFO - 🧪 Running: multi_swarm_collaboration
+2025-08-29 12:02:08,155 - __main__ - ERROR - ❌ FAILED: multi_swarm_collaboration - 'SophiaComprehensiveTestFramework' object has no attribute 'test_multi_swarm_collaboration'
+2025-08-29 12:02:08,155 - __main__ - INFO - 🧪 Running: swarm_performance_metrics
+2025-08-29 12:02:08,155 - __main__ - ERROR - ❌ FAILED: swarm_performance_metrics - 'SophiaComprehensiveTestFramework' object has no attribute 'test_swarm_performance'
+2025-08-29 12:02:08,155 - __main__ - INFO - 
+📊 Swarm Orchestration Tests Summary:
+2025-08-29 12:02:08,155 - __main__ - INFO -    Total Tests: 4
+2025-08-29 12:02:08,155 - __main__ - INFO -    Passed: 0
+2025-08-29 12:02:08,155 - __main__ - INFO -    Failed: 4
+2025-08-29 12:02:08,155 - __main__ - INFO -    Execution Time: 0.00s
+2025-08-29 12:02:08,155 - __main__ - INFO - 
+📋 Executing Dashboard Tests
+2025-08-29 12:02:08,155 - __main__ - INFO - --------------------------------------------------
+2025-08-29 12:02:08,155 - __main__ - INFO - 🧪 Running: ui_responsiveness
+2025-08-29 12:02:08,168 - __main__ - INFO - ✅ PASSED: ui_responsiveness
+2025-08-29 12:02:08,168 - __main__ - INFO - 🧪 Running: chat_interface_functionality
+2025-08-29 12:02:09,904 - __main__ - INFO - ✅ PASSED: chat_interface_functionality
+2025-08-29 12:02:09,904 - __main__ - INFO - 🧪 Running: websocket_connections
+2025-08-29 12:02:09,905 - __main__ - ERROR - ❌ FAILED: websocket_connections - 'SophiaComprehensiveTestFramework' object has no attribute 'test_websocket_connections'
+2025-08-29 12:02:09,905 - __main__ - INFO - 🧪 Running: error_display_handling
+2025-08-29 12:02:09,905 - __main__ - ERROR - ❌ FAILED: error_display_handling - 'SophiaComprehensiveTestFramework' object has no attribute 'test_error_handling_ui'
+2025-08-29 12:02:09,905 - __main__ - INFO - 
+📊 Dashboard Tests Summary:
+2025-08-29 12:02:09,905 - __main__ - INFO -    Total Tests: 4
+2025-08-29 12:02:09,905 - __main__ - INFO -    Passed: 2
+2025-08-29 12:02:09,905 - __main__ - INFO -    Failed: 2
+2025-08-29 12:02:09,905 - __main__ - INFO -    Execution Time: 1.75s
+2025-08-29 12:02:09,905 - __main__ - INFO - 
+📋 Executing End-to-End Tests
+2025-08-29 12:02:09,905 - __main__ - INFO - --------------------------------------------------
+2025-08-29 12:02:09,905 - __main__ - INFO - 🧪 Running: research_workflow
+2025-08-29 12:02:10,932 - __main__ - INFO - ✅ PASSED: research_workflow
+2025-08-29 12:02:10,932 - __main__ - INFO - 🧪 Running: coding_assistance_workflow
+2025-08-29 12:02:10,932 - __main__ - ERROR - ❌ FAILED: coding_assistance_workflow - 'SophiaComprehensiveTestFramework' object has no attribute 'test_coding_workflow'
+2025-08-29 12:02:10,932 - __main__ - INFO - 🧪 Running: business_intelligence_workflow
+2025-08-29 12:02:10,932 - __main__ - ERROR - ❌ FAILED: business_intelligence_workflow - 'SophiaComprehensiveTestFramework' object has no attribute 'test_business_intelligence'
+2025-08-29 12:02:10,932 - __main__ - INFO - 🧪 Running: multi_modal_interaction
+2025-08-29 12:02:10,932 - __main__ - ERROR - ❌ FAILED: multi_modal_interaction - 'SophiaComprehensiveTestFramework' object has no attribute 'test_multi_modal'
+2025-08-29 12:02:10,932 - __main__ - INFO - 
+📊 End-to-End Tests Summary:
+2025-08-29 12:02:10,932 - __main__ - INFO -    Total Tests: 4
+2025-08-29 12:02:10,932 - __main__ - INFO -    Passed: 1
+2025-08-29 12:02:10,932 - __main__ - INFO -    Failed: 3
+2025-08-29 12:02:10,932 - __main__ - INFO -    Execution Time: 1.03s
+2025-08-29 12:02:10,932 - __main__ - INFO - 
+📋 Executing Performance Tests
+2025-08-29 12:02:10,932 - __main__ - INFO - --------------------------------------------------
+2025-08-29 12:02:10,932 - __main__ - INFO - 🧪 Running: response_time_benchmarks
+2025-08-29 12:02:16,126 - __main__ - INFO - ✅ PASSED: response_time_benchmarks
+2025-08-29 12:02:16,127 - __main__ - INFO - 🧪 Running: concurrent_user_simulation
+2025-08-29 12:02:16,127 - __main__ - ERROR - ❌ FAILED: concurrent_user_simulation - 'SophiaComprehensiveTestFramework' object has no attribute 'test_concurrent_users'
+2025-08-29 12:02:16,127 - __main__ - INFO - 🧪 Running: memory_and_resource_usage
+2025-08-29 12:02:16,127 - __main__ - ERROR - ❌ FAILED: memory_and_resource_usage - 'SophiaComprehensiveTestFramework' object has no attribute 'test_resource_usage'
+2025-08-29 12:02:16,127 - __main__ - INFO - 🧪 Running: stress_testing
+2025-08-29 12:02:16,127 - __main__ - ERROR - ❌ FAILED: stress_testing - 'SophiaComprehensiveTestFramework' object has no attribute 'test_system_stress'
+2025-08-29 12:02:16,127 - __main__ - INFO - 
+📊 Performance Tests Summary:
+2025-08-29 12:02:16,128 - __main__ - INFO -    Total Tests: 4
+2025-08-29 12:02:16,128 - __main__ - INFO -    Passed: 1
+2025-08-29 12:02:16,128 - __main__ - INFO -    Failed: 3
+2025-08-29 12:02:16,128 - __main__ - INFO -    Execution Time: 5.20s
+2025-08-29 12:02:16,128 - __main__ - INFO - 
+📋 Executing Error Handling Tests
+2025-08-29 12:02:16,128 - __main__ - INFO - --------------------------------------------------
+2025-08-29 12:02:16,128 - __main__ - INFO - 🧪 Running: service_failure_recovery
+2025-08-29 12:02:16,128 - __main__ - ERROR - ❌ FAILED: service_failure_recovery - 'SophiaComprehensiveTestFramework' object has no attribute 'test_service_failure_recovery'
+2025-08-29 12:02:16,128 - __main__ - INFO - 🧪 Running: api_provider_failures
+2025-08-29 12:02:16,128 - __main__ - ERROR - ❌ FAILED: api_provider_failures - 'SophiaComprehensiveTestFramework' object has no attribute 'test_api_provider_failures'
+2025-08-29 12:02:16,128 - __main__ - INFO - 🧪 Running: network_interruption_handling
+2025-08-29 12:02:16,128 - __main__ - ERROR - ❌ FAILED: network_interruption_handling - 'SophiaComprehensiveTestFramework' object has no attribute 'test_network_interruptions'
+2025-08-29 12:02:16,128 - __main__ - INFO - 🧪 Running: data_corruption_recovery
+2025-08-29 12:02:16,128 - __main__ - ERROR - ❌ FAILED: data_corruption_recovery - 'SophiaComprehensiveTestFramework' object has no attribute 'test_data_corruption'
+2025-08-29 12:02:16,128 - __main__ - INFO - 
+📊 Error Handling Tests Summary:
+2025-08-29 12:02:16,128 - __main__ - INFO -    Total Tests: 4
+2025-08-29 12:02:16,128 - __main__ - INFO -    Passed: 0
+2025-08-29 12:02:16,128 - __main__ - INFO -    Failed: 4
+2025-08-29 12:02:16,128 - __main__ - INFO -    Execution Time: 0.00s
+2025-08-29 12:02:16,130 - __main__ - INFO - 
+================================================================================
+2025-08-29 12:02:16,130 - __main__ - INFO - 🎯 COMPREHENSIVE TESTING COMPLETE
+2025-08-29 12:02:16,130 - __main__ - INFO - ================================================================================
+2025-08-29 12:02:16,130 - __main__ - INFO - Total Tests: 32
+2025-08-29 12:02:16,130 - __main__ - INFO - Passed: 13
+2025-08-29 12:02:16,130 - __main__ - INFO - Failed: 19
+2025-08-29 12:02:16,131 - __main__ - INFO - Success Rate: 40.6%
+2025-08-29 12:02:16,131 - __main__ - INFO - Total Time: 29.51s
+2025-08-29 12:02:16,131 - __main__ - INFO - 📄 Detailed results saved to: tests/comprehensive_test_results.json
+2025-08-29 12:02:16,131 - __main__ - INFO - ================================================================================
+2025-08-29 12:06:31,676 - __main__ - INFO - 🔧 Initializing Complete Test Framework
+2025-08-29 12:06:31,676 - comprehensive_sophia_test_plan - INFO - 🧪 Sophia Comprehensive Test Framework Initialized
+2025-08-29 12:06:31,677 - comprehensive_sophia_test_plan - INFO - Testing against services: {'dashboard': 'http://localhost:3001', 'sophia_chat': 'http://localhost:8090', 'mcp_research': 'http://localhost:8085'}
+2025-08-29 12:06:31,677 - __main__ - INFO - 📦 Loading Complete Test Implementations
+2025-08-29 12:06:31,677 - __main__ - INFO - 🧪 Executing Complete Test Suite
+2025-08-29 12:06:31,677 - comprehensive_sophia_test_plan - INFO - 🚀 Starting Comprehensive Sophia AI System Testing
+2025-08-29 12:06:31,677 - comprehensive_sophia_test_plan - INFO - ================================================================================
+2025-08-29 12:06:31,677 - comprehensive_sophia_test_plan - INFO - 
+📋 Executing Infrastructure Tests
+2025-08-29 12:06:31,677 - comprehensive_sophia_test_plan - INFO - --------------------------------------------------
+2025-08-29 12:06:31,677 - comprehensive_sophia_test_plan - INFO - 🧪 Running: service_availability_check
+2025-08-29 12:06:31,707 - comprehensive_sophia_test_plan - INFO - ✅ PASSED: service_availability_check
+2025-08-29 12:06:31,707 - comprehensive_sophia_test_plan - INFO - 🧪 Running: api_endpoint_discovery
+2025-08-29 12:06:33,937 - comprehensive_sophia_test_plan - INFO - ✅ PASSED: api_endpoint_discovery
+2025-08-29 12:06:33,937 - comprehensive_sophia_test_plan - INFO - 🧪 Running: service_integration_health
+2025-08-29 12:06:34,481 - comprehensive_sophia_test_plan - INFO - ✅ PASSED: service_integration_health
+2025-08-29 12:06:34,481 - comprehensive_sophia_test_plan - INFO - 
+📊 Infrastructure Tests Summary:
+2025-08-29 12:06:34,482 - comprehensive_sophia_test_plan - INFO -    Total Tests: 3
+2025-08-29 12:06:34,482 - comprehensive_sophia_test_plan - INFO -    Passed: 3
+2025-08-29 12:06:34,482 - comprehensive_sophia_test_plan - INFO -    Failed: 0
+2025-08-29 12:06:34,482 - comprehensive_sophia_test_plan - INFO -    Execution Time: 2.80s
+2025-08-29 12:06:34,482 - comprehensive_sophia_test_plan - INFO - 
+📋 Executing Intelligence Tests
+2025-08-29 12:06:34,482 - comprehensive_sophia_test_plan - INFO - --------------------------------------------------
+2025-08-29 12:06:34,482 - comprehensive_sophia_test_plan - INFO - 🧪 Running: basic_intelligence_response
+2025-08-29 12:06:36,965 - comprehensive_sophia_test_plan - INFO - ✅ PASSED: basic_intelligence_response
+2025-08-29 12:06:36,965 - comprehensive_sophia_test_plan - INFO - 🧪 Running: complex_reasoning_task
+2025-08-29 12:06:40,027 - comprehensive_sophia_test_plan - INFO - ✅ PASSED: complex_reasoning_task
+2025-08-29 12:06:40,027 - comprehensive_sophia_test_plan - INFO - 🧪 Running: context_awareness
+2025-08-29 12:06:42,382 - comprehensive_sophia_test_plan - INFO - ✅ PASSED: context_awareness
+2025-08-29 12:06:42,382 - comprehensive_sophia_test_plan - INFO - 🧪 Running: knowledge_synthesis
+2025-08-29 12:06:43,714 - comprehensive_sophia_test_plan - INFO - ✅ PASSED: knowledge_synthesis
+2025-08-29 12:06:43,714 - comprehensive_sophia_test_plan - INFO - 
+📊 Intelligence Tests Summary:
+2025-08-29 12:06:43,714 - comprehensive_sophia_test_plan - INFO -    Total Tests: 4
+2025-08-29 12:06:43,714 - comprehensive_sophia_test_plan - INFO -    Passed: 4
+2025-08-29 12:06:43,715 - comprehensive_sophia_test_plan - INFO -    Failed: 0
+2025-08-29 12:06:43,715 - comprehensive_sophia_test_plan - INFO -    Execution Time: 9.23s
+2025-08-29 12:06:43,715 - comprehensive_sophia_test_plan - INFO - 
+📋 Executing API Routing Tests
+2025-08-29 12:06:43,715 - comprehensive_sophia_test_plan - INFO - --------------------------------------------------
+2025-08-29 12:06:43,715 - comprehensive_sophia_test_plan - INFO - 🧪 Running: intent_classification_accuracy
+2025-08-29 12:06:48,975 - comprehensive_sophia_test_plan - INFO - ✅ PASSED: intent_classification_accuracy
+2025-08-29 12:06:48,975 - comprehensive_sophia_test_plan - INFO - 🧪 Running: provider_selection_logic
+2025-08-29 12:06:48,979 - comprehensive_sophia_test_plan - INFO - ✅ PASSED: provider_selection_logic
+2025-08-29 12:06:48,980 - comprehensive_sophia_test_plan - INFO - 🧪 Running: multi_provider_coordination
+2025-08-29 12:06:49,994 - comprehensive_sophia_test_plan - INFO - ✅ PASSED: multi_provider_coordination
+2025-08-29 12:06:49,994 - comprehensive_sophia_test_plan - INFO - 🧪 Running: fallback_chain_execution
+2025-08-29 12:06:50,404 - comprehensive_sophia_test_plan - INFO - ✅ PASSED: fallback_chain_execution
+2025-08-29 12:06:50,404 - comprehensive_sophia_test_plan - INFO - 🧪 Running: performance_monitoring
+2025-08-29 12:06:50,411 - comprehensive_sophia_test_plan - INFO - ✅ PASSED: performance_monitoring
+2025-08-29 12:06:50,411 - comprehensive_sophia_test_plan - INFO - 
+📊 API Routing Tests Summary:
+2025-08-29 12:06:50,411 - comprehensive_sophia_test_plan - INFO -    Total Tests: 5
+2025-08-29 12:06:50,411 - comprehensive_sophia_test_plan - INFO -    Passed: 5
+2025-08-29 12:06:50,411 - comprehensive_sophia_test_plan - INFO -    Failed: 0
+2025-08-29 12:06:50,411 - comprehensive_sophia_test_plan - INFO -    Execution Time: 6.70s
+2025-08-29 12:06:50,412 - comprehensive_sophia_test_plan - INFO - 
+📋 Executing Swarm Orchestration Tests
+2025-08-29 12:06:50,412 - comprehensive_sophia_test_plan - INFO - --------------------------------------------------
+2025-08-29 12:06:50,412 - comprehensive_sophia_test_plan - INFO - 🧪 Running: swarm_initialization
+2025-08-29 12:06:51,422 - comprehensive_sophia_test_plan - INFO - ✅ PASSED: swarm_initialization
+2025-08-29 12:06:51,422 - comprehensive_sophia_test_plan - INFO - 🧪 Running: task_delegation
+2025-08-29 12:06:53,770 - comprehensive_sophia_test_plan - INFO - ✅ PASSED: task_delegation
+2025-08-29 12:06:53,770 - comprehensive_sophia_test_plan - INFO - 🧪 Running: multi_swarm_collaboration
+2025-08-29 12:06:54,759 - comprehensive_sophia_test_plan - INFO - ✅ PASSED: multi_swarm_collaboration
+2025-08-29 12:06:54,760 - comprehensive_sophia_test_plan - INFO - 🧪 Running: swarm_performance_metrics
+2025-08-29 12:06:55,917 - comprehensive_sophia_test_plan - INFO - ✅ PASSED: swarm_performance_metrics
+2025-08-29 12:06:55,917 - comprehensive_sophia_test_plan - INFO - 
+📊 Swarm Orchestration Tests Summary:
+2025-08-29 12:06:55,917 - comprehensive_sophia_test_plan - INFO -    Total Tests: 4
+2025-08-29 12:06:55,917 - comprehensive_sophia_test_plan - INFO -    Passed: 4
+2025-08-29 12:06:55,918 - comprehensive_sophia_test_plan - INFO -    Failed: 0
+2025-08-29 12:06:55,918 - comprehensive_sophia_test_plan - INFO -    Execution Time: 5.51s
+2025-08-29 12:06:55,918 - comprehensive_sophia_test_plan - INFO - 
+📋 Executing Dashboard Tests
+2025-08-29 12:06:55,918 - comprehensive_sophia_test_plan - INFO - --------------------------------------------------
+2025-08-29 12:06:55,918 - comprehensive_sophia_test_plan - INFO - 🧪 Running: ui_responsiveness
+2025-08-29 12:06:55,949 - comprehensive_sophia_test_plan - INFO - ✅ PASSED: ui_responsiveness
+2025-08-29 12:06:55,949 - comprehensive_sophia_test_plan - INFO - 🧪 Running: chat_interface_functionality
+2025-08-29 12:06:57,469 - comprehensive_sophia_test_plan - INFO - ✅ PASSED: chat_interface_functionality
+2025-08-29 12:06:57,469 - comprehensive_sophia_test_plan - INFO - 🧪 Running: websocket_connections
+2025-08-29 12:07:00,015 - comprehensive_sophia_test_plan - INFO - ✅ PASSED: websocket_connections
+2025-08-29 12:07:00,016 - comprehensive_sophia_test_plan - INFO - 🧪 Running: error_display_handling
+2025-08-29 12:07:01,550 - comprehensive_sophia_test_plan - INFO - ✅ PASSED: error_display_handling
+2025-08-29 12:07:01,550 - comprehensive_sophia_test_plan - INFO - 
+📊 Dashboard Tests Summary:
+2025-08-29 12:07:01,550 - comprehensive_sophia_test_plan - INFO -    Total Tests: 4
+2025-08-29 12:07:01,551 - comprehensive_sophia_test_plan - INFO -    Passed: 4
+2025-08-29 12:07:01,551 - comprehensive_sophia_test_plan - INFO -    Failed: 0
+2025-08-29 12:07:01,551 - comprehensive_sophia_test_plan - INFO -    Execution Time: 5.63s
+2025-08-29 12:07:01,551 - comprehensive_sophia_test_plan - INFO - 
+📋 Executing End-to-End Tests
+2025-08-29 12:07:01,551 - comprehensive_sophia_test_plan - INFO - --------------------------------------------------
+2025-08-29 12:07:01,551 - comprehensive_sophia_test_plan - INFO - 🧪 Running: research_workflow
+2025-08-29 12:07:02,596 - comprehensive_sophia_test_plan - INFO - ✅ PASSED: research_workflow
+2025-08-29 12:07:02,597 - comprehensive_sophia_test_plan - INFO - 🧪 Running: coding_assistance_workflow
+2025-08-29 12:07:02,973 - comprehensive_sophia_test_plan - INFO - ✅ PASSED: coding_assistance_workflow
+2025-08-29 12:07:02,973 - comprehensive_sophia_test_plan - INFO - 🧪 Running: business_intelligence_workflow
+2025-08-29 12:07:04,483 - comprehensive_sophia_test_plan - INFO - ✅ PASSED: business_intelligence_workflow
+2025-08-29 12:07:04,484 - comprehensive_sophia_test_plan - INFO - 🧪 Running: multi_modal_interaction
+2025-08-29 12:07:06,497 - comprehensive_sophia_test_plan - INFO - ✅ PASSED: multi_modal_interaction
+2025-08-29 12:07:06,498 - comprehensive_sophia_test_plan - INFO - 
+📊 End-to-End Tests Summary:
+2025-08-29 12:07:06,498 - comprehensive_sophia_test_plan - INFO -    Total Tests: 4
+2025-08-29 12:07:06,498 - comprehensive_sophia_test_plan - INFO -    Passed: 4
+2025-08-29 12:07:06,498 - comprehensive_sophia_test_plan - INFO -    Failed: 0
+2025-08-29 12:07:06,498 - comprehensive_sophia_test_plan - INFO -    Execution Time: 4.95s
+2025-08-29 12:07:06,498 - comprehensive_sophia_test_plan - INFO - 
+📋 Executing Performance Tests
+2025-08-29 12:07:06,498 - comprehensive_sophia_test_plan - INFO - --------------------------------------------------
+2025-08-29 12:07:06,498 - comprehensive_sophia_test_plan - INFO - 🧪 Running: response_time_benchmarks
+2025-08-29 12:07:10,893 - comprehensive_sophia_test_plan - INFO - ✅ PASSED: response_time_benchmarks
+2025-08-29 12:07:10,893 - comprehensive_sophia_test_plan - INFO - 🧪 Running: concurrent_user_simulation
+2025-08-29 12:07:11,389 - comprehensive_sophia_test_plan - INFO - ✅ PASSED: concurrent_user_simulation
+2025-08-29 12:07:11,389 - comprehensive_sophia_test_plan - INFO - 🧪 Running: memory_and_resource_usage
+2025-08-29 12:07:12,120 - comprehensive_sophia_test_plan - INFO - ✅ PASSED: memory_and_resource_usage
+2025-08-29 12:07:12,120 - comprehensive_sophia_test_plan - INFO - 🧪 Running: stress_testing
+2025-08-29 12:07:23,073 - comprehensive_sophia_test_plan - INFO - ✅ PASSED: stress_testing
+2025-08-29 12:07:23,073 - comprehensive_sophia_test_plan - INFO - 
+📊 Performance Tests Summary:
+2025-08-29 12:07:23,073 - comprehensive_sophia_test_plan - INFO -    Total Tests: 4
+2025-08-29 12:07:23,073 - comprehensive_sophia_test_plan - INFO -    Passed: 4
+2025-08-29 12:07:23,073 - comprehensive_sophia_test_plan - INFO -    Failed: 0
+2025-08-29 12:07:23,073 - comprehensive_sophia_test_plan - INFO -    Execution Time: 16.58s
+2025-08-29 12:07:23,073 - comprehensive_sophia_test_plan - INFO - 
+📋 Executing Error Handling Tests
+2025-08-29 12:07:23,073 - comprehensive_sophia_test_plan - INFO - --------------------------------------------------
+2025-08-29 12:07:23,073 - comprehensive_sophia_test_plan - INFO - 🧪 Running: service_failure_recovery
+2025-08-29 12:07:23,891 - comprehensive_sophia_test_plan - INFO - ✅ PASSED: service_failure_recovery
+2025-08-29 12:07:23,892 - comprehensive_sophia_test_plan - INFO - 🧪 Running: api_provider_failures
+2025-08-29 12:07:27,220 - comprehensive_sophia_test_plan - INFO - ✅ PASSED: api_provider_failures
+2025-08-29 12:07:27,220 - comprehensive_sophia_test_plan - INFO - 🧪 Running: network_interruption_handling
+2025-08-29 12:07:27,322 - comprehensive_sophia_test_plan - INFO - ✅ PASSED: network_interruption_handling
+2025-08-29 12:07:27,323 - comprehensive_sophia_test_plan - INFO - 🧪 Running: data_corruption_recovery
+2025-08-29 12:07:30,637 - comprehensive_sophia_test_plan - INFO - ✅ PASSED: data_corruption_recovery
+2025-08-29 12:07:30,637 - comprehensive_sophia_test_plan - INFO - 
+📊 Error Handling Tests Summary:
+2025-08-29 12:07:30,637 - comprehensive_sophia_test_plan - INFO -    Total Tests: 4
+2025-08-29 12:07:30,637 - comprehensive_sophia_test_plan - INFO -    Passed: 4
+2025-08-29 12:07:30,637 - comprehensive_sophia_test_plan - INFO -    Failed: 0
+2025-08-29 12:07:30,637 - comprehensive_sophia_test_plan - INFO -    Execution Time: 7.56s
+2025-08-29 12:07:30,640 - comprehensive_sophia_test_plan - INFO - 
+================================================================================
+2025-08-29 12:07:30,640 - comprehensive_sophia_test_plan - INFO - 🎯 COMPREHENSIVE TESTING COMPLETE
+2025-08-29 12:07:30,640 - comprehensive_sophia_test_plan - INFO - ================================================================================
+2025-08-29 12:07:30,640 - comprehensive_sophia_test_plan - INFO - Total Tests: 32
+2025-08-29 12:07:30,640 - comprehensive_sophia_test_plan - INFO - Passed: 32
+2025-08-29 12:07:30,640 - comprehensive_sophia_test_plan - INFO - Failed: 0
+2025-08-29 12:07:30,640 - comprehensive_sophia_test_plan - INFO - Success Rate: 100.0%
+2025-08-29 12:07:30,640 - comprehensive_sophia_test_plan - INFO - Total Time: 58.96s
+2025-08-29 12:07:30,640 - comprehensive_sophia_test_plan - INFO - 📄 Detailed results saved to: tests/comprehensive_test_results.json
+2025-08-29 12:07:30,640 - comprehensive_sophia_test_plan - INFO - ================================================================================
+2025-08-29 12:07:30,640 - __main__ - INFO - 📊 Generating Detailed Analysis

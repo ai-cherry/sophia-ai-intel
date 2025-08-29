@@ -1,4 +1,4 @@
-// File: /Users/lynnmusil/sophia-ai-intel-1/apps/sophia-dashboard/app/api/chat/route.js
+// File: /Users/lynnmusil/sophia-ai-intel-1/apps/sophia-dashboard/app/api/chat/route.ts
 import * as entry from '../../../../../app/api/chat/route.js'
 import type { NextRequest } from 'next/server.js'
 
