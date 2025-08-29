@@ -28,6 +28,27 @@ except ImportError:
     async def search_web(*args, **kwargs):
         return {"results": [], "sources_used": ["mock"]}
 
+# Import WebSocket client for real-time updates
+try:
+    from websocket_client import SwarmWebSocketReporter
+    WEBSOCKET_AVAILABLE = True
+except ImportError:
+    WEBSOCKET_AVAILABLE = False
+    SwarmWebSocketReporter = None
+
+# Import vector search for RAG
+try:
+    from vector_search import search_knowledge_base, index_research_results, index_code_snippet
+    VECTOR_SEARCH_AVAILABLE = True
+except ImportError:
+    VECTOR_SEARCH_AVAILABLE = False
+    async def search_knowledge_base(*args, **kwargs):
+        return []
+    async def index_research_results(*args, **kwargs):
+        return 0
+    async def index_code_snippet(*args, **kwargs):
+        return None
+
 class RealSwarmExecutor:
     """Executes actual agent tasks by coordinating services"""
     
@@ -42,11 +63,37 @@ class RealSwarmExecutor:
         self.conversation_history = []
     
     async def execute_research_task(self, task: str, context: Dict) -> Dict:
-        """Execute a research task using real web search and MCP Research service"""
+        """Execute a research task using RAG, real web search and MCP Research service"""
         results = []
         sources_used = []
         
-        # First, try real web search if available
+        # First, search knowledge base for relevant context (RAG)
+        if VECTOR_SEARCH_AVAILABLE:
+            try:
+                print(f"🔍 Searching knowledge base for: {task}")
+                kb_results = await search_knowledge_base(
+                    query=task,
+                    search_type="hybrid",
+                    collection="research",
+                    limit=5
+                )
+                
+                if kb_results:
+                    # Add knowledge base results
+                    for kb_result in kb_results:
+                        results.append({
+                            "source": "knowledge_base",
+                            "title": kb_result.get("title", ""),
+                            "content": kb_result.get("content", ""),
+                            "url": kb_result.get("metadata", {}).get("url", ""),
+                            "score": kb_result.get("score", 0.8)
+                        })
+                    sources_used.append("knowledge_base")
+                    print(f"✓ Found {len(kb_results)} results from knowledge base")
+            except Exception as e:
+                print(f"Knowledge base search failed: {e}")
+        
+        # Then, try real web search if available
         if WEB_SEARCH_AVAILABLE:
             try:
                 print(f"🔍 Performing real web search for: {task}")
@@ -96,6 +143,17 @@ class RealSwarmExecutor:
         if results:
             # Sort by relevance score
             results.sort(key=lambda x: x.get("score", 0), reverse=True)
+            
+            # Index new web results into knowledge base for future use
+            if VECTOR_SEARCH_AVAILABLE and "knowledge_base" not in sources_used:
+                # Only index results from web search, not from knowledge base itself
+                web_results_to_index = [r for r in results if r.get("source") != "knowledge_base"]
+                if web_results_to_index:
+                    try:
+                        indexed_count = await index_research_results(web_results_to_index[:10])
+                        print(f"✓ Indexed {indexed_count} new results to knowledge base")
+                    except Exception as e:
+                        print(f"Failed to index results: {e}")
             
             # Create a formatted summary
             summary_parts = []
@@ -159,6 +217,20 @@ class RealSwarmExecutor:
             "language": "python",
             "summary": f"Generated code for: {task}"
         }
+        
+        # Index generated code to knowledge base
+        if VECTOR_SEARCH_AVAILABLE and code:
+            try:
+                code_id = await index_code_snippet(
+                    code=code,
+                    title=task[:100],
+                    language="python",
+                    tags=["generated", "swarm", task_lower.split()[:3]]
+                )
+                if code_id:
+                    print(f"✓ Indexed generated code to knowledge base: {code_id[:8]}...")
+            except Exception as e:
+                print(f"Failed to index code: {e}")
         
         # If GitHub is available and context requests it, push to GitHub
         if GITHUB_AVAILABLE and context.get("push_to_github", False):
@@ -439,56 +511,135 @@ if __name__ == "__main__":
 executor = RealSwarmExecutor()
 
 async def execute_swarm_task(swarm_type: str, task: str, context: Dict) -> Dict:
-    """Main entry point for swarm task execution with memory"""
+    """Main entry point for swarm task execution with memory and real-time updates"""
     
     task_id = str(uuid.uuid4())
     print(f"Executing {swarm_type} task: {task} (ID: {task_id})")
     
-    # Retrieve relevant context from memory
-    relevant_context = await executor.retrieve_context(task)
-    if relevant_context:
-        print(f"Found {len(relevant_context)} relevant context items")
-        context["memory"] = relevant_context
+    # Initialize WebSocket reporter if available
+    reporter = None
+    if WEBSOCKET_AVAILABLE and context.get("enable_websocket", True):
+        reporter = SwarmWebSocketReporter(task_id)
+        await reporter.start_execution(task, swarm_type)
     
-    # Check if we've done similar tasks before
-    similar_tasks = [h for h in executor.conversation_history if task.lower() in h.get("task", "").lower()]
-    if similar_tasks:
-        print(f"Found {len(similar_tasks)} similar previous tasks")
-        context["previous_similar"] = similar_tasks[-3:]  # Last 3 similar
-    
-    result = None
-    
-    if swarm_type == "research":
-        result = await executor.execute_research_task(task, context)
-    elif swarm_type == "coding":
-        result = await executor.execute_coding_task(task, context)
-    elif swarm_type == "analysis":
-        result = await executor.execute_analysis_task(task, context)
-    elif swarm_type == "planning":
-        result = await executor.execute_planning_task(task, context)
-    else:
-        result = {
-            "status": "completed",
-            "results": f"Generic execution for {swarm_type}: {task}",
-            "summary": f"Task completed: {task}"
+    try:
+        # Report memory retrieval
+        if reporter:
+            await reporter.report_step("Retrieving relevant context", 0.1)
+        
+        # Retrieve relevant context from memory
+        relevant_context = await executor.retrieve_context(task)
+        if relevant_context:
+            print(f"Found {len(relevant_context)} relevant context items")
+            context["memory"] = relevant_context
+            if reporter:
+                await reporter.report_finding({
+                    "type": "memory",
+                    "count": len(relevant_context),
+                    "description": "Retrieved relevant context from memory"
+                })
+        
+        # Check if we've done similar tasks before
+        similar_tasks = [h for h in executor.conversation_history if task.lower() in h.get("task", "").lower()]
+        if similar_tasks:
+            print(f"Found {len(similar_tasks)} similar previous tasks")
+            context["previous_similar"] = similar_tasks[-3:]  # Last 3 similar
+            if reporter:
+                await reporter.report_finding({
+                    "type": "similar_tasks",
+                    "count": len(similar_tasks),
+                    "description": "Found similar previous tasks"
+                })
+        
+        # Report task execution start
+        if reporter:
+            await reporter.report_step(f"Executing {swarm_type} task", 0.3)
+        
+        result = None
+        
+        if swarm_type == "research":
+            result = await executor.execute_research_task(task, context)
+            if reporter and result.get("results"):
+                await reporter.report_finding({
+                    "type": "research_results",
+                    "count": len(result.get("results", [])),
+                    "sources": result.get("sources_used", []),
+                    "description": "Research completed"
+                })
+        elif swarm_type == "coding":
+            result = await executor.execute_coding_task(task, context)
+            if reporter and result.get("code"):
+                await reporter.report_finding({
+                    "type": "code_generated",
+                    "language": result.get("language", "python"),
+                    "lines": len(result.get("code", "").split("\n")),
+                    "description": "Code generation completed"
+                })
+        elif swarm_type == "analysis":
+            result = await executor.execute_analysis_task(task, context)
+            if reporter and result.get("analysis"):
+                await reporter.report_finding({
+                    "type": "analysis_complete",
+                    "insights": len(result.get("analysis", {}).get("insights", [])),
+                    "description": "Analysis completed"
+                })
+        elif swarm_type == "planning":
+            result = await executor.execute_planning_task(task, context)
+            if reporter and result.get("plans"):
+                await reporter.report_finding({
+                    "type": "plans_generated",
+                    "approaches": len(result.get("plans", {})),
+                    "recommendation": result.get("recommendation"),
+                    "description": "Planning completed"
+                })
+        else:
+            result = {
+                "status": "completed",
+                "results": f"Generic execution for {swarm_type}: {task}",
+                "summary": f"Task completed: {task}"
+            }
+        
+        # Report memory storage
+        if reporter:
+            await reporter.report_step("Storing results in memory", 0.8)
+        
+        # Add memory context to result
+        if relevant_context:
+            result["used_memory"] = True
+            result["memory_items"] = len(relevant_context)
+        
+        # Store in context for memory
+        await executor.store_context(task_id, {
+            "task": task,
+            "swarm_type": swarm_type,
+            **result
+        })
+        
+        # Report completion
+        if reporter:
+            await reporter.report_step("Task completed", 1.0)
+            await reporter.complete_execution(result)
+        
+        return {
+            "task_id": task_id,
+            "swarm_type": swarm_type,
+            "task": task,
+            "conversation_history": len(executor.conversation_history),
+            "websocket_enabled": reporter is not None,
+            **result
         }
-    
-    # Add memory context to result
-    if relevant_context:
-        result["used_memory"] = True
-        result["memory_items"] = len(relevant_context)
-    
-    # Store in context for memory
-    await executor.store_context(task_id, {
-        "task": task,
-        "swarm_type": swarm_type,
-        **result
-    })
-    
-    return {
-        "task_id": task_id,
-        "swarm_type": swarm_type,
-        "task": task,
-        "conversation_history": len(executor.conversation_history),
-        **result
-    }
+        
+    except Exception as e:
+        error_msg = f"Error executing {swarm_type} task: {str(e)}"
+        print(error_msg)
+        
+        if reporter:
+            await reporter.report_error(error_msg)
+        
+        return {
+            "task_id": task_id,
+            "swarm_type": swarm_type,
+            "task": task,
+            "status": "error",
+            "error": error_msg
+        }

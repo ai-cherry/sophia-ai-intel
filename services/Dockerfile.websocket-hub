@@ -1,0 +1,20 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies
+RUN pip install --no-cache-dir \
+    fastapi \
+    uvicorn \
+    websockets \
+    httpx \
+    python-multipart
+
+# Copy the service files
+COPY websocket_hub.py .
+
+# Expose WebSocket port
+EXPOSE 8096
+
+# Run the WebSocket hub
+CMD ["python", "websocket_hub.py"]
