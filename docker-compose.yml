@@ -18,8 +18,8 @@ services:
       - ENABLE_TRACING=true
       - JAEGER_ENDPOINT=http://jaeger-collector:14268/api/traces
       - REDIS_URL=redis://redis:6379
-      - WEAVIATE_URL=https://w6bigpoxsrwvq7wlgmmdva.c0.us-west3.gcp.weaviate.cloud
-      - WEAVIATE_API_KEY=VMKjGMQUnXQIDiFOciZZOhr7amBfCHMh7hNf
+      - WEAVIATE_URL=${WEAVIATE_URL}
+      - WEAVIATE_API_KEY=${WEAVIATE_API_KEY}
       - POSTGRES_URL=${POSTGRES_URL}
       - JWT_SECRET=${JWT_SECRET}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
@@ -55,8 +55,8 @@ services:
     environment:
       - ENVIRONMENT=production
       - REDIS_URL=redis://redis:6379
-      - WEAVIATE_URL=https://w6bigpoxsrwvq7wlgmmdva.c0.us-west3.gcp.weaviate.cloud
-      - WEAVIATE_API_KEY=VMKjGMQUnXQIDiFOciZZOhr7amBfCHMh7hNf
+      - WEAVIATE_URL=${WEAVIATE_URL}
+      - WEAVIATE_API_KEY=${WEAVIATE_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - POSTGRES_URL=${POSTGRES_URL}
@@ -96,8 +96,8 @@ services:
       - ENVIRONMENT=production
       - PORT=8081
       - REDIS_URL=redis://redis:6379
-      - WEAVIATE_URL=https://w6bigpoxsrwvq7wlgmmdva.c0.us-west3.gcp.weaviate.cloud
-      - WEAVIATE_API_KEY=VMKjGMQUnXQIDiFOciZZOhr7amBfCHMh7hNf
+      - WEAVIATE_URL=${WEAVIATE_URL}
+      - WEAVIATE_API_KEY=${WEAVIATE_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - EMBEDDING_MODEL=text-embedding-ada-002
       - POSTGRES_URL=${POSTGRES_URL}
@@ -309,8 +309,8 @@ services:
       - ENVIRONMENT=production
       - LOG_LEVEL=info
       - REDIS_URL=redis://redis:6379
-      - WEAVIATE_URL=https://w6bigpoxsrwvq7wlgmmdva.c0.us-west3.gcp.weaviate.cloud
-      - WEAVIATE_API_KEY=VMKjGMQUnXQIDiFOciZZOhr7amBfCHMh7hNf
+      - WEAVIATE_URL=${WEAVIATE_URL}
+      - WEAVIATE_API_KEY=${WEAVIATE_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - PORT=8087
@@ -570,8 +570,8 @@ services:
       - NODE_ENV=production
       - LOG_LEVEL=info
       - REDIS_URL=redis://redis:6379
-      - WEAVIATE_URL=https://w6bigpoxsrwvq7wlgmmdva.c0.us-west3.gcp.weaviate.cloud
-      - WEAVIATE_API_KEY=VMKjGMQUnXQIDiFOciZZOhr7amBfCHMh7hNf
+      - WEAVIATE_URL=${WEAVIATE_URL}
+      - WEAVIATE_API_KEY=${WEAVIATE_API_KEY}
       - PORT=8088
       - HOST=0.0.0.0
       - POSTGRES_URL=${POSTGRES_URL}

@@ -1,0 +1,35 @@
+{
+  "name": "@sophia/memory-coordinator",
+  "version": "1.0.0",
+  "description": "Unified memory coordination service for Sophia AI",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "jest",
+    "migrate": "tsx src/migrations/run.ts"
+  },
+  "dependencies": {
+    "@qdrant/js-client-rest": "^1.7.0",
+    "fastify": "^4.25.2",
+    "@fastify/cors": "^8.5.0",
+    "@fastify/websocket": "^8.3.1",
+    "ioredis": "^5.3.2",
+    "pg": "^8.11.3",
+    "weaviate-ts-client": "^2.1.0",
+    "openai": "^4.24.1",
+    "@xenova/transformers": "^2.10.0",
+    "p-limit": "^5.0.0",
+    "zod": "^3.22.4",
+    "pino": "^8.17.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "@types/pg": "^8.10.9",
+    "typescript": "^5.3.3",
+    "tsx": "^4.7.0",
+    "jest": "^29.7.0",
+    "@types/jest": "^29.5.11"
+  }
+}

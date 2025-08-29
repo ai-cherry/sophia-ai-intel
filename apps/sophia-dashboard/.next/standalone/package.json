@@ -1,0 +1,41 @@
+{
+  "name": "sophia-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "create": "create-next-app@latest ."
+  },
+  "dependencies": {
+    "@monaco-editor/react": "^4.7.0",
+    "@radix-ui/react-dropdown-menu": "^2.1.16",
+    "@radix-ui/react-select": "^2.2.6",
+    "@radix-ui/react-tabs": "^1.1.13",
+    "@types/react-syntax-highlighter": "^15.5.13",
+    "cmdk": "^1.1.1",
+    "framer-motion": "^12.23.12",
+    "next": "14.2.3",
+    "prism-react-renderer": "^2.4.1",
+    "react": "^18",
+    "react-dom": "^18",
+    "react-hotkeys-hook": "^5.1.0",
+    "react-markdown": "^10.1.0",
+    "react-resizable-panels": "^3.0.5",
+    "react-syntax-highlighter": "^15.6.6",
+    "reactflow": "^11.11.4",
+    "remark-gfm": "^4.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.3",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
+  }
+}

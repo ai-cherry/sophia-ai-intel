@@ -1,0 +1,5 @@
+Starting QA Test Suite at Fri Aug 29 09:29:58 PDT 2025
+========================================
+[PASS] Docker daemon is running
+[PASS] Docker Compose is available
+[FAIL] Required ports are available - Expected failure but passed
