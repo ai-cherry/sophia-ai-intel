@@ -1,0 +1,306 @@
+{
+  "timestamp": "2025-08-29T13:40:12.479999",
+  "session_id": "test-agno-1756499933",
+  "summary": {
+    "total": 19,
+    "successes": 19,
+    "failures": 0,
+    "success_rate": "100.0%"
+  },
+  "providers": {
+    "tavily": 19
+  },
+  "complexities": {
+    "moderate": 3,
+    "simple": 14,
+    "critical": 1,
+    "complex": 1
+  },
+  "results": [
+    {
+      "name": "AGNO Framework Info",
+      "query": "What is the AGNO framework and how does it compare to other agent frameworks?",
+      "status": "\u2705 SUCCESS",
+      "provider": "tavily",
+      "response_time": "2.92s",
+      "response_preview": "\n\nSources:\n- Comparing AI Agent Frameworks: A Guide to Building Reliable Agents: https://www.atla-ai.com/post/ai-agent-frameworks\n- SmolAgents vs. AGNO: A Brief Case Study on AI Agent Frameworks: http...",
+      "metadata": {
+        "type": "code",
+        "complexity": "moderate",
+        "useEnterprise": false,
+        "sessionId": "test-agno-1756499933",
+        "timestamp": "2025-08-29T20:38:56.518Z"
+      }
+    },
+    {
+      "name": "AGNO GitHub Search",
+      "query": "Find the official AGNO repository on GitHub",
+      "status": "\u2705 SUCCESS",
+      "provider": "tavily",
+      "response_time": "2.55s",
+      "response_preview": "\n\nSources:\n- agno \u00b7 GitHub Topics: https://github.com/topics/agno\n- Agno - GitHub: https://github.com/agno-agi\n- agno-agi/agent-api: A minimal, open-source setup for ... - GitHub: https://github.com/a...",
+      "metadata": {
+        "type": "code",
+        "complexity": "simple",
+        "useEnterprise": false,
+        "sessionId": "test-agno-1756499933",
+        "timestamp": "2025-08-29T20:39:00.067Z"
+      }
+    },
+    {
+      "name": "AGNO Agent Creation",
+      "query": "How do I create an agent using the AGNO framework?",
+      "status": "\u2705 SUCCESS",
+      "provider": "tavily",
+      "response_time": "2.72s",
+      "response_preview": "\n\nSources:\n- Create Your Own AI Agents With Agno - YouTube: https://www.youtube.com/watch?v=v25O_zBU4DQ\n- Building an AI Agent with Agno: A Step-by-Step Guide: https://ai.plainenglish.io/building-an-a...",
+      "metadata": {
+        "type": "code",
+        "complexity": "simple",
+        "useEnterprise": false,
+        "sessionId": "test-agno-1756499933",
+        "timestamp": "2025-08-29T20:39:03.793Z"
+      }
+    },
+    {
+      "name": "AGNO Swarm Setup",
+      "query": "Explain how to set up an AGNO swarm for distributed computing",
+      "status": "\u2705 SUCCESS",
+      "provider": "tavily",
+      "response_time": "3.00s",
+      "response_preview": "\n\nSources:\n- Collection of awesome LLM apps with AI Agents and RAG ... - GitHub: https://github.com/Shubhamsaboo/awesome-llm-apps\n- Ollama + OpenAI's Swarm - EASILY Run AI Agents Locally - YouTube: ht...",
+      "metadata": {
+        "type": "code",
+        "complexity": "simple",
+        "useEnterprise": false,
+        "sessionId": "test-agno-1756499933",
+        "timestamp": "2025-08-29T20:39:07.793Z"
+      }
+    },
+    {
+      "name": "AGNO vs LangChain",
+      "query": "Compare AGNO agents to LangChain agents",
+      "status": "\u2705 SUCCESS",
+      "provider": "tavily",
+      "response_time": "3.91s",
+      "response_preview": "\n\nSources:\n- LangChain vs. LangGraph vs. Agno Agents | by Seahorse - Medium: https://medium.com/@seahorse.technologies.sl/langchain-vs-langgraph-vs-agno-agents-e3f986727c71\n- Agno vs LangChain Workflo...",
+      "metadata": {
+        "type": "code",
+        "complexity": "moderate",
+        "useEnterprise": false,
+        "sessionId": "test-agno-1756499933",
+        "timestamp": "2025-08-29T20:39:12.705Z"
+      }
+    },
+    {
+      "name": "AGNO MCP Integration",
+      "query": "How does AGNO integrate with MCP servers?",
+      "status": "\u2705 SUCCESS",
+      "provider": "tavily",
+      "response_time": "2.98s",
+      "response_preview": "\n\nSources:\n- Build an MCP GitHub Agent in Less Than 50 Lines of Code: https://www.theunwindai.com/p/build-an-mcp-github-agent-in-less-than-50-lines-of-code\n- WaiGenie/BlenderMCP-AI-AGNO-agent: https:/...",
+      "metadata": {
+        "type": "code",
+        "complexity": "simple",
+        "useEnterprise": false,
+        "sessionId": "test-agno-1756499933",
+        "timestamp": "2025-08-29T20:39:16.690Z"
+      }
+    },
+    {
+      "name": "AGNO Latest Updates",
+      "query": "What are the latest updates to the AGNO framework?",
+      "status": "\u2705 SUCCESS",
+      "provider": "tavily",
+      "response_time": "4.21s",
+      "response_preview": "\n\nSources:\n- agno-agi/agno: Open-source framework for building multi-agent ...: https://github.com/agno-agi/agno\n- Agno \u2013 A full-stack framework for building Multi-Agent Systems: https://news.ycombina...",
+      "metadata": {
+        "type": "code",
+        "complexity": "simple",
+        "useEnterprise": false,
+        "sessionId": "test-agno-1756499933",
+        "timestamp": "2025-08-29T20:39:21.905Z"
+      }
+    },
+    {
+      "name": "Simple Query",
+      "query": "What is AI?",
+      "status": "\u2705 SUCCESS",
+      "provider": "tavily",
+      "response_time": "2.37s",
+      "response_preview": "\n\nSources:\n- What Is Artificial Intelligence? Definition, Uses, and Types: https://www.coursera.org/articles/what-is-artificial-intelligence\n- What Is Artificial Intelligence (AI)?: https://cloud.goog...",
+      "metadata": {
+        "type": "knowledge",
+        "complexity": "simple",
+        "useEnterprise": false,
+        "sessionId": "test-agno-1756499933",
+        "timestamp": "2025-08-29T20:39:26.316Z"
+      }
+    },
+    {
+      "name": "Code Query",
+      "query": "Show me Python code for AGNO agents",
+      "status": "\u2705 SUCCESS",
+      "provider": "tavily",
+      "response_time": "2.68s",
+      "response_preview": "\n\nSources:\n- AGNO Multi-Agent System Demo - GitHub: https://github.com/lulu3202/agno_usecase\n- Agno: The agent framework for Python teams - WorkOS: https://workos.com/blog/agno-the-agent-framework-for...",
+      "metadata": {
+        "type": "code",
+        "complexity": "simple",
+        "useEnterprise": false,
+        "sessionId": "test-agno-1756499933",
+        "timestamp": "2025-08-29T20:39:30.003Z"
+      }
+    },
+    {
+      "name": "Research Query",
+      "query": "Latest research on AGNO multi-agent systems",
+      "status": "\u2705 SUCCESS",
+      "provider": "tavily",
+      "response_time": "3.81s",
+      "response_preview": "\n\nSources:\n- AGNO Multi-Agent System Demo: https://github.com/lulu3202/agno_usecase\n- agno-agi/agno: Open-source framework for building multi ...: https://github.com/agno-agi/agno\n- Designing Smart Mu...",
+      "metadata": {
+        "type": "code",
+        "complexity": "simple",
+        "useEnterprise": false,
+        "sessionId": "test-agno-1756499933",
+        "timestamp": "2025-08-29T20:39:34.815Z"
+      }
+    },
+    {
+      "name": "Business Query",
+      "query": "Strategic analysis of AGNO for enterprise",
+      "status": "\u2705 SUCCESS",
+      "provider": "tavily",
+      "response_time": "2.66s",
+      "response_preview": "\n\nSources:\n- A Thorough Comparison of Agno and Google Agent Development ...: https://www.linkedin.com/pulse/thorough-comparison-agno-google-agent-development-kit-spanidis-4bmff\n- Web Scraping With AI ...",
+      "metadata": {
+        "type": "code",
+        "complexity": "critical",
+        "useEnterprise": true,
+        "sessionId": "test-agno-1756499933",
+        "timestamp": "2025-08-29T20:39:38.480Z"
+      }
+    },
+    {
+      "name": "Complex Query",
+      "query": "Build a comprehensive AGNO swarm architecture for financial trading with risk management",
+      "status": "\u2705 SUCCESS",
+      "provider": "tavily",
+      "response_time": "5.02s",
+      "response_preview": "\n\nSources:\n- The-Swarm-Corporation/AutoHedge - GitHub: https://github.com/The-Swarm-Corporation/AutoHedge\n- Building a Multi-Agent Financial News System with Agno and Agent UI: https://www.marketcalls...",
+      "metadata": {
+        "type": "code",
+        "complexity": "complex",
+        "useEnterprise": true,
+        "sessionId": "test-agno-1756499933",
+        "timestamp": "2025-08-29T20:39:44.509Z"
+      }
+    },
+    {
+      "name": "Perplexity API",
+      "query": "What are the latest AI developments in 2024?",
+      "status": "\u2705 SUCCESS",
+      "provider": "tavily",
+      "response_time": "4.36s",
+      "response_preview": "\n\nSources:\n- 2024: A year of extraordinary progress and advancement in AI: https://blog.google/technology/ai/2024-ai-extraordinary-progress-advancement/\n- AI Pulse: Top AI Trends from 2024 - A Look Ba...",
+      "metadata": {
+        "type": "research",
+        "complexity": "simple",
+        "useEnterprise": false,
+        "sessionId": "test-agno-1756499933",
+        "timestamp": "2025-08-29T20:39:49.876Z"
+      }
+    },
+    {
+      "name": "Tavily Search",
+      "query": "Search for AGNO framework tutorials and documentation",
+      "status": "\u2705 SUCCESS",
+      "provider": "tavily",
+      "response_time": "3.99s",
+      "response_preview": "\n\nSources:\n- All repositories - agno-agi - GitHub: https://github.com/orgs/agno-agi/repositories\n- AGNO Multi-Agent System Demo: https://github.com/lulu3202/agno_usecase\n- agno-agi/agno: Open-source f...",
+      "metadata": {
+        "type": "code",
+        "complexity": "simple",
+        "useEnterprise": false,
+        "sessionId": "test-agno-1756499933",
+        "timestamp": "2025-08-29T20:39:54.870Z"
+      }
+    },
+    {
+      "name": "OpenRouter LLM",
+      "query": "Explain quantum computing in simple terms",
+      "status": "\u2705 SUCCESS",
+      "provider": "tavily",
+      "response_time": "2.39s",
+      "response_preview": "\n\nSources:\n- Quantum Computing Basics: A Beginner's Guide: https://www.bluequbit.io/quantum-computing-basics\n- Basic Quantum Computing \u2014 Introduction: https://medium.com/@charlie.thomas_94667/basic-qu...",
+      "metadata": {
+        "type": "knowledge",
+        "complexity": "simple",
+        "useEnterprise": false,
+        "sessionId": "test-agno-1756499933",
+        "timestamp": "2025-08-29T20:39:58.267Z"
+      }
+    },
+    {
+      "name": "Enterprise Orchestrator",
+      "query": "Analyze market opportunities for AGNO-based solutions",
+      "status": "\u2705 SUCCESS",
+      "provider": "tavily",
+      "response_time": "2.69s",
+      "response_preview": "\n\nSources:\n- agno \u00b7 GitHub Topics: https://github.com/topics/agno\n- How To Build Financial Agent with Agno & Groq - Dataaspirant: https://dataaspirant.com/building-financial-agent-agno-groq/\n- agno-ag...",
+      "metadata": {
+        "type": "code",
+        "complexity": "moderate",
+        "useEnterprise": false,
+        "sessionId": "test-agno-1756499933",
+        "timestamp": "2025-08-29T20:40:01.966Z"
+      }
+    },
+    {
+      "name": "Context Setup",
+      "query": "My name is TestUser and I'm interested in AGNO agents",
+      "status": "\u2705 SUCCESS",
+      "provider": "tavily",
+      "response_time": "2.47s",
+      "response_preview": "\n\nSources:\n- AGNO Multi-Agent System Demo - GitHub: https://github.com/lulu3202/agno_usecase\n- 500+ AI Agent Projects / UseCases - GitHub: https://github.com/ashishpatel26/500-AI-Agents-Projects\n- Dec...",
+      "metadata": {
+        "type": "code",
+        "complexity": "simple",
+        "useEnterprise": false,
+        "sessionId": "test-agno-1756499933",
+        "timestamp": "2025-08-29T20:40:05.440Z"
+      }
+    },
+    {
+      "name": "Context Recall",
+      "query": "What was my name and what am I interested in?",
+      "status": "\u2705 SUCCESS",
+      "provider": "tavily",
+      "response_time": "2.17s",
+      "response_preview": "\n\nSources:\n- What Is My Name - Quizzes: https://www.wikihow.com/What-Is-My-Name\n- Interests Quiz - Do2Learn: https://do2learn.com/JobTIPS/DeterminingInterests/InterestsQuiz/Quiz.php\n- What's My Name (...",
+      "metadata": {
+        "type": "knowledge",
+        "complexity": "simple",
+        "useEnterprise": false,
+        "sessionId": "test-agno-1756499933",
+        "timestamp": "2025-08-29T20:40:08.609Z"
+      }
+    },
+    {
+      "name": "Context Application",
+      "query": "Based on my interests, recommend specific AGNO resources",
+      "status": "\u2705 SUCCESS",
+      "provider": "tavily",
+      "response_time": "2.86s",
+      "response_preview": "\n\nSources:\n- Decentralised-AI/agno-Build-Multimodal-AI-Agents - GitHub: https://github.com/Decentralised-AI/agno-Build-Multimodal-AI-Agents\n- agno \u00b7 GitHub Topics: https://github.com/topics/agno\n- All...",
+      "metadata": {
+        "type": "code",
+        "complexity": "simple",
+        "useEnterprise": false,
+        "sessionId": "test-agno-1756499933",
+        "timestamp": "2025-08-29T20:40:12.477Z"
+      }
+    }
+  ]
+}
