@@ -41,7 +41,7 @@ class SophiaCore {
     
     // Determine query type
     let type = 'general';
-    if (/\b(code|github|repo|library|npm|pip|framework|api)\b/.test(q)) type = 'code';
+    if (/\b(code|github|repo|library|npm|pip|framework|api|agno|agent|swarm|mcp)\b/i.test(q)) type = 'code';
     else if (/\b(search|find|research|latest|news|current)\b/.test(q)) type = 'research';
     else if (/\b(who|what|when|where|why|how|explain)\b/.test(q)) type = 'knowledge';
     else if (/\b(build|create|implement|design|plan)\b/.test(q)) type = 'planning';
@@ -79,7 +79,7 @@ class SophiaCore {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'sonar-small-chat',
+          model: 'llama-3.1-sonar-small-128k-online',
           messages: [{ role: 'user', content: query }]
         })
       });
@@ -164,8 +164,8 @@ class SophiaCore {
    */
   private async callMCP(query: string, type: string): Promise<string | null> {
     try {
-      // Try MCP Research for GitHub/code queries
-      if (type === 'code') {
+      // Try MCP Research for GitHub/code queries or AGNO-related searches
+      if (type === 'code' || /\b(agno|agent|swarm|mcp|github|repository)\b/i.test(query)) {
         const response = await fetch(`http://localhost:8085/search/github?q=${encodeURIComponent(query)}&limit=3`);
         if (response.ok) {
           const data = await response.json();
@@ -265,8 +265,8 @@ class SophiaCore {
       }
     }
     
-    if (classification.type === 'code') {
-      // Try MCP for code searches
+    if (classification.type === 'code' || /\b(agno|agent|swarm|mcp)\b/i.test(query)) {
+      // Try MCP for code searches and AGNO-related queries
       response = await this.callMCP(query, 'code');
       if (response) provider = 'mcp-github';
       
