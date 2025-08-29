@@ -1,9 +1,1 @@
-{
-  "/page": "app/page.js",
-  "/api/health/route": "app/api/health/route.js",
-  "/api/chat/route": "app/api/chat/route.js",
-  "/api/results/route": "app/api/results/route.js",
-  "/api/agents/route": "app/api/agents/route.js",
-  "/api/metrics/route": "app/api/metrics/route.js",
-  "/api/status/route": "app/api/status/route.js"
-}
+{}
