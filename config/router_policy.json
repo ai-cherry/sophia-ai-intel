@@ -1,0 +1,83 @@
+{
+  "routes": [
+    {
+      "id": "scout-default",
+      "match": {"intent": "research|ideation|brainstorm"},
+      "pool": [
+        "together/qwen3-235b-a22b-instruct-2507-fp8-throughput",
+        "together/mistralai/Mistral-7B-Instruct-v0.1",
+        "together/meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
+        "openrouter/deepseek/v3.1"
+      ],
+      "fanout": 3,
+      "agreement_threshold": 0.6,
+      "budget_usd": 0.05,
+      "timeout_ms": 3000
+    },
+    {
+      "id": "coder-default",
+      "match": {"intent": "code|implement|patch|fix|generate"},
+      "primary": "together/qwen3-coder-480b-a35b-instruct",
+      "fallbacks": [
+        "openrouter/openai/gpt-4o-mini",
+        "together/mistralai/Mixtral-8x7B-Instruct-v0.1"
+      ],
+      "budget_usd": 0.15,
+      "timeout_ms": 10000,
+      "temperature": 0.3
+    },
+    {
+      "id": "judge-default",
+      "match": {"intent": "plan|review|merge|architecture|strategy"},
+      "primary": "openrouter/anthropic/claude-3.7-sonnet",
+      "fallbacks": [
+        "openrouter/google/gemini-2.5-pro",
+        "openrouter/anthropic/claude-3.5-sonnet"
+      ],
+      "debate_on": {
+        "confidence_lt": 0.65,
+        "contradictions_ge": 2
+      },
+      "arbiter": "openrouter/openai/gpt-4.1",
+      "budget_usd": 0.60,
+      "timeout_ms": 15000
+    },
+    {
+      "id": "safety-filter",
+      "match": {"all": true},
+      "model": "together/meta-llama/Llama-Guard-4-12B",
+      "budget_usd": 0.01,
+      "timeout_ms": 1000,
+      "block_on": ["unsafe", "harmful", "illegal"]
+    }
+  ],
+  "switch_to_dedicated": {
+    "trigger": {
+      "p95_ms_gt": 800,
+      "rpm_gt": 30,
+      "error_rate_gt": 0.1
+    },
+    "targets": ["judge-default", "coder-default"],
+    "dedicated_endpoints": {
+      "judge": "https://api.together.xyz/v1/dedicated/judge-cluster",
+      "coder": "https://api.together.xyz/v1/dedicated/coder-cluster"
+    }
+  },
+  "budgets": {
+    "daily_usd": 100,
+    "per_user_usd": 5,
+    "per_request_usd": 1,
+    "alert_threshold": 0.8
+  },
+  "caching": {
+    "semantic_cache": true,
+    "ttl_seconds": 3600,
+    "similarity_threshold": 0.95
+  },
+  "eval_config": {
+    "enabled": true,
+    "sample_rate": 0.1,
+    "judge_model": "openrouter/anthropic/claude-3.7-sonnet",
+    "metrics": ["correctness", "efficiency", "cost", "latency"]
+  }
+}

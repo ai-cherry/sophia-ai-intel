@@ -1,146 +1,176 @@
 /**
- * Swarm Service API Client
- * Connects to the unified swarm service for all swarm operations
+ * Swarm Client - WebSocket subscriptions for live swarm updates
+ * NO MOCK DATA
  */
-
-export enum SwarmType {
-  CODING = 'coding',
-  RESEARCH = 'research',
-  ANALYSIS = 'analysis',
-  PLANNING = 'planning'
-}
-
-export enum PlannerType {
-  CUTTING_EDGE = 'cutting_edge',
-  CONSERVATIVE = 'conservative',
-  SYNTHESIS = 'synthesis'
-}
-
-export interface AgentInfo {
-  id: string;
-  name: string;
-  type: string;
-  capabilities: string[];
-  status: string;
-}
 
 export interface SwarmStatus {
   swarm_id: string;
-  swarm_type: SwarmType;
-  status: string;
-  agents: AgentInfo[];
-  current_task?: string;
+  swarm_type: string;
+  status: 'creating' | 'executing' | 'completed' | 'error';
   progress: number;
+  current_task?: string;
+  agents?: Array<{
+    id: string;
+    role: string;
+    status: string;
+  }>;
   results?: any;
+  error?: string;
 }
 
-export interface SwarmRequest {
-  swarm_type: SwarmType;
-  task: string;
-  context?: Record<string, any>;
-  config?: Record<string, any>;
-}
-
-export interface PlanResponse {
-  planner_type: PlannerType;
-  plan: string;
-  risk_assessment?: Record<string, any>;
-  artifacts?: string[];
-}
-
-export interface PlansResponse {
-  task: string;
-  plans: {
-    cutting_edge: PlanResponse;
-    conservative: PlanResponse;
-    synthesis: PlanResponse;
-  };
-  recommendation: string;
+export interface SwarmEvent {
+  type: 'status' | 'progress' | 'finding' | 'result' | 'error';
+  swarm_id: string;
+  data: any;
+  timestamp: string;
 }
 
 class SwarmClient {
+  private websockets: Map<string, WebSocket> = new Map();
   private baseUrl: string;
-  private ws: WebSocket | null = null;
-
-  constructor(baseUrl: string = 'http://localhost:8100') {
-    this.baseUrl = baseUrl;
+  
+  constructor() {
+    // Use environment or default to local
+    this.baseUrl = process.env.NEXT_PUBLIC_SWARM_WS_URL || 'ws://localhost:8100';
   }
-
-  async health(): Promise<any> {
-    const response = await fetch(`${this.baseUrl}/health`);
-    if (!response.ok) throw new Error('Health check failed');
-    return response.json();
-  }
-
-  async listAgents(): Promise<AgentInfo[]> {
-    const response = await fetch(`${this.baseUrl}/agents`);
-    if (!response.ok) throw new Error('Failed to list agents');
-    return response.json();
-  }
-
-  async createSwarm(request: SwarmRequest): Promise<{ success: boolean; swarm_id: string; message: string }> {
-    const response = await fetch(`${this.baseUrl}/swarms/create`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(request)
-    });
-    if (!response.ok) throw new Error('Failed to create swarm');
-    return response.json();
-  }
-
-  async listSwarms(): Promise<SwarmStatus[]> {
-    const response = await fetch(`${this.baseUrl}/swarms`);
-    if (!response.ok) throw new Error('Failed to list swarms');
-    return response.json();
-  }
-
-  async getSwarmStatus(swarmId: string): Promise<SwarmStatus> {
-    const response = await fetch(`${this.baseUrl}/swarms/${swarmId}/status`);
-    if (!response.ok) throw new Error('Failed to get swarm status');
-    return response.json();
-  }
-
-  async stopSwarm(swarmId: string): Promise<{ success: boolean; message: string }> {
-    const response = await fetch(`${this.baseUrl}/swarms/${swarmId}/stop`, {
-      method: 'POST'
-    });
-    if (!response.ok) throw new Error('Failed to stop swarm');
-    return response.json();
-  }
-
-  async generatePlans(task: string, context?: Record<string, any>): Promise<PlansResponse> {
-    const response = await fetch(`${this.baseUrl}/plans`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ task, context })
-    });
-    if (!response.ok) throw new Error('Failed to generate plans');
-    return response.json();
-  }
-
-  subscribeToSwarm(swarmId: string, onMessage: (status: SwarmStatus) => void): () => void {
-    if (this.ws) {
-      this.ws.close();
+  
+  /**
+   * Subscribe to swarm updates via WebSocket
+   */
+  subscribeToSwarm(
+    swarmId: string, 
+    onMessage: (status: SwarmStatus) => void
+  ): () => void {
+    // Close existing connection if any
+    if (this.websockets.has(swarmId)) {
+      this.websockets.get(swarmId)?.close();
     }
-
-    this.ws = new WebSocket(`ws://localhost:8100/ws/swarm/${swarmId}`);
     
-    this.ws.onmessage = (event) => {
-      const status = JSON.parse(event.data);
-      onMessage(status);
+    // Create new WebSocket connection
+    const ws = new WebSocket(`${this.baseUrl}/ws/swarm/${swarmId}`);
+    
+    ws.onopen = () => {
+      console.log(`Connected to swarm ${swarmId}`);
     };
-
-    this.ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
-
-    return () => {
-      if (this.ws) {
-        this.ws.close();
-        this.ws = null;
+    
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        onMessage(data);
+      } catch (e) {
+        console.error('Failed to parse swarm message:', e);
       }
     };
+    
+    ws.onerror = (error) => {
+      console.error(`WebSocket error for swarm ${swarmId}:`, error);
+    };
+    
+    ws.onclose = () => {
+      console.log(`Disconnected from swarm ${swarmId}`);
+      this.websockets.delete(swarmId);
+    };
+    
+    this.websockets.set(swarmId, ws);
+    
+    // Return unsubscribe function
+    return () => {
+      ws.close();
+      this.websockets.delete(swarmId);
+    };
+  }
+  
+  /**
+   * List all active swarms
+   */
+  async listSwarms(): Promise<Array<SwarmStatus>> {
+    try {
+      const response = await fetch(`${this.baseUrl.replace('ws://', 'http://').replace('wss://', 'https://')}/swarms`);
+      if (!response.ok) throw new Error('Failed to fetch swarms');
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to list swarms:', error);
+      return [];
+    }
+  }
+  
+  /**
+   * Get swarm status
+   */
+  async getSwarmStatus(swarmId: string): Promise<SwarmStatus | null> {
+    try {
+      const response = await fetch(`${this.baseUrl.replace('ws://', 'http://').replace('wss://', 'https://')}/swarms/${swarmId}/status`);
+      if (!response.ok) throw new Error('Failed to fetch swarm status');
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to get swarm status:', error);
+      return null;
+    }
+  }
+  
+  /**
+   * Create a new swarm
+   */
+  async createSwarm(swarmType: string, task: string, context?: any): Promise<string | null> {
+    try {
+      const response = await fetch(`${this.baseUrl.replace('ws://', 'http://').replace('wss://', 'https://')}/swarms/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          swarm_type: swarmType,
+          task,
+          context: context || {}
+        })
+      });
+      
+      if (!response.ok) throw new Error('Failed to create swarm');
+      const data = await response.json();
+      return data.swarm_id;
+    } catch (error) {
+      console.error('Failed to create swarm:', error);
+      return null;
+    }
+  }
+  
+  /**
+   * Stop a swarm
+   */
+  async stopSwarm(swarmId: string): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl.replace('ws://', 'http://').replace('wss://', 'https://')}/swarms/${swarmId}/stop`, {
+        method: 'POST'
+      });
+      return response.ok;
+    } catch (error) {
+      console.error('Failed to stop swarm:', error);
+      return false;
+    }
+  }
+  
+  /**
+   * Get list of available agents
+   */
+  async listAgents(): Promise<Array<any>> {
+    try {
+      const response = await fetch(`${this.baseUrl.replace('ws://', 'http://').replace('wss://', 'https://')}/agents`);
+      if (!response.ok) throw new Error('Failed to fetch agents');
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to list agents:', error);
+      return [];
+    }
+  }
+  
+  /**
+   * Cleanup all connections
+   */
+  disconnect(): void {
+    this.websockets.forEach((ws, id) => {
+      ws.close();
+    });
+    this.websockets.clear();
   }
 }
 
+// Export singleton instance
 export const swarmClient = new SwarmClient();

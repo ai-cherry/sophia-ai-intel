@@ -400,18 +400,31 @@ if __name__ == "__main__":
         }
     
     async def execute_planning_task(self, task: str, context: Dict) -> Dict:
-        """Execute a planning task with REAL intelligent planning"""
+        """Execute a planning task with V2 swarm-of-swarms intelligent planning"""
         
-        # Import the intelligent planner
+        # Try V2 planner with full swarm-of-swarms pipeline
         try:
-            from planning.intelligent_planner import generate_intelligent_plan
+            from planning.intelligent_planner_v2 import generate_intelligent_plan
             
-            # Generate actual intelligent plan
+            # Enable swarm pipeline for complex tasks
+            context["use_swarm_pipeline"] = True
+            context["generate_code"] = "code" in task.lower() or "implement" in task.lower()
+            context["auto_deploy"] = False  # Require manual approval for deploy
+            
+            # Generate actual intelligent plan with swarm-of-swarms
             plan_result = await generate_intelligent_plan(task, context)
             
-            return plan_result  # Already has status, plans, recommendation, summary, sources, citations
+            return plan_result  # Returns full pipeline results or simple plan
+        except ImportError:
+            # Try V1 planner as fallback
+            try:
+                from planning.intelligent_planner import generate_intelligent_plan
+                plan_result = await generate_intelligent_plan(task, context)
+                return plan_result
+            except Exception as e:
+                print(f"V1 planner also failed: {e}")
         except Exception as e:
-            print(f"Intelligent planner error: {e}, falling back to basic")
+            print(f"V2 planner error: {e}, falling back to basic")
             
             # Fallback to basic planning if intelligent planner fails
             plans = {
