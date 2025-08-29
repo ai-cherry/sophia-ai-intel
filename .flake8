@@ -1,0 +1,57 @@
+[flake8]
+max-line-length = 88
+extend-ignore = E203, E501, W503
+exclude =
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    node_modules,
+    .pytest_cache,
+    darwin-arm64,
+    *.egg-info,
+    dist,
+    build,
+    .next,
+    .mypy_cache
+
+# PEP 8 Style Guide
+# E, W: pycodestyle errors and warnings
+# F: pyflakes
+# C: mccabe complexity
+# B: flake8-bugbear
+select = E,W,F,C,B,B9
+
+# Complexity max level
+max-complexity = 10
+
+# Per-file-ignores for specific files that need more flexibility
+per-file-ignores =
+    # Type stub files can have unused imports
+    *.pyi:F401
+    # Test files can be less strict about complexity and some imports
+    tests/*.py:C901,E501,PLR2004
+    test_*.py:C901,E501,PLR2004
+    *_test.py:C901,E501,PLR2004
+
+# Line length and formatting
+hang-closing = True
+count = False
+statistics = False
+
+# Import order (i)
+i100
+i101
+i102
+i201
+i202
+
+# PyDocStyle (docstring style)
+docstring-convention = numpy
+
+# Report specific error codes
+# B902: blind except Exception: statement
+# B903: use collections.namedtuple (or typing.NamedTuple) for data classes that only set default values
+# B907: usage of compare as is operator
+# B308: use of mark_safe() with no argument
+# B306: basepath is no longer resolved from context

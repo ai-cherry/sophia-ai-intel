@@ -1,0 +1,33 @@
+[bandit]
+exclude_dirs = .venv,node_modules,.git,__pycache__,darwin-arm64,.pytest_cache,.mypy_cache
+skips = B101,B601,B701
+
+# B101: assert_used (commonly used in tests, suppress if needed)
+# B601: subprocess_popen_with_shell_equals_true (may be false positive in some cases)
+# B701: jinja2_autoescape_false (may be intentional in some templates)
+
+# File patterns to skip scanning entirely
+skip_file_patterns = "*__pycache__*", "*node_modules*", "*.egg-info*", "*tests*", "*test_*"
+
+# Severity levels to report
+# LOW: Low severity issues that may not be security vulnerabilities
+# MEDIUM: Medium severity issues, potential security problems
+# HIGH: High severity issues, likely security problems
+severity = LOW,MEDIUM,HIGH
+
+# Confidence levels to report
+# LOW: Low confidence, may be noise
+# MEDIUM: Medium confidence, probably a real issue
+# HIGH: High confidence, definitely an issue
+confidence = LOW,MEDIUM,HIGH
+
+# Custom rules
+[sql_injection_custom]
+method_names = execute,executemany
+
+[shell_injection_custom]
+method_names = system,popen,call,run,Popen,subprocess,dangerous_exec
+
+[weak_crypto_custom]
+detect_weak_crypto = True
+audit_only = no
