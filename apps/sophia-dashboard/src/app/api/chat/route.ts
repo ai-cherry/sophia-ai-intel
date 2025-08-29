@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
   try {
-    const { message, context, sessionId, activeTab } = await request.json();
+    const { message, context, sessionId, activeTab, enableWebSocket } = await request.json();
 
     // Enhanced context for Sophia Brain
     const enhancedContext = {
@@ -19,7 +19,80 @@ export async function POST(request: Request) {
       }
     };
 
-    // Try Sophia Brain first (the supreme orchestrator)
+    // SOPHIA SUPREME - The One True Orchestrator
+    try {
+      const sophiaSupremeResponse = await fetch('http://localhost:8300/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: message,
+          context: enhancedContext
+        })
+      });
+
+      if (sophiaSupremeResponse.ok) {
+        const data = await sophiaSupremeResponse.json();
+        
+        // Return structured response for new dashboard
+        return NextResponse.json({
+          message: {
+            id: `msg-${Date.now()}`,
+            role: 'assistant',
+            content: data.response || data.message || 'Processing your request...',
+            metadata: {
+              actions: data.actions_taken || [],
+              services: data.services_used || [],
+              research: data.research_results || [],
+              code: data.code_artifacts || [],
+              plans: data.planning_output || null,
+              agents: data.agent_activities || [],
+              github_pr: data.github_pr || null
+            },
+            timestamp: new Date().toISOString()
+          },
+          orchestrator: 'Sophia Supreme',
+          sessionId: enhancedContext.dashboard.sessionId
+        });
+      }
+    } catch (error) {
+      console.log('Connecting to Sophia Supreme...');
+    }
+    
+    // Fallback to Direct Swarm API
+    try {
+      const directResponse = await fetch('http://localhost:8200/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: message,
+          agent_type: activeTab || 'research'
+        })
+      });
+
+      if (directResponse.ok) {
+        const data = await directResponse.json();
+        
+        return NextResponse.json({
+          message: {
+            id: `msg-${Date.now()}`,
+            role: 'assistant',
+            content: data.response,
+            metadata: {
+              actions: ['Swarm deployed'],
+              services: ['direct-swarm'],
+              agents: [{ type: data.swarm_type, id: data.task_id }]
+            },
+            timestamp: new Date().toISOString()
+          },
+          orchestrator: 'Direct Swarm',
+          sessionId: enhancedContext.dashboard.sessionId
+        });
+      }
+    } catch (error) {
+      console.log('Direct swarm not available, trying Sophia Brain...');
+    }
+    
+    // Try Sophia Brain as fallback
     try {
       const sophiaResponse = await fetch('http://localhost:8099/chat', {
         method: 'POST',
@@ -36,12 +109,17 @@ export async function POST(request: Request) {
         
         // Process Sophia's response with full context awareness
         return NextResponse.json({
-          response: data.response || data.message || 'Processing your request with full neural context...',
-          timestamp: new Date().toISOString(),
-          service: 'sophia-brain',
-          actions: data.actions_taken || [],
-          services_used: data.services_used || [],
-          context_aware: true,
+          message: {
+            id: `msg-${Date.now()}`,
+            role: 'assistant',
+            content: data.response || data.message || 'Processing your request with full neural context...',
+            metadata: {
+              actions: data.actions_taken || [],
+              services: data.services_used || []
+            },
+            timestamp: new Date().toISOString()
+          },
+          orchestrator: 'Sophia Brain',
           sessionId: enhancedContext.dashboard.sessionId
         });
       }
@@ -92,10 +170,14 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({
-      response: `I've processed your request about '${message}'. The system is working on providing you the best answer.`,
-      timestamp: new Date().toISOString(),
-      service: 'sophia-brain',
-      context_aware: true,
+      message: {
+        id: `msg-${Date.now()}`,
+        role: 'assistant',
+        content: response,
+        metadata: {},
+        timestamp: new Date().toISOString()
+      },
+      orchestrator: 'Fallback',
       sessionId: sessionId || `session_${Date.now()}`
     });
 

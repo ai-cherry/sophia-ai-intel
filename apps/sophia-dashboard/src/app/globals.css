@@ -3,7 +3,53 @@
 @tailwind utilities;
 
 :root {
-  /* Primary Brand Colors */
+  /* ===== Spacing Scale (4px base) ===== */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ===== Typography Scale ===== */
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-base: 15px;
+  --text-lg: 18px;
+  --text-xl: 22px;
+  --text-2xl: 28px;
+  --text-3xl: 36px;
+
+  /* ===== Line Heights ===== */
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+
+  /* ===== Dark Theme Colors ===== */
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #141414;
+  --bg-tertiary: #1f1f1f;
+  --bg-elevated: #2a2a2a;
+  
+  --text-primary: #ffffff;
+  --text-secondary: #a3a3a3;
+  --text-tertiary: #737373;
+  --text-muted: #525252;
+  
+  --accent-primary: #00ffcc;
+  --accent-secondary: #9945ff;
+  --accent-info: #0ea5e9;
+  --accent-success: #10b981;
+  --accent-warning: #f59e0b;
+  --accent-error: #ef4444;
+  
+  --border-subtle: rgba(255,255,255,0.08);
+  --border-default: rgba(255,255,255,0.12);
+  --border-strong: rgba(255,255,255,0.16);
+
+  /* Legacy Variables for Compatibility */
   --primary-dark: #0f1b3c;
   --primary-mid: #1e293b;
   --primary-purple: #4c1d95;
@@ -12,14 +58,14 @@
   --accent-purple: #7c3aed;
   
   /* Gradients */
-  --bg-gradient: linear-gradient(135deg, #0f1b3c 0%, #1e293b 50%, #4c1d95 100%);
+  --bg-gradient: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-tertiary) 100%);
   --card-gradient: linear-gradient(145deg, rgba(15,27,60,0.8) 0%, rgba(76,29,149,0.3) 100%);
-  --accent-gradient: linear-gradient(90deg, #00d9ff 0%, #3b82f6 100%);
+  --accent-gradient: linear-gradient(90deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
   --message-gradient: linear-gradient(145deg, rgba(76,29,149,0.4) 0%, rgba(0,217,255,0.1) 100%);
   
   /* Neural Network Effects */
-  --glow-cyan: 0 0 20px rgba(0, 217, 255, 0.3);
-  --glow-purple: 0 0 15px rgba(124, 58, 237, 0.2);
+  --glow-cyan: 0 0 20px rgba(0, 255, 204, 0.3);
+  --glow-purple: 0 0 15px rgba(153, 69, 255, 0.2);
   --glow-blue: 0 0 25px rgba(59, 130, 246, 0.3);
 }
 

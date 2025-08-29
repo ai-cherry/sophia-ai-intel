@@ -2,6 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react';
 import SwarmManager from '@/components/SwarmManager';
+import ActivityFeed from '@/components/ActivityFeed';
+import ViewModeSwitcher from '@/components/ViewModeSwitcher';
+import QuickActions from '@/components/QuickActions';
+import MessageRenderer from '@/components/MessageRenderer';
 
 interface Message {
   id: string;
@@ -39,6 +43,7 @@ export default function SophiaApp() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [activeView, setActiveView] = useState('chat');
+  const [showActivityFeed, setShowActivityFeed] = useState(true);
   const [selectedDashboard, setSelectedDashboard] = useState('neural');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('connected');
@@ -323,29 +328,39 @@ export default function SophiaApp() {
         {selectedDashboard === 'neural' && (
           <>
             {/* Top Navigation for Neural Interface */}
-            <header className="compact-header">
-              <div className="nav-tabs">
-                {[
-                  { id: 'chat', label: 'Chat', tooltip: 'Direct conversation with Sophia AI' },
-                  { id: 'agents', label: 'Agents', tooltip: 'Deploy autonomous AI agents' },
-                  { id: 'research', label: 'Research', tooltip: 'Deep research with citations' },
-                  { id: 'code', label: 'Code', tooltip: 'Generate and optimize code' }
-                ].map((tab) => (
+            <header className="compact-header p-4 border-b border-cyan-500/20">
+              <div className="flex items-center justify-between">
+                <ViewModeSwitcher currentView={activeView} onViewChange={setActiveView} />
+                <div className="flex items-center gap-3">
                   <button
-                    key={tab.id}
-                    onClick={() => setActiveView(tab.id)}
-                    className={`nav-tab ${activeView === tab.id ? 'active' : ''}`}
-                    title={tab.tooltip}
+                    onClick={() => setShowActivityFeed(!showActivityFeed)}
+                    className="px-3 py-2 bg-gray-800/50 hover:bg-gray-800 text-gray-400 hover:text-white rounded-lg transition-all flex items-center gap-2"
                   >
-                    {tab.label}
+                    <span className="text-sm">Activity Feed</span>
+                    <span className="text-xs px-1.5 py-0.5 bg-cyan-600/30 text-cyan-400 rounded">
+                      {showActivityFeed ? 'Hide' : 'Show'}
+                    </span>
                   </button>
-                ))}
+                </div>
               </div>
             </header>
 
-            <main className="flex-1 relative overflow-hidden">
-              {/* Chat View */}
-              {activeView === 'chat' && (
+            <main className="flex-1 relative overflow-hidden flex">
+              {/* Main Content Area */}
+              <div className="flex-1 flex flex-col">
+                {/* Quick Actions Bar */}
+                <div className="p-4 border-b border-cyan-500/20">
+                  <QuickActions 
+                    onAction={(command) => {
+                      setInput(command);
+                      sendMessage();
+                    }}
+                    isLoading={isLoading}
+                  />
+                </div>
+
+                {/* Chat View */}
+                {activeView === 'chat' && (
                 <>
                   {/* Active Agents Bar */}
                   {deployedAgents.length > 0 && (
@@ -390,7 +405,7 @@ export default function SophiaApp() {
                           <div className="message-time">
                             {msg.timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                           </div>
-                          <div className="message-text">{msg.content}</div>
+                          <MessageRenderer content={msg.content} role={msg.role} />
                         </div>
                       </div>
                     ))}
@@ -430,7 +445,154 @@ export default function SophiaApp() {
                 </>
               )}
 
-              {/* Other existing views (agents, research, code) remain the same */}
+              {/* Swarm View - Visual Agent Network */}
+              {activeView === 'swarm' && (
+                <div className="p-8 h-full">
+                  <div className="mb-6">
+                    <h2 className="text-2xl font-bold text-white mb-2">Agent Swarm Visualization</h2>
+                    <p className="text-gray-400">Real-time view of active agent networks and their interactions</p>
+                  </div>
+                  <div className="glass-card p-6 h-[500px] flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="text-6xl mb-4 animate-pulse">🐝</div>
+                      <p className="text-white text-lg mb-2">Swarm Network View</p>
+                      <p className="text-gray-400 text-sm mb-4">Deploy agents to see live network visualization</p>
+                      {deployedAgents.length > 0 && (
+                        <div className="mt-6">
+                          <p className="text-cyan-400 mb-3">Active Swarms: {deployedAgents.length}</p>
+                          <div className="flex justify-center gap-4">
+                            {deployedAgents.map(agent => (
+                              <div key={agent.id} className="p-3 bg-gray-800 rounded-lg">
+                                <div className="text-2xl mb-1">🤖</div>
+                                <div className="text-xs text-white">{agent.type}</div>
+                                <div className="text-xs text-gray-400">{agent.status}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Code View - Live Code Generation */}
+              {activeView === 'code' && (
+                <div className="p-8 h-full">
+                  <div className="mb-6">
+                    <h2 className="text-2xl font-bold text-white mb-2">Code Generation Studio</h2>
+                    <p className="text-gray-400">Generate, review, and optimize code with AI assistance</p>
+                  </div>
+                  <div className="glass-card p-6">
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Code Request</label>
+                      <textarea
+                        value={codePrompt}
+                        onChange={(e) => setCodePrompt(e.target.value)}
+                        placeholder="Describe what code you need..."
+                        className="w-full h-32 p-3 bg-gray-800 text-white rounded-lg border border-gray-700 focus:border-cyan-500 focus:outline-none"
+                      />
+                    </div>
+                    <button
+                      onClick={() => {
+                        if (codePrompt) {
+                          setInput(`Generate code: ${codePrompt}`);
+                          sendMessage();
+                          setActiveView('chat');
+                        }
+                      }}
+                      className="neural-button"
+                      disabled={!codePrompt || isLoading}
+                    >
+                      Generate Code
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Research View - Knowledge Exploration */}
+              {activeView === 'research' && (
+                <div className="p-8 h-full">
+                  <div className="mb-6">
+                    <h2 className="text-2xl font-bold text-white mb-2">Research Center</h2>
+                    <p className="text-gray-400">Deep dive into topics with comprehensive research and citations</p>
+                  </div>
+                  <div className="glass-card p-6">
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Research Query</label>
+                      <input
+                        type="text"
+                        value={researchQuery}
+                        onChange={(e) => setResearchQuery(e.target.value)}
+                        placeholder="What would you like to research?"
+                        className="w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-700 focus:border-cyan-500 focus:outline-none"
+                      />
+                    </div>
+                    <button
+                      onClick={() => {
+                        if (researchQuery) {
+                          setInput(`Research: ${researchQuery}`);
+                          sendMessage();
+                          setActiveView('chat');
+                        }
+                      }}
+                      className="neural-button"
+                      disabled={!researchQuery || isLoading}
+                    >
+                      Start Research
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Metrics View - Performance Analytics */}
+              {activeView === 'metrics' && (
+                <div className="p-8 h-full overflow-y-auto">
+                  <div className="mb-6">
+                    <h2 className="text-2xl font-bold text-white mb-2">Performance Metrics</h2>
+                    <p className="text-gray-400">Monitor system performance and agent efficiency</p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    {apiMetrics.map((metric) => (
+                      <div key={metric.title} className="glass-card p-4">
+                        <h3 className="text-sm text-gray-400 mb-2">{metric.title}</h3>
+                        <div className="text-2xl font-bold text-white mb-1">{metric.value}</div>
+                        <span className={`text-xs px-2 py-1 rounded ${
+                          metric.status === 'good' ? 'bg-green-500/20 text-green-400' :
+                          metric.status === 'warning' ? 'bg-yellow-500/20 text-yellow-400' :
+                          'bg-red-500/20 text-red-400'
+                        }`}>
+                          {metric.change}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="glass-card p-6">
+                    <h3 className="text-lg font-semibold text-white mb-4">Agent Performance</h3>
+                    <div className="space-y-3">
+                      {deployedAgents.map(agent => (
+                        <div key={agent.id} className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <span className="text-xl">🤖</span>
+                            <div>
+                              <div className="text-white text-sm">{agent.type}</div>
+                              <div className="text-gray-400 text-xs">{agent.id}</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <span className="text-green-400 text-sm">Active</span>
+                            <div className="w-32 bg-gray-700 rounded-full h-2">
+                              <div className="bg-gradient-to-r from-cyan-500 to-purple-500 h-2 rounded-full" style={{ width: '75%' }}></div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Agents View */}
               {activeView === 'agents' && (
                 <div className="p-8 max-w-6xl mx-auto">
                   <div className="mb-8">
@@ -458,6 +620,14 @@ export default function SophiaApp() {
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
+              </div>
+
+              {/* Activity Feed Sidebar */}
+              {showActivityFeed && (
+                <div className="w-96 border-l border-cyan-500/20 bg-gray-900/30">
+                  <ActivityFeed />
                 </div>
               )}
             </main>

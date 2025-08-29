@@ -400,46 +400,66 @@ if __name__ == "__main__":
         }
     
     async def execute_planning_task(self, task: str, context: Dict) -> Dict:
-        """Execute a planning task with three perspectives"""
-        plans = {
-            "cutting_edge": {
-                "approach": "Innovative",
-                "steps": [
-                    f"1. Use latest AI models for {task}",
-                    "2. Implement experimental patterns",
-                    "3. Leverage cutting-edge tools"
-                ],
-                "risk": "high",
-                "innovation": 9
-            },
-            "conservative": {
-                "approach": "Stable",
-                "steps": [
-                    f"1. Use proven methods for {task}",
-                    "2. Follow industry best practices",
-                    "3. Ensure backward compatibility"
-                ],
-                "risk": "low",
-                "stability": 9
-            },
-            "synthesis": {
-                "approach": "Balanced",
-                "steps": [
-                    f"1. Combine best of both approaches for {task}",
-                    "2. Phase implementation: stable core, innovative features",
-                    "3. Include fallback mechanisms"
-                ],
-                "risk": "medium",
-                "balance": 8
-            }
-        }
+        """Execute a planning task with REAL intelligent planning"""
         
-        return {
-            "status": "completed",
-            "plans": plans,
-            "recommendation": "synthesis",
-            "summary": f"Generated three planning perspectives for: {task}"
-        }
+        # Import the intelligent planner
+        try:
+            from intelligent_planner import generate_intelligent_plan
+            
+            # Generate actual intelligent plan
+            plan_result = generate_intelligent_plan(task)
+            
+            return {
+                "status": "completed",
+                "plans": plan_result["plans"],
+                "recommendation": plan_result["recommendation"],
+                "analysis": plan_result["analysis"],
+                "executive_summary": plan_result["executive_summary"],
+                "summary": f"Generated comprehensive strategic plan for: {task}"
+            }
+        except Exception as e:
+            print(f"Intelligent planner error: {e}, falling back to basic")
+            
+            # Fallback to basic planning if intelligent planner fails
+            plans = {
+                "cutting_edge": {
+                    "approach": "Innovative",
+                    "steps": [
+                        f"1. Use latest AI models for {task}",
+                        "2. Implement experimental patterns",
+                        "3. Leverage cutting-edge tools"
+                    ],
+                    "risk": "high",
+                    "innovation": 9
+                },
+                "conservative": {
+                    "approach": "Stable",
+                    "steps": [
+                        f"1. Use proven methods for {task}",
+                        "2. Follow industry best practices",
+                        "3. Ensure backward compatibility"
+                    ],
+                    "risk": "low",
+                    "stability": 9
+                },
+                "synthesis": {
+                    "approach": "Balanced",
+                    "steps": [
+                        f"1. Combine best of both approaches for {task}",
+                        "2. Phase implementation: stable core, innovative features",
+                        "3. Include fallback mechanisms"
+                    ],
+                    "risk": "medium",
+                    "balance": 8
+                }
+            }
+            
+            return {
+                "status": "completed",
+                "plans": plans,
+                "recommendation": "synthesis",
+                "summary": f"Generated three planning perspectives for: {task}"
+            }
     
     async def store_context(self, task_id: str, results: Dict) -> bool:
         """Store results in context for memory"""

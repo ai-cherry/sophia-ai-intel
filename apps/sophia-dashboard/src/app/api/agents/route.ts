@@ -116,8 +116,45 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET() {
-  // Get available agents from the unified swarm service
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const action = searchParams.get('action');
+  
+  // Handle activity feed request
+  if (action === 'activity') {
+    try {
+      // Get recent activities from WebSocket hub or swarm service
+      const activities = [];
+      
+      // Try to get swarm activities
+      try {
+        const swarmsResponse = await fetch('http://localhost:8100/swarms');
+        if (swarmsResponse.ok) {
+          const swarms = await swarmsResponse.json();
+          swarms.forEach((swarm: any) => {
+            activities.push({
+              id: `swarm-${swarm.swarm_id}`,
+              timestamp: new Date().toISOString(),
+              type: 'agent',
+              agent_id: swarm.swarm_id,
+              agent_type: swarm.swarm_type,
+              action: swarm.current_task || 'Processing',
+              status: swarm.status,
+              progress: swarm.progress
+            });
+          });
+        }
+      } catch (error) {
+        console.error('Failed to get swarm activities:', error);
+      }
+      
+      return NextResponse.json({ activities });
+    } catch (error) {
+      return NextResponse.json({ activities: [] });
+    }
+  }
+  
+  // Default: Get available agents from the unified swarm service
   try {
     const agentsResponse = await fetch('http://localhost:8100/agents');
     if (agentsResponse.ok) {
