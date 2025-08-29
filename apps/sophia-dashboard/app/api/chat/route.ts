@@ -34,18 +34,35 @@ const sessions = new Map<string, Message[]>();
 
 class SophiaCore {
   /**
-   * Classify query intent
+   * Classify query intent and complexity
    */
-  private classifyQuery(query: string): string {
+  private classifyQuery(query: string): { type: string; complexity: string; useEnterprise: boolean } {
     const q = query.toLowerCase();
     
-    if (/\b(code|github|repo|library|npm|pip|framework|api)\b/.test(q)) return 'code';
-    if (/\b(search|find|research|latest|news|current)\b/.test(q)) return 'research';
-    if (/\b(who|what|when|where|why|how|explain)\b/.test(q)) return 'knowledge';
-    if (/\b(build|create|implement|design|plan)\b/.test(q)) return 'planning';
-    if (/\b(analyze|compare|evaluate|assess)\b/.test(q)) return 'analysis';
+    // Determine query type
+    let type = 'general';
+    if (/\b(code|github|repo|library|npm|pip|framework|api)\b/.test(q)) type = 'code';
+    else if (/\b(search|find|research|latest|news|current)\b/.test(q)) type = 'research';
+    else if (/\b(who|what|when|where|why|how|explain)\b/.test(q)) type = 'knowledge';
+    else if (/\b(build|create|implement|design|plan)\b/.test(q)) type = 'planning';
+    else if (/\b(analyze|compare|evaluate|assess)\b/.test(q)) type = 'analysis';
     
-    return 'general';
+    // Determine complexity and whether to use enterprise orchestrator
+    let complexity = 'simple';
+    let useEnterprise = false;
+    
+    if (/\b(strategic|critical|urgent|executive|business)\b/.test(q)) {
+      complexity = 'critical';
+      useEnterprise = true;
+    } else if (/\b(complex|multi-step|detailed|comprehensive)\b/.test(q)) {
+      complexity = 'complex';
+      useEnterprise = true;
+    } else if (/\b(analyze|evaluate|compare|investigate)\b/.test(q)) {
+      complexity = 'moderate';
+      useEnterprise = /\b(business|finance|strategy|operations)\b/.test(q);
+    }
+    
+    return { type, complexity, useEnterprise };
   }
 
   /**
@@ -180,6 +197,33 @@ class SophiaCore {
   }
 
   /**
+   * Call Enterprise Orchestrator for complex queries
+   */
+  private async callEnterpriseOrchestrator(query: string, sessionId: string): Promise<string | null> {
+    try {
+      const response = await fetch('http://localhost:8300/orchestrate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: query,
+          session_id: sessionId,
+          context: {},
+          max_latency_ms: 5000,
+          max_cost: 0.10
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        return `${data.response}\n\n📊 **Enterprise Intelligence**\n• Model: ${data.metadata.model}\n• Complexity: ${data.metadata.complexity}\n• Domain: ${data.metadata.domain}`;
+      }
+    } catch (e) {
+      console.error('Enterprise orchestrator error:', e);
+    }
+    return null;
+  }
+
+  /**
    * Generate response using best available provider
    */
   async generateResponse(query: string, sessionId: string): Promise<{
@@ -187,12 +231,29 @@ class SophiaCore {
     provider: string;
     metadata: any;
   }> {
-    const queryType = this.classifyQuery(query);
+    const classification = this.classifyQuery(query);
     let response = null;
     let provider = 'none';
     
+    // Use enterprise orchestrator for complex/business queries
+    if (classification.useEnterprise) {
+      response = await this.callEnterpriseOrchestrator(query, sessionId);
+      if (response) {
+        provider = 'enterprise-orchestrator';
+        return {
+          response,
+          provider,
+          metadata: {
+            ...classification,
+            sessionId,
+            timestamp: new Date().toISOString()
+          }
+        };
+      }
+    }
+    
     // Try providers based on query type
-    if (queryType === 'research' || queryType === 'knowledge') {
+    if (classification.type === 'research' || classification.type === 'knowledge') {
       // Try Perplexity first for research
       response = await this.callPerplexity(query);
       if (response) provider = 'perplexity';
@@ -204,7 +265,7 @@ class SophiaCore {
       }
     }
     
-    if (queryType === 'code') {
+    if (classification.type === 'code') {
       // Try MCP for code searches
       response = await this.callMCP(query, 'code');
       if (response) provider = 'mcp-github';
@@ -217,7 +278,7 @@ class SophiaCore {
     }
     
     // For other types or if above failed, try OpenRouter
-    if (!response && queryType !== 'code') {
+    if (!response && classification.type !== 'code') {
       response = await this.callOpenRouter(query);
       if (response) provider = 'openrouter';
     }
@@ -230,7 +291,7 @@ class SophiaCore {
     
     // Ultimate fallback
     if (!response) {
-      response = this.getFallbackResponse(query, queryType);
+      response = this.getFallbackResponse(query, classification.type);
       provider = 'fallback';
     }
     
@@ -238,7 +299,7 @@ class SophiaCore {
       response,
       provider,
       metadata: {
-        queryType,
+        ...classification,
         sessionId,
         timestamp: new Date().toISOString()
       }

@@ -1,0 +1,33 @@
+name: sophia-enterprise-infrastructure
+runtime: python
+description: Sophia Enterprise AI Orchestrator Infrastructure
+config:
+  sophia:
+    environment: dev
+    region: us-east-1
+    
+  # Services Configuration
+  services:
+    orchestrator_port: 8200
+    unified_port: 8100
+    dashboard_port: 3001
+    mcp_research_port: 8085
+    
+  # Database Configuration  
+  database:
+    neon_enabled: true
+    redis_enabled: true
+    qdrant_enabled: true
+    
+  # Model Providers
+  providers:
+    openrouter_enabled: true
+    together_enabled: true
+    agno_enabled: true
+    perplexity_enabled: true
+    
+  # Scaling Configuration
+  scaling:
+    min_instances: 1
+    max_instances: 10
+    target_cpu_percent: 70
