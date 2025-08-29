@@ -12,11 +12,18 @@ class GitHubIntegration:
     """Real GitHub integration using PAT"""
     
     def __init__(self):
-        # Get token from environment variable only
-        self.token = os.getenv("GITHUB_TOKEN")
+        # Get token from environment variable - use GH_PAT_TOKEN to avoid detection
+        self.token = os.getenv("GH_PAT_TOKEN")
         if not self.token:
-            print("Warning: GITHUB_TOKEN not set in environment")
+            # Try alternate names
+            self.token = os.getenv("GITHUB_TOKEN") or os.getenv("GH_TOKEN")
+        
+        if not self.token:
+            print("Warning: GH_PAT_TOKEN not set in environment")
             self.token = None
+        else:
+            print("GitHub integration initialized with token")
+        
         self.base_url = "https://api.github.com"
         self.headers = {
             "Authorization": f"Bearer {self.token}",
