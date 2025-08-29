@@ -1,0 +1,100 @@
+{
+  "timestamp": "2025-08-29T10:01:57.559412",
+  "summary": {
+    "total_services": 12,
+    "healthy_services": 2,
+    "failed_services": 3,
+    "average_response_time": 0.028625965118408203,
+    "quality_score": 59.166666666666664
+  },
+  "test_results": [
+    {
+      "service": "context",
+      "status": "\u2705 HEALTHY",
+      "response_time": 0.04573988914489746,
+      "error": null
+    },
+    {
+      "service": "research",
+      "status": "\u26a0\ufe0f DEGRADED",
+      "response_time": 0.011672258377075195,
+      "error": "HTTP 404"
+    },
+    {
+      "service": "business",
+      "status": "\u274c OFFLINE",
+      "response_time": 0,
+      "error": "Connection refused"
+    },
+    {
+      "service": "github",
+      "status": "\u26a0\ufe0f DEGRADED",
+      "response_time": 0.03662705421447754,
+      "error": "HTTP 404"
+    },
+    {
+      "service": "agents",
+      "status": "\u2705 HEALTHY",
+      "response_time": 0.023629188537597656,
+      "error": null
+    },
+    {
+      "service": "gong",
+      "status": "\u26a0\ufe0f DEGRADED",
+      "response_time": 0.03455615043640137,
+      "error": "HTTP 404"
+    },
+    {
+      "service": "salesforce",
+      "status": "\u26a0\ufe0f DEGRADED",
+      "response_time": 0.027989864349365234,
+      "error": "HTTP 404"
+    },
+    {
+      "service": "hubspot",
+      "status": "\u26a0\ufe0f DEGRADED",
+      "response_time": 0.033323049545288086,
+      "error": "HTTP 404"
+    },
+    {
+      "service": "analytics",
+      "status": "\u26a0\ufe0f DEGRADED",
+      "response_time": 0.04160308837890625,
+      "error": "HTTP 404"
+    },
+    {
+      "service": "slack",
+      "status": "\u274c OFFLINE",
+      "response_time": 0,
+      "error": "Connection refused"
+    },
+    {
+      "service": "apollo",
+      "status": "\u26a0\ufe0f DEGRADED",
+      "response_time": 0.002493143081665039,
+      "error": "HTTP 404"
+    },
+    {
+      "service": "lambda",
+      "status": "\u274c OFFLINE",
+      "response_time": 0,
+      "error": "Connection refused"
+    }
+  ],
+  "ui_ux_results": {
+    "response_format": "\u274c Inconsistent formats",
+    "error_messages": "\u2705 User-friendly",
+    "latency": "\u2705 Acceptable (<200ms)",
+    "consistency": "\u2705 Consistent APIs"
+  },
+  "performance_metrics": {
+    "context": {
+      "avg_response_time": 0.005406475067138672,
+      "success_rate": 100.0
+    },
+    "research": {
+      "avg_response_time": 0.006415796279907226,
+      "success_rate": 0.0
+    }
+  }
+}

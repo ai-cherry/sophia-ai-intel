@@ -104,3 +104,9 @@ kubeconfig*.yaml
 
 # .env.local specifically
 .env.local
+
+# Claude-specific development files (not for production)
+.claude/
+claude-mcp-connector.py
+.claude-session/
+.mcp-dev/

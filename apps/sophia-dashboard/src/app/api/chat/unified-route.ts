@@ -65,7 +65,11 @@ async function routeToService(intent: string, message: string, context: any): Pr
         const mcpRes = await fetch('http://localhost:8085/research', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query: message }),
+          body: JSON.stringify({ 
+            query: message,
+            sources: ['github', 'web'],
+            limit: 5
+          }),
           signal: AbortSignal.timeout(3000)
         });
         
@@ -73,6 +77,7 @@ async function routeToService(intent: string, message: string, context: any): Pr
           const data = await mcpRes.json();
           sections.research = data.results || [{ status: 'completed', data: data }];
           sections.actions = [{ type: 'research.mcp', status: 'completed' }];
+          sections.summary = `Found ${data.total_results} results from ${data.sources_searched.join(', ')}`;
           researchHandled = true;
         }
       } catch (e) {

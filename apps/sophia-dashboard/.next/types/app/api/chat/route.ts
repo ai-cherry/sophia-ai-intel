@@ -1,8 +1,8 @@
-// File: /Users/lynnmusil/sophia-ai-intel-1/apps/sophia-dashboard/src/app/api/chat/route.ts
-import * as entry from '../../../../../src/app/api/chat/route.js'
+// File: /Users/lynnmusil/sophia-ai-intel-1/apps/sophia-dashboard/app/api/chat/route.js
+import * as entry from '../../../../../app/api/chat/route.js'
 import type { NextRequest } from 'next/server.js'
 
-type TEntry = typeof import('../../../../../src/app/api/chat/route.js')
+type TEntry = typeof import('../../../../../app/api/chat/route.js')
 
 // Check that the entry is a valid entry
 checkFields<Diff<{
