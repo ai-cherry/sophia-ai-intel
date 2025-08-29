@@ -1,0 +1,147 @@
+{
+  "duplicates": [],
+  "mocks": [
+    {
+      "component": "page",
+      "location": "apps/sophia-dashboard/src/app/page.tsx"
+    },
+    {
+      "component": "AgentManagement",
+      "location": "apps/sophia-dashboard/src/components/AgentManagement.tsx"
+    },
+    {
+      "component": "CommandPalette",
+      "location": "apps/sophia-dashboard/src/components/CommandPalette.tsx"
+    },
+    {
+      "component": "SwarmManager",
+      "location": "apps/sophia-dashboard/src/components/SwarmManager.tsx"
+    },
+    {
+      "component": "AgentMonitoring",
+      "location": "apps/sophia-dashboard/src/components/AgentMonitoring.tsx"
+    },
+    {
+      "component": "SwarmCreator",
+      "location": "apps/sophia-dashboard/src/components/SwarmCreator.tsx"
+    },
+    {
+      "component": "professional",
+      "location": "apps/sophia-dashboard/src/app/dashboard/professional.tsx"
+    },
+    {
+      "component": "page",
+      "location": "apps/sophia-dashboard/src/app/dashboard/page.tsx"
+    },
+    {
+      "component": "page.backup",
+      "location": "apps/sophia-dashboard/src/app/dashboard/page.backup.tsx"
+    },
+    {
+      "component": "webpack-runtime",
+      "location": "apps/sophia-dashboard/.next/server/webpack-runtime.js"
+    },
+    {
+      "component": "webpack",
+      "location": "apps/sophia-dashboard/.next/static/chunks/webpack.js"
+    },
+    {
+      "component": "main-app",
+      "location": "apps/sophia-dashboard/.next/static/chunks/main-app.js"
+    },
+    {
+      "component": "app-pages-internals",
+      "location": "apps/sophia-dashboard/.next/static/chunks/app-pages-internals.js"
+    },
+    {
+      "component": "page",
+      "location": "apps/sophia-dashboard/.next/static/chunks/app/page.js"
+    },
+    {
+      "component": "page",
+      "location": "apps/sophia-dashboard/.next/static/chunks/app/dashboard/page.js"
+    },
+    {
+      "component": "page.88ad878f4e9f42a8.hot-update",
+      "location": "apps/sophia-dashboard/.next/static/webpack/app/page.88ad878f4e9f42a8.hot-update.js"
+    },
+    {
+      "component": "page.c3c224717bac4125.hot-update",
+      "location": "apps/sophia-dashboard/.next/static/webpack/app/page.c3c224717bac4125.hot-update.js"
+    },
+    {
+      "component": "page.505c5b757c5bf553.hot-update",
+      "location": "apps/sophia-dashboard/.next/static/webpack/app/page.505c5b757c5bf553.hot-update.js"
+    },
+    {
+      "component": "page.019039e5ddde79c8.hot-update",
+      "location": "apps/sophia-dashboard/.next/static/webpack/app/page.019039e5ddde79c8.hot-update.js"
+    },
+    {
+      "component": "page.250983d5f186d4c6.hot-update",
+      "location": "apps/sophia-dashboard/.next/static/webpack/app/dashboard/page.250983d5f186d4c6.hot-update.js"
+    },
+    {
+      "component": "page.f9435b5b06179199.hot-update",
+      "location": "apps/sophia-dashboard/.next/static/webpack/app/dashboard/page.f9435b5b06179199.hot-update.js"
+    },
+    {
+      "component": "page.0a35f23e3fa037d1.hot-update",
+      "location": "apps/sophia-dashboard/.next/static/webpack/app/dashboard/page.0a35f23e3fa037d1.hot-update.js"
+    },
+    {
+      "component": "page.e7e074d3712041c2.hot-update",
+      "location": "apps/sophia-dashboard/.next/static/webpack/app/dashboard/page.e7e074d3712041c2.hot-update.js"
+    },
+    {
+      "component": "page",
+      "location": "apps/sophia-dashboard/.next/server/app/page.js"
+    },
+    {
+      "component": "styled-jsx",
+      "location": "apps/sophia-dashboard/.next/server/vendor-chunks/styled-jsx.js"
+    },
+    {
+      "component": "refractor",
+      "location": "apps/sophia-dashboard/.next/server/vendor-chunks/refractor.js"
+    },
+    {
+      "component": "property-information",
+      "location": "apps/sophia-dashboard/.next/server/vendor-chunks/property-information.js"
+    },
+    {
+      "component": "framer-motion",
+      "location": "apps/sophia-dashboard/.next/server/vendor-chunks/framer-motion.js"
+    },
+    {
+      "component": "hastscript",
+      "location": "apps/sophia-dashboard/.next/server/vendor-chunks/hastscript.js"
+    },
+    {
+      "component": "next",
+      "location": "apps/sophia-dashboard/.next/server/vendor-chunks/next.js"
+    },
+    {
+      "component": "motion-dom",
+      "location": "apps/sophia-dashboard/.next/server/vendor-chunks/motion-dom.js"
+    },
+    {
+      "component": "debug",
+      "location": "apps/sophia-dashboard/.next/server/vendor-chunks/debug.js"
+    },
+    {
+      "component": "character-entities",
+      "location": "apps/sophia-dashboard/.next/server/vendor-chunks/character-entities.js"
+    },
+    {
+      "component": "page",
+      "location": "apps/sophia-dashboard/.next/server/app/dashboard/page.js"
+    }
+  ],
+  "dead_code": [
+    {
+      "path": "ops/fly/fly.toml",
+      "last_used": "n/a"
+    }
+  ]
+}

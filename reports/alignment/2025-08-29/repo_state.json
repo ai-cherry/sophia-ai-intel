@@ -1,0 +1,135 @@
+{
+  "services": [
+    {
+      "name": "sophia-brain",
+      "port": 8099,
+      "status": "configured",
+      "ws": []
+    },
+    {
+      "name": "unified-swarm",
+      "port": 8100,
+      "status": "configured",
+      "ws": [
+        "/ws/unified-swarm"
+      ]
+    },
+    {
+      "name": "real-swarm-executor",
+      "port": 8088,
+      "status": "configured",
+      "ws": [
+        "/ws/real-swarm-executor"
+      ]
+    },
+    {
+      "name": "websocket-hub",
+      "port": 8096,
+      "status": "configured",
+      "ws": [
+        "/ws/websocket-hub"
+      ]
+    },
+    {
+      "name": "direct-swarm",
+      "port": 8200,
+      "status": "configured",
+      "ws": [
+        "/ws/direct-swarm"
+      ]
+    },
+    {
+      "name": "sophia-supreme",
+      "port": 8300,
+      "status": "configured",
+      "ws": []
+    }
+  ],
+  "mcp_servers": [],
+  "agents": [
+    {
+      "type": "planner",
+      "api": [
+        "/swarms/create",
+        "/swarms/{id}/status"
+      ],
+      "ws": [
+        "/ws/swarm/{id}"
+      ]
+    },
+    {
+      "type": "researcher",
+      "api": [
+        "/swarms/create",
+        "/swarms/{id}/status"
+      ],
+      "ws": [
+        "/ws/swarm/{id}"
+      ]
+    },
+    {
+      "type": "coder",
+      "api": [
+        "/swarms/create",
+        "/swarms/{id}/status"
+      ],
+      "ws": [
+        "/ws/swarm/{id}"
+      ]
+    },
+    {
+      "type": "analyst",
+      "api": [
+        "/swarms/create",
+        "/swarms/{id}/status"
+      ],
+      "ws": [
+        "/ws/swarm/{id}"
+      ]
+    },
+    {
+      "type": "reviewer",
+      "api": [
+        "/swarms/create",
+        "/swarms/{id}/status"
+      ],
+      "ws": [
+        "/ws/swarm/{id}"
+      ]
+    }
+  ],
+  "ui_components": [
+    {
+      "file": "apps/sophia-dashboard/src/components/AgentManagement.tsx",
+      "mock": true
+    },
+    {
+      "file": "apps/sophia-dashboard/src/components/CommandPalette.tsx",
+      "mock": true
+    },
+    {
+      "file": "apps/sophia-dashboard/src/components/SwarmManager.tsx",
+      "mock": true
+    },
+    {
+      "file": "apps/sophia-dashboard/src/components/AgentMonitoring.tsx",
+      "mock": true
+    },
+    {
+      "file": "apps/sophia-dashboard/src/components/SwarmCreator.tsx",
+      "mock": true
+    },
+    {
+      "file": "apps/sophia-dashboard/src/components/AgentSwarmPanel.tsx",
+      "mock": true
+    },
+    {
+      "file": "apps/sophia-dashboard/src/components/JobsPanel.tsx",
+      "mock": true
+    },
+    {
+      "file": "apps/sophia-dashboard/src/components/PersonaControls.tsx",
+      "mock": true
+    }
+  ]
+}

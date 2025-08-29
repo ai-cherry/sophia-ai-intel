@@ -28,31 +28,49 @@ export default function AgentSwarmPanel() {
     setLoading(true);
     setError(null);
     try {
-      // MOCK DATA
-      setSwarmStatus({
-        is_initialized: true,
-        total_agents: 5,
-        active_tasks: 2,
-        completed_tasks: 10,
-        failed_tasks: 1,
-        system_status: 'ok',
-      });
-      setAgents({
-        'agent-1': {
-          name: 'Agent Smith',
-          role: 'Analyzer',
-          is_active: true,
-          current_tasks: 1,
-        },
-        'agent-2': {
-          name: 'Agent Jones',
-          role: 'Planner',
-          is_active: true,
-          current_tasks: 1,
-        },
-      });
+      // REAL DATA - Fetch from actual swarm service
+      const [statusRes, agentsRes] = await Promise.all([
+        fetch('http://localhost:8100/swarms'),
+        fetch('http://localhost:8100/agents')
+      ]);
+      
+      if (statusRes.ok) {
+        const swarms = await statusRes.json();
+        setSwarmStatus({
+          is_initialized: swarms.length > 0,
+          total_agents: swarms.reduce((acc: number, s: any) => acc + (s.agents?.length || 0), 0),
+          active_tasks: swarms.filter((s: any) => s.status === 'executing').length,
+          completed_tasks: swarms.filter((s: any) => s.status === 'completed').length,
+          failed_tasks: swarms.filter((s: any) => s.status === 'failed').length,
+          system_status: swarms.length > 0 ? 'ok' : 'idle',
+        });
+      }
+      
+      if (agentsRes.ok) {
+        const agentList = await agentsRes.json();
+        const agentMap: Record<string, AgentInfo> = {};
+        agentList.forEach((agent: any) => {
+          agentMap[agent.id] = {
+            name: agent.name,
+            role: agent.type,
+            is_active: agent.status === 'idle' || agent.status === 'active',
+            current_tasks: 0, // Will be updated from swarm status
+          };
+        });
+        setAgents(agentMap);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch swarm status');
+      // Fallback to empty state (no mock data)
+      setSwarmStatus({
+        is_initialized: false,
+        total_agents: 0,
+        active_tasks: 0,
+        completed_tasks: 0,
+        failed_tasks: 0,
+        system_status: 'error',
+      });
+      setAgents({});
     } finally {
       setLoading(false);
     }

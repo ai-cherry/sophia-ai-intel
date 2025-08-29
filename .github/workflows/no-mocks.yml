@@ -1,0 +1,31 @@
+name: No Mocks CI Gate
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  fail-if-mock:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Check for mock code
+        run: |
+          echo "Checking for mock/fake/placeholder code..."
+          if grep -nrE "mock|fake|placeholder|TODO" apps/ --include="*.tsx" --include="*.ts" --include="*.jsx" --include="*.js" | grep -v node_modules; then
+            echo "❌ FAILED: Mock code detected in apps/"
+            exit 1
+          fi
+          echo "✅ PASSED: No mock code found"
+      
+      - name: Check for dead imports
+        run: |
+          echo "Checking for unused mock imports..."
+          if grep -nrE "from.*mock|import.*fake" apps/ --include="*.tsx" --include="*.ts"; then
+            echo "❌ FAILED: Mock imports detected"
+            exit 1
+          fi
+          echo "✅ PASSED: No mock imports found"

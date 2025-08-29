@@ -404,19 +404,12 @@ if __name__ == "__main__":
         
         # Import the intelligent planner
         try:
-            from intelligent_planner import generate_intelligent_plan
+            from planning.intelligent_planner import generate_intelligent_plan
             
             # Generate actual intelligent plan
-            plan_result = generate_intelligent_plan(task)
+            plan_result = await generate_intelligent_plan(task, context)
             
-            return {
-                "status": "completed",
-                "plans": plan_result["plans"],
-                "recommendation": plan_result["recommendation"],
-                "analysis": plan_result["analysis"],
-                "executive_summary": plan_result["executive_summary"],
-                "summary": f"Generated comprehensive strategic plan for: {task}"
-            }
+            return plan_result  # Already has status, plans, recommendation, summary, sources, citations
         except Exception as e:
             print(f"Intelligent planner error: {e}, falling back to basic")
             
