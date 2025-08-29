@@ -53,6 +53,46 @@ __pycache__/
 # Assuming _new.py files are temporary or should be renamed, but will be cautious for now.
 *.new
 -e 
+
+# Archive directory - historical files
+archive/
+archive_scan_results/
+one_time_scan_results/
+
+# One-time use files
+*_FINAL*.md
+*_REPORT*.md
+*_AUDIT*.md
+*_STATUS*.md
+*_PLAN*.md
+SOPHIA_AI_*.md
+DEPLOYMENT_*.md
+test_*.py
+test-*.py
+deploy_*.sh
+deploy-*.sh
+setup_*.py
+setup-*.sh
+
+# Backup files
+*.backup
+*.bak
+*.old
+*.orig
+*.save
+*.swp
+*~
+*.tmp
+*.temp
+
+# Duplicate SSL directory
+ssl/local/
+
+# Environment duplicates
+.env.production.secure
+.env.production.real.backup
+.env.production.secure.bak
+
 # Production secrets and sensitive files
 *.env.production.real
 update_secrets.py
@@ -61,3 +101,6 @@ k8s-deploy/secrets/
 kubeconfig*.yaml
 *.key
 *.pem
+
+# .env.local specifically
+.env.local
