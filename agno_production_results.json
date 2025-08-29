@@ -1,0 +1,110 @@
+{
+  "test_suite": "agno_production_comprehensive",
+  "agno_version": "1.8.1",
+  "timestamp": "2025-08-29T11:13:21.749400",
+  "total_execution_time": 18.82088303565979,
+  "tests_run": 3,
+  "tests_passed": 1,
+  "success_rate": 0.3333333333333333,
+  "system_status": {
+    "system": "AGNO Production System",
+    "version": "1.8.1",
+    "uptime_seconds": 18.821046,
+    "metrics": {
+      "tasks_completed": 0,
+      "total_execution_time": 0,
+      "team_collaborations": 0,
+      "mcp_integrations": 0,
+      "reasoning_chains": 0,
+      "success_rate": 0.0
+    },
+    "team_configuration": {
+      "team_name": "AGNO Production Team",
+      "collaboration_mode": "coordinate",
+      "members": 3,
+      "reasoning_enabled": true,
+      "mcp_integration": true
+    },
+    "capabilities": {
+      "multi_agent_teams": true,
+      "reasoning": true,
+      "mcp_integration": true,
+      "web_research": true,
+      "structured_analysis": true,
+      "performance_monitoring": true
+    },
+    "performance": {
+      "avg_task_time": 0.0,
+      "success_rate": 0.0,
+      "team_efficiency": "high"
+    }
+  },
+  "detailed_results": [
+    {
+      "test": "enhanced_research_mcp",
+      "result": {
+        "query": "Latest developments in multi-agent AI systems and reasoning frameworks 2025",
+        "status": "error",
+        "error": "Incorrect API key provided: sk-proj-********************************************BiVN. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "execution_time": 9.263751983642578,
+        "success": false
+      },
+      "success": false
+    },
+    {
+      "test": "team_reasoning",
+      "result": {
+        "problem": "Design a scalable architecture for 1000+ concurrent AI agents with real-time coordination, memory sharing, and fault tolerance",
+        "status": "error",
+        "error": "Incorrect API key provided: sk-proj-********************************************BiVN. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "execution_time": 9.557085752487183,
+        "success": false
+      },
+      "success": false
+    },
+    {
+      "test": "system_performance",
+      "result": {
+        "system": "AGNO Production System",
+        "version": "1.8.1",
+        "uptime_seconds": 18.821032,
+        "metrics": {
+          "tasks_completed": 0,
+          "total_execution_time": 0,
+          "team_collaborations": 0,
+          "mcp_integrations": 0,
+          "reasoning_chains": 0,
+          "success_rate": 0.0
+        },
+        "team_configuration": {
+          "team_name": "AGNO Production Team",
+          "collaboration_mode": "coordinate",
+          "members": 3,
+          "reasoning_enabled": true,
+          "mcp_integration": true
+        },
+        "capabilities": {
+          "multi_agent_teams": true,
+          "reasoning": true,
+          "mcp_integration": true,
+          "web_research": true,
+          "structured_analysis": true,
+          "performance_monitoring": true
+        },
+        "performance": {
+          "avg_task_time": 0.0,
+          "success_rate": 0.0,
+          "team_efficiency": "high"
+        }
+      },
+      "success": true
+    }
+  ],
+  "capabilities_verified": {
+    "multi_agent_teams": true,
+    "reasoning": true,
+    "mcp_integration": true,
+    "performance_monitoring": true,
+    "production_ready": false
+  }
+}

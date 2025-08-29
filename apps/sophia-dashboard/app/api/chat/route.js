@@ -28,25 +28,57 @@ export async function POST(request) {
       timestamp: new Date().toISOString()
     });
 
-    // Try to call local MCP services if available
+    // Try to call Sophia Chat Service first
     let response = '';
     let metadata = {};
     
     try {
-      // Check if research service is available
-      const researchResponse = await fetch('http://localhost:8085/search/web?q=' + encodeURIComponent(message) + '&limit=3', {
-        signal: AbortSignal.timeout(3000)
+      // Call Sophia's enhanced intelligence service
+      const sophiaResponse = await fetch('http://localhost:8090/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: message,
+          session_id: sessionId,
+          context: {},
+          use_enhanced_intelligence: true
+        }),
+        signal: AbortSignal.timeout(30000) // 30 second timeout for complex requests
       });
       
-      if (researchResponse.ok) {
-        const data = await researchResponse.json();
-        if (data.results && data.results.length > 0) {
-          response = `Based on web search:\n${data.results.map(r => `- ${r.title}: ${r.summary}`).join('\n')}`;
-          metadata.source = 'mcp-research';
-        }
+      if (sophiaResponse.ok) {
+        const data = await sophiaResponse.json();
+        response = data.response;
+        metadata = {
+          source: 'sophia-enhanced-intelligence',
+          processing_method: data.processing_method,
+          execution_time: data.execution_time,
+          quality_score: data.quality_score,
+          api_providers_used: data.api_providers_used,
+          external_intelligence: data.metadata?.external_intelligence || false
+        };
       }
     } catch (e) {
-      console.log('MCP services not available, using fallback');
+      console.log('Sophia Enhanced Intelligence not available, trying MCP services');
+      
+      // Fallback to direct MCP research service
+      try {
+        const researchResponse = await fetch('http://localhost:8085/search/web?q=' + encodeURIComponent(message) + '&limit=3', {
+          signal: AbortSignal.timeout(3000)
+        });
+        
+        if (researchResponse.ok) {
+          const data = await researchResponse.json();
+          if (data.results && data.results.length > 0) {
+            response = `Based on web search:\n${data.results.map(r => `- ${r.title}: ${r.summary}`).join('\n')}`;
+            metadata.source = 'mcp-research-fallback';
+          }
+        }
+      } catch (e2) {
+        console.log('MCP services also not available, using basic fallback');
+      }
     }
 
     // Fallback response if MCP services are not available

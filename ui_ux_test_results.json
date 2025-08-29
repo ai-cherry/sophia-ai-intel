@@ -1,0 +1,171 @@
+{
+  "test_suite": "ui_ux_comprehensive",
+  "execution_time": 0.065945,
+  "timestamp": "2025-08-29T10:52:05.016785",
+  "tests": {
+    "performance": {
+      "test": "page_load_performance",
+      "status": "success",
+      "metrics": {
+        "load_time": 0.01328897476196289,
+        "status_code": 200,
+        "content_length": 6343,
+        "content_type": "text/html; charset=utf-8",
+        "has_gzip": true
+      },
+      "checks": {
+        "load_time_acceptable": true,
+        "content_size_reasonable": true,
+        "proper_content_type": true,
+        "has_caching_headers": true
+      },
+      "score": 1.0
+    },
+    "html_structure": {
+      "test": "html_structure_and_semantics",
+      "status": "success",
+      "structure_score": 0.8571428571428571,
+      "semantic_score": 0.25,
+      "accessibility_score": 0.5,
+      "checks": {
+        "structure": {
+          "has_doctype": true,
+          "has_html_tag": true,
+          "has_head_section": true,
+          "has_body_section": true,
+          "has_title": true,
+          "has_meta_viewport": true,
+          "has_meta_charset": false
+        },
+        "semantic": {
+          "uses_semantic_tags": false,
+          "has_headings": false,
+          "proper_form_labels": false,
+          "has_alt_attributes": true
+        },
+        "accessibility": {
+          "has_lang_attribute": true,
+          "has_aria_labels": false,
+          "has_role_attributes": false,
+          "proper_contrast_classes": true
+        }
+      }
+    },
+    "ui_components": {
+      "test": "ui_components_presence",
+      "status": "success",
+      "ui_score": 0.5714285714285714,
+      "react_score": 1.0,
+      "interactivity_score": 0.3,
+      "components": {
+        "navigation": false,
+        "header": true,
+        "chat_interface": false,
+        "input_field": true,
+        "buttons": true,
+        "status_indicators": false,
+        "responsive_design": true
+      },
+      "react_features": {
+        "next_js_setup": true,
+        "react_components": true,
+        "javascript_modules": true,
+        "modern_build": true
+      },
+      "interactivity": {
+        "clickable_elements": 2,
+        "form_elements": 1,
+        "event_handlers": 0
+      }
+    },
+    "chat_functionality": {
+      "test": "chat_functionality_structure",
+      "status": "success",
+      "basic_chat_score": 0.6,
+      "advanced_features_score": 0.2,
+      "state_management_score": 0.5,
+      "elements": {
+        "message_container": true,
+        "input_area": true,
+        "send_button": true,
+        "message_history": false,
+        "user_interface": false
+      },
+      "features": {
+        "real_time_updates": false,
+        "typing_indicators": false,
+        "message_formatting": false,
+        "file_upload": false,
+        "emoji_support": true
+      },
+      "patterns": {
+        "react_state": false,
+        "event_handling": false,
+        "async_operations": true,
+        "error_handling": true
+      }
+    },
+    "responsive_design": {
+      "test": "responsive_design_indicators",
+      "status": "success",
+      "framework_score": 0.25,
+      "responsive_score": 0.8,
+      "modern_css_score": 0.25,
+      "frameworks": {
+        "tailwind_css": true,
+        "bootstrap": false,
+        "material_ui": false,
+        "custom_css": false
+      },
+      "responsive": {
+        "viewport_meta": true,
+        "media_queries": true,
+        "flexible_layouts": true,
+        "responsive_units": true,
+        "breakpoint_classes": false
+      },
+      "modern_features": {
+        "css_variables": false,
+        "flexbox_grid": true,
+        "transitions": false,
+        "animations": false
+      }
+    },
+    "error_handling": {
+      "test": "error_states_and_loading",
+      "status": "success",
+      "error_handling_score": 0.75,
+      "loading_score": 0.25,
+      "feedback_score": 0.0,
+      "error_handling": {
+        "error_boundaries": true,
+        "try_catch_blocks": false,
+        "error_messages": true,
+        "fallback_ui": true
+      },
+      "loading_states": {
+        "loading_indicators": false,
+        "async_handling": true,
+        "promise_handling": false,
+        "state_management": false
+      },
+      "user_feedback": {
+        "notifications": false,
+        "success_states": false,
+        "validation": false,
+        "accessibility_feedback": false
+      }
+    }
+  },
+  "summary": {
+    "overall_ui_ux_score": 0.6523809523809524,
+    "performance_score": 1.0,
+    "structure_accessibility_score": 0.6785714285714286,
+    "components_score": 0.7857142857142857,
+    "chat_functionality_score": 0.55,
+    "responsive_design_score": 0.525,
+    "error_handling_score": 0.375,
+    "tests_successful": 6,
+    "total_tests": 6
+  }
+}

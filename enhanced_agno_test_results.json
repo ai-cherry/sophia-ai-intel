@@ -1,0 +1,75 @@
+{
+  "test_suite": "enhanced_agno_agent_comprehensive",
+  "timestamp": "2025-08-29T11:07:09.704549",
+  "total_execution_time": 0.004435300827026367,
+  "tests_run": 3,
+  "tests_passed": 0,
+  "success_rate": 0.0,
+  "performance_metrics": {
+    "agent_name": "production_agno_agent",
+    "uptime_seconds": 0.004719,
+    "metrics": {
+      "tasks_completed": 0,
+      "total_execution_time": 0,
+      "memory_operations": 0,
+      "mcp_calls": 0,
+      "reasoning_chains": 0,
+      "success_rate": 0.0
+    },
+    "performance": {
+      "avg_task_time": 0.0,
+      "tasks_per_minute": 0.0,
+      "memory_efficiency": "high",
+      "reasoning_capability": "advanced"
+    },
+    "capabilities": {
+      "memory": true,
+      "reasoning": true,
+      "mcp_integration": true,
+      "code_generation": true,
+      "research": true,
+      "learning": true
+    }
+  },
+  "detailed_results": [
+    {
+      "test": "research_task",
+      "result": {
+        "query": "Latest Python async programming best practices 2024",
+        "status": "error",
+        "error": "The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable",
+        "execution_time": 0.0037980079650878906,
+        "agent_name": "production_agno_agent"
+      },
+      "success": false
+    },
+    {
+      "test": "reasoning_task",
+      "result": {
+        "problem": "How to design a scalable microservices architecture for a financial application with high-frequency trading requirements",
+        "status": "error",
+        "error": "The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable",
+        "execution_time": 0.0003325939178466797
+      },
+      "success": false
+    },
+    {
+      "test": "code_generation_task",
+      "result": {
+        "specification": "Create a FastAPI endpoint with async database operations, error handling, input validation, and comprehensive logging",
+        "status": "error",
+        "error": "The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable",
+        "execution_time": 0.0002741813659667969
+      },
+      "success": false
+    }
+  ],
+  "agent_capabilities_verified": {
+    "memory": true,
+    "reasoning": true,
+    "research": true,
+    "code_generation": true,
+    "mcp_integration": false,
+    "error_handling": true
+  }
+}

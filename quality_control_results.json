@@ -1,0 +1,103 @@
+{
+  "test_suite": "quality_control_comprehensive",
+  "execution_time": 5.852235,
+  "timestamp": "2025-08-29T10:50:11.244415",
+  "tests": {
+    "service_health": [
+      {
+        "service": "mcp_research",
+        "status": "unhealthy",
+        "response_time": 0.003381967544555664,
+        "status_code": 404,
+        "data": {
+          "detail": "Not Found"
+        }
+      },
+      {
+        "service": "dashboard",
+        "status": "unhealthy",
+        "response_time": 0.0083770751953125,
+        "status_code": 404,
+        "data": {}
+      },
+      {
+        "service": "agno_coordinator",
+        "status": "error",
+        "error": "Cannot connect to host localhost:8080 ssl:default [Multiple exceptions: [Errno 61] Connect call failed ('::1', 8080, 0, 0), [Errno 61] Connect call failed ('127.0.0.1', 8080)]",
+        "response_time": 999
+      }
+    ],
+    "mcp_research": {
+      "test": "mcp_research_functionality",
+      "queries_tested": 3,
+      "successful_queries": 3,
+      "average_response_time": 0.828035036722819,
+      "details": [
+        {
+          "query": "Python testing frameworks 2024",
+          "status": "success",
+          "results_count": 3,
+          "response_time": 0.6326389312744141,
+          "has_results": true
+        },
+        {
+          "query": "FastAPI authentication patterns",
+          "status": "success",
+          "results_count": 3,
+          "response_time": 0.8073601722717285,
+          "has_results": true
+        },
+        {
+          "query": "React component libraries",
+          "status": "success",
+          "results_count": 3,
+          "response_time": 1.0441060066223145,
+          "has_results": true
+        }
+      ]
+    },
+    "agno_integration": {
+      "test": "agno_agent_integration",
+      "status": "success",
+      "return_code": 0,
+      "success_indicators": "5/5",
+      "output_length": 1096,
+      "has_error_output": true,
+      "stderr": "INFO:__main__:Starting task: Python web scraping framework\nINFO:__main__:Research completed: 5 results found\nINFO:__main__:Starting task: FastAPI REST API best practices\nINFO:__main__:Research completed: 5 results found\nINFO:__main__:Starting task: React component testing patterns\nINFO:__main__:Research completed: 5 results found\n"
+    },
+    "dashboard_accessibility": {
+      "test": "dashboard_accessibility",
+      "status": "success",
+      "response_time": 0.09841370582580566,
+      "status_code": 200,
+      "content_length": 6343,
+      "ui_elements_found": "0/5",
+      "has_react_content": true
+    },
+    "error_handling": {
+      "test": "error_handling",
+      "tests_run": 2,
+      "properly_handled": 2,
+      "details": [
+        {
+          "test": "invalid_research_query",
+          "status": "handled",
+          "status_code": 422
+        },
+        {
+          "test": "nonexistent_endpoint",
+          "status": "handled",
+          "status_code": 404
+        }
+      ]
+    }
+  },
+  "summary": {
+    "total_services_tested": 3,
+    "healthy_services": 0,
+    "mcp_queries_successful": 3,
+    "agno_agent_working": true,
+    "dashboard_accessible": true,
+    "error_handling_score": "2/2"
+  }
+}
