@@ -77,23 +77,24 @@ export default function SophiaApp() {
     }
   };
 
-  const sendMessage = async () => {
-    if (!input.trim()) return;
+  const sendMessage = async (messageText?: string) => {
+    const text = messageText || input;
+    if (!text || !text.trim()) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: input,
+      content: text,
       timestamp: new Date()
     };
 
     setMessages(prev => [...prev, userMessage]);
-    setInput('');
+    if (!messageText) setInput(''); // Only clear input if not passed as parameter
     setIsLoading(true);
     setConnectionStatus('processing');
     
     // Check for agent-related commands
-    const lowerInput = input.toLowerCase();
+    const lowerInput = text.toLowerCase();
     if (lowerInput.includes('agent status') || lowerInput.includes('show agents') || lowerInput.includes('list agents')) {
       const statusMessage: Message = {
         id: (Date.now() + 1).toString(),
