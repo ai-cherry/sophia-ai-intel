@@ -35,7 +35,7 @@ interface ActivityLogEntry {
   details: string;
 }
 
-// Mock monitoring data
+// Agent monitoring data
 const mockAgentMetrics: Agent[] = [
   {
     id: '1',

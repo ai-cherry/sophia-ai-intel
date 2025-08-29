@@ -1,0 +1,23 @@
+path,error,severity,fix
+apps/sophia-dashboard/tsconfig.tsbuildinfo,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/app/page-unified.tsx,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/app/page.tsx,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/app/globals.css,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/components/AgentManagement.tsx,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/components/CommandPalette.tsx,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/components/SwarmManager.tsx,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/components/SwarmCreator.tsx,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/components/JobsPanel.tsx,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/components/PersonaControls.tsx,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/components/ChatRenderer.tsx,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/components/DebateScorecards.tsx,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/lib/config.ts,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/lib/swarm-client.ts,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/app/metrics/page.tsx,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/app/sophia/page.tsx,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/app/agent-factory/page.tsx,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/app/dashboard/professional.tsx,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/app/dashboard/page.tsx,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/app/agno/page.tsx,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/app/api/health/route.ts,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/app/api/agents/route.ts,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete

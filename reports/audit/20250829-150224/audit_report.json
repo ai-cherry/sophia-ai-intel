@@ -1,0 +1,27 @@
+{
+  "ts": "20250829-150224",
+  "integration": {
+    "required_present": true,
+    "legacy_removed": true,
+    "missing_count": 0,
+    "legacy_count": 0,
+    "chat_probe_research": false,
+    "chat_probe_status": false,
+    "portkey_virtual_keys_present": false
+  },
+  "testing": {
+    "tsc_ok": true,
+    "unit_ok": "skipped"
+  },
+  "deployment": {
+    "swarm_create_ok": true,
+    "swarm_ws_ok": true
+  },
+  "monitoring": {
+    "api_health_ok": true,
+    "metrics_proxy_ok": true,
+    "prom_ok": "skipped",
+    "grafana_set": false
+  },
+  "no_mocks": false
+}

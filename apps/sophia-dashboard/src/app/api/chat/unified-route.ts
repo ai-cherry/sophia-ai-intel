@@ -385,23 +385,28 @@ async function checkServiceHealth() {
 
 export async function POST(request: Request) {
   try {
-    const { message, context } = await request.json();
+    const body = await request.json();
+    const messages = body.messages || [{ content: body.message || '' }];
+    const message = messages[messages.length - 1]?.content || '';
+    const context = body.context || {};
     
     // Detect intent from message
     const intent = detectIntent(message);
     
     // Route to appropriate service
-    const sections = await routeToService(intent, message, context || {});
+    const sections = await routeToService(intent, message, context);
     
-    // Build unified response
+    // Build unified response with sections format expected by audit
     const response = {
-      response: sections.summary || `I'm processing your ${intent} request...`,
-      actions: sections.actions || [],
-      research: sections.research || [],
-      plans: sections.plans || null,
-      code: sections.code || null,
-      github: sections.github || null,
-      events: sections.events || [],
+      sections: {
+        summary: sections.summary || `I'm processing your ${intent} request...`,
+        actions: sections.actions || [],
+        research: sections.research || [],
+        plans: sections.plans || null,
+        code: sections.code || null,
+        github: sections.github || null,
+        events: sections.events || []
+      },
       metadata: {
         intent,
         timestamp: new Date().toISOString(),
@@ -414,9 +419,11 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Chat API Error:', error);
     return NextResponse.json({
-      response: 'Error processing request',
-      actions: [],
-      error: error instanceof Error ? error.message : 'Unknown error'
+      sections: {
+        summary: 'Error processing request',
+        actions: [],
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }
     }, { status: 500 });
   }
 }
