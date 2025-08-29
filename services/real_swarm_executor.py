@@ -19,6 +19,15 @@ except ImportError:
     async def push_code_to_github(*args, **kwargs):
         return {"success": False, "error": "GitHub integration not available"}
 
+# Import real web search
+try:
+    from real_web_search import search_web
+    WEB_SEARCH_AVAILABLE = True
+except ImportError:
+    WEB_SEARCH_AVAILABLE = False
+    async def search_web(*args, **kwargs):
+        return {"results": [], "sources_used": ["mock"]}
+
 class RealSwarmExecutor:
     """Executes actual agent tasks by coordinating services"""
     
@@ -33,39 +42,95 @@ class RealSwarmExecutor:
         self.conversation_history = []
     
     async def execute_research_task(self, task: str, context: Dict) -> Dict:
-        """Execute a research task using MCP Research service"""
+        """Execute a research task using real web search and MCP Research service"""
+        results = []
+        sources_used = []
+        
+        # First, try real web search if available
+        if WEB_SEARCH_AVAILABLE:
+            try:
+                print(f"🔍 Performing real web search for: {task}")
+                web_results = await search_web(
+                    query=task, 
+                    sources=context.get("search_sources", ["tavily", "perplexity", "serpapi"]),
+                    limit=context.get("limit", 10)
+                )
+                
+                if web_results.get("results"):
+                    results.extend(web_results["results"])
+                    sources_used.extend(web_results.get("sources_used", []))
+                    print(f"✓ Found {len(web_results['results'])} real web results")
+            except Exception as e:
+                print(f"Web search failed: {e}")
+        
+        # Also try MCP Research service for additional academic/specialized results
         try:
             async with httpx.AsyncClient(timeout=30.0) as client:
-                # Call research service
                 response = await client.post(
                     f"{self.services['research']}/research",
                     json={
                         "query": task,
-                        "sources": ["web", "academic"],
+                        "sources": ["academic", "tech", "news"],
                         "limit": 5
                     }
                 )
                 
                 if response.status_code == 200:
                     data = response.json()
-                    return {
-                        "status": "completed",
-                        "results": data,
-                        "summary": f"Found {len(data.get('results', []))} research results for: {task}"
-                    }
+                    if data.get("results"):
+                        # Convert MCP format to our standard format
+                        for result in data.get("results", []):
+                            results.append({
+                                "source": result.get("source", "mcp_research"),
+                                "title": result.get("title", ""),
+                                "content": result.get("summary", ""),
+                                "url": result.get("url", ""),
+                                "score": result.get("relevance_score", 0.5)
+                            })
+                        sources_used.append("mcp_research")
+                        print(f"✓ Added {len(data.get('results', []))} MCP research results")
         except Exception as e:
-            print(f"Research execution failed: {e}")
+            print(f"MCP Research service failed: {e}")
         
-        # Fallback to mock if service fails
+        # If we have real results, return them
+        if results:
+            # Sort by relevance score
+            results.sort(key=lambda x: x.get("score", 0), reverse=True)
+            
+            # Create a formatted summary
+            summary_parts = []
+            if "tavily" in sources_used or "tavily_answer" in [r.get("source") for r in results]:
+                # Check if we have an AI-generated answer from Tavily
+                ai_answers = [r for r in results if r.get("source") == "tavily_answer"]
+                if ai_answers:
+                    summary_parts.append(f"AI Summary: {ai_answers[0].get('content', '')[:200]}...")
+            
+            summary_parts.append(f"Found {len(results)} results from {', '.join(sources_used)}")
+            
+            return {
+                "status": "completed",
+                "results": results[:context.get("limit", 10)],  # Limit final results
+                "sources_used": sources_used,
+                "summary": " | ".join(summary_parts),
+                "total_results": len(results)
+            }
+        
+        # Fallback to mock only if everything fails
+        print("⚠️ All research services failed, returning mock data")
         return {
             "status": "completed",
-            "results": {
-                "sources": [
-                    {"title": "Research Result 1", "url": "https://example.com", "snippet": "Mock result"},
-                    {"title": "Research Result 2", "url": "https://example.com", "snippet": "Mock result"}
-                ]
-            },
-            "summary": f"Mock research completed for: {task}"
+            "results": [
+                {
+                    "source": "mock",
+                    "title": f"Mock Result for: {task}",
+                    "content": "This is a fallback result. Configure API keys for real search.",
+                    "url": "https://example.com",
+                    "score": 0.5
+                }
+            ],
+            "sources_used": ["mock"],
+            "summary": "Using mock data - configure API keys for real search",
+            "total_results": 1
         }
     
     async def execute_coding_task(self, task: str, context: Dict) -> Dict:
