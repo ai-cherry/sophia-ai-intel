@@ -124,7 +124,16 @@ export async function GET(request: Request) {
   if (action === 'activity') {
     try {
       // Get recent activities from WebSocket hub or swarm service
-      const activities = [];
+      const activities: Array<{
+        id: string;
+        timestamp: string;
+        type: string;
+        agent_id: string;
+        agent_type: string;
+        action: string;
+        status: string;
+        progress: number;
+      }> = [];
       
       // Try to get swarm activities
       try {

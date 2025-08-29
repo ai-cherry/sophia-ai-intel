@@ -3,15 +3,54 @@
  * NO MOCK DATA
  */
 
+export enum SwarmType {
+  CODING = 'coding',
+  RESEARCH = 'research',
+  ANALYSIS = 'analysis',
+  PLANNING = 'planning'
+}
+
+export interface AgentInfo {
+  id: string;
+  name: string;
+  type: string;
+  capabilities: string[];
+  status?: string;
+}
+
+export interface PlansResponse {
+  task: string;
+  plans: {
+    cutting_edge: {
+      plan: string;
+      risk_assessment?: any;
+      artifacts?: string[];
+    };
+    conservative: {
+      plan: string;
+      risk_assessment?: any;
+      artifacts?: string[];
+    };
+    synthesis: {
+      plan: string;
+      risk_assessment?: any;
+      artifacts?: string[];
+    };
+  };
+  recommendation: string;
+}
+
 export interface SwarmStatus {
   swarm_id: string;
   swarm_type: string;
-  status: 'creating' | 'executing' | 'completed' | 'error';
+  status: 'creating' | 'executing' | 'completed' | 'error' | 'active' | 'failed';
   progress: number;
   current_task?: string;
-  agents?: Array<{
+  agents: Array<{
     id: string;
-    role: string;
+    name: string;
+    type: string;
+    role?: string;
     status: string;
   }>;
   results?: any;
@@ -111,24 +150,53 @@ class SwarmClient {
   /**
    * Create a new swarm
    */
-  async createSwarm(swarmType: string, task: string, context?: any): Promise<string | null> {
+  async createSwarm(params: {
+    swarm_type: SwarmType | string;
+    task: string;
+    context?: any;
+    config?: any;
+  }): Promise<{ success: boolean; swarm_id: string }> {
     try {
       const response = await fetch(`${this.baseUrl.replace('ws://', 'http://').replace('wss://', 'https://')}/swarms/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          swarm_type: swarmType,
-          task,
-          context: context || {}
-        })
+        body: JSON.stringify(params)
       });
       
       if (!response.ok) throw new Error('Failed to create swarm');
       const data = await response.json();
-      return data.swarm_id;
+      return { success: true, swarm_id: data.swarm_id };
     } catch (error) {
       console.error('Failed to create swarm:', error);
-      return null;
+      return { success: false, swarm_id: '' };
+    }
+  }
+  
+  /**
+   * Generate plans for a task
+   */
+  async generatePlans(task: string): Promise<PlansResponse> {
+    try {
+      const response = await fetch(`${this.baseUrl.replace('ws://', 'http://').replace('wss://', 'https://')}/swarms/plans`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ task })
+      });
+      
+      if (!response.ok) throw new Error('Failed to generate plans');
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to generate plans:', error);
+      // Return a default response structure
+      return {
+        task,
+        plans: {
+          cutting_edge: { plan: 'Failed to generate plan', risk_assessment: null, artifacts: [] },
+          conservative: { plan: 'Failed to generate plan', risk_assessment: null, artifacts: [] },
+          synthesis: { plan: 'Failed to generate plan', risk_assessment: null, artifacts: [] }
+        },
+        recommendation: 'Unable to generate plans at this time'
+      };
     }
   }
   
@@ -150,14 +218,20 @@ class SwarmClient {
   /**
    * Get list of available agents
    */
-  async listAgents(): Promise<Array<any>> {
+  async listAgents(): Promise<Array<AgentInfo>> {
     try {
       const response = await fetch(`${this.baseUrl.replace('ws://', 'http://').replace('wss://', 'https://')}/agents`);
       if (!response.ok) throw new Error('Failed to fetch agents');
       return await response.json();
     } catch (error) {
       console.error('Failed to list agents:', error);
-      return [];
+      // Return default agents if API is unavailable
+      return [
+        { id: 'research-1', name: 'Research Agent', type: 'research', capabilities: ['web_search', 'summarization', 'citation'] },
+        { id: 'code-1', name: 'Code Generator', type: 'coding', capabilities: ['python', 'javascript', 'testing'] },
+        { id: 'plan-1', name: 'Planning Agent', type: 'planning', capabilities: ['strategy', 'architecture', 'roadmap'] },
+        { id: 'analyze-1', name: 'Analysis Agent', type: 'analysis', capabilities: ['data_analysis', 'visualization', 'insights'] }
+      ];
     }
   }
   

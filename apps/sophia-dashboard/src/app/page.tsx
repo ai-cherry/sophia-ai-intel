@@ -646,7 +646,7 @@ export default function SophiaApp() {
                     className="message-input"
                   />
                   <button
-                    onClick={sendMessage}
+                    onClick={() => sendMessage()}
                     disabled={isLoading || !input.trim()}
                     className="send-button"
                   >

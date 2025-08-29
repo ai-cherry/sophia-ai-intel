@@ -1,0 +1,33 @@
+path,error,severity,fix
+apps/sophia-dashboard/src/lib/config.ts,required file missing,high,Commit patch pack; ensure path matches
+apps/sophia-dashboard/src/app/api-health/page.tsx,required file missing,high,Commit patch pack; ensure path matches
+apps/sophia-dashboard/src/app/api/health/route.ts,required file missing,high,Commit patch pack; ensure path matches
+apps/sophia-dashboard/src/app/agent-factory/page.tsx,required file missing,high,Commit patch pack; ensure path matches
+apps/sophia-dashboard/src/app/swarm-monitor/page.tsx,required file missing,high,Commit patch pack; ensure path matches
+apps/sophia-dashboard/src/app/metrics/page.tsx,required file missing,high,Commit patch pack; ensure path matches
+apps/sophia-dashboard/src/components/AgentSwarmPanel.tsx,legacy/mock file still present,high,Delete file
+apps/sophia-dashboard/tsconfig.tsbuildinfo,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/app/page-unified.tsx,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/app/page.tsx,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/app/globals.css,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/components/AgentManagement.tsx,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/components/CommandPalette.tsx,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/components/SwarmManager.tsx,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/components/AgentMonitoring.tsx,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/components/SwarmCreator.tsx,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/components/AgentSwarmPanel.tsx,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/components/JobsPanel.tsx,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/components/PersonaControls.tsx,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/components/ChatRenderer.tsx,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/components/DebateScorecards.tsx,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/lib/swarm-client.ts,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/app/sophia/page.tsx,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/app/dashboard/professional.tsx,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/app/dashboard/page.tsx,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/app/agno/page.tsx,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard/src/app/api/agents/route.ts,mock/fake/placeholder/TODO found,high,Replace with live endpoint or delete
+apps/sophia-dashboard,TypeScript compile failed,high,Fix imports/types; run pnpm tsc --noEmit
+apps/sophia-dashboard/api/health,GET failed: None HTTP Error 404: Not Found,medium,Ensure HEALTH_TARGETS and services are reachable
+apps/sophia-dashboard/api/metrics,GET failed: None HTTP Error 404: Not Found,low,Set PROM_URL or ensure Prometheus reachable
+apps/sophia-dashboard/api/chat,POST failed for 'research quantum computing',medium,Fix orchestrator / MCP routes; ensure services up
+apps/sophia-dashboard/api/chat,POST failed for 'status health',medium,Fix orchestrator / MCP routes; ensure services up
